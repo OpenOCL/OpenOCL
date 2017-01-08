@@ -67,6 +67,8 @@ classdef Simultaneous < handle
       end
       
       self.nlpVars.compile;
+      
+      
 
 
     end
@@ -86,6 +88,8 @@ classdef Simultaneous < handle
       self.nx = ocpHandler.getStatesSize;
       self.nu = ocpHandler.getControlsSize;
       self.np = ocpHandler.getParametersSize;
+      
+      [self.lowerBounds,self.upperBounds] = self.ocpHandler.getBounds(self.nlpVars);
     end
 
     function nv = getNumberOfVars(self)
@@ -197,10 +201,7 @@ classdef Simultaneous < handle
       
       initialGuess = self.nlpVars;
       
-      
       initialGuess.set(0);
-      
-      [self.lowerBounds,self.upperBounds] = self.ocpHandler.getBounds(initialGuess);
       
       lowVal = self.lowerBounds.value;
       upVal = self.upperBounds.value;
