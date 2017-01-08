@@ -316,7 +316,7 @@ classdef Var < matlab.mixin.Copyable
       for i = indizes'
         subVar = self.subVars(i);
         
-        if strcmp(subVar.id,id)
+        if strcmp(subVar.id,id) && ~isempty(subVar.subVars)
           counter = counter+1;
         
           if strcmp(slice,':')
@@ -325,6 +325,15 @@ classdef Var < matlab.mixin.Copyable
             slice = slice(2:end);
             var.addVar(subVar);
           end
+        elseif strcmp(subVar.id,id) && isempty(subVar.subVars)
+          if strcmp(slice,':')
+            var.addVar(subVar);
+          else
+            val = subVar.value;
+            newVar = Var(val(slice),id);
+            var.addVar(newVar);  
+          end
+
         end
         
         if isempty(slice)

@@ -119,3 +119,6 @@ assert( isequal(ocpVar.get('x').get('R').value, ...
 
 ocpVar.get('x').get('R').set(ones(9,1))
 assert( isequal(ocpVar.get('x').get('R').value, ones(9,6)) );
+
+
+assert( isequal(ocpVar.get('x').get('R',1).value,ones(1,6)) );
