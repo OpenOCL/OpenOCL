@@ -10,6 +10,7 @@ classdef Var < matlab.mixin.Copyable
     thisSize
     
     compiled
+    isUniform
     varIds
   end
 
@@ -60,6 +61,7 @@ classdef Var < matlab.mixin.Copyable
       self.thisSize = [0 1];
       self.varIds = java.util.HashMap;
       self.compiled = false;
+      self.isUniform = true;
     end
     
         
@@ -69,16 +71,49 @@ classdef Var < matlab.mixin.Copyable
         return
       end
       
+      % compile all subVars
       for i=1:length(self.subVars)
         subVar = self.subVars(i);
         subVar.compile;
-        
-        if isempty(self.thisSize)
-          self.thisSize = [0 1];
-        end
-        self.thisSize(1) = self.thisSize(1) + prod(subVar.size);
       end
+      
+      % check if variable is uniform
+      if ~self.isUniform
+        % check for size and id, stop if any of the two dont match
+        self.isUniform = true;
+        subVarId = self.subVars(1).id;
+        subVarSize = self.subVars(1).size;
+        for i = 2:length(self.subVars)
+          subVar = self.subVars(i);
+          if ~strcmp(subVar.id,subVarId) || ~isequal(subVar.size,subVarSize)
+            self.isUniform = false;
+            break
+          end
+        end
+      end
+
+      N = length(self.subVars);
+      if self.isUniform
+        if N == 0
+          nv = 0;
+        else
+          nv = prod(self.subVars(i).size);
+        end
+        self.thisSize = [nv,N];
+        
+      else
+        for i=1:length(self.subVars)
+          subVar = self.subVars(i);
+
+          if isempty(self.thisSize)
+            self.thisSize = [0 1];
+          end
+          self.thisSize(1) = self.thisSize(1) + prod(subVar.size);
+        end
+      end
+
       self.compiled = true;
+    
     end
     
     function add(self,varargin)
@@ -126,6 +161,13 @@ classdef Var < matlab.mixin.Copyable
         error('Can not add variables to a compiled var.');
       end
       
+      % check if var is still uniform
+      if self.isUniform && ~isempty(self.subVars)
+        if ~strcmp(varIn.id,self.subVars(1).id)
+          self.isUniform = false;
+        end
+      end
+      
       
       self.subVars = [self.subVars,varIn];
       
@@ -156,16 +198,26 @@ classdef Var < matlab.mixin.Copyable
       end
       
       % Return size of the Var based on the subVars, if any, otherwise assigned size.
+      
       if ~isempty(self.subVars) 
-        % sum up the sizes of subVars
-        s = 0;
-        for i=1:length(self.subVars)
-          subVar = self.subVars(i);
-          if ~isempty(subVar.size)
-            s = s + prod(subVar.size);
+        
+        if self.isUniform
+          nv = prod(self.subVars(1).size);
+          N = length(self.subVars);
+          s = [nv,N];
+          return
+        else
+          
+          % sum up the sizes of subVars
+          s = 0;
+          for i=1:length(self.subVars)
+            subVar = self.subVars(i);
+            if ~isempty(subVar.size)
+              s = s + prod(subVar.size);
+            end
           end
+          s = [s 1];
         end
-        s = [s 1];
       else
         s = self.thisSize;
       end
@@ -181,23 +233,11 @@ classdef Var < matlab.mixin.Copyable
         % if all subvars have the same id and size, make matrix, otherwise
         % a column vector
         
-        % check for size and id, stop if any of the two dont match
-        stackAsMatrix = true;
-        subVarId = self.subVars(1).id;
-        subVarSize = self.subVars(1).size;
-        for i = 2:length(self.subVars)
-          subVar = self.subVars(i);
-          if ~strcmp(subVar.id,subVarId) || ~isequal(subVar.size,subVarSize)
-            stackAsMatrix = false;
-            break
-          end
-        end
-        
         % stack the variables recursively
         v = [];
         for i=1:length(self.subVars)
           subVar = self.subVars(i);
-          if stackAsMatrix
+          if self.isUniform
             v = [v, subVar.flat];
           else
             v = [v; subVar.flat];
@@ -299,6 +339,7 @@ classdef Var < matlab.mixin.Copyable
         return;
       end
       
+      var.isUniform = true;
       var.compile;
       
     end % get
@@ -411,7 +452,7 @@ classdef Var < matlab.mixin.Copyable
       end
       
       % assign value to subvars
-      if isequal(self.size,size(valueIn))
+      if isequal(self.size,size(valueIn)) || isequal( prod(self.size), prod(size(valueIn)) )
         % Split value to subvars if size of value corresponds to size of variable
 
       	% split value to subvars

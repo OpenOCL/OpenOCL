@@ -92,3 +92,30 @@ printString = evalc('ocpVar.get(''x'',1:2).printStructure');
 indizes = regexp(printString,'x1|x2|v|p');
 assert(isequal(indizes, [6,17,20,30,43,46,56,65,76,79,89,102,105,115]));
 
+
+%%
+
+assert( isequal(ocpVar.get('x',4:6).get('p').size, [3 3]) );
+
+% this should not print warnings
+ocpVar.get('x',4:6).get('p').set(eye(3));
+assert( isequal(ocpVar.get('x',4:6).get('p').value, eye(3)) );
+
+
+ocpVar.get('x').get('R').set(eye(3));
+assert( isequal(ocpVar.get('x').get('R').value, ...
+  [...
+     1     1     1     1     1     1
+     0     0     0     0     0     0
+     0     0     0     0     0     0
+     0     0     0     0     0     0
+     1     1     1     1     1     1
+     0     0     0     0     0     0
+     0     0     0     0     0     0
+     0     0     0     0     0     0
+     1     1     1     1     1     1
+  ] ...
+) );
+
+ocpVar.get('x').get('R').set(ones(9,1))
+assert( isequal(ocpVar.get('x').get('R').value, ones(9,6)) );
