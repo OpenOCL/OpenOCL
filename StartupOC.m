@@ -1,9 +1,13 @@
+function StartupOC
+global testDir
+
 % add current directory to path
 addpath(pwd);
 
 % change to main directory (where Startup.m is located)
-startupDir = fileparts(which('StartupOC'));
-% cd(startupDir)
+startupDir  = fileparts(which('StartupOC'));
+testDir      = fullfile(startupDir,'..','OCTests');
+[~,~] = mkdir(testDir);
 
 % setup directories
 addpath(startupDir)

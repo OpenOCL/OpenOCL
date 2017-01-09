@@ -1,7 +1,13 @@
-TestVar
+function TestCasadiVar
+state = Var('x');
+state.add('p',[3,1]);
+state.add('R',[3,3]);
+state.add('v',[3,1]);
+state.add('w',[3,1]);
+state.compile;
 
-CasadiLib.setSX(ocpVar);
-assert( isa(ocpVar.value,'casadi.SX') )
+CasadiLib.setSX(state);
+assert( isa(state.value,'casadi.SX') )
 
-CasadiLib.setMX(ocpVar);
-assert( isa(ocpVar.value,'casadi.MX') )
+CasadiLib.setMX(state);
+assert( isa(state.value,'casadi.MX') )

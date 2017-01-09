@@ -1,3 +1,5 @@
+function Example
+
 StartupOC
 
 FINALTIME = 10;               % horizon length (seconds)
