@@ -6,17 +6,24 @@ classdef CasadiFunction < Function
     fun
     numericOutputIndizes
     numericOutputValues
+    
+    compiled
+    name = 'test'
   end
   
   methods
     
-    function self = CasadiFunction(inputFunction)
+    function self = CasadiFunction(inputFunction,jit)
       self = self@Function(inputFunction.functionHandle,inputFunction.inputSizes,inputFunction.nOutputs);
+      
+      if nargin ==1
+        jit = false;
+      end
       
       N = length(self.inputSizes);
       inputs = cell(1,N);
       for k=1:N
-        inputs{k} = casadi.SX.sym('in',self.inputSizes{k});
+        inputs{k} = casadi.MX.sym('in',self.inputSizes{k});
       end
       outputs = cell(1,self.nOutputs);
       [outputs{:}] = self.functionHandle(inputs{:});
@@ -25,8 +32,10 @@ classdef CasadiFunction < Function
       self.numericOutputIndizes = logical(cellfun(@isnumeric,outputs));
       self.numericOutputValues = outputs(self.numericOutputIndizes);
       
-      self.fun = casadi.Function('fun',inputs,outputs);
-      
+      self.fun = casadi.Function('fun',inputs,outputs,struct('jit',jit));
+      if jit
+        delete jit_tmp.c
+      end
     end
     
     function varargout = evaluate(self,varargin)
@@ -37,7 +46,21 @@ classdef CasadiFunction < Function
       varargout(self.numericOutputIndizes) = self.numericOutputValues;
     end
     
+    function compile(self)
+      global exportDir
+      currentDir = pwd;
+      cd(exportDir)
+      opts = struct;
+      opts.mex = true;
+      cFilePath = fullfile(exportDir,[self.name '.c']);
+      self.fun.generate([self.name '.c'],opts)
+      cd(currentDir)
+      
+      % compile generated code as mex file
+      mex(cFilePath,'-largeArrayDims')
+      self.compiled = true;
+    end
+    
   end
-  
 end
 

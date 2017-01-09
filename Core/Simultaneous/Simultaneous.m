@@ -38,7 +38,7 @@ classdef Simultaneous < handle
       
       self.model = model;
       
-      self.nlpFun = Function(@self.getNLPFun,2,4);
+      
       
       self.isCollocation = true;
       
@@ -67,9 +67,6 @@ classdef Simultaneous < handle
       end
       
       self.nlpVars.compile;
-      
-      
-
 
     end
     
@@ -90,6 +87,9 @@ classdef Simultaneous < handle
       self.np = ocpHandler.getParametersSize;
       
       [self.lowerBounds,self.upperBounds] = self.ocpHandler.getBounds(self.nlpVars);
+      nv = self.getNumberOfVars;
+      pSize = self.getParameters.size;
+      self.nlpFun = Function(@self.getNLPFun,{[nv 1], pSize},4);
     end
 
     function nv = getNumberOfVars(self)

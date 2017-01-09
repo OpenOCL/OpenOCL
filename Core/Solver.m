@@ -62,7 +62,8 @@ classdef Solver < handle
       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
       nlp.integratorFun          = CasadiFunction(nlp.integratorFun);
 %       ocpHandler.leastSquaresCostsFun   = CasadiFunction(ocpHandler.leastSquaresCostsFun);
-      
+
+      nlp.nlpFun = CasadiFunction(nlp.nlpFun);
 
       if strcmp(options.solverInterface,'casadi')
         solver = CasadiNLPSolver(nlp,options);
