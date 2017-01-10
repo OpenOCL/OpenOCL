@@ -18,9 +18,6 @@ classdef Function < handle
     end
     
     function varargout = evaluate(self,varargin)
-%       for k=1:length(inputVars)
-%         inputVars{k} = inputVars{k}.value;
-%       end
       varargout = cell(1,self.nOutputs);
       [varargout{:}] = self.functionHandle(varargin{:});
     end

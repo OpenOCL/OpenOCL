@@ -55,12 +55,8 @@ classdef (Abstract) Model < handle
 
       self.setupEquation;
       
-      % check if ODE and ALG equation are complete
-      
       ode = self.ode.value;
       alg = self.alg;
-      
-      
     end
     
     function addState(self,id,size)
