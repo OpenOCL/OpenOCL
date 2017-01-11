@@ -38,7 +38,9 @@ function runTests(version,changeMessage)
   printResults(casadiTestsResult);
   printResults(exampleTestsResult);
   fclose(resultsFile);
-
+  
+  set(0,'DefaultFigureVisible','on');
+  
   
   function testResult = runTest(testName,scriptHandle)
     testResult = struct;
