@@ -13,6 +13,7 @@ classdef (Abstract) Model < handle
     alg
     
     algEqIndex    = 1;
+    modelFun
   end
   
   methods (Abstract)
@@ -32,6 +33,8 @@ classdef (Abstract) Model < handle
       self.alg         = [];
       
       
+      
+      
       self.setupVariables;
       
       self.state.compile;
@@ -39,6 +42,14 @@ classdef (Abstract) Model < handle
       self.controls.compile;
       self.parameters.compile;
       self.ode.compile;
+      
+      sx = self.state.size();
+      sz = self.algState.size();
+      su = self.controls.size();
+      sp = self.parameters.size();
+      
+      self.modelFun = Function(@self.evaluate,{sx,sz,su,sp},2);
+      
     end
     
     

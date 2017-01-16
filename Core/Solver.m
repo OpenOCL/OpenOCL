@@ -60,10 +60,12 @@ classdef Solver < handle
       ocpHandler.terminalCostsFun       = CasadiFunction(ocpHandler.terminalCostsFun);
       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-      nlp.integratorFun          = CasadiFunction(nlp.integratorFun);
+      model.modelFun = CasadiFunction(model.modelFun);
+%       nlp.integratorFun          = CasadiFunction(nlp.integratorFun);
 %       ocpHandler.leastSquaresCostsFun   = CasadiFunction(ocpHandler.leastSquaresCostsFun);
 
-      nlp.nlpFun = CasadiFunction(nlp.nlpFun);
+      
+%       nlp.nlpFun = CasadiFunction(nlp.nlpFun);
 
       if strcmp(options.solverInterface,'casadi')
         solver = CasadiNLPSolver(nlp,options);

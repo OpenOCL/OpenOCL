@@ -67,10 +67,12 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       nx          = self.nx;
       d           = self.d;
       nz          = self.nz;
+      
+      self.integratorVars.set(integratorVars);
 
       % split integrator vars
-      colStateVars  = reshape(integratorVars(1:d*nx),nx,d);
-      algVars       = reshape(integratorVars(d*nx+1:end),nz,d);
+%       colStateVars  = reshape(integratorVars(1:d*nx),nx,d);
+%       algVars       = reshape(integratorVars(d*nx+1:end),nz,d);
 
 
       equations = [];
@@ -82,26 +84,26 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          % Expression for the state derivative at the collocation point
          xp = self.C(1,j+1)*state;
          for r=1:self.d
-             xp = xp + self.C(r+1,j+1)*colStateVars(:,r);
+             xp = xp + self.C(r+1,j+1)*self.integratorVars.get('state',r).flat;
          end
 
          time = startTime + self.tau_root(j+1);
 
          % Append collocation equations
-         [ode,alg] = self.model.evaluate(colStateVars(:,j), ...
-                                         algVars(:,j), ...
+         [ode,alg] = self.model.modelFun.evaluate(self.integratorVars.get('state',j).flat, ...
+                                         self.integratorVars.get('algState',j).flat, ...
                                          controls,parameters);
          equations = [equations; h*ode-xp; alg];
 
          % Add contribution to the end state
-         finalState = finalState + self.D(j+1)*colStateVars(:,j);
+         finalState = finalState + self.D(j+1)*self.integratorVars.get('state',j).flat;
 
          % Add contribution to quadrature function
-         qj = self.pathCostsFun.evaluate(colStateVars(:,j),algVars(:,j),controls,time,parameters);
+         qj = self.pathCostsFun.evaluate(self.integratorVars.get('state',j).flat,self.integratorVars.get('algState',j).flat,controls,time,parameters);
          J = J + self.B(j+1)*qj*h;
       end
 
-      finalAlgVars = algVars(:,1);
+      finalAlgVars = self.integratorVars.get('algState',1).flat;
       costs = J;
 
     end

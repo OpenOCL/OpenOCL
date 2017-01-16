@@ -33,6 +33,7 @@ classdef CasadiFunction < Function
       self.numericOutputValues = outputs(self.numericOutputIndizes);
       
       self.fun = casadi.Function('fun',inputs,outputs,struct('jit',jit));
+%       self.fun.expand();
       if jit
         delete jit_tmp.c
       end
