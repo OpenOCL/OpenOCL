@@ -19,30 +19,45 @@ classdef CasadiNLPSolver < Solver
     end
     
     function initialGuess = getInitialGuess(self)
-      initialGuess = self.nlp.getInitialGuess;
+      
+      initialGuess = self.nlp.nlpVars;
+      initialGuess.set(0);
+      
+      lowVal = self.nlp.lowerBounds.value;
+      upVal = self.nlp.upperBounds.value;
+      
+      guessValues = (lowVal + upVal) / 2;
+      
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(upVal);
+      guessValues(indizes) = lowVal(indizes);
+      
+      % set to upperBounds of lowerBoudns are inf
+      indizes = isinf(lowVal);
+      guessValues(indizes) = upVal(indizes);
+      
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lowVal) & isinf(upVal);
+      guessValues(indizes) = 0;
+
+      initialGuess.set(guessValues);
+      
     end
     
     function parameters = getParameters(self)
       parameters = self.nlp.getParameters;
     end
 
-    function outVars = solve(self,initialGuess,varargin)
+
+    function outVars = solve(self,initialGuess)
       % solve(self,initialGuess)
-      % solve(self,initialGuess,parameters)
-      
-      narginchk(2,3);
-      if nargin == 3
-        self.args.p = varargin{1}.flat;
-      end
-      
-      [lowerBounds,upperBounds] = self.nlp.getBounds;
       
       % initial guess
       self.args.x0 = initialGuess.flat;
 
       % setting bounds on decision variables
-      self.args.lbx = lowerBounds.flat;
-      self.args.ubx = upperBounds.flat;
+      self.args.lbx = self.nlp.lowerBounds.flat;
+      self.args.ubx = self.nlp.upperBounds.flat;
       
       % execute solver
       sol = self.casadiSolver.call(self.args);
@@ -59,10 +74,7 @@ classdef CasadiNLPSolver < Solver
     function construct(self)
 
       nv = self.nlp.getNumberOfVars;
-      np = self.nlp.getNumberOfParameters;
-      
       vsym = casadi.MX.sym('v',nv,1);
-      psym = casadi.MX.sym('p',np,1);
       
 %       vars = self.nlp.getVars;
 %       CasadiLib.setMX(vars);
@@ -71,13 +83,14 @@ classdef CasadiNLPSolver < Solver
 
       % turn nlp function into casadi function and call
       casadiNLPFun = self.nlp.nlpFun;
-      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsym,psym);
+      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsym);
+      costs = costs + self.nlp.getDiscreteCost(vsym);
+      
 
       casadiNLP = struct;
       casadiNLP.x = vsym;
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
-      casadiNLP.p = psym;
       
       opts = self.options.nlp.casadi;
       opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);

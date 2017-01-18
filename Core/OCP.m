@@ -14,16 +14,12 @@ classdef OCP < handle
     thisBoundaryConditions
     thisLeastSquaresCosts
     
-    lowerBounds
-    upperBounds
-    
     parameters
     endTime
   end
   
   methods(Abstract)
-    bounds(self)
-    leastSquaresCost(self);
+%     leastSquaresCost(self);
     lagrangeTerms(self,state,algState,controls,time,parameters)
     mayerTerms(self,state,time,parameters)
     pathConstraints(self,state,controls,time,parameters)
@@ -42,43 +38,20 @@ classdef OCP < handle
       self.thisPathCosts = 0;
       self.thisLeastSquaresCosts = {};
       
-      self.parameters = Var('ocpParams');
+      self.parameters = model.parameters;
       
     end
     
-    function endTime = getEndTime(self)
-      endTime = self.endTime;
+    function c = discreteCost(self,vars)
+      c = 0;
     end
-    
+        
     function model = getModel(self)
       model = self.model;
     end
     
     function p = getParameters(self)
-      p = Var('AllParameters');
-      p.add(self.parameters);
-      p.add(self.model.parameters);
-    end
-    
-    function [lb,ub] = getBounds(self,nlpVars)
-
-      self.lowerBounds = nlpVars.copy;
-      self.upperBounds = nlpVars.copy;
-      
-      self.lowerBounds.set(-inf);
-      self.upperBounds.set(inf);
-      
-      if ~isnumeric(self.endTime)
-        self.lowerBounds.get('time').set(0);
-      end
-      
-      
-      self.bounds()
-      
-      lb = self.lowerBounds;
-      ub = self.upperBounds;
-      
-      
+      p = self.parameters;
     end
 
     function pc = getPathConstraints(self,state,algState,controls,time,parameters)
@@ -127,31 +100,7 @@ classdef OCP < handle
       parameter = self.parameters.get(id);
     end
     
-    function addBound(self,id,slice,varargin)
-      % addBound(self,id,slice,lower,upper)
-      % addBound(self,id,slice,value)
-      
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getBounds'), ...
-              'This method must be called from OCP.bounds().');
-      
-      if strcmp(slice,'end')
-        slice = length(self.lowerBounds.get(id).subVars);
-      end
-      
-      narginchk(4,5);
-      if nargin == 4
-        lower = varargin{1};
-        upper = varargin{1};
-      elseif nargin == 5
-        lower = varargin{1};
-        upper = varargin{2};
-      end
-      
-      self.lowerBounds.getDeep(id,slice).set(lower);
-      self.upperBounds.getDeep(id,slice).set(upper);
-      
-    end
+    
     
     function addPathConstraint(self,lhs, op, rhs)
       

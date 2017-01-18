@@ -7,7 +7,7 @@ classdef OCPHandler < handle
     terminalCostsFun
     boundaryConditionsFun
     pathConstraintsFun
-    leastSquaresCostsFun
+%     leastSquaresCostsFun
     
   end
   
@@ -36,10 +36,14 @@ classdef OCPHandler < handle
       self.pathConstraintsFun = Function(@self.getPathConstraints,{[nx 1],[nz 1],[nu 1],[1 1],[np 1]},3);
       
       
-      states = nlpVars.get('state');
-      controls = nlpVars.get('controls');
-      self.leastSquaresCostsFun = Function(@self.getLeastSquaresCosts,{states,controls},1);
+%       states = nlpVars.get('state');
+%       controls = nlpVars.get('controls');
+%       self.leastSquaresCostsFun = Function(@self.getLeastSquaresCosts,{states,controls},1);
       
+    end
+ 
+    function cost = getDiscreteCost(self,nlpVars)
+      cost = self.ocp.discreteCost(nlpVars);
     end
     
     function nx = getStatesSize(self)
@@ -53,10 +57,6 @@ classdef OCPHandler < handle
     end
     function np = getParametersSize(self)
       np = prod(self.getParameters.size);
-    end
-    
-    function [lowerBounds,upperBounds] = getBounds(self,nlpVars)
-      [lowerBounds,upperBounds] = self.ocp.getBounds(nlpVars);
     end
     
     function endTime = getEndTime(self)

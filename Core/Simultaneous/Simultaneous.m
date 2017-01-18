@@ -6,6 +6,8 @@ classdef Simultaneous < handle
     nlpFun
     nlpVars
     integratorFun
+    lowerBounds
+    upperBounds
   end
   
   properties(Access = private)
@@ -22,14 +24,13 @@ classdef Simultaneous < handle
     controlVars
     
     isCollocation
-    lowerBounds
-    upperBounds
+
     
   end
   
   methods
     
-    function self = Simultaneous(model,integrator,N,endTime)
+    function self = Simultaneous(model,integrator,N)
       self.N = N;
       
       
@@ -61,13 +62,42 @@ classdef Simultaneous < handle
                                 self.model.controls],self.N);
       self.nlpVars.add(self.model.state);
       
-      if strcmp(endTime, 'free')
-        timeVar = Var('time',[1 1]);
-        self.nlpVars.add(timeVar);
-      end
+      self.model.parameters.compile;
+      self.nlpVars.add(self.model.parameters);
+      self.nlpVars.add('time',[1 1]);
       
       self.nlpVars.compile;
+      
+      % initialize bounds
+      self.lowerBounds = self.nlpVars.copy;
+      self.upperBounds = self.nlpVars.copy;
+      
+      self.lowerBounds.set(-inf);
+      self.upperBounds.set(inf);
+      self.lowerBounds.get('time').set(0);
 
+    end
+    
+    function cost = getDiscreteCost(self,varValues)
+      self.nlpVars.set(varValues);
+      cost = self.ocpHandler.getDiscreteCost(self.nlpVars);
+    end
+    
+    
+    function setBound(self,id,slice,lower,upper)
+      % addBound(id,slice,lower,upper)
+      % addBound(id,slice,value)
+      
+      if strcmp(slice,'end')
+        slice = length(self.lowerBounds.get(id).subVars);
+      end
+      
+      if nargin == 4
+        upper = lower;
+      end
+      
+      self.lowerBounds.getDeep(id,slice).set(lower);
+      self.upperBounds.getDeep(id,slice).set(upper);
     end
     
     function parameters = getParameters(self)
@@ -86,39 +116,23 @@ classdef Simultaneous < handle
       self.nu = ocpHandler.getControlsSize;
       self.np = ocpHandler.getParametersSize;
       
-      [self.lowerBounds,self.upperBounds] = self.ocpHandler.getBounds(self.nlpVars);
       nv = self.getNumberOfVars;
       pSize = self.getParameters.size;
       self.nlpFun = Function(@self.getNLPFun,{[nv 1], pSize},4);
     end
 
     function nv = getNumberOfVars(self)
-      nv = self.N*self.nu + (self.N+1)*self.nx + self.N*self.ni;
-      
-      if strcmp(self.ocpHandler.getEndTime, 'free')
-        nv = nv+1;
-      end
-      
+      nv = self.N*self.nu + (self.N+1)*self.nx + self.N*self.ni+self.np+1;
     end
     
     function np = getNumberOfParameters(self)
       np = self.np;
     end
-    
-    function [lb,ub] = getBounds(self)
-      lb = self.lowerBounds;
-      ub = self.upperBounds;
-    end
 
-    
-    function [costs,constraints,constraints_LB,constraints_UB] = getNLPFun(self,nlpInputs,parameters)
+    function [costs,constraints,constraints_LB,constraints_UB] = getNLPFun(self,nlpInputs)
       
-
-      if strcmp(self.ocpHandler.getEndTime, 'free')
-        T = nlpInputs(end);
-      else
-        T = self.ocpHandler.getEndTime;
-      end
+      T = nlpInputs(end);                         % end time
+      parameters = nlpInputs(end-self.np:end-1);  % parameters
 
       timeGrid = linspace(0,T,self.N+1);
       
@@ -131,17 +145,12 @@ classdef Simultaneous < handle
       thisState = initialState;
       curIndex = self.nx;
       
-      states = cell(1,self.N+1);
-      states{1} = initialState;
-      controls = cell(1,self.N);
-      
       for k=1:self.N
         
         thisIntegratorVars = nlpInputs(curIndex+1:curIndex+self.ni);
         curIndex = curIndex+self.ni;
         
         thisControl = nlpInputs(curIndex+1:curIndex+self.nu);
-        controls{k} = thisControl;
         curIndex = curIndex+self.nu;
         
         % add integrator equation in case of direction collocation
@@ -158,13 +167,10 @@ classdef Simultaneous < handle
           [finalState, finalAlgVars, integrationCosts] = self.integratorFun.evaluate(thisState,thisControl,timeGrid(k),timeGrid(k+1),parameters);
         end
         
-        
-
         costs = costs + integrationCosts;
         
         % go to next time gridpoint
         thisState = nlpInputs(curIndex+1:curIndex+self.nx);
-        states{k+1} = thisState;
         curIndex = curIndex+self.nx;
         
         % path constraints
@@ -182,11 +188,6 @@ classdef Simultaneous < handle
       % add terminal cost
       terminalCosts = self.ocpHandler.terminalCostsFun.evaluate(thisState,T,parameters);
       costs = costs + terminalCosts;
-      
-      % add least squares (tracking) cost
-      self.stateVars.set([states{:}]);
-      self.controlVars.set([controls{:}]);
-      costs = costs + self.ocpHandler.leastSquaresCostsFun.evaluate(self.stateVars,self.controlVars);
 
       % add terminal constraints
       [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialState,thisState,parameters);
@@ -195,35 +196,6 @@ classdef Simultaneous < handle
       constraints_UB = [constraints_UB; ub];
       
     end
-    
-    
-    function initialGuess = getInitialGuess(self)
-      
-      initialGuess = self.nlpVars;
-      
-      initialGuess.set(0);
-      
-      lowVal = self.lowerBounds.value;
-      upVal = self.upperBounds.value;
-      
-      guessValues = (lowVal + upVal) / 2;
-      
-      % set to lowerBounds if upperBounds are inf
-      indizes = isinf(upVal);
-      guessValues(indizes) = lowVal(indizes);
-      
-      % set to upperBounds of lowerBoudns are inf
-      indizes = isinf(lowVal);
-      guessValues(indizes) = upVal(indizes);
-      
-      % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lowVal) & isinf(upVal);
-      guessValues(indizes) = 0;
-
-      initialGuess.set(guessValues);
-      
-    end
-
   end
   
 end

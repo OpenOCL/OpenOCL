@@ -23,11 +23,17 @@ classdef (Abstract) Model < handle
   
   methods
     
-    function self = Model()
+    function self = Model(parameters)
       self.state       = Var('state');
       self.algState    = Var('algState');
       self.controls    = Var('controls');
-      self.parameters  = Var('modelParams');
+      
+      if nargin == 0
+        self.parameters = Var('parameters');
+      else
+        self.parameters  = parameters;
+      end
+      
 
       self.ode         = Var('ode');
       self.alg         = [];
@@ -40,7 +46,7 @@ classdef (Abstract) Model < handle
       self.state.compile;
       self.algState.compile;
       self.controls.compile;
-      self.parameters.compile;
+%       self.parameters.compile;
       self.ode.compile;
       
       sx = self.state.size();

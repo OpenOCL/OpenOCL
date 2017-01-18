@@ -2,29 +2,12 @@ classdef ExampleOCP < OCP
   % An OCP is defined by inheriting from the OCP class.
   
   methods
-    function self = ExampleOCP(model,endTime)
+    function self = ExampleOCP(model)
       % The constructor of OCP takes an instance of the model.
       % The end time of the horizon can be set to a real number, 
       % otherwise its 'free'.
       self = self@OCP(model);
-      self.setEndTime(endTime);
       
-    end
-    function bounds(self)
-      % Define bounds on the state, control, and algebraic variables.
-      % Set bound either on all (':'), the first (1), or last ('end')
-      % time interval along the horizon.
-      
-      % state bounds
-      self.addBound('x',    ':',   -0.25, inf);   % -0.25 <= x <= inf
-      self.addBound('u',    ':',   -1,    1);     % -1    <= u <= 1
-      
-      % intial state bounds
-      self.addBound('x',     1,    0);            % x1 == 0
-      self.addBound('y',     1,    1);            % y1 == 1
-      
-    end   
-    function leastSquaresCost(self)
     end
     function lagrangeTerms(self,state,algState,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
