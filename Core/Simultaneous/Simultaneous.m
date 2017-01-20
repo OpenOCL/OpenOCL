@@ -84,6 +84,42 @@ classdef Simultaneous < handle
     end
     
     
+    function initialGuess = getInitialGuess(self)
+      
+      initialGuess = self.nlpVars;
+      initialGuess.set(0);
+      
+      lowVal = self.lowerBounds.value;
+      upVal = self.upperBounds.value;
+      
+      guessValues = (lowVal + upVal) / 2;
+      
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(upVal);
+      guessValues(indizes) = lowVal(indizes);
+      
+      % set to upperBounds of lowerBoudns are inf
+      indizes = isinf(lowVal);
+      guessValues(indizes) = upVal(indizes);
+      
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lowVal) & isinf(upVal);
+      guessValues(indizes) = 0;
+
+      initialGuess.set(guessValues);
+      
+    end
+    
+    function interpolateGuess(self,guess)
+      
+      for i=1:self.N
+        state = guess.get('state',i).flat;
+        guess.get('integratorVars',i).get('state').set(state);
+      end
+      
+    end
+    
+    
     function setBound(self,id,slice,lower,upper)
       % addBound(id,slice,lower,upper)
       % addBound(id,slice,value)

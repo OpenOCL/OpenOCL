@@ -18,32 +18,6 @@ classdef CasadiNLPSolver < Solver
       
     end
     
-    function initialGuess = getInitialGuess(self)
-      
-      initialGuess = self.nlp.nlpVars;
-      initialGuess.set(0);
-      
-      lowVal = self.nlp.lowerBounds.value;
-      upVal = self.nlp.upperBounds.value;
-      
-      guessValues = (lowVal + upVal) / 2;
-      
-      % set to lowerBounds if upperBounds are inf
-      indizes = isinf(upVal);
-      guessValues(indizes) = lowVal(indizes);
-      
-      % set to upperBounds of lowerBoudns are inf
-      indizes = isinf(lowVal);
-      guessValues(indizes) = upVal(indizes);
-      
-      % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lowVal) & isinf(upVal);
-      guessValues(indizes) = 0;
-
-      initialGuess.set(guessValues);
-      
-    end
-    
     function parameters = getParameters(self)
       parameters = self.nlp.getParameters;
     end
