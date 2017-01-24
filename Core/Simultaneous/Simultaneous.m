@@ -39,8 +39,6 @@ classdef Simultaneous < handle
       
       self.model = model;
       
-      
-      
       self.isCollocation = true;
       
       
@@ -86,7 +84,7 @@ classdef Simultaneous < handle
     
     function initialGuess = getInitialGuess(self)
       
-      initialGuess = self.nlpVars;
+      initialGuess = self.nlpVars.copy;
       initialGuess.set(0);
       
       lowVal = self.lowerBounds.value;

@@ -64,9 +64,6 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       
       h = finalTime-startTime;
-      nx          = self.nx;
-      d           = self.d;
-      nz          = self.nz;
       
       self.integratorVars.set(integratorVars);
 
