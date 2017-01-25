@@ -25,15 +25,17 @@ classdef OCPHandler < handle
       self.ocp = ocp;
       self.model = ocp.getModel();
       
-      nx = getStatesSize(self);
-      nu = getControlsSize(self);
-      nz = getAlgVarsSize(self);
-      np = getParametersSize(self);
+      state = self.model.state.copy;
+      stateF = self.model.state.copy;
+      controls = self.model.controls.copy;
+      algVars = self.model.algState.copy;
+      params = self.getParameters.copy;
+      time = nlpVars.get('time');
 
-      self.pathCostsFun = Function(@self.getPathCosts,{[nx 1],[nz 1],[nu 1],[1 1],[np 1]},1);
-      self.terminalCostsFun = Function(@self.getTerminalCosts,{[nx 1],[1 1],[np 1]},1);
-      self.boundaryConditionsFun = Function(@self.getBoundaryConditions,{[nx 1],[nx 1],[np 1]},3);
-      self.pathConstraintsFun = Function(@self.getPathConstraints,{[nx 1],[nz 1],[nu 1],[1 1],[np 1]},3);
+      self.pathCostsFun = UserFunction(@self.getPathCosts,{state,algVars,controls,time,params},1);
+      self.terminalCostsFun = UserFunction(@self.getTerminalCosts,{state,time,params},1);
+      self.boundaryConditionsFun = UserFunction(@self.getBoundaryConditions,{state,stateF,params},3);
+      self.pathConstraintsFun = UserFunction(@self.getPathConstraints,{state,algVars,controls,time,params},3);
       
       
 %       states = nlpVars.get('state');
@@ -77,49 +79,25 @@ classdef OCPHandler < handle
   
   methods(Access = protected)
     function [val,lb,ub] = getPathConstraints(self,state,algState,controls,time,params)
-      p = self.getParameters;
-      p.set(params);
-      self.model.state.set(state);
-      self.model.algState.set(algState);
-      self.model.controls.set(controls);
-      constraint = self.ocp.getPathConstraints( self.model.state,...
-                                                self.model.algState,...
-                                                self.model.controls,time,p);   
+      constraint = self.ocp.getPathConstraints(state,algState,controls,time,params);   
       val = constraint.values;
       lb  = constraint.lowerBounds;
       ub  = constraint.upperBounds;
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialState,finalState,params)
-      p = self.getParameters;
-      p.set(params);
-      initialStateStruct = self.model.state.copy;
-      finalStateStruct = self.model.state.copy;
-      initialStateStruct.set(initialState);
-      finalStateStruct.set(finalState);
-      constraint = self.ocp.getBoundaryConditions(initialStateStruct,finalStateStruct,p);
+      constraint = self.ocp.getBoundaryConditions(initialState,finalState,params);
       val = constraint.values;
       lb  = constraint.lowerBounds;
       ub  = constraint.upperBounds;
     end
 
     function pathCosts = getPathCosts(self,state,algState,controls,time,params)
-      p = self.getParameters;
-      p.set(params);
-      self.model.state.set(state);
-      self.model.algState.set(algState);
-      self.model.controls.set(controls);
-      
-      pathCosts = self.ocp.getPathCosts(self.model.state,...
-                                        self.model.algState,...
-                                        self.model.controls,time,p);
+      pathCosts = self.ocp.getPathCosts(state,algState,controls,time,params);
     end
     
     function terminalCosts = getTerminalCosts(self,state,time,params)
-      p = self.getParameters;
-      p.set(params);
-      self.model.state.set(state);
-      terminalCosts = self.ocp.getTerminalCosts(self.model.state,time,p);
+      terminalCosts = self.ocp.getTerminalCosts(state,time,params);
     end
     
     function cost = getLeastSquaresCosts(self,stateVars,controlVars)

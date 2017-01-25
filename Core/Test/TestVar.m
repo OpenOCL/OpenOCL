@@ -123,3 +123,11 @@ assert( isequal(ocpVar.get('x').get('R').value, ones(9,6)) );
 
 
 assert( isequal(ocpVar.get('x').get('R',1).value,ones(1,6)) );
+
+
+p1 = ocpVar.get('x',1).get('p');
+p2 = ocpVar.get('x',2).get('p');
+p3 = p1 + p2;
+p3 = p1 - p2;
+p3 = p1 / p2;
+p3 = p1'*p2;

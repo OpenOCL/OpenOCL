@@ -36,7 +36,7 @@ nlp.setBound('time',  ':',  FINALTIME);
 solver = Solver.getSolver(nlp,options);
 
 % Get and set initial guess
-initialGuess = solver.getInitialGuess;
+initialGuess = nlp.getInitialGuess;
 initialGuess.get('state').get('x').set(-0.2);
 
 % Run solver to obtain solution

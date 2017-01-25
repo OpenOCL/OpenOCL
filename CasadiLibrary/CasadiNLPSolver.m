@@ -36,8 +36,15 @@ classdef CasadiNLPSolver < Solver
       % execute solver
       sol = self.casadiSolver.call(self.args);
       
-      initialGuess.set(sol.x.full());
-      outVars = initialGuess;
+      
+      if strcmp(self.casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
+        error('Solver was interrupted by user.');
+      else
+        initialGuess.set(sol.x.full());
+        outVars = initialGuess;
+      end
+      
+      
       
     end
 
@@ -46,23 +53,21 @@ classdef CasadiNLPSolver < Solver
   methods(Access = private)
     
     function construct(self)
-
-      nv = self.nlp.getNumberOfVars;
-      vsym = casadi.MX.sym('v',nv,1);
-      
-%       vars = self.nlp.getVars;
+     
+%       vars = self.nlp.nlpVars;
 %       CasadiLib.setMX(vars);
-%       vsym = vars.flat;
+      
+      vars = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
       
 
       % turn nlp function into casadi function and call
       casadiNLPFun = self.nlp.nlpFun;
-      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsym);
-      costs = costs + self.nlp.getDiscreteCost(vsym);
+      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vars);
+      costs = costs + self.nlp.getDiscreteCost(vars);
       
 
       casadiNLP = struct;
-      casadiNLP.x = vsym;
+      casadiNLP.x = vars;
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       

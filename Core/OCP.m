@@ -34,8 +34,8 @@ classdef OCP < handle
       
       self.thisPathConstraints = Constraint;
       self.thisBoundaryConditions = Constraint;
-      self.thisTerminalCosts = 0;
-      self.thisPathCosts = 0;
+      self.thisTerminalCosts = Var(0,'pathCost');
+      self.thisPathCosts = Var(0,'pathCost');
       self.thisLeastSquaresCosts = {};
       
       self.parameters = model.parameters;
@@ -67,13 +67,13 @@ classdef OCP < handle
     end
 
     function pc = getPathCosts(self,state,algState,controls,time,parameters)
-      self.thisPathCosts = 0;
+      self.thisPathCosts = Var(0,'pathCost');
       self.lagrangeTerms(state,algState,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     
     function tc = getTerminalCosts(self,state,time,parameters)
-      self.thisTerminalCosts = 0;
+      self.thisTerminalCosts = Var(0,'termCost');
       self.mayerTerms(state,time,parameters);
       tc = self.thisTerminalCosts;
     end
@@ -85,7 +85,6 @@ classdef OCP < handle
     end
     
   end
-  
 
   methods(Access = protected)
    function setEndTime(self,endTime)
@@ -99,8 +98,6 @@ classdef OCP < handle
     function parameter = getParameter(self,id)
       parameter = self.parameters.get(id);
     end
-    
-    
     
     function addPathConstraint(self,lhs, op, rhs)
       

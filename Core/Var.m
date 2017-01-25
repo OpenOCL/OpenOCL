@@ -12,6 +12,15 @@ classdef Var < matlab.mixin.Copyable
     compiled
     isUniform
     varIds
+    
+    % additional field for bounds and scaling 
+    % (todo: should be refactored to subclass soon!)
+    min
+    max
+    mean
+    variance
+    lowerBound
+    upperBound
   end
 
   methods
@@ -62,6 +71,13 @@ classdef Var < matlab.mixin.Copyable
       self.varIds = java.util.HashMap;
       self.compiled = false;
       self.isUniform = true;
+      
+      self.min = [];
+      self.max = [];
+      self.mean = [];
+      self.variance = [];
+      self.lowerBound = [];
+      self.upperBound = [];
     end
     
         
@@ -533,6 +549,58 @@ classdef Var < matlab.mixin.Copyable
       self.set(values); 
     end
     
+
+    % overload operators
+    function c = plus(a,b)
+      if isa(a,'Var')
+        a = a.value;
+      end
+      if isa(b,'Var')
+        b = b.value;
+      end
+      c = Var(a + b,'add');
+    end
+    function c = minus(a,b)
+      if isa(a,'Var')
+        a = a.value;
+      end
+      if isa(b,'Var')
+        b = b.value;
+      end
+      c = Var(a - b,'minus');
+    end
+    function c = mtimes(a,b)
+      if isa(a,'Var')
+        a = a.value;
+      end
+      if isa(b,'Var')
+        b = b.value;
+      end
+      c = Var(a * b,'times');
+    end
+    function c = mrdivide(a,b)
+      if isa(a,'Var')
+        a = a.value;
+      end
+      if isa(b,'Var')
+        b = b.value;
+      end
+      c = Var(a / b,'divide');
+    end
+    function c = mpower(a,b)
+      if isa(a,'Var')
+        a = a.value;
+      end
+      if isa(b,'Var')
+        b = b.value;
+      end
+      c = Var(a^b,'power');
+    end
+    function c = ctranspose(a)
+      v = a.value;
+      c = Var(v','transpose');
+    end
+
   end % methods
 
   methods(Access = protected)

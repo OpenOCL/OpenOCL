@@ -42,7 +42,7 @@ classdef CasadiLib
       assert(isa(var,'Var'), 'Input has to be a Var.');
       
       % variable index is used in the naming of the symbolic variable
-      varPrefix = '';
+      varPrefix = var.id;
       if nargin==4
         varPrefix = varargin{1};
         varIndex = varargin{2};

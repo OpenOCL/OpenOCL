@@ -19,9 +19,9 @@ classdef Constraint < matlab.mixin.Copyable
     end
 
     function clear(self)
-      self.values = [];
-      self.lowerBounds = [];
-      self.upperBounds = [];
+      self.values = Var('val');
+      self.lowerBounds = Var('lower');
+      self.upperBounds = Var('upper');
     end
     
     function add(self,varargin)
@@ -42,32 +42,32 @@ classdef Constraint < matlab.mixin.Copyable
       if strcmp(op,'==')
         expr = lhs-rhs;
         bound = zeros(size(expr));
-        self.values = [self.values;expr];
-        self.lowerBounds = [self.lowerBounds;bound];
-        self.upperBounds = [self.upperBounds;bound];
+        self.values.add(Var(expr,'expr'));
+        self.lowerBounds.add(Var(bound,'lb'));
+        self.lowerBounds.add(Var(bound,'ub'));
       elseif strcmp(op,'<=')
         expr = lhs-rhs;
         lb = -inf*ones(size(expr));
         ub = zeros(size(expr));
-        self.values = [self.values;expr];
-        self.lowerBounds = [self.lowerBounds;lb];
-        self.upperBounds = [self.upperBounds;ub];
+        self.values.add(Var(expr,'expr'));
+        self.lowerBounds.add(Var(lb,'lb'));
+        self.lowerBounds.add(Var(ub,'ub'));
       elseif strcmp(op,'>=')
         expr = rhs-lhs;
         lb = -inf*ones(size(expr));
         ub = zeros(size(expr));
-        self.values = [self.values;expr];
-        self.lowerBounds = [self.lowerBounds;lb];
-        self.upperBounds = [self.upperBounds;ub];
+        self.values.add(Var(expr,'expr'));
+        self.lowerBounds.add(Var(lb,'lb'));
+        self.lowerBounds.add(Var(ub,'ub'));
       else
         error('Operator not supported.');
       end
     end
     
     function appendConstraint(self, constraint)
-      self.values = [self.values;constraint.values];
-      self.lowerBounds = [self.lowerBounds;constraint.lowerBounds];
-      self.upperBounds = [self.lowerBounds;constraint.upperBounds];
+      self.values.add(constraint.values);
+      self.lowerBounds.add(constraint.lowerBounds);
+      self.upperBounds.add(constraint.upperBounds);
     end
     
   end

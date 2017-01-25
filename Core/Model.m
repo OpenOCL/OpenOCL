@@ -36,7 +36,7 @@ classdef (Abstract) Model < handle
       
 
       self.ode         = Var('ode');
-      self.alg         = [];
+      self.alg         = Var('alg');
       
       
       
@@ -49,12 +49,7 @@ classdef (Abstract) Model < handle
 %       self.parameters.compile;
       self.ode.compile;
       
-      sx = self.state.size();
-      sz = self.algState.size();
-      su = self.controls.size();
-      sp = self.parameters.size();
-      
-      self.modelFun = Function(@self.evaluate,{sx,sz,su,sp},2);
+      self.modelFun = UserFunction(@self.evaluate,{self.state,self.algState,self.controls,self.parameters},2);
       
     end
     
@@ -63,16 +58,16 @@ classdef (Abstract) Model < handle
       % evaluate the model equations for the assigned 
       
       % check if all states and control values are set TODO
-      self.state.set(state);
-      self.controls.set(controls);
-      self.algState.set(algState);
-      self.parameters.set(parameters);
+      self.state = state;
+      self.controls = controls;
+      self.algState = algState;
+      self.parameters = parameters;
       
-      self.alg = [];
+      self.alg = Var('alg');
 
       self.setupEquation;
       
-      ode = self.ode.value;
+      ode = self.ode;
       alg = self.alg;
     end
     
@@ -110,7 +105,7 @@ classdef (Abstract) Model < handle
     end
     
     function setAlgEquation(self,equation)
-      self.alg = [self.alg;equation];
+      self.alg.add(Var(equation,'algEq'));
     end
     
   end

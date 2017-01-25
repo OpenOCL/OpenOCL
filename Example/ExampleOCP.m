@@ -7,13 +7,12 @@ classdef ExampleOCP < OCP
       % The end time of the horizon can be set to a real number, 
       % otherwise its 'free'.
       self = self@OCP(model);
-      
     end
     function lagrangeTerms(self,state,algState,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
-      x  = state.get('x').value;
-      y  = state.get('y').value;
-      u  = controls.get('u').value;
+      x  = state.get('x');
+      y  = state.get('y');
+      u  = controls.get('u');
       
       self.addLagrangeTerm( x^2 );
       self.addLagrangeTerm( y^2 );

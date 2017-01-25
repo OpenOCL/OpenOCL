@@ -43,7 +43,13 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       self.integratorVars.addRepeated(self.model.algState,self.d);
       self.integratorVars.compile;
       
-      self.integratorFun = Function(@self.evaluate,{[self.nx 1],[self.ni 1],[nu 1],[1 1],[1 1],[np 1]},4);
+      time0 = Var('time0',[1 1]);
+      timeF = Var('timeF', [1 1]);
+      
+      self.integratorFun = Function(@self.evaluate,{self.model.state,...
+                                                    self.integratorVars,...
+                                                    self.model.controls,...
+                                                    time0,timeF,parameters},4);
       
       
     end

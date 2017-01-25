@@ -2,18 +2,18 @@ classdef Function < handle
   %FUNCTION Summary of this class goes here
   %   Detailed explanation goes here
   
-  properties (Access = protected)
+  properties (Access = public)
     functionHandle
     result
-    inputSizes
+    inputs
     nOutputs
   end
   
   methods
     
-    function self = Function(functionHandle,inputSizes,nOutputs)
+    function self = Function(functionHandle,inputs,nOutputs)
       self.functionHandle    = functionHandle;
-      self.inputSizes = inputSizes;
+      self.inputs = inputs;
       self.nOutputs = nOutputs;
     end
     
