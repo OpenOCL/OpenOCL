@@ -160,7 +160,7 @@ classdef Var < matlab.mixin.Copyable
       %     e.g. ocpVar.addRepeated([stateVar,controlVar],20);
       for i=1:N
         for j=1:length(varArray)
-          self.add(varArray(j))
+          self.add(varArray{j})
         end
       end
     end % addRepeated
@@ -185,7 +185,7 @@ classdef Var < matlab.mixin.Copyable
       end
       
       
-      self.subVars = [self.subVars,varIn];
+      self.subVars = builtin('horzcat',self.subVars,varIn);
       
       thisIndex = length(self.subVars);
       
@@ -550,7 +550,7 @@ classdef Var < matlab.mixin.Copyable
     end
     
 
-    % overload operators
+%     overload operators
     function c = plus(a,b)
       if isa(a,'Var')
         a = a.value;
@@ -599,6 +599,17 @@ classdef Var < matlab.mixin.Copyable
     function c = ctranspose(a)
       v = a.value;
       c = Var(v','transpose');
+    end
+    
+    function c = 	horzcat(varargin)
+      c = vertcat(varargin{:});
+    end
+    
+    function c = 	vertcat(varargin)
+      c = Var('horzcat');
+      for k=1:length(varargin)
+        c.add(varargin{k})
+      end
     end
 
   end % methods

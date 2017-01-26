@@ -38,16 +38,14 @@ classdef (Abstract) Model < handle
       self.ode         = Var('ode');
       self.alg         = Var('alg');
       
-      
-      
-      
       self.setupVariables;
       
       self.state.compile;
       self.algState.compile;
       self.controls.compile;
-%       self.parameters.compile;
+      self.parameters.compile;
       self.ode.compile;
+      self.alg.compile;
       
       self.modelFun = UserFunction(@self.evaluate,{self.state,self.algState,self.controls,self.parameters},2);
       
@@ -57,15 +55,14 @@ classdef (Abstract) Model < handle
     function [ode,alg] = evaluate(self,state,algState,controls,parameters)
       % evaluate the model equations for the assigned 
       
-      % check if all states and control values are set TODO
-      self.state = state;
-      self.controls = controls;
-      self.algState = algState;
-      self.parameters = parameters;
+%       self.state = state;
+%       self.controls = controls;
+%       self.algState = algState;
+%       self.parameters = parameters;
       
       self.alg = Var('alg');
 
-      self.setupEquation;
+      self.setupEquation(state,algState,controls,parameters);
       
       ode = self.ode;
       alg = self.alg;

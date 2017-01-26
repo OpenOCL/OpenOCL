@@ -10,9 +10,9 @@ classdef ExampleOCP < OCP
     end
     function lagrangeTerms(self,state,algState,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
-      x  = state.get('x');
-      y  = state.get('y');
-      u  = controls.get('u');
+      x  = state.get('x').value;
+      y  = state.get('y').value;
+      u  = controls.get('u').value;
       
       self.addLagrangeTerm( x^2 );
       self.addLagrangeTerm( y^2 );

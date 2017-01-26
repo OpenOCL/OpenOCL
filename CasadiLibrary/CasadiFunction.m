@@ -42,14 +42,12 @@ classdef CasadiFunction < handle
       
       if isa(inputFunction,'UserFunction')
         for k=1:nInputs
-          inputs{k} = inputs{k}.value;
+          inputs{k} = inputs{k}.flat;
         end
-      end
-      
-      if isa(self.fun,'UserFunction')
+
         outputsCasadi = cell(1,inputFunction.nOutputs);
         for k=1:inputFunction.nOutputs
-          outputsCasadi{k} = outputs{k}.value;
+          outputsCasadi{k} = outputs{k}.flat;
         end
         outputs = outputsCasadi;
       end

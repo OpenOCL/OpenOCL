@@ -44,21 +44,22 @@ classdef Constraint < matlab.mixin.Copyable
         bound = zeros(size(expr));
         self.values.add(Var(expr,'expr'));
         self.lowerBounds.add(Var(bound,'lb'));
-        self.lowerBounds.add(Var(bound,'ub'));
+        self.upperBounds.add(Var(bound,'ub'));
+        
       elseif strcmp(op,'<=')
         expr = lhs-rhs;
         lb = -inf*ones(size(expr));
         ub = zeros(size(expr));
         self.values.add(Var(expr,'expr'));
         self.lowerBounds.add(Var(lb,'lb'));
-        self.lowerBounds.add(Var(ub,'ub'));
+        self.upperBounds.add(Var(ub,'ub'));
       elseif strcmp(op,'>=')
         expr = rhs-lhs;
         lb = -inf*ones(size(expr));
         ub = zeros(size(expr));
         self.values.add(Var(expr,'expr'));
         self.lowerBounds.add(Var(lb,'lb'));
-        self.lowerBounds.add(Var(ub,'ub'));
+        self.upperBounds.add(Var(ub,'ub'));
       else
         error('Operator not supported.');
       end

@@ -17,15 +17,15 @@ classdef ExampleModel < Model
       self.addAlgState('z',[3,1]);
       
     end
-    function setupEquation(self)
+    function setupEquation(self,state,algState,controls,parameters)
       % The differential and algebraic equations of the system are 
       % implemented in the setupEquation method
       
       % Get access to the system variables
-      x = self.getState('x');
-      y = self.getState('y');
-      u = self.getControl('u');
-      z = self.getAlgState('z');
+      x = state.get('x').value;
+      y = state.get('y').value;
+      u = controls.get('u').value;
+      z = algState.get('z').value;
       
       % Define differential equations
       self.setODE('x',(1-y^2)*x - y + u); 

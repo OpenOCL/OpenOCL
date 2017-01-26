@@ -12,9 +12,17 @@ ocp = ExampleOCP(model);
 % Get and set solver options
 options = Solver.getOptions;
 options.iterationCallback = false;
+options.boundScaling = true;
 options.nlp.discretizationPoints = DISCRETIZATIONPOINTS;
 options.nlp.collocationOrder = 3;
-options.nlp.ipopt.linear_solver = 'mumps';
+options.nlp.ipopt.linear_solver = 'ma27';
+options.nlp.solver = 'ipopt';
+
+% options.nlp.solver = 'sqpmethod';
+% options.nlp.casadi.qpsol = 'qpoases';
+% options.nlp.solver = 'worhp';
+
+options.nlp.worhp.NLPprint = 1;
 
 nlp = Solver.getNLP(ocp,model,options);
 %

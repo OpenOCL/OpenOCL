@@ -34,7 +34,7 @@ control.add('ail',[1,1]);
 control.compile;
 
 ocpVar = Var('ocpvar');
-ocpVar.addRepeated([state,control],5);
+ocpVar.addRepeated({state,control},5);
 ocpVar.add(state);
 
 assert( isequal( ocpVar.get('x').value,   [

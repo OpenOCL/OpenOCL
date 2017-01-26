@@ -44,20 +44,20 @@ classdef Simultaneous < handle
       
       state = model.state;
       self.stateVars = Var('states');
-      self.stateVars.addRepeated(state,N+1);
+      self.stateVars.addRepeated({state},N+1);
       self.stateVars.compile;
       
       controls = model.controls;
       self.controlVars = Var('controls');
-      self.controlVars.addRepeated(controls,N);
+      self.controlVars.addRepeated({controls},N);
       self.controlVars.compile;
       
       
       integratorVars = integrator.getIntegratorVars;
       self.nlpVars = Var('nlpVars');
-      self.nlpVars.addRepeated([self.model.state,...
+      self.nlpVars.addRepeated({self.model.state,...
                                 integratorVars,...
-                                self.model.controls],self.N);
+                                self.model.controls},self.N);
       self.nlpVars.add(self.model.state);
       
       self.model.parameters.compile;
