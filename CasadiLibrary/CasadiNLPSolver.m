@@ -8,6 +8,11 @@ classdef CasadiNLPSolver < Solver
     args
     paramIndizes
     varIndizes
+    
+    
+    xScaleMin
+    xScaleMax
+    
   end
   
   methods
@@ -30,7 +35,15 @@ classdef CasadiNLPSolver < Solver
       
       % initial guess
       self.args.x0 = initialGuess.flat;
+      
+      % scale inital guess
+      self.args.x0 = (self.args.x0 - self.xScaleMin) ./ (self.xScaleMax-self.xScaleMin);
+      
+      % remove parameters form initial guess
       self.args.x0(self.paramIndizes) = [];
+      
+      
+      
 
       % execute solver
       sol = self.casadiSolver.call(self.args);
@@ -45,9 +58,11 @@ classdef CasadiNLPSolver < Solver
         
         x = initialGuess.flat;
         x(self.paramIndizes) = psol;
-        x(self.varIndizes) = xsol;        
+        x(self.varIndizes) = xsol;   
         
-        initialGuess.set(x);
+        xUnscaled = x.*(self.xScaleMax-self.xScaleMin)+self.xScaleMin;
+        
+        initialGuess.set(xUnscaled);
         outVars = initialGuess;
       end
       
@@ -65,6 +80,10 @@ classdef CasadiNLPSolver < Solver
 %       CasadiLib.setMX(vars);
 %       vsym = vars.flat;
 %       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
+
+      scalingMin = self.nlp.scalingMin.flat;
+      scalingMax = self.nlp.scalingMax.flat;
+
       
       nv = prod(size(vars));
       vsym = cell(1,nv);
@@ -73,16 +92,29 @@ classdef CasadiNLPSolver < Solver
       end
       vsymMat = vertcat(vsym{:});
       
-
-
-      % turn nlp function into casadi function and call
-      casadiNLPFun = self.nlp.nlpFun;
-      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMat);
-      costs = costs + self.nlp.getDiscreteCost(vsymMat);
       
       % setting bounds on decision variables
       lbx = self.nlp.lowerBounds.flat;
       ubx = self.nlp.upperBounds.flat;
+      
+      % apply scaling
+      
+      % do not rescale parameters
+      eqInd = find((scalingMin-scalingMax)==0);
+      scalingMin(eqInd) = 0;
+      scalingMax(eqInd) = 1;
+      
+      vsymMatUnscaled = vsymMat.*(scalingMax-scalingMin)+scalingMin;
+      lbxScaled = (lbx - scalingMin) ./ (scalingMax-scalingMin);
+      ubxScaled = (ubx - scalingMin) ./ (scalingMax-scalingMin);
+      
+
+      % turn nlp function into casadi function and call
+      casadiNLPFun = self.nlp.nlpFun;
+      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMatUnscaled);
+      costs = costs + self.nlp.getDiscreteCost(vsymMatUnscaled);
+      
+      
       
       % check which bounds on x are equal
       self.paramIndizes = find((lbx-ubx)==0);
@@ -93,8 +125,12 @@ classdef CasadiNLPSolver < Solver
       
       psym = vsym(self.paramIndizes);
       vsym(self.paramIndizes) = [];
-      lbx(self.paramIndizes) = [];
-      ubx(self.paramIndizes) = [];
+      lbxScaled(self.paramIndizes) = [];
+      ubxScaled(self.paramIndizes) = [];
+      
+      
+      self.xScaleMin = scalingMin;
+      self.xScaleMax = scalingMax;
       
 
 
@@ -128,8 +164,8 @@ classdef CasadiNLPSolver < Solver
       self.args.lbg = constraints_LB;
       self.args.ubg = constraints_UB;
       
-      self.args.lbx = lbx;
-      self.args.ubx = ubx;     
+      self.args.lbx = lbxScaled;
+      self.args.ubx = ubxScaled;     
       
       self.args.p = params;
 
