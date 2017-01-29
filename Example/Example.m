@@ -1,4 +1,3 @@
-function Example
 
 StartupOC
 
@@ -15,7 +14,7 @@ options.iterationCallback = false;
 options.boundScaling = true;
 options.nlp.discretizationPoints = DISCRETIZATIONPOINTS;
 options.nlp.collocationOrder = 3;
-options.nlp.ipopt.linear_solver = 'ma27';
+options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
 % options.nlp.solver = 'sqpmethod';
