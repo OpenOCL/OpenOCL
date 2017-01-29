@@ -1,4 +1,3 @@
-function Example
 
 StartupOC
 

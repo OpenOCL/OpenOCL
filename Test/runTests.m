@@ -27,7 +27,7 @@ function runTests(version,changeMessage)
   casadiTestsResult = runTest('Casadi',@TestCasadiVar);
 
   %% run examples
-  exampleTestsResult = runTest('Example',@Example);
+  exampleTestsResult = runTest('Example',@TestExample);
 
   %% save results
   fileName = [datestr(now,'yyyy-mm-dd_HHMMSS') '.txt'];

@@ -16,13 +16,11 @@ exportDir   = fullfile(startupDir,'..','OcWorkingDir','export');
 addpath(startupDir)
 addpath(exportDir)
 addpath(fullfile(startupDir,'CasadiLibrary'))
-addpath(fullfile(startupDir,'CasadiLibrary','Test'))
 
 addpath(fullfile(startupDir,'Core'))
-addpath(fullfile(startupDir,'Core','Test'))
 addpath(fullfile(startupDir,'Core','Simultaneous'))
 addpath(fullfile(startupDir,'Core','Integrator'))
 
 % addpath('Interfaces')
 addpath(fullfile(startupDir,'Example'))
-
+addpath(fullfile(startupDir,'Test'))
