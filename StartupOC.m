@@ -18,7 +18,6 @@ addpath(exportDir)
 addpath(fullfile(startupDir,'CasadiLibrary'))
 
 addpath(fullfile(startupDir,'Core'))
-addpath(fullfile(startupDir,'Core','Simultaneous'))
 addpath(fullfile(startupDir,'Core','Integrator'))
 
 % addpath('Interfaces')

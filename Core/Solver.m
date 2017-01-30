@@ -11,14 +11,16 @@ classdef Solver < handle
   methods(Static)
     function options = getOptions()
       options = struct;
-      options.solverInterface = 'casadi';
+      options.solverInterface   = 'casadi';
       options.iterationCallback = false;
-
+      
       options.nlp = struct;
-      options.nlp.discretization = 'collocation';
-      options.nlp.discretizationPoints = 20;
-      options.nlp.collocationOrder = 3;
-      options.nlp.solver = 'ipopt';
+      options.nlp.discretization        = 'collocation';
+      options.nlp.discretizationPoints  = 20;
+      options.nlp.collocationOrder      = 3;
+      options.nlp.solver                = 'ipopt';
+      options.nlp.scaling               = true;
+      options.nlp.detectParameters      = true;
 
       options.nlp.casadi.iteration_callback_step = 1;
       
