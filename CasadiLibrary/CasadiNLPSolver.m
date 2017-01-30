@@ -8,6 +8,10 @@ classdef CasadiNLPSolver < Solver
     args
     paramIndizes
     varIndizes
+    
+    scalingMin
+    scalingMax
+    
   end
   
   methods
@@ -30,7 +34,17 @@ classdef CasadiNLPSolver < Solver
       
       % initial guess
       self.args.x0 = initialGuess.flat;
-      self.args.x0(self.paramIndizes) = [];
+      
+      % scale inital guess
+      if self.options.nlp.scaling
+        self.args.x0 = (self.args.x0 - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
+      end
+      
+      % remove parameters form initial guess
+      if self.options.nlp.detectParameters
+        self.args.x0(self.paramIndizes) = [];
+      end
+
 
       % execute solver
       sol = self.casadiSolver.call(self.args);
@@ -41,17 +55,23 @@ classdef CasadiNLPSolver < Solver
       else
         
         xsol = sol.x.full();
-        psol = self.args.p;
         
         x = initialGuess.flat;
-        x(self.paramIndizes) = psol;
-        x(self.varIndizes) = xsol;        
+        x(self.varIndizes) = xsol;   
+        
+        %remove scaling from solution
+        if self.options.nlp.scaling
+          x = x.*(self.scalingMax-self.scalingMin)+self.scalingMin;
+        end
+        
+        % replace parameters
+        if self.options.nlp.detectParameters
+          x(self.paramIndizes) = self.args.p;
+        end
         
         initialGuess.set(x);
         outVars = initialGuess;
       end
-      
-      
       
     end
 
@@ -65,7 +85,9 @@ classdef CasadiNLPSolver < Solver
 %       CasadiLib.setMX(vars);
 %       vsym = vars.flat;
 %       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
-      
+
+
+      % create symbolic casadi variables for all decision variables
       nv = prod(size(vars));
       vsym = cell(1,nv);
       for k=1:nv
@@ -73,31 +95,68 @@ classdef CasadiNLPSolver < Solver
       end
       vsymMat = vertcat(vsym{:});
       
+      % get bound for decision variables
+      lbx = self.nlp.lowerBounds.flat;
+      ubx = self.nlp.upperBounds.flat;
+      
+      
+      % detect variables as parameters if they are constant
+      self.paramIndizes = [];
+      psym = {};
+      params = [];
+      self.varIndizes = 1:nv;
+      if (self.options.nlp.detectParameters)
+        
+        % find parameters
+        self.paramIndizes = find((lbx-ubx)==0);
+        
+        % get parameter values
+        params = lbx(self.paramIndizes);
+        
+        % get indizes of variables (in constrast to parameters)
+        self.varIndizes(self.paramIndizes) = [];
+        
+        % select parameters
+        psym = vsym(self.paramIndizes);
+      end
+      
+      
+      % apply scaling
+      if self.options.nlp.scaling
+        
+        self.scalingMin = self.nlp.scalingMin.flat;
+        self.scalingMax = self.nlp.scalingMax.flat;
+        
+        % see if scaling information is available for all variables
+        % either from bounds or setScaling
+        self.nlp.checkScaling;
+        
+        % do not scale parameters and variables zero range scaling
+        zeroRange = [self.paramIndizes;find((self.scalingMax-self.scalingMin)==0)];
+        self.scalingMin(zeroRange) = 0;
+        self.scalingMax(zeroRange) = 1;
+        
+        % get unscaled symbolic vars
+        vsymMat = vsymMat.*(self.scalingMax-self.scalingMin)+self.scalingMin;
+        
+        % apply scaling to bounds
+        lbx = (lbx - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
+        ubx = (ubx - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
+      end
+      
 
-
-      % turn nlp function into casadi function and call
+      % call nlp function
       casadiNLPFun = self.nlp.nlpFun;
       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMat);
       costs = costs + self.nlp.getDiscreteCost(vsymMat);
       
-      % setting bounds on decision variables
-      lbx = self.nlp.lowerBounds.flat;
-      ubx = self.nlp.upperBounds.flat;
-      
-      % check which bounds on x are equal
-      self.paramIndizes = find((lbx-ubx)==0);
-      params = lbx(self.paramIndizes);
-      
-      self.varIndizes = 1:nv;
-      self.varIndizes(self.paramIndizes) = [];
-      
-      psym = vsym(self.paramIndizes);
+      % remove parameters from list of decision variables and bounds
       vsym(self.paramIndizes) = [];
       lbx(self.paramIndizes) = [];
       ubx(self.paramIndizes) = [];
       
 
-
+      % get struct with nlp for casadi
       casadiNLP = struct;
       casadiNLP.x = vertcat(vsym{:});
       casadiNLP.f = costs;
@@ -133,9 +192,6 @@ classdef CasadiNLPSolver < Solver
       
       self.args.p = params;
 
-      
-      
-      
     end
     
   end

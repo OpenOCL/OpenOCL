@@ -16,12 +16,13 @@ options.nlp.discretizationPoints = DISCRETIZATIONPOINTS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
+options.nlp.scaling = true;
+options.nlp.detectParameters = true;
 
 % options.nlp.solver = 'sqpmethod';
 % options.nlp.casadi.qpsol = 'qpoases';
 % options.nlp.solver = 'worhp';
-
-options.nlp.worhp.NLPprint = 1;
+% options.nlp.worhp.NLPprint = 1;
 
 nlp = Solver.getNLP(ocp,model,options);
 %
@@ -38,6 +39,11 @@ nlp.setBound('x',     1,    0);            % x1 == 0
 nlp.setBound('y',     1,    1);            % y1 == 1
 
 nlp.setBound('time',  ':',  FINALTIME);
+
+nlp.setScaling('x', ':', -0.25, 1);
+nlp.setScaling('y', ':', -1, 1);
+nlp.setScaling('z',':',-1*ones(3,1),ones(3,1));
+
 
 % Create solver
 solver = Solver.getSolver(nlp,options);

@@ -15,12 +15,12 @@ classdef Var < matlab.mixin.Copyable
     
     % additional field for bounds and scaling 
     % (todo: should be refactored to subclass soon!)
-    min
-    max
-    mean
-    variance
-    lowerBound
-    upperBound
+%     min
+%     max
+%     mean
+%     variance
+%     lowerBound
+%     upperBound
   end
 
   methods
@@ -71,13 +71,6 @@ classdef Var < matlab.mixin.Copyable
       self.varIds = java.util.HashMap;
       self.compiled = false;
       self.isUniform = true;
-      
-      self.min = [];
-      self.max = [];
-      self.mean = [];
-      self.variance = [];
-      self.lowerBound = [];
-      self.upperBound = [];
     end
     
         

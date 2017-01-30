@@ -8,6 +8,9 @@ classdef Simultaneous < handle
     integratorFun
     lowerBounds
     upperBounds
+    
+    scalingMin
+    scalingMax
   end
   
   properties(Access = private)
@@ -73,6 +76,9 @@ classdef Simultaneous < handle
       self.lowerBounds.set(-inf);
       self.upperBounds.set(inf);
       self.lowerBounds.get('time').set(0);
+      
+      self.scalingMin = self.lowerBounds.copy;
+      self.scalingMax = self.upperBounds.copy;
 
     end
     
@@ -132,6 +138,32 @@ classdef Simultaneous < handle
       
       self.lowerBounds.getDeep(id,slice).set(lower);
       self.upperBounds.getDeep(id,slice).set(upper);
+      
+      self.scalingMin.getDeep(id,slice).set(lower);
+      self.scalingMax.getDeep(id,slice).set(upper);
+    end
+    
+    function setScaling(self,id,slice,valMin,valMax)
+
+      if strcmp(slice,'end')
+        slice = length(self.lowerBounds.get(id).subVars);
+      end
+      
+      if valMin == valMax
+        warning('Can not scale with zero range for the variable');
+      end
+      
+      self.scalingMin.getDeep(id,slice).set(valMin);
+      self.scalingMax.getDeep(id,slice).set(valMax);      
+      
+    end
+    
+    function checkScaling(self)
+      
+      if any(isinf(self.scalingMin.flat)) || any(isinf(self.scalingMax.flat))
+        error('Scaling information for some variable missing. Provide scaling for all variables or set scaling option to false.');
+      end
+      
     end
     
     function parameters = getParameters(self)
