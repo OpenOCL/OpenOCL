@@ -1,4 +1,3 @@
-
 StartupOC
 
 FINALTIME = 10;               % horizon length (seconds)
@@ -11,7 +10,6 @@ ocp = ExampleOCP(model);
 % Get and set solver options
 options = Solver.getOptions;
 options.iterationCallback = false;
-options.boundScaling = true;
 options.nlp.discretizationPoints = DISCRETIZATIONPOINTS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
@@ -25,6 +23,7 @@ options.nlp.detectParameters = true;
 % options.nlp.worhp.NLPprint = 1;
 
 nlp = Solver.getNLP(ocp,model,options);
+
 %
 % Define bounds on the state, control, and algebraic variables.
 % Set bound either on all (':'), the first (1), or last ('end')
@@ -42,7 +41,7 @@ nlp.setBound('time',  ':',  FINALTIME);
 
 nlp.setScaling('x', ':', -0.25, 1);
 nlp.setScaling('y', ':', -1, 1);
-nlp.setScaling('z',':',-1*ones(3,1),ones(3,1));
+nlp.setScaling('z', ':', -1*ones(3,1),ones(3,1));
 
 
 % Create solver

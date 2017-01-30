@@ -3,6 +3,7 @@ classdef CasadiNLPSolver < Solver
   properties (Access = private)
     nlp
     options
+    initialGuess
 
     casadiSolver
     args
@@ -32,12 +33,14 @@ classdef CasadiNLPSolver < Solver
     function outVars = solve(self,initialGuess)
       % solve(self,initialGuess)
       
+      self.initialGuess = initialGuess;
+      
       % initial guess
       self.args.x0 = initialGuess.flat;
       
-      % scale inital guess
+      % scale initial guess
       if self.options.nlp.scaling
-        self.args.x0 = (self.args.x0 - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
+        self.args.x0 = self.scale(self.args.x0,self.scalingMin,self.scalingMax);
       end
       
       % remove parameters form initial guess
@@ -61,7 +64,7 @@ classdef CasadiNLPSolver < Solver
         
         %remove scaling from solution
         if self.options.nlp.scaling
-          x = x.*(self.scalingMax-self.scalingMin)+self.scalingMin;
+          x = self.unscale(x,self.scalingMin,self.scalingMax);
         end
         
         % replace parameters
@@ -137,11 +140,11 @@ classdef CasadiNLPSolver < Solver
         self.scalingMax(zeroRange) = 1;
         
         % get unscaled symbolic vars
-        vsymMat = vsymMat.*(self.scalingMax-self.scalingMin)+self.scalingMin;
+        vsymMat = self.unscale(vsymMat,self.scalingMin,self.scalingMax);
         
         % apply scaling to bounds
-        lbx = (lbx - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
-        ubx = (ubx - self.scalingMin) ./ (self.scalingMax-self.scalingMin);
+        lbx = self.scale(lbx,self.scalingMin,self.scalingMax);
+        ubx = self.scale(ubx,self.scalingMin,self.scalingMax);
       end
       
 
@@ -163,6 +166,11 @@ classdef CasadiNLPSolver < Solver
       casadiNLP.g = constraints;
       casadiNLP.p = vertcat(psym{:});
       
+      % fix bug with 0x1 vs 0x0 parameter
+      if isempty(psym)
+        casadiNLP.p = casadi.MX.sym('p',[0,1]);
+      end
+      
       opts = self.options.nlp.casadi;
       
       if isfield(self.options.nlp,self.options.nlp.solver)
@@ -173,13 +181,12 @@ classdef CasadiNLPSolver < Solver
         initialGuess = self.nlp.getInitialGuess;
         callbackFun = IterationCallback('itCbFun', ...
                                         numel(vsym), numel(constraints), numel(psym), ...
-                                        @(values)self.nlp.getCallback(initialGuess,values) );
+                                        @(values)self.callBackHandle(values) );
         opts.iteration_callback = callbackFun;
       end
       
       
       self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver, casadiNLP, opts);
-
 
       self.args = struct;
 
@@ -192,6 +199,31 @@ classdef CasadiNLPSolver < Solver
       
       self.args.p = params;
 
+    end
+    
+    function callBackHandle(self,values)
+      
+      x = self.initialGuess.flat;
+      x(self.varIndizes) = values; 
+      
+      %remove scaling from decision variables
+      if self.options.nlp.scaling
+        x = self.unscale(x,self.scalingMin,self.scalingMax);
+      end
+      % replace parameters
+      if self.options.nlp.detectParameters
+        x(self.paramIndizes) = self.args.p;
+      end
+      self.nlp.getCallback(self.initialGuess,x);
+      
+    end
+      
+    function xscaled = scale(self,x,xmin,xmax)
+      xscaled = (x - xmin) ./ (xmax-xmin);
+    end
+    
+    function x = unscale(self,xscaled,xmin,xmax)
+      x = xscaled.*(xmax-xmin)+xmin;
     end
     
   end
