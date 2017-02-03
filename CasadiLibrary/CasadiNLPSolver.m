@@ -12,7 +12,6 @@ classdef CasadiNLPSolver < Solver
     
     scalingMin
     scalingMax
-    
   end
   
   methods
@@ -178,7 +177,6 @@ classdef CasadiNLPSolver < Solver
       end
       
       if self.options.iterationCallback == true
-        initialGuess = self.nlp.getInitialGuess;
         callbackFun = IterationCallback('itCbFun', ...
                                         numel(vsym), numel(constraints), numel(psym), ...
                                         @(values)self.callBackHandle(values) );
@@ -214,6 +212,13 @@ classdef CasadiNLPSolver < Solver
       if self.options.nlp.detectParameters
         x(self.paramIndizes) = self.args.p;
       end
+      
+%       here will evaluate the cost function and constraints and pass to
+%       callback
+%       casadiNLPFun = self.nlp.nlpFun;
+%       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(x);
+      
+      
       self.nlp.getCallback(self.initialGuess,x);
       
     end

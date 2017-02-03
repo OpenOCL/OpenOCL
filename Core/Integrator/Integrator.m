@@ -2,7 +2,7 @@ classdef Integrator < handle
   %INTEGRATOR Integrator class
   %   Is able to integrate model
   
-  properties(Access = private)
+  properties
     model
   end
   

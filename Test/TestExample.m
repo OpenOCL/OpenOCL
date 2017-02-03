@@ -1,6 +1,7 @@
 function TestExample
 StartupOC
-eval('Example');
+
+Example
 
 assert(all(abs(solution.get('controls').flat - ...
   [ 0.2434

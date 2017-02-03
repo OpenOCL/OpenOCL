@@ -21,13 +21,13 @@ function runTests(version,changeMessage)
   exmapleTestsPassed  = true;
 
   %% run core class tests
-  coreTestsResult = runTest('Core',@TestVar);
+  coreTestsResult = runTest('Core',@testVar);
 
   %% run casadi tests
-  casadiTestsResult = runTest('Casadi',@TestCasadiVar);
+  casadiTestsResult = runTest('Casadi',@testCasadiVar);
 
   %% run examples
-  exampleTestsResult = runTest('Example',@TestExample);
+  exampleTestsResult = runTest('Example',@testExample);
 
   %% save results
   fileName = [datestr(now,'yyyy-mm-dd_HHMMSS') '.txt'];

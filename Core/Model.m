@@ -12,6 +12,8 @@ classdef (Abstract) Model < handle
     ode
     alg
     
+    initialConditions
+    
     algEqIndex    = 1;
     modelFun
   end
@@ -34,6 +36,8 @@ classdef (Abstract) Model < handle
         self.parameters  = parameters;
       end
       
+      self.initialConditions = [];
+      
 
       self.ode         = Var('ode');
       self.alg         = Var('alg');
@@ -51,14 +55,8 @@ classdef (Abstract) Model < handle
       
     end
     
-    
     function [ode,alg] = evaluate(self,state,algState,controls,parameters)
       % evaluate the model equations for the assigned 
-      
-%       self.state = state;
-%       self.controls = controls;
-%       self.algState = algState;
-%       self.parameters = parameters;
       
       self.alg = Var('alg');
 
@@ -103,6 +101,36 @@ classdef (Abstract) Model < handle
     
     function setAlgEquation(self,equation)
       self.alg.add(Var(equation,'algEq'));
+    end
+    
+    
+    function setInitialCondition(self,value)
+      self.initialConditions = [self.initialConditions; value];      
+    end
+    
+    function  ic = getInitialCondition(self,state,parameters)
+      self.initialConditions = [];
+      self.initialCondition(state,parameters)
+      ic = self.initialConditions;
+    end
+    
+    function controls = callIterationCallback(self,state,algVars,parameters)
+      controls = self.controls;
+      controls.set(0);
+      self.simulationCallback(state,algVars,controls,parameters);
+    end
+    
+    function solutionCallback(self,solution)
+      
+      N = solution.get('state').getNumberOfVars;
+      parameters = solution.get('parameters');
+      
+      for k=1:N-1
+        state = solution.get('state',k+1);
+        algVars = solution.get('integratorVars',k).get('algState',3);
+        self.callIterationCallback(state,algVars,parameters);
+      end
+      
     end
     
   end

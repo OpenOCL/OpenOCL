@@ -1,6 +1,4 @@
-classdef CasadiSimulator
-  %CASADISIMULATOR Summary of this class goes here
-  %   Detailed explanation goes here
+classdef CasadiSimulator < Simulator
   
   properties
     integrator

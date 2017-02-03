@@ -17,7 +17,7 @@ classdef CasadiIntegrator < Integrator
       h = casadi.SX.sym('h',1);
       parameters = casadi.SX.sym('p',prod(model.parameters.size),1);
       
-      [ode,alg] = model.evaluate(state,algState,controls,parameters);
+      [ode,alg] = model.modelFun.evaluate(state,algState,controls,parameters);
       
       
       
@@ -35,17 +35,16 @@ classdef CasadiIntegrator < Integrator
       integratorOptions.rootfinder = 'kinsol';
 %       integratorOptions.number_of_finite_elements = 10;
       self.modelIntegrator = casadi.integrator('integrator','collocation',dae,integratorOptions);
-      
     end
     
-    function [stateNext,algState] = evaluate(self,state,algStateGuess,controls,timestep)
+    function [stateNext,algState] = evaluate(self,state,algStateGuess,controls,timestep,parameters)
       
       x = state;
       u = controls;
       z = algStateGuess;
       
       integrationStep = self.modelIntegrator('x0', x, ...
-                                             'p', [timestep;u], ...
+                                             'p', [timestep;u;parameters], ...
                                              'z0', z);
                                            
       stateNext = integrationStep.xf;
