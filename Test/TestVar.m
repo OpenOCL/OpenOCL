@@ -1,4 +1,4 @@
-function TestVar
+function testVar
 % clear classes
 state = Var('x');
 state.add('p',[3,1]);

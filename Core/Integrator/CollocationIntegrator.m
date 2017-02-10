@@ -106,7 +106,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          J = J + self.B(j+1)*qj*h;
       end
 
-      finalAlgVars = self.integratorVars.get('algState',1).flat;
+      finalAlgVars = self.integratorVars.get('algState',self.d).flat;
       costs = J;
 
     end

@@ -5,7 +5,7 @@ classdef PendulumOCP < OCP
       self = self@OCP(model);
     end
     
-    function lagrangeTerms(self,state,algState,controls,time,parameters)
+    function pathCosts(self,state,algState,controls,time,parameters)
       p  = state.get('p').value;
       l  = parameters.get('l').value;
       F  = controls.get('F').value;
@@ -14,7 +14,7 @@ classdef PendulumOCP < OCP
       self.addLagrangeTerm( 1e-3 * (pe'*pe) );
       self.addLagrangeTerm( 1e-4 * F^2 );
     end
-    function mayerTerms(self,state,time,parameters)
+    function arrivalCosts(self,state,time,parameters)
       p  = state.get('p').value;
       l  = parameters.get('l').value;
       pe = p-[0;l];

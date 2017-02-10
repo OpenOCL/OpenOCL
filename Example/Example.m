@@ -55,7 +55,6 @@ initialGuess.get('state').get('x').set(-0.2);
 solution = solver.solve(initialGuess);
 
 
-
 times = 0:FINALTIME/DISCRETIZATIONPOINTS:FINALTIME;
 
 figure

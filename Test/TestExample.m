@@ -1,4 +1,4 @@
-function TestExample
+function testExample
 StartupOC
 
 Example

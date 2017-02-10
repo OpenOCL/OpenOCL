@@ -1,4 +1,4 @@
-function TestCasadiVar
+function testCasadiVar
 state = Var('x');
 state.add('p',[3,1]);
 state.add('R',[3,3]);

@@ -12,15 +12,6 @@ classdef Var < matlab.mixin.Copyable
     compiled
     isUniform
     varIds
-    
-    % additional field for bounds and scaling 
-    % (todo: should be refactored to subclass soon!)
-%     min
-%     max
-%     mean
-%     variance
-%     lowerBound
-%     upperBound
   end
 
   methods
