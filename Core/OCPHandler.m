@@ -7,7 +7,6 @@ classdef OCPHandler < handle
     terminalCostsFun
     boundaryConditionsFun
     pathConstraintsFun
-%     leastSquaresCostsFun
     
   end
   
@@ -36,11 +35,6 @@ classdef OCPHandler < handle
       self.terminalCostsFun = UserFunction(@self.getTerminalCosts,{state,time,params},1);
       self.boundaryConditionsFun = UserFunction(@self.getBoundaryConditions,{state,stateF,params},3);
       self.pathConstraintsFun = UserFunction(@self.getPathConstraints,{state,algVars,controls,time,params},3);
-      
-      
-%       states = nlpVars.get('state');
-%       controls = nlpVars.get('controls');
-%       self.leastSquaresCostsFun = Function(@self.getLeastSquaresCosts,{states,controls},1);
       
     end
  

@@ -12,14 +12,12 @@ classdef OCP < handle
     thisTerminalCosts
     thisPathConstraints
     thisBoundaryConditions
-    thisLeastSquaresCosts
     
     parameters
     endTime
   end
   
   methods(Abstract)
-%     leastSquaresCost(self);
     lagrangeTerms(self,state,algState,controls,time,parameters)
     mayerTerms(self,state,time,parameters)
     pathConstraints(self,state,controls,time,parameters)
@@ -36,7 +34,6 @@ classdef OCP < handle
       self.thisBoundaryConditions = Constraint;
       self.thisTerminalCosts = Var(0,'pathCost');
       self.thisPathCosts = Var(0,'pathCost');
-      self.thisLeastSquaresCosts = {};
       
       self.parameters = model.parameters;
       
@@ -76,12 +73,6 @@ classdef OCP < handle
       self.thisTerminalCosts = Var(0,'termCost');
       self.mayerTerms(state,time,parameters);
       tc = self.thisTerminalCosts;
-    end
-    
-    function c = getLeastSquaresCost(self)
-      self.thisLeastSquaresCosts = {};
-      self.leastSquaresCost;
-      c = self.thisLeastSquaresCosts;
     end
     
   end
@@ -129,32 +120,6 @@ classdef OCP < handle
       assert( strcmp(callers(1).name, 'OCP.getPathCosts'), ...
               'This method must be called from OCP.lagrangeTerms().');
       self.thisPathCosts = self.thisPathCosts + expr;
-    end
-    
-    function addLeastSquaresStateCost(self,id,reference,weighting)
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getLeastSquaresCost'), ...
-              'This method must be called from OCP.leastSquaresCost().');
-      
-      leastSquaresCostTerm = struct;
-      leastSquaresCostTerm.type = 'state';
-      leastSquaresCostTerm.id = id;
-      leastSquaresCostTerm.reference = reference;
-      leastSquaresCostTerm.weighting = weighting;
-      self.thisLeastSquaresCosts = [self.thisLeastSquaresCosts,leastSquaresCostTerm];
-    end
-    
-    function addLeastSquaresControlCost(self,id,reference,weighting)
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getLeastSquaresCost'), ...
-              'This method must be called from OCP.leastSquaresCost().');
-      
-      leastSquaresCostTerm = struct;
-      leastSquaresCostTerm.type = 'controls';
-      leastSquaresCostTerm.id = id;
-      leastSquaresCostTerm.reference = reference;
-      leastSquaresCostTerm.weighting = weighting;
-      self.thisLeastSquaresCosts = [self.thisLeastSquaresCosts,leastSquaresCostTerm];
     end
     
   end
