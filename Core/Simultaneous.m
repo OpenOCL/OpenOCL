@@ -25,10 +25,6 @@ classdef Simultaneous < handle
     
     stateVars
     controlVars
-    
-    isCollocation
-
-    
   end
   
   methods
@@ -41,8 +37,6 @@ classdef Simultaneous < handle
       self.ni = integrator.getIntegratorVarsSize;
       
       self.model = model;
-      
-      self.isCollocation = true;
       
       
       state = model.state;
@@ -219,19 +213,12 @@ classdef Simultaneous < handle
         thisControl = nlpInputs(curIndex+1:curIndex+self.nu);
         curIndex = curIndex+self.nu;
         
-        % add integrator equation in case of direction collocation
-        % or call integrator in case of multiple shooting
-        if self.isCollocation
+        % add integrator equation of direction collocation
+        [finalState, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisState,thisIntegratorVars,thisControl,timeGrid(k),timeGrid(k+1),parameters);
 
-          [finalState, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisState,thisIntegratorVars,thisControl,timeGrid(k),timeGrid(k+1),parameters);
-          
-          constraints = [constraints; integratorEquations];
-          constraints_LB = [constraints_LB; zeros(size(integratorEquations))];
-          constraints_UB = [constraints_UB; zeros(size(integratorEquations))];
-
-        else
-          [finalState, finalAlgVars, integrationCosts] = self.integratorFun.evaluate(thisState,thisControl,timeGrid(k),timeGrid(k+1),parameters);
-        end
+        constraints = [constraints; integratorEquations];
+        constraints_LB = [constraints_LB; zeros(size(integratorEquations))];
+        constraints_UB = [constraints_UB; zeros(size(integratorEquations))];
         
         costs = costs + integrationCosts;
         
