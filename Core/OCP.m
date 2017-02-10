@@ -9,7 +9,7 @@ classdef OCP < handle
   
   properties(Access = private)
     thisPathCosts
-    thisTerminalCosts
+    thisArrivalCosts
     thisPathConstraints
     thisBoundaryConditions
     
@@ -18,8 +18,8 @@ classdef OCP < handle
   end
   
   methods(Abstract)
-    lagrangeTerms(self,state,algVar,controls,time,parameters)
-    mayerTerms(self,state,time,parameters)
+    pathCosts(self,state,algVar,controls,time,parameters)
+    arrivalCosts(self,state,time,parameters)
     pathConstraints(self,state,controls,time,parameters)
     boundaryConditions(self,initialState,finalState,parameters)
   end
@@ -32,7 +32,7 @@ classdef OCP < handle
       
       self.thisPathConstraints = Constraint;
       self.thisBoundaryConditions = Constraint;
-      self.thisTerminalCosts = Var(0,'pathCost');
+      self.thisArrivalCosts = Var(0,'pathCost');
       self.thisPathCosts = Var(0,'pathCost');
       
       self.parameters = model.parameters;
@@ -65,22 +65,19 @@ classdef OCP < handle
 
     function pc = getPathCosts(self,state,algVars,controls,time,parameters)
       self.thisPathCosts = Var(0,'pathCost');
-      self.lagrangeTerms(state,algVars,controls,time,parameters);
+      self.pathCosts(state,algVars,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     
-    function tc = getTerminalCosts(self,state,time,parameters)
-      self.thisTerminalCosts = Var(0,'termCost');
-      self.mayerTerms(state,time,parameters);
-      tc = self.thisTerminalCosts;
+    function tc = getArrivalCosts(self,state,time,parameters)
+      self.thisArrivalCosts = Var(0,'arrivalCost');
+      self.arrivalCosts(state,time,parameters);
+      tc = self.thisArrivalCosts;
     end
     
   end
 
   methods(Access = protected)
-   function setEndTime(self,endTime)
-      self.endTime = endTime;
-    end
     
     function addParameter(self,id,size)
       self.parameters.add(id,size);
@@ -107,15 +104,15 @@ classdef OCP < handle
       self.thisBoundaryConditions.add(lhs,op,rhs);
     end
     
-    function addMayerTerm(self,expr)
+    function addArrivalCost(self,expr)
       callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getTerminalCosts'), ...
+      assert( strcmp(callers(1).name, 'OCP.getArrivalCosts'), ...
               'This method must be called from OCP.mayerTerms().');
             
-      self.thisTerminalCosts = self.thisTerminalCosts + expr;
+      self.thisArrivalCosts = self.thisArrivalCosts + expr;
     end
     
-    function addLagrangeTerm(self,expr)
+    function addPathCost(self,expr)
       callers=dbstack(2);
       assert( strcmp(callers(1).name, 'OCP.getPathCosts'), ...
               'This method must be called from OCP.lagrangeTerms().');

@@ -4,7 +4,7 @@ classdef OCPHandler < handle
   properties (Access = public)
     
     pathCostsFun
-    terminalCostsFun
+    arrivalCostsFun
     boundaryConditionsFun
     pathConstraintsFun
     
@@ -32,7 +32,7 @@ classdef OCPHandler < handle
       time = nlpVars.get('time');
 
       self.pathCostsFun = UserFunction(@self.getPathCosts,{state,algVars,controls,time,params},1);
-      self.terminalCostsFun = UserFunction(@self.getTerminalCosts,{state,time,params},1);
+      self.arrivalCostsFun = UserFunction(@self.getArrivalCosts,{state,time,params},1);
       self.boundaryConditionsFun = UserFunction(@self.getBoundaryConditions,{state,stateF,params},3);
       self.pathConstraintsFun = UserFunction(@self.getPathConstraints,{state,algVars,controls,time,params},3);
       
@@ -90,38 +90,9 @@ classdef OCPHandler < handle
       pathCosts = self.ocp.getPathCosts(state,algVars,controls,time,params);
     end
     
-    function terminalCosts = getTerminalCosts(self,state,time,params)
-      terminalCosts = self.ocp.getTerminalCosts(state,time,params);
-    end
-    
-    function cost = getLeastSquaresCosts(self,stateVars,controlVars)
-      N = controlVars.getNumberOfVars;
-      costTermList = self.ocp.getLeastSquaresCost();
-      cost = 0;
-      for k = 1:length(costTermList)
-        costTerm = costTermList{k};
-        
-        if strcmp(costTerm.type,'state')
-          % find id in states
-          stateTraj = stateVars.get(costTerm.id).value;
-          trackingError = stateTraj-costTerm.reference';
-          % repeat weighting for whole trajectory
-          W = repmat({costTerm.weighting},N+1,1);
-          W = sparse(blkdiag(W{:}));
-          
-        else strcmp(costTerm.type,'controls')
-          % find id in controls
-          controlsTraj = controlVars.get(costTerm.id).value;
-          trackingError = controlsTraj-costTerm.reference';
-          % repeat weighting for whole trajectory
-          W = repmat({costTerm.weighting},N,1);
-          W = sparse(blkdiag(W{:}));
-        end
-        trackingError = reshape(trackingError,numel(trackingError),1);
-        cost = cost + trackingError'* W * trackingError;
-      end
-      
-  end
+    function arrivalCosts = getArrivalCosts(self,state,time,params)
+      arrivalCosts = self.ocp.getArrivalCosts(state,time,params);
+    end  
     
   end
   

@@ -239,7 +239,7 @@ classdef Simultaneous < handle
       end
       
       % add terminal cost
-      terminalCosts = self.ocpHandler.terminalCostsFun.evaluate(thisState,T,parameters);
+      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisState,T,parameters);
       costs = costs + terminalCosts;
 
       % add terminal constraints

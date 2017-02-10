@@ -11,14 +11,14 @@ classdef PendulumOCP < OCP
       F  = controls.get('F').value;
       
       pe = p-[0;l];
-      self.addLagrangeTerm( 1e-3 * (pe'*pe) );
-      self.addLagrangeTerm( 1e-4 * F^2 );
+      self.addPathCost( 1e-3 * (pe'*pe) );
+      self.addPathCost( 1e-4 * F^2 );
     end
     function arrivalCosts(self,state,time,parameters)
       p  = state.get('p').value;
       l  = parameters.get('l').value;
       pe = p-[0;l];
-      self.addMayerTerm(  (pe'*pe) + 1e-1*time.value );
+      self.addArrivalCost(  (pe'*pe) + 1e-1*time.value );
     end
     function pathConstraints(self,state,algVars,controls,time,parameters)
     end    

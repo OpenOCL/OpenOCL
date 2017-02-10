@@ -8,20 +8,20 @@ classdef ExampleOCP < OCP
       % otherwise its 'free'.
       self = self@OCP(model);
     end
-    function lagrangeTerms(self,state,algState,controls,time,parameters)
+    function pathCosts(self,state,algState,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
       x  = state.get('x').value;
       y  = state.get('y').value;
       u  = controls.get('u').value;
       
-      self.addLagrangeTerm( x^2 );
-      self.addLagrangeTerm( y^2 );
-      self.addLagrangeTerm( u^2 );
+      self.addPathCost( x^2 );
+      self.addPathCost( y^2 );
+      self.addPathCost( u^2 );
     end
-    function mayerTerms(self,state,time,parameters)
+    function arrivalCosts(self,state,time,parameters)
       % Define terminal cost terms.
     end
-    function pathConstraints(self,state,algState,controls,time,parameters)
+    function pathConstraints(self,state,algVars,controls,time,parameters)
       % Define non-linear path constraints on variables.
     end    
     function boundaryConditions(self,state,time,parameters)

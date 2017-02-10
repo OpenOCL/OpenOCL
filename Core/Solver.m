@@ -59,7 +59,7 @@ classdef Solver < handle
       integrator.setPathCostsFun(ocpHandler.pathCostsFun);
       
       ocpHandler.pathCostsFun           = CasadiFunction(ocpHandler.pathCostsFun);
-      ocpHandler.terminalCostsFun       = CasadiFunction(ocpHandler.terminalCostsFun);
+      ocpHandler.arrivalCostsFun       = CasadiFunction(ocpHandler.arrivalCostsFun);
       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
       model.modelFun = CasadiFunction(model.modelFun);
