@@ -29,7 +29,7 @@ classdef CasadiNLPSolver < Solver
     end
 
 
-    function outVars = solve(self,initialGuess)
+    function [outVars,times,objective,constraints] = solve(self,initialGuess)
       % solve(self,initialGuess)
       
       self.initialGuess = initialGuess;
@@ -70,6 +70,10 @@ classdef CasadiNLPSolver < Solver
         if self.options.nlp.detectParameters
           x(self.paramIndizes) = self.args.p;
         end
+        
+        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(x);
+        objective = full(objective);
+        constraints = full(constraints);
         
         initialGuess.set(x);
         outVars = initialGuess;

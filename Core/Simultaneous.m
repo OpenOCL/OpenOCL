@@ -144,7 +144,7 @@ classdef Simultaneous < handle
       end
       
       if valMin == valMax
-        warning('Can not scale with zero range for the variable');
+        error('Can not scale with zero range for the variable');
       end
       
       self.scalingMin.getDeep(id,slice).set(valMin);
@@ -178,7 +178,7 @@ classdef Simultaneous < handle
       
       nv = self.getNumberOfVars;
       pSize = self.getParameters.size;
-      self.nlpFun = Function(@self.getNLPFun,{[nv 1], pSize},4);
+      self.nlpFun = Function(@self.getNLPFun,{[nv 1], pSize},5);
     end
 
     function nv = getNumberOfVars(self)
@@ -189,7 +189,7 @@ classdef Simultaneous < handle
       np = self.np;
     end
 
-    function [costs,constraints,constraints_LB,constraints_UB] = getNLPFun(self,nlpInputs)
+    function [costs,constraints,constraints_LB,constraints_UB,timeGrid] = getNLPFun(self,nlpInputs)
       
       T = nlpInputs(end);                         % end time
       parameters = nlpInputs(end-self.np:end-1);  % parameters
