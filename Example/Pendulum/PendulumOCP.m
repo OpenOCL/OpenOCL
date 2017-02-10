@@ -5,7 +5,7 @@ classdef PendulumOCP < OCP
       self = self@OCP(model);
     end
     
-    function pathCosts(self,state,algState,controls,time,parameters)
+    function pathCosts(self,state,algVars,controls,time,parameters)
       p  = state.get('p').value;
       l  = parameters.get('l').value;
       F  = controls.get('F').value;

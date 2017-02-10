@@ -9,7 +9,7 @@ classdef PendulumModel < Model
       self.addState('p',[2,1]);
       self.addState('v',[2,1]);
       self.addControl('F',[1,1]);
-      self.addAlgState('lambda',[1,1]);
+      self.addAlgVar('lambda',[1,1]);
     end
     function setupEquation(self,state,algVars,controls,parameters)
       p       = state.get('p').value;

@@ -24,29 +24,29 @@ classdef Simulator < handle
       statesVec = Var('states');
       statesVec.addRepeated({self.model.state},N+1);
       algVarsVec = Var('algVars');
-      algVarsVec.addRepeated({self.model.algState},N);
+      algVarsVec.addRepeated({self.model.algVars},N);
       controlsVec = Var('controls');
       controlsVec.addRepeated({self.model.controls},N);
       
       state = getConsistentIntitialCondition(self,initialState,parameters);
-      algState = self.model.algState;
-      algState.set(0);
+      algVars = self.model.algVars;
+      algVars.set(0);
  
       statesVec.get('state',1).set(state.flat);
       
       for k=1:N
         timestep = times(k+1)-times(k);
-        controls = self.model.callIterationCallback(state,algState,parameters);
-        [stateVal,algStateVal] = self.integrator.evaluate(state.flat,algState.flat,controls.flat,timestep,parameters.flat);
+        controls = self.model.callIterationCallback(state,algVars,parameters);
+        [stateVal,algVarsVal] = self.integrator.evaluate(state.flat,algVars.flat,controls.flat,timestep,parameters.flat);
         stateVal = full(stateVal);
-        algStateVal = full(algStateVal);
+        algVarsVal = full(algVarsVal);
         
         statesVec.get('state',k+1).set(stateVal);
-        algVarsVec.get('algState',k).set(algStateVal);
+        algVarsVec.get('algVars',k).set(algVarsVal);
         controlsVec.get('controls',k).set(controls.flat);
         
         state.set(stateVal);
-        algState.set(algStateVal);
+        algVars.set(algVarsVal);
       end  
     end
     

@@ -18,7 +18,7 @@ classdef OCP < handle
   end
   
   methods(Abstract)
-    lagrangeTerms(self,state,algState,controls,time,parameters)
+    lagrangeTerms(self,state,algVar,controls,time,parameters)
     mayerTerms(self,state,time,parameters)
     pathConstraints(self,state,controls,time,parameters)
     boundaryConditions(self,initialState,finalState,parameters)
@@ -51,9 +51,9 @@ classdef OCP < handle
       p = self.parameters;
     end
 
-    function pc = getPathConstraints(self,state,algState,controls,time,parameters)
+    function pc = getPathConstraints(self,state,algVars,controls,time,parameters)
       self.thisPathConstraints.clear;
-      self.pathConstraints(state,algState,controls,time,parameters);
+      self.pathConstraints(state,algVars,controls,time,parameters);
       pc = self.thisPathConstraints;
     end
     
@@ -63,9 +63,9 @@ classdef OCP < handle
       tc = self.thisBoundaryConditions;
     end
 
-    function pc = getPathCosts(self,state,algState,controls,time,parameters)
+    function pc = getPathCosts(self,state,algVars,controls,time,parameters)
       self.thisPathCosts = Var(0,'pathCost');
-      self.lagrangeTerms(state,algState,controls,time,parameters);
+      self.lagrangeTerms(state,algVars,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     

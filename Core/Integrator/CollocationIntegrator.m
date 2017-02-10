@@ -28,7 +28,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       
       self.nx     = prod(self.model.state.size);
-      self.nz     = prod(self.model.algState.size);
+      self.nz     = prod(self.model.algVars.size);
       self.d      = d;
       self.ni     = d*self.nx+d*self.nz;
       np          = prod(parameters.size);
@@ -40,7 +40,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       self.integratorVars = Var('integratorVars');
       self.integratorVars.addRepeated({self.model.state},self.d);
-      self.integratorVars.addRepeated({self.model.algState},self.d);
+      self.integratorVars.addRepeated({self.model.algVars},self.d);
       self.integratorVars.compile;
       
       time0 = Var('time0',[1 1]);
@@ -94,7 +94,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
 
          % Append collocation equations
          [ode,alg] = self.model.modelFun.evaluate(self.integratorVars.get('state',j).flat, ...
-                                         self.integratorVars.get('algState',j).flat, ...
+                                         self.integratorVars.get('algVars',j).flat, ...
                                          controls,parameters);
          equations = [equations; h*ode-xp; alg];
 
@@ -102,11 +102,11 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          finalState = finalState + self.D(j+1)*self.integratorVars.get('state',j).flat;
 
          % Add contribution to quadrature function
-         qj = self.pathCostsFun.evaluate(self.integratorVars.get('state',j).flat,self.integratorVars.get('algState',j).flat,controls,time,parameters);
+         qj = self.pathCostsFun.evaluate(self.integratorVars.get('state',j).flat,self.integratorVars.get('algVars',j).flat,controls,time,parameters);
          J = J + self.B(j+1)*qj*h;
       end
 
-      finalAlgVars = self.integratorVars.get('algState',self.d).flat;
+      finalAlgVars = self.integratorVars.get('algVars',self.d).flat;
       costs = J;
 
     end

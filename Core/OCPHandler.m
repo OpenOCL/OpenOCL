@@ -27,7 +27,7 @@ classdef OCPHandler < handle
       state = self.model.state.copy;
       stateF = self.model.state.copy;
       controls = self.model.controls.copy;
-      algVars = self.model.algState.copy;
+      algVars = self.model.algVars.copy;
       params = self.getParameters.copy;
       time = nlpVars.get('time');
 
@@ -49,7 +49,7 @@ classdef OCPHandler < handle
       nu = prod(self.model.controls.size);
     end
     function nz = getAlgVarsSize(self)
-      nz = prod(self.model.algState.size);
+      nz = prod(self.model.algVars.size);
     end
     function np = getParametersSize(self)
       np = prod(self.getParameters.size);
@@ -72,8 +72,8 @@ classdef OCPHandler < handle
   end
   
   methods(Access = protected)
-    function [val,lb,ub] = getPathConstraints(self,state,algState,controls,time,params)
-      constraint = self.ocp.getPathConstraints(state,algState,controls,time,params);   
+    function [val,lb,ub] = getPathConstraints(self,state,algVars,controls,time,params)
+      constraint = self.ocp.getPathConstraints(state,algVars,controls,time,params);   
       val = constraint.values;
       lb  = constraint.lowerBounds;
       ub  = constraint.upperBounds;
@@ -86,8 +86,8 @@ classdef OCPHandler < handle
       ub  = constraint.upperBounds;
     end
 
-    function pathCosts = getPathCosts(self,state,algState,controls,time,params)
-      pathCosts = self.ocp.getPathCosts(state,algState,controls,time,params);
+    function pathCosts = getPathCosts(self,state,algVars,controls,time,params)
+      pathCosts = self.ocp.getPathCosts(state,algVars,controls,time,params);
     end
     
     function terminalCosts = getTerminalCosts(self,state,time,params)

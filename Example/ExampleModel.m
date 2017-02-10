@@ -14,10 +14,10 @@ classdef ExampleModel < Model
       self.addControl('u',[1,1]);
       
       % Define a 3x1 algebraic variables
-      self.addAlgState('z',[3,1]);
+      self.addAlgVar('z',[3,1]);
       
     end
-    function setupEquation(self,state,algState,controls,parameters)
+    function setupEquation(self,state,algVars,controls,parameters)
       % The differential and algebraic equations of the system are 
       % implemented in the setupEquation method
       
@@ -25,7 +25,7 @@ classdef ExampleModel < Model
       x = state.get('x').value;
       y = state.get('y').value;
       u = controls.get('u').value;
-      z = algState.get('z').value;
+      z = algVars.get('z').value;
       
       % Define differential equations
       self.setODE('x',(1-y^2)*x - y + u); 
