@@ -1,6 +1,9 @@
-# optimal-control
+# Dynamic optimization toolbox
+
+## Legal notice
+
 Please see license information in the LICENSE file.
-Please contact Jonas.Koenemann@yahoo.de for more information.\
+Please contact Jonas.Koenemann@yahoo.de for more information.
 
 Dynamic Optimization toolbox
 Copyright (C) 2016-2017  Jonas Koenemann
@@ -19,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No 642682.
 
 Use without warranty.
@@ -27,3 +29,8 @@ Use without warranty.
 Jonas Koenemann
 University of Freiburg, Ampyx Power
 Jonas.Koenemann@imtek.de
+
+## Quick start
+
+Visit the wiki page for a guide, and have a look the examples:
+https://github.com/JonasKoenemann/optimal-control/wiki
