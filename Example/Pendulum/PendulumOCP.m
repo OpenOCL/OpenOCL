@@ -24,7 +24,7 @@ classdef PendulumOCP < OCP
     end    
     function boundaryConditions(self,state0,stateF,parameters)
       ic = self.model.getInitialCondition(state0,parameters);
-      self.addBoundaryCondition(ic,'==',[0;0]);
+      self.addBoundaryCondition(ic,'==',0);
     end
   end
 end
