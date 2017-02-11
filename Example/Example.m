@@ -3,9 +3,9 @@ StartupOC
 FINALTIME = 10;               % horizon length (seconds)
 DISCRETIZATIONPOINTS = 30;    % horizon discretization
 
-% Create model and OCP
-model = ExampleModel;
-ocp = ExampleOCP(model);
+% Create system and OCP
+system = ExampleSystem;
+ocp = ExampleOCP(system);
 
 % Get and set solver options
 options = Solver.getOptions;
@@ -22,7 +22,7 @@ options.nlp.detectParameters = true;
 % options.nlp.solver = 'worhp';
 % options.nlp.worhp.NLPprint = 1;
 
-nlp = Solver.getNLP(ocp,model,options);
+nlp = Solver.getNLP(ocp,system,options);
 
 %
 % Define bounds on the state, control, and algebraic variables.

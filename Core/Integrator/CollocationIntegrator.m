@@ -23,32 +23,32 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
   
   methods
     
-    function self = CollocationIntegrator(model,d,parameters)
-      self = self@ImplicitIntegrationScheme(model);
+    function self = CollocationIntegrator(system,d,parameters)
+      self = self@ImplicitIntegrationScheme(system);
       
       
-      self.nx     = prod(self.model.state.size);
-      self.nz     = prod(self.model.algVars.size);
+      self.nx     = prod(self.system.state.size);
+      self.nz     = prod(self.system.algVars.size);
       self.d      = d;
       self.ni     = d*self.nx+d*self.nz;
       np          = prod(parameters.size);
-      nu          = prod(model.controls.size);
+      nu          = prod(system.controls.size);
 
       self.tau_root = collocationPoints(d);
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
       self.integratorVars = Var('integratorVars');
-      self.integratorVars.addRepeated({self.model.state},self.d);
-      self.integratorVars.addRepeated({self.model.algVars},self.d);
+      self.integratorVars.addRepeated({self.system.state},self.d);
+      self.integratorVars.addRepeated({self.system.algVars},self.d);
       self.integratorVars.compile;
       
       time0 = Var('time0',[1 1]);
       timeF = Var('timeF', [1 1]);
       
-      self.integratorFun = Function(@self.evaluate,{self.model.state,...
+      self.integratorFun = Function(@self.evaluate,{self.system.state,...
                                                     self.integratorVars,...
-                                                    self.model.controls,...
+                                                    self.system.controls,...
                                                     time0,timeF,parameters},4);
       
       
@@ -93,7 +93,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          time = startTime + self.tau_root(j+1);
 
          % Append collocation equations
-         [ode,alg] = self.model.modelFun.evaluate(self.integratorVars.get('state',j).flat, ...
+         [ode,alg] = self.system.systemFun.evaluate(self.integratorVars.get('state',j).flat, ...
                                          self.integratorVars.get('algVars',j).flat, ...
                                          controls,parameters);
          equations = [equations; h*ode-xp; alg];

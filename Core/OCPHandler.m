@@ -15,19 +15,19 @@ classdef OCPHandler < handle
   end
   
   properties(Access = protected)
-    model
+    system
   end
   
   methods
     
     function self = OCPHandler(ocp,nlpVars)
       self.ocp = ocp;
-      self.model = ocp.getModel();
+      self.system = ocp.getSystem();
       
-      state = self.model.state.copy;
-      stateF = self.model.state.copy;
-      controls = self.model.controls.copy;
-      algVars = self.model.algVars.copy;
+      state = self.system.state.copy;
+      stateF = self.system.state.copy;
+      controls = self.system.controls.copy;
+      algVars = self.system.algVars.copy;
       params = self.getParameters.copy;
       time = nlpVars.get('time');
 
@@ -43,13 +43,13 @@ classdef OCPHandler < handle
     end
     
     function nx = getStatesSize(self)
-      nx = prod(self.model.state.size);
+      nx = prod(self.system.state.size);
     end
     function nu = getControlsSize(self)
-      nu = prod(self.model.controls.size);
+      nu = prod(self.system.controls.size);
     end
     function nz = getAlgVarsSize(self)
-      nz = prod(self.model.algVars.size);
+      nz = prod(self.system.algVars.size);
     end
     function np = getParametersSize(self)
       np = prod(self.getParameters.size);

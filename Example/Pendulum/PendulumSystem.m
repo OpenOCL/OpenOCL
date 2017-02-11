@@ -1,8 +1,8 @@
-classdef PendulumModel < Model
+classdef PendulumSystem < System
   methods
     
-    function self = PendulumModel(parameters)
-      self = self@Model(parameters);
+    function self = PendulumSystem(parameters)
+      self = self@System(parameters);
     end
     
     function setupVariables(self)

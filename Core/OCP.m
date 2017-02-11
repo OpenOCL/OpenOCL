@@ -4,7 +4,7 @@ classdef OCP < handle
   %   implementing the abstract methods.
   
   properties(Access = protected)
-    model
+    system
   end
   
   properties(Access = private)
@@ -25,17 +25,17 @@ classdef OCP < handle
   end
   
   methods(Access = public)
-    function self = OCP(model)
+    function self = OCP(system)
       
       self.endTime = 'free';
-      self.model = model;
+      self.system = system;
       
       self.thisPathConstraints = Constraint;
       self.thisBoundaryConditions = Constraint;
       self.thisArrivalCosts = Var(0,'pathCost');
       self.thisPathCosts = Var(0,'pathCost');
       
-      self.parameters = model.parameters;
+      self.parameters = system.parameters;
       
     end
     
@@ -43,8 +43,8 @@ classdef OCP < handle
       c = 0;
     end
         
-    function model = getModel(self)
-      model = self.model;
+    function system = getSystem(self)
+      system = self.system;
     end
     
     function p = getParameters(self)

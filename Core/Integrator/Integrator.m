@@ -1,9 +1,9 @@
 classdef Integrator < handle
   %INTEGRATOR Integrator class
-  %   Is able to integrate model
+  %   Is able to integrate system
   
   properties
-    model
+    system
   end
   
   methods(Abstract)
@@ -12,8 +12,8 @@ classdef Integrator < handle
   
   methods
     
-    function self = Integrator(model)
-      self.model = model;
+    function self = Integrator(system)
+      self.system = system;
     end
     
   end

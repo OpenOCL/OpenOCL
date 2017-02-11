@@ -45,13 +45,13 @@ classdef Solver < handle
 
     end
     
-    function nlp = getNLP(ocp,model,options)
+    function nlp = getNLP(ocp,system,options)
       
       N = options.nlp.discretizationPoints;
       parameters = ocp.getParameters;
-      integrator = CollocationIntegrator(model,options.nlp.collocationOrder,parameters);
+      integrator = CollocationIntegrator(system,options.nlp.collocationOrder,parameters);
       
-      nlp = Simultaneous(model,integrator,N);
+      nlp = Simultaneous(system,integrator,N);
       
       ocpHandler = OCPHandler(ocp,nlp.nlpVars);
 
@@ -62,7 +62,7 @@ classdef Solver < handle
       ocpHandler.arrivalCostsFun       = CasadiFunction(ocpHandler.arrivalCostsFun);
       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-      model.modelFun = CasadiFunction(model.modelFun);
+      system.systemFun = CasadiFunction(system.systemFun);
       nlp.integratorFun          = CasadiFunction(nlp.integratorFun);
 %       ocpHandler.leastSquaresCostsFun   = CasadiFunction(ocpHandler.leastSquaresCostsFun);
 

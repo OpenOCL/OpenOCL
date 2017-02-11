@@ -1,8 +1,8 @@
 classdef PendulumOCP < OCP
   methods
     
-    function self = PendulumOCP(model)
-      self = self@OCP(model);
+    function self = PendulumOCP(system)
+      self = self@OCP(system);
     end
     
     function pathCosts(self,state,algVars,controls,time,parameters)
@@ -23,7 +23,7 @@ classdef PendulumOCP < OCP
     function pathConstraints(self,state,algVars,controls,time,parameters)
     end    
     function boundaryConditions(self,state0,stateF,parameters)
-      ic = self.model.getInitialCondition(state0,parameters);
+      ic = self.system.getInitialCondition(state0,parameters);
       self.addBoundaryCondition(ic,'==',0);
     end
   end

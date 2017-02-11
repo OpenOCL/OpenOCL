@@ -1,7 +1,7 @@
 classdef ImplicitIntegrationScheme < handle
   
   properties(Access = protected)
-    model
+    system
   end
   
   methods(Abstract)
@@ -12,8 +12,8 @@ classdef ImplicitIntegrationScheme < handle
   
   methods
     
-    function self = ImplicitIntegrationScheme(model)
-      self.model = model;
+    function self = ImplicitIntegrationScheme(system)
+      self.system = system;
     end
     
   end

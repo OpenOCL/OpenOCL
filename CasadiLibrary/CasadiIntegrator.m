@@ -3,28 +3,28 @@ classdef CasadiIntegrator < Integrator
   %   
   
   properties
-    modelIntegrator
+    systemIntegrator
   end
   
   methods
-    function self = CasadiIntegrator(model)
+    function self = CasadiIntegrator(system)
       
-      self = self@Integrator(model);
+      self = self@Integrator(system);
       
-      state = casadi.SX.sym('x',prod(model.state.size),1);
-      algVars = casadi.SX.sym('z',prod(model.algVars.size),1);
-      controls = casadi.SX.sym('u',prod(model.controls.size),1);
+      state = casadi.SX.sym('x',prod(system.state.size),1);
+      algVars = casadi.SX.sym('z',prod(system.algVars.size),1);
+      controls = casadi.SX.sym('u',prod(system.controls.size),1);
       h = casadi.SX.sym('h',1);
-      parameters = casadi.SX.sym('p',prod(model.parameters.size),1);
+      parameters = casadi.SX.sym('p',prod(system.parameters.size),1);
       
-      [ode,alg] = model.modelFun.evaluate(state,algVars,controls,parameters);
+      [ode,alg] = system.systemFun.evaluate(state,algVars,controls,parameters);
       
       
       
       dae = struct;
-      dae.x = model.state.value;
-      dae.z = model.algVars.value;
-      dae.p = [h;model.controls.value;model.parameters.value];
+      dae.x = system.state.value;
+      dae.z = system.algVars.value;
+      dae.p = [h;system.controls.value;system.parameters.value];
       dae.ode = h*ode;
       dae.alg = alg;
       
@@ -34,7 +34,7 @@ classdef CasadiIntegrator < Integrator
 %       integratorOptions.reltol = 1e-3;
       integratorOptions.rootfinder = 'kinsol';
 %       integratorOptions.number_of_finite_elements = 10;
-      self.modelIntegrator = casadi.integrator('integrator','collocation',dae,integratorOptions);
+      self.systemIntegrator = casadi.integrator('integrator','collocation',dae,integratorOptions);
     end
     
     function [stateNext,algVars] = evaluate(self,state,algVarsGuess,controls,timestep,parameters)
@@ -43,7 +43,7 @@ classdef CasadiIntegrator < Integrator
       u = controls;
       z = algVarsGuess;
       
-      integrationStep = self.modelIntegrator('x0', x, ...
+      integrationStep = self.systemIntegrator('x0', x, ...
                                              'p', [timestep;u;parameters], ...
                                              'z0', z);
                                            

@@ -5,14 +5,14 @@ parameters = Var('parameters');
 parameters.add('m',[1 1]);
 parameters.add('l',[1 1]);
 
-% Create model and OCP
-model = PendulumModel(parameters);
-ocp = PendulumOCP(model);
+% Create system and OCP
+system = PendulumSystem(parameters);
+ocp = PendulumOCP(system);
 
 % Get and set solver options
 options = Solver.getOptions;
 options.nlp.scaling = false;
-nlp = Solver.getNLP(ocp,model,options);
+nlp = Solver.getNLP(ocp,system,options);
 
 % state bounds
 nlp.setBound('p',     ':',   -[2;2], [3;3]); 
@@ -40,6 +40,6 @@ nlp.interpolateGuess(initialGuess);
 % Run solver to obtain solution
 solution = solver.solve(initialGuess);
 
-% run model callback for the solution
+% run system callback for the solution
 figure
-model.solutionCallback(solution);
+system.solutionCallback(solution);

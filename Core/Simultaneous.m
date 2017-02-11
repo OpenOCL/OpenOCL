@@ -16,7 +16,7 @@ classdef Simultaneous < handle
   properties(Access = private)
     ocpHandler
     N
-    model
+    system
     
     nx
     nu
@@ -29,22 +29,22 @@ classdef Simultaneous < handle
   
   methods
     
-    function self = Simultaneous(model,integrator,N)
+    function self = Simultaneous(system,integrator,N)
       self.N = N;
       
       
       self.integratorFun = integrator.integratorFun;
       self.ni = integrator.getIntegratorVarsSize;
       
-      self.model = model;
+      self.system = system;
       
       
-      state = model.state;
+      state = system.state;
       self.stateVars = Var('states');
       self.stateVars.addRepeated({state},N+1);
       self.stateVars.compile;
       
-      controls = model.controls;
+      controls = system.controls;
       self.controlVars = Var('controls');
       self.controlVars.addRepeated({controls},N);
       self.controlVars.compile;
@@ -52,13 +52,13 @@ classdef Simultaneous < handle
       
       integratorVars = integrator.getIntegratorVars;
       self.nlpVars = Var('nlpVars');
-      self.nlpVars.addRepeated({self.model.state,...
+      self.nlpVars.addRepeated({self.system.state,...
                                 integratorVars,...
-                                self.model.controls},self.N);
-      self.nlpVars.add(self.model.state);
+                                self.system.controls},self.N);
+      self.nlpVars.add(self.system.state);
       
-      self.model.parameters.compile;
-      self.nlpVars.add(self.model.parameters);
+      self.system.parameters.compile;
+      self.nlpVars.add(self.system.parameters);
       self.nlpVars.add('time',[1 1]);
       
       self.nlpVars.compile;

@@ -2,11 +2,11 @@ classdef ExampleOCP < OCP
   % An OCP is defined by inheriting from the OCP class.
   
   methods
-    function self = ExampleOCP(model)
-      % The constructor of OCP takes an instance of the model.
+    function self = ExampleOCP(system)
+      % The constructor of OCP takes an instance of the system.
       % The end time of the horizon can be set to a real number, 
       % otherwise its 'free'.
-      self = self@OCP(model);
+      self = self@OCP(system);
     end
     function pathCosts(self,state,algState,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.

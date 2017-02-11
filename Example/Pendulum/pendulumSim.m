@@ -1,13 +1,12 @@
 StartupOC
 
-% Create model and OCP
+% Create system and OCP
 parameters = Var('parameters');
 parameters.add('m',[1 1]);
 parameters.add('l',[1 1]);
 
-model = PendulumModel(parameters);
-
-simulator = Simulator(model,struct);
+system = PendulumSystem(parameters);
+simulator = Simulator(system,struct);
 
 state = simulator.getState;
 state.get('p').set([0,1]);

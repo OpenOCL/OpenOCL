@@ -7,8 +7,8 @@ classdef CasadiSimulator < Simulator
   
   methods
     
-    function self = CasadiSimulator(model,h)
-      self.integrator = CasadiIntegrator(model);
+    function self = CasadiSimulator(system,h)
+      self.integrator = CasadiIntegrator(system);
       self.h = h;
     end
     

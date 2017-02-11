@@ -1,5 +1,5 @@
 classdef CasadiLib
-  %CASADILIB Casadi functionality for Vars and Models
+  %CASADILIB Casadi functionality for Vars and Systems
   
   properties
 
@@ -7,18 +7,18 @@ classdef CasadiLib
   
   methods(Static)
     
-    function setSXModel(model)
-      CasadiLib.setSX(model.state)
-      CasadiLib.setSX(model.algState)
-      CasadiLib.setSX(model.controls)
-      CasadiLib.setSX(model.parameters)
+    function setSXSystem(system)
+      CasadiLib.setSX(system.state)
+      CasadiLib.setSX(system.algState)
+      CasadiLib.setSX(system.controls)
+      CasadiLib.setSX(system.parameters)
     end
     
-    function setMXModel(model)
-      CasadiLib.setMX(model.state)
-      CasadiLib.setMX(model.algState)
-      CasadiLib.setMX(model.controls)
-      CasadiLib.setMX(model.parameters)
+    function setMXSystem(system)
+      CasadiLib.setMX(system.state)
+      CasadiLib.setMX(system.algState)
+      CasadiLib.setMX(system.controls)
+      CasadiLib.setMX(system.parameters)
     end
     
     
