@@ -24,7 +24,7 @@ classdef ExampleOCP < OCP
     function pathConstraints(self,state,algVars,controls,time,parameters)
       % Define non-linear path constraints on variables.
     end    
-    function boundaryConditions(self,state,time,parameters)
+    function boundaryConditions(self,state0,stateF,parameters)
       % Define non-linear terminal constraints.
     end
     
