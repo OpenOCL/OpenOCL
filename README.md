@@ -1,5 +1,10 @@
 # Dynamic optimization toolbox
 
+## Quick start
+
+Visit the wiki page for a guide, and have a look the examples:    
+https://github.com/JonasKoenemann/optimal-control/wiki
+
 ## Legal notice
 
 Please see license information in the LICENSE file.
@@ -30,7 +35,4 @@ Jonas Koenemann
 University of Freiburg, Ampyx Power
 Jonas.Koenemann@imtek.de
 
-## Quick start
 
-Visit the wiki page for a guide, and have a look the examples:
-https://github.com/JonasKoenemann/optimal-control/wiki
