@@ -18,17 +18,33 @@ classdef Simulator < handle
       self.system = system;
     end
     
-    function [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,parameters)
+    function controls = getControlsSeries(self,N)
+      controls = Var('controls');
+      controls.addRepeated({self.system.controls},N);
+    end
+    
+    function [statesVec,algVarsVec,controlsSeries] = simulate(self,initialState,times,varargin)
+      % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,parameters)
+      % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters)
       
       N = length(times)-1;
+      
+      if nargin == 4
+        parameters  = varargin{1};
+        controlsSeries = Var('controls');
+        controlsSeries.addRepeated({self.system.controls},N);
+      elseif nargin == 5
+        controlsSeries    = varargin{1};
+        parameters  = varargin{2};
+      end
+      
+      
       statesVec = Var('states');
       statesVec.addRepeated({self.system.state},N+1);
       algVarsVec = Var('algVars');
       algVarsVec.addRepeated({self.system.algVars},N);
-      controlsVec = Var('controls');
-      controlsVec.addRepeated({self.system.controls},N);
       
-      state = getConsistentIntitialCondition(self,initialState,parameters);
+      state = self.getConsistentIntitialCondition(initialState,parameters);
       algVars = self.system.algVars;
       algVars.set(0);
  
@@ -36,7 +52,14 @@ classdef Simulator < handle
       
       for k=1:N
         timestep = times(k+1)-times(k);
-        controls = self.system.callIterationCallback(state,algVars,parameters);
+        
+        if nargin == 4
+          controls = self.system.callIterationCallback(state,algVars,parameters);
+        elseif nargin == 5
+          self.system.callIterationCallback(state,algVars,parameters);
+          controls = controlsSeries.get('controls',k);
+        end
+        
         [stateVal,algVarsVal] = self.integrator.evaluate(state.flat,algVars.flat,controls.flat,timestep,parameters.flat);
         stateVal = full(stateVal);
         algVarsVal = full(algVarsVal);
@@ -46,7 +69,7 @@ classdef Simulator < handle
         if ~isempty(algVarsVal)
           algVarsVec.get('algVars',k).set(algVarsVal);
         end
-        controlsVec.get('controls',k).set(controls.flat);
+        controlsSeries.get('controls',k).set(controls.flat);
         
         state.set(stateVal);
         algVars.set(algVarsVal);
@@ -58,7 +81,9 @@ classdef Simulator < handle
       state.set(0);
     end
     
-    function state = getConsistentIntitialCondition(self,state,parameters)
+    function stateOut = getConsistentIntitialCondition(self,state,parameters)
+      
+      stateOut = state.copy;
       
       % check initial condition
       ic = self.system.getInitialCondition(state,parameters);
@@ -74,7 +99,7 @@ classdef Simulator < handle
         sol    = solver('x0', state.flat, 'lbx', -inf, 'ubx', inf,'lbg', 0, 'ubg', 0);
         
         consistentState  = full(sol.x);
-        state.set(consistentState);
+        stateOut.set(consistentState);
       end
       
     end
