@@ -55,6 +55,9 @@ classdef (Abstract) System < handle
       
     end
     
+    function initialCondition(~,~,~)
+    end
+    
     function [ode,alg] = evaluate(self,state,algVars,controls,parameters)
       % evaluate the system equations for the assigned 
       

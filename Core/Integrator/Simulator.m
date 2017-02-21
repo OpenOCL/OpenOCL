@@ -42,7 +42,10 @@ classdef Simulator < handle
         algVarsVal = full(algVarsVal);
         
         statesVec.get('state',k+1).set(stateVal);
-        algVarsVec.get('algVars',k).set(algVarsVal);
+        
+        if ~isempty(algVarsVal)
+          algVarsVec.get('algVars',k).set(algVarsVal);
+        end
         controlsVec.get('controls',k).set(controls.flat);
         
         state.set(stateVal);
