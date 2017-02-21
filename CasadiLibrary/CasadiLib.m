@@ -67,7 +67,7 @@ classdef CasadiLib
         if strcmp(type,'MX')
           var.set(casadi.MX.sym(varPrefix,var.size));
         else
-          var.set(CasadiVar(varPrefix,var.size));
+          var.set(casadi.SX.sym(varPrefix,var.size));
         end
         return
       end

@@ -39,8 +39,8 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       
       self.integratorVars = Var('integratorVars');
-      self.integratorVars.addRepeated({self.system.state},self.d);
-      self.integratorVars.addRepeated({self.system.algVars},self.d);
+      self.integratorVars.addRepeated({self.system.state,self.system.algVars},self.d);
+%       self.integratorVars.addRepeated({},self.d);
       self.integratorVars.compile;
       
       time0 = Var('time0',[1 1]);
