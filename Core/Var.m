@@ -1,7 +1,9 @@
-classdef Var < matlab.mixin.Copyable
+classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
   %Var Variable class
   %   Basic datatype to store structured variables.
-  %   Deriving of Copyable provides copy() method.
+  %   Inheriting of Copyable provides copy() method.
+  %   Inheriting of Heterogenous allows for mixed class arrays, e.g. Vars
+  %   and Parameters.
   
   properties (Access = public)
     id
@@ -20,9 +22,7 @@ classdef Var < matlab.mixin.Copyable
       % Var(id,size)
       % Var(value,id)
       % Var(var)
-      
-      
-      
+
       narginchk(0,2);
       self.clear
       
@@ -585,16 +585,16 @@ classdef Var < matlab.mixin.Copyable
       c = Var(v','transpose');
     end
     
-    function c = 	horzcat(varargin)
-      c = vertcat(varargin{:});
-    end
-    
-    function c = 	vertcat(varargin)
-      c = Var('horzcat');
-      for k=1:length(varargin)
-        c.add(varargin{k})
-      end
-    end
+%     function c = 	horzcat(varargin)
+%       c = vertcat(varargin{:});
+%     end
+%     
+%     function c = 	vertcat(varargin)
+%       c = Var('horzcat');
+%       for k=1:length(varargin)
+%         c.add(varargin{k})
+%       end
+%     end
 
   end % methods
 

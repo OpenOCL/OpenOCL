@@ -1,7 +1,7 @@
 StartupOC
 
 % Create system and OCP
-parameters = Var('parameters');
+parameters = Parameters;
 parameters.add('m',[1 1]);
 parameters.add('l',[1 1]);
 

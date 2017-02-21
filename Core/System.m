@@ -26,12 +26,12 @@ classdef (Abstract) System < handle
   methods
     
     function self = System(parameters)
-      self.state       = Var('state');
+      self.state      = Var('state');
       self.algVars    = Var('algVars');
-      self.controls    = Var('controls');
+      self.controls   = Var('controls');
       
       if nargin == 0
-        self.parameters = Var('parameters');
+        self.parameters = Parameters;
       else
         self.parameters  = parameters;
       end

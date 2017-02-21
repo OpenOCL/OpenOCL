@@ -97,7 +97,7 @@ classdef CasadiNLPSolver < Solver
       nv = prod(size(vars));
       vsym = cell(1,nv);
       for k=1:nv
-        vsym{k} = casadi.MX.sym(['v' num2str(k)]);
+        vsym{k} = CasadiVar(['v' num2str(k)],[1 1]);
       end
       vsymMat = vertcat(vsym{:});
       

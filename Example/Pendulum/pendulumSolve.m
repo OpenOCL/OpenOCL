@@ -1,7 +1,7 @@
 StartupOC
 
 % set up parameters
-parameters = Var('parameters');
+parameters = Parameters;
 parameters.add('m',[1 1]);
 parameters.add('l',[1 1]);
 

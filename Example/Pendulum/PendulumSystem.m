@@ -23,14 +23,14 @@ classdef PendulumSystem < System
       self.setODE('p',v); 
       self.setODE('v',ddp);
 
-      self.setAlgEquation(dot(ddp,p)+norm(v)^2);
+      self.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
     end
     function initialCondition(self,state,parameters)
       l = parameters.get('l').value;
       p = state.get('p').value;
       v = state.get('v').value;
       
-      self.setInitialCondition(norm(p)^2-l^2);
+      self.setInitialCondition(p(1)^2+p(2)^2-l^2);
       self.setInitialCondition(dot(p,v));
     end
     function simulationCallback(self,state,algVars,controls,parameters)
