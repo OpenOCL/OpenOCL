@@ -26,16 +26,21 @@ classdef Simulator < handle
     function [statesVec,algVarsVec,controlsSeries] = simulate(self,initialState,times,varargin)
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,parameters)
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters)
+      % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters,callback)
       
       N = length(times)-1;
       
       if nargin == 4
-        parameters  = varargin{1};
-        controlsSeries = Var('controls');
+        parameters      = varargin{1};
+        controlsSeries  = Var('controls');
         controlsSeries.addRepeated({self.system.controls},N);
       elseif nargin == 5
-        controlsSeries    = varargin{1};
-        parameters  = varargin{2};
+        controlsSeries  = varargin{1};
+        parameters      = varargin{2};
+      elseif nargin == 6
+        controlsSeries  = varargin{1};
+        parameters      = varargin{2};
+        callback        = varargin{3};
       end
       
       
@@ -50,13 +55,20 @@ classdef Simulator < handle
  
       statesVec.get('state',1).set(state.flat);
       
+      % setup callback
+      if callback
+        self.system.simulationCallbackSetup;
+      end
+      
       for k=1:N
         timestep = times(k+1)-times(k);
         
         if nargin == 4
           controls = self.system.callIterationCallback(state,algVars,parameters);
-        elseif nargin == 5
-          self.system.callIterationCallback(state,algVars,parameters);
+        elseif nargin == 5 || nargin == 6
+          if callback
+            self.system.callIterationCallback(state,algVars,parameters);
+          end
           controls = controlsSeries.get('controls',k);
         end
         
