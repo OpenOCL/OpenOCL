@@ -29,6 +29,7 @@ classdef Simulator < handle
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters,callback)
       
       N = length(times)-1;
+      callback = true;
       
       if nargin == 4
         parameters      = varargin{1};
