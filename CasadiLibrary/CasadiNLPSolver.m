@@ -4,11 +4,9 @@ classdef CasadiNLPSolver < Solver
     nlp
     options
     initialGuess
-
+    
     casadiSolver
-    args
-    paramIndizes
-    varIndizes
+    nlpData
     
     scalingMin
     scalingMax
@@ -27,29 +25,114 @@ classdef CasadiNLPSolver < Solver
     function parameters = getParameters(self)
       parameters = self.nlp.getParameters;
     end
-
-
+    
+    
     function [outVars,times,objective,constraints] = solve(self,initialGuess)
       % solve(self,initialGuess)
       
       self.initialGuess = initialGuess;
       
-      % initial guess
-      self.args.x0 = initialGuess.flat;
       
-      % scale initial guess
+      % get bound for decision variables
+      lbx = self.nlp.lowerBounds.flat;
+      ubx = self.nlp.upperBounds.flat;
+      
+      vsym = self.nlpData.vsym;
+      costs = self.nlpData.costs;
+      constraints = self.nlpData.constraint;
+      constraints_LB = self.nlpData.constraints_LB;
+      constraints_UB = self.nlpData.constraints_UB;
+      x0 = initialGuess.flat;
+      
+      nv = numel(vsym);
+      
+      % detect variables as parameters if they are constant
+      paramIndizes = [];
+      psym = {};
+      params = [];
+      varIndizes = 1:nv;
+      if (self.options.nlp.detectParameters)
+        
+        % find parameters
+        paramIndizes = find((lbx-ubx)==0);
+        
+        % get parameter values
+        params = lbx(paramIndizes);
+        
+        % get indizes of variables (in constrast to parameters)
+        varIndizes(paramIndizes) = [];
+        
+        % select parameters and variables
+        psym = vsym(paramIndizes);
+        vsym = vsym(varIndizes);
+        lbx = lbx(varIndizes);
+        ubx = ubx(varIndizes);
+        x0 = x0(varIndizes);
+      end
+      
       if self.options.nlp.scaling
-        self.args.x0 = self.scale(self.args.x0,self.scalingMin,self.scalingMax);
+        scalingMinVars = self.scalingMin(varIndizes);
+        scalingMaxVars = self.scalingMax(varIndizes);
+        scalingMinParams = self.scalingMin(paramIndizes);
+        scalingMaxParams = self.scalingMax(paramIndizes);
       end
       
-      % remove parameters form initial guess
-      if self.options.nlp.detectParameters
-        self.args.x0(self.paramIndizes) = [];
+      
+      
+      % get struct with nlp for casadi
+      casadiNLP = struct;
+      casadiNLP.x = vertcat(vsym{:});
+      casadiNLP.f = costs;
+      casadiNLP.g = constraints;
+      casadiNLP.p = vertcat(psym{:});
+      
+      
+      
+      opts = self.options.nlp.casadi;
+      
+      if isfield(self.options.nlp,self.options.nlp.solver)
+        opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
       end
-
-
+      
+      if self.options.iterationCallback == true
+        callbackFun = IterationCallback('itCbFun', ...
+          numel(vsym), numel(constraints), numel(psym), ...
+          @(values)self.callBackHandle(values) );
+        opts.iteration_callback = callbackFun;
+      end
+      
+      
+      self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver, casadiNLP, opts);
+      
+      
+      
+      args = struct;
+      % bounds for non-linear constraints function
+      args.lbg = constraints_LB;
+      args.ubg = constraints_UB;
+      args.p = params;
+      args.lbx = lbx;
+      args.ubx = ubx;
+      
+      % initial guess
+      args.x0 = x0;
+      
+      % scale initial guess and bounds, and parameters
+      if self.options.nlp.scaling
+        args.x0 = self.scale(args.x0,scalingMinVars,scalingMaxVars);
+        args.lbx = self.scale(args.lbx,scalingMinVars,scalingMaxVars);
+        args.ubx = self.scale(args.ubx,scalingMinVars,scalingMaxVars);
+        args.p = self.scale(args.p,scalingMinParams,scalingMaxParams);
+      end
+      
+      % fix bug with 0x1 vs 0x0 parameter
+      if isempty(psym)
+        casadiNLP.p = casadi.MX.sym('p',[0,1]);
+      end
+      
+      
       % execute solver
-      sol = self.casadiSolver.call(self.args);
+      sol = self.casadiSolver.call(args);
       
       
       if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
@@ -58,18 +141,14 @@ classdef CasadiNLPSolver < Solver
         
         xsol = sol.x.full();
         
-        x = initialGuess.flat;
-        x(self.varIndizes) = xsol;   
-        
         %remove scaling from solution
         if self.options.nlp.scaling
-          x = self.unscale(x,self.scalingMin,self.scalingMax);
+          xsol = self.unscale(xsol,scalingMinVars,scalingMaxVars);
         end
         
-        % replace parameters
-        if self.options.nlp.detectParameters
-          x(self.paramIndizes) = self.args.p;
-        end
+        x = initialGuess.flat;
+        x(varIndizes) = xsol;
+        x(paramIndizes) = params;
         
         [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(x);
         objective = full(objective);
@@ -80,19 +159,19 @@ classdef CasadiNLPSolver < Solver
       end
       
     end
-
+    
   end
-
+  
   methods(Access = private)
     
     function construct(self)
-     
+      
       vars = self.nlp.nlpVars;
-%       CasadiLib.setMX(vars);
-%       vsym = vars.flat;
-%       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
-
-
+      %       CasadiLib.setMX(vars);
+      %       vsym = vars.flat;
+      %       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
+      
+      
       % create symbolic casadi variables for all decision variables
       nv = prod(size(vars));
       vsym = cell(1,nv);
@@ -100,31 +179,6 @@ classdef CasadiNLPSolver < Solver
         vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
       end
       vsymMat = vertcat(vsym{:});
-      
-      % get bound for decision variables
-      lbx = self.nlp.lowerBounds.flat;
-      ubx = self.nlp.upperBounds.flat;
-      
-      
-      % detect variables as parameters if they are constant
-      self.paramIndizes = [];
-      psym = {};
-      params = [];
-      self.varIndizes = 1:nv;
-      if (self.options.nlp.detectParameters)
-        
-        % find parameters
-        self.paramIndizes = find((lbx-ubx)==0);
-        
-        % get parameter values
-        params = lbx(self.paramIndizes);
-        
-        % get indizes of variables (in constrast to parameters)
-        self.varIndizes(self.paramIndizes) = [];
-        
-        % select parameters
-        psym = vsym(self.paramIndizes);
-      end
       
       
       % apply scaling
@@ -138,75 +192,36 @@ classdef CasadiNLPSolver < Solver
         self.nlp.checkScaling;
         
         % do not scale parameters and variables zero range scaling
-        zeroRange = [self.paramIndizes;find((self.scalingMax-self.scalingMin)==0)];
+        zeroRange = [find((self.scalingMax-self.scalingMin)==0)];
         self.scalingMin(zeroRange) = 0;
         self.scalingMax(zeroRange) = 1;
         
         % get unscaled symbolic vars
         vsymMat = self.unscale(vsymMat,self.scalingMin,self.scalingMax);
-        
-        % apply scaling to bounds
-        lbx = self.scale(lbx,self.scalingMin,self.scalingMax);
-        ubx = self.scale(ubx,self.scalingMin,self.scalingMax);
       end
       
-
+      
       % call nlp function
       casadiNLPFun = self.nlp.nlpFun;
       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMat);
       costs = costs + self.nlp.getDiscreteCost(vsymMat);
       
-      % remove parameters from list of decision variables and bounds
-      vsym(self.paramIndizes) = [];
-      lbx(self.paramIndizes) = [];
-      ubx(self.paramIndizes) = [];
       
-
-      % get struct with nlp for casadi
-      casadiNLP = struct;
-      casadiNLP.x = vertcat(vsym{:});
-      casadiNLP.f = costs;
-      casadiNLP.g = constraints;
-      casadiNLP.p = vertcat(psym{:});
-      
-      % fix bug with 0x1 vs 0x0 parameter
-      if isempty(psym)
-        casadiNLP.p = casadi.MX.sym('p',[0,1]);
-      end
-      
-      opts = self.options.nlp.casadi;
-      
-      if isfield(self.options.nlp,self.options.nlp.solver)
-        opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
-      end
-      
-      if self.options.iterationCallback == true
-        callbackFun = IterationCallback('itCbFun', ...
-                                        numel(vsym), numel(constraints), numel(psym), ...
-                                        @(values)self.callBackHandle(values) );
-        opts.iteration_callback = callbackFun;
-      end
+      self.nlpData = struct;
+      self.nlpData.vsym = vsym;
+      self.nlpData.costs = costs;
+      self.nlpData.constraint = constraints;
+      self.nlpData.constraints_LB = constraints_LB;
+      self.nlpData.constraints_UB = constraints_UB;
       
       
-      self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver, casadiNLP, opts);
-
-      self.args = struct;
-
-      % bounds for non-linear constraints function
-      self.args.lbg = constraints_LB;
-      self.args.ubg = constraints_UB;
       
-      self.args.lbx = lbx;
-      self.args.ubx = ubx;     
-      
-      self.args.p = params;
-
     end
     
     function callBackHandle(self,values)
       
       x = self.initialGuess.flat;
-      x(self.varIndizes) = values; 
+      x(self.varIndizes) = values;
       
       %remove scaling from decision variables
       if self.options.nlp.scaling
@@ -217,16 +232,16 @@ classdef CasadiNLPSolver < Solver
         x(self.paramIndizes) = self.args.p;
       end
       
-%       here will evaluate the cost function and constraints and pass to
-%       callback
-%       casadiNLPFun = self.nlp.nlpFun;
-%       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(x);
+      %       here will evaluate the cost function and constraints and pass to
+      %       callback
+      %       casadiNLPFun = self.nlp.nlpFun;
+      %       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(x);
       
       
       self.nlp.getCallback(self.initialGuess,x);
       
     end
-      
+    
     function xscaled = scale(self,x,xmin,xmax)
       xscaled = (x - xmin) ./ (xmax-xmin);
     end
