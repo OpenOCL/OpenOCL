@@ -123,7 +123,7 @@ classdef Simultaneous < handle
       % addBound(id,slice,value)
       
       if strcmp(slice,'end')
-        slice = length(self.lowerBounds.get(id).subVars);
+        slice = length(self.lowerBounds.getDeep(id).subVars);
       end
       
       if nargin == 4
