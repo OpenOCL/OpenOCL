@@ -133,9 +133,7 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
         varIn = varargin{1}.copy;
       end
 
-      if ~isempty(varIn.size) && ~(prod(varIn.size) == 0)
-        self.addVar(varIn)
-      end
+      self.addVar(varIn)
     end % add
     
     function addRepeated(self,varArray,N)
@@ -330,7 +328,12 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
             var.addVar(subVar);
           else
             val = subVar.value;
-            newVar = Var(val(slice),id);
+            if isempty(val)
+              newVar = Var([],id);
+            else
+              newVar = Var(val(slice),id);
+            end
+            
             var.addVar(newVar);  
           end
 
