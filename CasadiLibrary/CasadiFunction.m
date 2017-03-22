@@ -27,13 +27,13 @@ classdef CasadiFunction < handle
       nInputs = length(inputFunction.inputs);
       if isa(inputFunction,'UserFunction')
         for k=1:nInputs
-          CasadiLib.setMX(inputFunction.inputs{k});
+          CasadiLib.setSX(inputFunction.inputs{k});
         end
         inputs = inputFunction.inputs;
       else
         inputs = cell(1,nInputs);
         for k=1:nInputs
-          inputs{k} = casadi.MX.sym('in',inputFunction.inputs{k}.size);
+          inputs{k} = casadi.SX.sym('in',inputFunction.inputs{k}.size);
         end
       end
       
@@ -57,7 +57,7 @@ classdef CasadiFunction < handle
       self.numericOutputValues = outputs(self.numericOutputIndizes);
       
       self.casadiFun = casadi.Function('fun',inputs,outputs,struct('jit',jit));
-%       self.fun.expand();
+%       self.casadiFun.expand();
       if jit
         delete jit_tmp.c
       end

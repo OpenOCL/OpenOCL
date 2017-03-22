@@ -75,7 +75,13 @@ classdef CasadiNLPSolver < Solver
         scalingMaxVars = self.scalingMax(varIndizes);
         scalingMinParams = self.scalingMin(paramIndizes);
         scalingMaxParams = self.scalingMax(paramIndizes);
+        
+        x0 = self.scale(x0,scalingMinVars,scalingMaxVars);
+        lbx = self.scale(lbx,scalingMinVars,scalingMaxVars);
+        ubx = self.scale(ubx,scalingMinVars,scalingMaxVars);
+        params = self.scale(params,scalingMinParams,scalingMaxParams);
       end
+      
       
       
       
@@ -97,14 +103,17 @@ classdef CasadiNLPSolver < Solver
       if self.options.iterationCallback == true
         callbackFun = IterationCallback('itCbFun', ...
           numel(vsym), numel(constraints), numel(psym), ...
-          @(values)self.callBackHandle(values) );
+          @(values)self.callBackHandle(values,initialGuess,varIndizes,paramIndizes,params) );
         opts.iteration_callback = callbackFun;
+      end
+      
+      % fix bug with 0x1 vs 0x0 parameter
+      if isempty(psym)
+        casadiNLP.p = casadi.MX.sym('p',[0,1]);
       end
       
       
       self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver, casadiNLP, opts);
-      
-      
       
       args = struct;
       % bounds for non-linear constraints function
@@ -117,23 +126,8 @@ classdef CasadiNLPSolver < Solver
       % initial guess
       args.x0 = x0;
       
-      % scale initial guess and bounds, and parameters
-      if self.options.nlp.scaling
-        args.x0 = self.scale(args.x0,scalingMinVars,scalingMaxVars);
-        args.lbx = self.scale(args.lbx,scalingMinVars,scalingMaxVars);
-        args.ubx = self.scale(args.ubx,scalingMinVars,scalingMaxVars);
-        args.p = self.scale(args.p,scalingMinParams,scalingMaxParams);
-      end
-      
-      % fix bug with 0x1 vs 0x0 parameter
-      if isempty(psym)
-        casadiNLP.p = casadi.MX.sym('p',[0,1]);
-      end
-      
-      
       % execute solver
       sol = self.casadiSolver.call(args);
-      
       
       if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
         error('Solver was interrupted by user.');
@@ -179,6 +173,9 @@ classdef CasadiNLPSolver < Solver
         vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
       end
       vsymMat = vertcat(vsym{:});
+
+%       vsym = casadi.MX.sym('v',[nv 1]);
+%       vsymMat = vsym;
       
       
       % apply scaling
@@ -218,10 +215,10 @@ classdef CasadiNLPSolver < Solver
       
     end
     
-    function callBackHandle(self,values)
+    function callBackHandle(self,values,vars,varIndizes,paramIndizes,params)
       
-      x = self.initialGuess.flat;
-      x(self.varIndizes) = values;
+      x = vars.flat;
+      x(varIndizes) = values;
       
       %remove scaling from decision variables
       if self.options.nlp.scaling
@@ -229,7 +226,7 @@ classdef CasadiNLPSolver < Solver
       end
       % replace parameters
       if self.options.nlp.detectParameters
-        x(self.paramIndizes) = self.args.p;
+        x(paramIndizes) = params;
       end
       
       %       here will evaluate the cost function and constraints and pass to
@@ -238,7 +235,7 @@ classdef CasadiNLPSolver < Solver
       %       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(x);
       
       
-      self.nlp.getCallback(self.initialGuess,x);
+      self.nlp.getCallback(vars,x);
       
     end
     

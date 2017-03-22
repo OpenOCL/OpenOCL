@@ -32,9 +32,9 @@ classdef CasadiIntegrator < Integrator
 %       integratorOptions.calc_ic	= false;
 %       integratorOptions.abstol = 1e-3;
 %       integratorOptions.reltol = 1e-3;
-      integratorOptions.rootfinder = 'kinsol';
+%       integratorOptions.rootfinder = 'kinsol';
 %       integratorOptions.number_of_finite_elements = 10;
-      self.systemIntegrator = casadi.integrator('integrator','collocation',dae,integratorOptions);
+      self.systemIntegrator = casadi.integrator('integrator','idas',dae,integratorOptions);
     end
     
     function [stateNext,algVars] = evaluate(self,state,algVarsGuess,controls,timestep,parameters)

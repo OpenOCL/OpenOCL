@@ -58,12 +58,12 @@ classdef Solver < handle
       nlp.setOcpHandler(ocpHandler);
       integrator.setPathCostsFun(ocpHandler.pathCostsFun);
       
-      ocpHandler.pathCostsFun           = CasadiFunction(ocpHandler.pathCostsFun);
-      ocpHandler.arrivalCostsFun        = CasadiFunction(ocpHandler.arrivalCostsFun);
-      ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
-      ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
+%       ocpHandler.pathCostsFun           = CasadiFunction(ocpHandler.pathCostsFun);
+%       ocpHandler.arrivalCostsFun        = CasadiFunction(ocpHandler.arrivalCostsFun);
+%       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
+%       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
       system.systemFun                  = CasadiFunction(system.systemFun);
-      nlp.integratorFun                 = CasadiFunction(nlp.integratorFun);
+%       nlp.integratorFun                 = CasadiFunction(nlp.integratorFun);
 
     end
     

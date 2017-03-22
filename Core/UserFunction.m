@@ -20,7 +20,7 @@ classdef UserFunction < Function
       [varargout{:}] = self.functionHandle(self.inputs{:});
       
       for k=1:self.nOutputs
-        varargout{k} = varargout{k}.value;
+        varargout{k} = varargout{k}.flat;
       end
       
     end
