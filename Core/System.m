@@ -58,6 +58,12 @@ classdef (Abstract) System < handle
     function initialCondition(~,~,~)
     end
     
+    function simulationCallbackSetup(self)
+    end
+    
+    function simulationCallback(self,states,algVars,controls,parameters)
+    end
+    
     function [ode,alg] = evaluate(self,state,algVars,controls,parameters)
       % evaluate the system equations for the assigned 
       

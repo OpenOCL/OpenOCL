@@ -17,13 +17,6 @@ classdef OCP < handle
     endTime
   end
   
-  methods(Abstract)
-    pathCosts(self,state,algVar,controls,time,parameters)
-    arrivalCosts(self,state,time,parameters)
-    pathConstraints(self,state,controls,time,parameters)
-    boundaryConditions(self,initialState,finalState,parameters)
-  end
-  
   methods(Access = public)
     function self = OCP(system)
       
@@ -41,6 +34,18 @@ classdef OCP < handle
     
     function c = discreteCost(self,vars)
       c = 0;
+    end
+    
+    function pathCosts(self,states,algVars,controls,time,parameters)
+    end
+    
+    function arrivalCosts(self,states,time,parameters)
+    end
+    
+    function pathConstraints(self,states,controls,time,parameters)
+    end
+    
+    function boundaryConditions(self,initialStates,finalStates,parameters)
     end
         
     function system = getSystem(self)
