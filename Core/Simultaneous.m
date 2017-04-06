@@ -11,12 +11,14 @@ classdef Simultaneous < handle
     
     scalingMin
     scalingMax
+    
+    system
   end
   
   properties(Access = private)
     ocpHandler
     N
-    system
+    
     
     nx
     nu
