@@ -168,14 +168,14 @@ classdef CasadiNLPSolver < Solver
       
       % create symbolic casadi variables for all decision variables
       nv = prod(size(vars));
-%       vsym = cell(1,nv);
-%       for k=1:nv
-%         vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
-%       end
-%       vsymMat = vertcat(vsym{:});
+      vsym = cell(1,nv);
+      for k=1:nv
+        vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
+      end
+      vsymMat = vertcat(vsym{:});
 
-      vsym = casadi.MX.sym('v',[nv 1]);
-      vsymMat = vsym;
+%       vsym = casadi.MX.sym('v',[nv 1]);
+%       vsymMat = vsym;
       
       
       % apply scaling
