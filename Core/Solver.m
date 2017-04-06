@@ -19,8 +19,9 @@ classdef Solver < handle
       options.nlp.discretizationPoints  = 20;
       options.nlp.collocationOrder      = 3;
       options.nlp.solver                = 'ipopt';
-      options.nlp.scaling               = true;
-      options.nlp.detectParameters      = true;
+      options.nlp.scaling               = false;
+      options.nlp.detectParameters      = false;
+      options.nlp.outputLifting         = false;
 
       options.nlp.casadi.iteration_callback_step = 1;
       

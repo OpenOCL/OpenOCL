@@ -9,14 +9,14 @@ classdef CasadiLib
     
     function setSXSystem(system)
       CasadiLib.setSX(system.state)
-      CasadiLib.setSX(system.algState)
+      CasadiLib.setSX(system.algVars)
       CasadiLib.setSX(system.controls)
       CasadiLib.setSX(system.parameters)
     end
     
     function setMXSystem(system)
       CasadiLib.setMX(system.state)
-      CasadiLib.setMX(system.algState)
+      CasadiLib.setMX(system.algVars)
       CasadiLib.setMX(system.controls)
       CasadiLib.setMX(system.parameters)
     end

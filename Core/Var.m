@@ -151,9 +151,9 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       % addVar(var)
       %   Adds a reference of the var
       
-      if ~varIn.compiled
-        error('Only compiled vars can be added.');
-      end
+%       if ~varIn.compiled
+%         error('Only compiled vars can be added.');
+%       end
       
       if self.compiled
         error('Can not add variables to a compiled var.');
