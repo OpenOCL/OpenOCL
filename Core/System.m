@@ -33,7 +33,7 @@ classdef (Abstract) System < handle
       if nargin == 0
         self.parameters = Parameters;
       else
-        self.parameters  = parameters;
+        self.parameters  = parameters.copy;
       end
       
       self.initialConditions = [];
@@ -47,7 +47,7 @@ classdef (Abstract) System < handle
       self.state.compile;
       self.algVars.compile;
       self.controls.compile;
-      self.parameters.compile;
+%       self.parameters.compile;
       self.ode.compile;
       self.alg.compile;
       
