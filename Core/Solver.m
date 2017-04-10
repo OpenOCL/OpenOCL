@@ -15,13 +15,13 @@ classdef Solver < handle
       options.iterationCallback = false;
       
       options.nlp = struct;
-      options.nlp.discretization        = 'collocation';
-      options.nlp.discretizationPoints  = 20;
-      options.nlp.collocationOrder      = 3;
-      options.nlp.solver                = 'ipopt';
-      options.nlp.scaling               = false;
-      options.nlp.detectParameters      = false;
-      options.nlp.outputLifting         = false;
+      options.nlp.discretization         = 'collocation';
+      options.nlp.controlIntervals       = 20;
+      options.nlp.collocationOrder       = 3;
+      options.nlp.solver                 = 'ipopt';
+      options.nlp.scaling                = false;
+      options.nlp.detectParameters       = false;
+      options.nlp.outputLifting          = false;
 
       options.nlp.casadi.iteration_callback_step = 1;
       
@@ -48,7 +48,15 @@ classdef Solver < handle
     
     function nlp = getNLP(ocp,system,options)
       
-      N = options.nlp.discretizationPoints;
+      if isfield(options.nlp,'discretizationPoints') && ...
+         isnumeric(options.nlp.discretizationPoints)
+        error(['You are using a deprecated option: Please use ', ...
+               'the option field "options.nlp.controlIntervals" instead of ', ...
+               '"options.nlp.discretizationPoints" for the Solver.']);
+      end
+      
+      N = options.nlp.controlIntervals;
+
       parameters = ocp.getParameters;
       integrator = CollocationIntegrator(system,options.nlp.collocationOrder,parameters);
       

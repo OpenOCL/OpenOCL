@@ -1,7 +1,7 @@
 StartupOC
 
 FINALTIME = 10;               % horizon length (seconds)
-DISCRETIZATIONPOINTS = 30;    % horizon discretization
+CONTROL_INTERVALS = 30;    % horizon discretization
 
 % Create system and OCP
 system = ExampleSystem;
@@ -10,17 +10,12 @@ ocp = ExampleOCP(system);
 % Get and set solver options
 options = Solver.getOptions;
 options.iterationCallback = false;
-options.nlp.discretizationPoints = DISCRETIZATIONPOINTS;
+options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 options.nlp.scaling = true;
 options.nlp.detectParameters = true;
-
-% options.nlp.solver = 'sqpmethod';
-% options.nlp.casadi.qpsol = 'qpoases';
-% options.nlp.solver = 'worhp';
-% options.nlp.worhp.NLPprint = 1;
 
 nlp = Solver.getNLP(ocp,system,options);
 
