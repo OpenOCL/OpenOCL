@@ -56,27 +56,27 @@ classdef OCP < handle
       p = self.parameters;
     end
 
-    function pc = getPathConstraints(self,state,algVars,controls,time,parameters)
+    function pc = getPathConstraints(self,states,algVars,controls,time,parameters)
       self.thisPathConstraints.clear;
-      self.pathConstraints(state,algVars,controls,time,parameters);
+      self.pathConstraints(states,algVars,controls,time,parameters);
       pc = self.thisPathConstraints;
     end
     
-    function tc = getBoundaryConditions(self,initialState,finalState,parameters)
+    function tc = getBoundaryConditions(self,initialStates,finalStates,parameters)
       self.thisBoundaryConditions.clear;
-      self.boundaryConditions(initialState,finalState,parameters);
+      self.boundaryConditions(initialStates,finalStates,parameters);
       tc = self.thisBoundaryConditions;
     end
 
-    function pc = getPathCosts(self,state,algVars,controls,time,parameters)
+    function pc = getPathCosts(self,states,algVars,controls,time,parameters)
       self.thisPathCosts = Var(0,'pathCost');
-      self.pathCosts(state,algVars,controls,time,parameters);
+      self.pathCosts(states,algVars,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     
-    function tc = getArrivalCosts(self,state,time,parameters)
+    function tc = getArrivalCosts(self,states,time,parameters)
       self.thisArrivalCosts = Var(0,'arrivalCost');
-      self.arrivalCosts(state,time,parameters);
+      self.arrivalCosts(states,time,parameters);
       tc = self.thisArrivalCosts;
     end
     

@@ -24,17 +24,17 @@ classdef OCPHandler < handle
       self.ocp = ocp;
       self.system = ocp.getSystem();
       
-      state = self.system.state.copy;
-      stateF = self.system.state.copy;
+      states = self.system.states.copy;
+      statesF = self.system.states.copy;
       controls = self.system.controls.copy;
       algVars = self.system.algVars.copy;
       params = self.getParameters.copy;
       time = nlpVars.get('time');
 
-      self.pathCostsFun = UserFunction(@self.getPathCosts,{state,algVars,controls,time,params},1);
-      self.arrivalCostsFun = UserFunction(@self.getArrivalCosts,{state,time,params},1);
-      self.boundaryConditionsFun = UserFunction(@self.getBoundaryConditions,{state,stateF,params},3);
-      self.pathConstraintsFun = UserFunction(@self.getPathConstraints,{state,algVars,controls,time,params},3);
+      self.pathCostsFun = UserFunction(@self.getPathCosts,{states,algVars,controls,time,params},1);
+      self.arrivalCostsFun = UserFunction(@self.getArrivalCosts,{states,time,params},1);
+      self.boundaryConditionsFun = UserFunction(@self.getBoundaryConditions,{states,statesF,params},3);
+      self.pathConstraintsFun = UserFunction(@self.getPathConstraints,{states,algVars,controls,time,params},3);
       
     end
  
@@ -43,7 +43,7 @@ classdef OCPHandler < handle
     end
     
     function nx = getStatesSize(self)
-      nx = prod(self.system.state.size);
+      nx = prod(self.system.states.size);
     end
     function nu = getControlsSize(self)
       nu = prod(self.system.controls.size);
@@ -72,26 +72,26 @@ classdef OCPHandler < handle
   end
   
   methods(Access = protected)
-    function [val,lb,ub] = getPathConstraints(self,state,algVars,controls,time,params)
-      constraint = self.ocp.getPathConstraints(state,algVars,controls,time,params);   
+    function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,params)
+      constraint = self.ocp.getPathConstraints(states,algVars,controls,time,params);   
       val = constraint.values;
       lb  = constraint.lowerBounds;
       ub  = constraint.upperBounds;
     end
     
-    function [val,lb,ub] = getBoundaryConditions(self,initialState,finalState,params)
-      constraint = self.ocp.getBoundaryConditions(initialState,finalState,params);
+    function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,params)
+      constraint = self.ocp.getBoundaryConditions(initialStates,finalStates,params);
       val = constraint.values;
       lb  = constraint.lowerBounds;
       ub  = constraint.upperBounds;
     end
 
-    function pathCosts = getPathCosts(self,state,algVars,controls,time,params)
-      pathCosts = self.ocp.getPathCosts(state,algVars,controls,time,params);
+    function pathCosts = getPathCosts(self,states,algVars,controls,time,params)
+      pathCosts = self.ocp.getPathCosts(states,algVars,controls,time,params);
     end
     
-    function arrivalCosts = getArrivalCosts(self,state,time,params)
-      arrivalCosts = self.ocp.getArrivalCosts(state,time,params);
+    function arrivalCosts = getArrivalCosts(self,states,time,params)
+      arrivalCosts = self.ocp.getArrivalCosts(states,time,params);
     end  
     
   end

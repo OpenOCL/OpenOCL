@@ -7,7 +7,7 @@ classdef Integrator < handle
   end
   
   methods(Abstract)
-    [finalState, finalAlgVars, costs] = evaluate(self,state,integratorVars,controls,startTime,finalTime,parameters)
+    [finalStates, finalAlgVars, costs] = evaluate(self,states,integratorVars,controls,startTime,finalTime,parameters)
   end
   
   methods

@@ -23,7 +23,7 @@ classdef Simulator < handle
       controls.addRepeated({self.system.controls},N);
     end
     
-    function [statesVec,algVarsVec,controlsSeries] = simulate(self,initialState,times,varargin)
+    function [statesVec,algVarsVec,controlsSeries] = simulate(self,initialStates,times,varargin)
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,parameters)
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters)
       % [statesVec,algVarsVec,controlsVec] = simulate(self,initialState,times,controlsSeries,parameters,callback)
@@ -46,15 +46,15 @@ classdef Simulator < handle
       
       
       statesVec = Var('states');
-      statesVec.addRepeated({self.system.state},N+1);
+      statesVec.addRepeated({self.system.states},N+1);
       algVarsVec = Var('algVars');
       algVarsVec.addRepeated({self.system.algVars},N);
       
-      state = self.getConsistentIntitialCondition(initialState,parameters);
+      states = self.getConsistentIntitialCondition(initialStates,parameters);
       algVars = self.system.algVars;
       algVars.set(0);
  
-      statesVec.get('state',1).set(state.flat);
+      statesVec.get('states',1).set(states.flat);
       
       % setup callback
       if callback
@@ -65,54 +65,54 @@ classdef Simulator < handle
         timestep = times(k+1)-times(k);
         
         if nargin == 4
-          controls = self.system.callIterationCallback(state,algVars,parameters);
+          controls = self.system.callIterationCallback(states,algVars,parameters);
         elseif nargin == 5 || nargin == 6
           if callback
-            self.system.callIterationCallback(state,algVars,parameters);
+            self.system.callIterationCallback(states,algVars,parameters);
           end
           controls = controlsSeries.get('controls',k);
         end
         
-        [stateVal,algVarsVal] = self.integrator.evaluate(state.flat,algVars.flat,controls.flat,timestep,parameters.flat);
-        stateVal = full(stateVal);
+        [statesVal,algVarsVal] = self.integrator.evaluate(states.flat,algVars.flat,controls.flat,timestep,parameters.flat);
+        statesVal = full(statesVal);
         algVarsVal = full(algVarsVal);
         
-        statesVec.get('state',k+1).set(stateVal);
+        statesVec.get('states',k+1).set(statesVal);
         
         if ~isempty(algVarsVal)
           algVarsVec.get('algVars',k).set(algVarsVal);
         end
         controlsSeries.get('controls',k).set(controls.flat);
         
-        state.set(stateVal);
+        states.set(statesVal);
         algVars.set(algVarsVal);
       end  
     end
     
-    function state = getState(self)
-      state = self.system.state.copy;
-      state.set(0);
+    function states = getStates(self)
+      states = self.system.states.copy;
+      states.set(0);
     end
     
-    function stateOut = getConsistentIntitialCondition(self,state,parameters)
+    function statesOut = getConsistentIntitialCondition(self,states,parameters)
       
-      stateOut = state.copy;
+      statesOut = states.copy;
       
       % check initial condition
-      ic = self.system.getInitialCondition(state,parameters);
+      ic = self.system.getInitialCondition(states,parameters);
       
       if ~all(ic==0)
         warning('Initial state is not consistent, trying to find a consistent initial condition...');
-        stateSym  = state.copy;
+        stateSym  = states.copy;
         CasadiLib.setSX(stateSym);
         ic = self.system.getInitialCondition(stateSym,parameters);
         
         nlp    = struct('x', stateSym.flat, 'f', 0, 'g', ic);
         solver = casadi.nlpsol('solver', 'ipopt', nlp);
-        sol    = solver('x0', state.flat, 'lbx', -inf, 'ubx', inf,'lbg', 0, 'ubg', 0);
+        sol    = solver('x0', states.flat, 'lbx', -inf, 'ubx', inf,'lbg', 0, 'ubg', 0);
         
         consistentState  = full(sol.x);
-        stateOut.set(consistentState);
+        statesOut.set(consistentState);
       end
       
     end

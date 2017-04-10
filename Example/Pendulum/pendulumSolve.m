@@ -31,8 +31,8 @@ solver = Solver.getSolver(nlp,options);
 
 % Get and set initial guess
 initialGuess = nlp.getInitialGuess;
-initialGuess.get('state').get('p').set([0;-1]);
-initialGuess.get('state').get('v').set([0.1;0]);
+initialGuess.get('states').get('p').set([0;-1]);
+initialGuess.get('states').get('v').set([0.1;0]);
 initialGuess.get('controls').get('F').set(-10);
 
 nlp.interpolateGuess(initialGuess);

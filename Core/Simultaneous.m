@@ -41,9 +41,9 @@ classdef Simultaneous < handle
       self.system = system;
       
       
-      state = system.state;
+      states = system.states;
       self.stateVars = Var('states');
-      self.stateVars.addRepeated({state},N+1);
+      self.stateVars.addRepeated({states},N+1);
       self.stateVars.compile;
       
       controls = system.controls;
@@ -54,10 +54,10 @@ classdef Simultaneous < handle
       
       integratorVars = integrator.getIntegratorVars;
       self.nlpVars = Var('nlpVars');
-      self.nlpVars.addRepeated({self.system.state,...
+      self.nlpVars.addRepeated({self.system.states,...
                                 integratorVars,...
                                 self.system.controls},self.N);
-      self.nlpVars.add(self.system.state);
+      self.nlpVars.add(self.system.states);
       
       self.system.parameters.compile;
       self.nlpVars.add(self.system.parameters);
@@ -113,8 +113,8 @@ classdef Simultaneous < handle
     function interpolateGuess(self,guess)
       
       for i=1:self.N
-        state = guess.get('state',i).flat;
-        guess.get('integratorVars',i).get('state').set(state);
+        state = guess.get('states',i).flat;
+        guess.get('integratorVars',i).get('states').set(state);
       end
       
     end
@@ -203,8 +203,8 @@ classdef Simultaneous < handle
       constraints_UB = [];
       costs = 0;
       
-      initialState = nlpInputs(1:self.nx,1);
-      thisState = initialState;
+      initialStates = nlpInputs(1:self.nx,1);
+      thisStates = initialStates;
       curIndex = self.nx;
       
       for k=1:self.N
@@ -216,7 +216,7 @@ classdef Simultaneous < handle
         curIndex = curIndex+self.nu;
         
         % add integrator equation of direction collocation
-        [finalState, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisState,thisIntegratorVars,thisControl,timeGrid(k),timeGrid(k+1),parameters);
+        [finalStates, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisStates,thisIntegratorVars,thisControl,timeGrid(k),timeGrid(k+1),parameters);
 
         constraints = [constraints; integratorEquations];
         constraints_LB = [constraints_LB; zeros(size(integratorEquations))];
@@ -225,27 +225,27 @@ classdef Simultaneous < handle
         costs = costs + integrationCosts;
         
         % go to next time gridpoint
-        thisState = nlpInputs(curIndex+1:curIndex+self.nx);
+        thisStates = nlpInputs(curIndex+1:curIndex+self.nx);
         curIndex = curIndex+self.nx;
         
         % path constraints
-        [pathConstraint,lb,ub] = self.ocpHandler.pathConstraintsFun.evaluate(thisState, finalAlgVars, thisControl,timeGrid(k+1),parameters);
+        [pathConstraint,lb,ub] = self.ocpHandler.pathConstraintsFun.evaluate(thisStates, finalAlgVars, thisControl,timeGrid(k+1),parameters);
         constraints = [constraints; pathConstraint];
         constraints_LB = [constraints_LB; lb];
         constraints_UB = [constraints_UB; ub];
         
         % continuity equation
-        constraints = [constraints; thisState - finalState];
+        constraints = [constraints; thisStates - finalStates];
         constraints_LB = [constraints_LB; zeros(self.nx,1)];
         constraints_UB = [constraints_UB; zeros(self.nx,1)];
       end
       
       % add terminal cost
-      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisState,T,parameters);
+      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,T,parameters);
       costs = costs + terminalCosts;
 
       % add terminal constraints
-      [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialState,thisState,parameters);
+      [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialStates,thisStates,parameters);
       constraints = [constraints; boundaryConditions];
       constraints_LB = [constraints_LB; lb];
       constraints_UB = [constraints_UB; ub];

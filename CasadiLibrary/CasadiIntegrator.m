@@ -11,18 +11,18 @@ classdef CasadiIntegrator < Integrator
       
       self = self@Integrator(system);
       
-      state = casadi.SX.sym('x',prod(system.state.size),1);
+      states = casadi.SX.sym('x',prod(system.states.size),1);
       algVars = casadi.SX.sym('z',prod(system.algVars.size),1);
       controls = casadi.SX.sym('u',prod(system.controls.size),1);
       h = casadi.SX.sym('h',1);
       parameters = casadi.SX.sym('p',prod(system.parameters.size),1);
       
-      [ode,alg] = system.systemFun.evaluate(state,algVars,controls,parameters);
+      [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
       
       
       
       dae = struct;
-      dae.x = system.state.value;
+      dae.x = system.states.value;
       dae.z = system.algVars.value;
       dae.p = [h;system.controls.value;system.parameters.value];
       dae.ode = h*ode;
@@ -37,9 +37,9 @@ classdef CasadiIntegrator < Integrator
       self.systemIntegrator = casadi.integrator('integrator','idas',dae,integratorOptions);
     end
     
-    function [stateNext,algVars] = evaluate(self,state,algVarsGuess,controls,timestep,parameters)
+    function [statesNext,algVars] = evaluate(self,states,algVarsGuess,controls,timestep,parameters)
       
-      x = state;
+      x = states;
       u = controls;
       z = algVarsGuess;
       
@@ -47,7 +47,7 @@ classdef CasadiIntegrator < Integrator
                                              'p', [timestep;u;parameters], ...
                                              'z0', z);
                                            
-      stateNext = integrationStep.xf;
+      statesNext = integrationStep.xf;
       algVars = integrationStep.zf;
       
     end

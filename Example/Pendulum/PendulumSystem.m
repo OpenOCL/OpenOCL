@@ -33,8 +33,8 @@ classdef PendulumSystem < System
       self.setInitialCondition(p(1)^2+p(2)^2-l^2);
       self.setInitialCondition(dot(p,v));
     end
-    function simulationCallback(self,state,algVars,controls,parameters)
-      p = state.get('p').value;
+    function simulationCallback(self,states,algVars,controls,parameters)
+      p = states.get('p').value;
       l = parameters.get('l').value;
       
       plot(0,0,'ob')

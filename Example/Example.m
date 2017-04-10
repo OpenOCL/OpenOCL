@@ -44,15 +44,15 @@ solver = Solver.getSolver(nlp,options);
 
 % Get and set initial guess
 initialGuess = nlp.getInitialGuess;
-initialGuess.get('state').get('x').set(-0.2);
+initialGuess.get('states').get('x').set(-0.2);
 
 % Run solver to obtain solution
 [solution,times] = solver.solve(initialGuess);
 
 figure
 hold on 
-plot(times,solution.get('state').get('x').value,'-.')
-plot(times,solution.get('state').get('y').value,'--k')
+plot(times,solution.get('states').get('x').value,'-.')
+plot(times,solution.get('states').get('y').value,'--k')
 stairs(times(1:end-1),solution.get('controls').get('u').value,'r')
 xlabel('time')
 legend({'x','y','u'})

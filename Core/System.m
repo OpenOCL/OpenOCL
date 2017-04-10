@@ -5,7 +5,7 @@ classdef (Abstract) System < handle
   end  
   
   properties
-    state
+    states
     algVars
     controls
     parameters
@@ -26,7 +26,7 @@ classdef (Abstract) System < handle
   methods
     
     function self = System(parameters)
-      self.state      = Var('state');
+      self.states     = Var('states');
       self.algVars    = Var('algVars');
       self.controls   = Var('controls');
       
@@ -44,14 +44,14 @@ classdef (Abstract) System < handle
       
       self.setupVariables;
       
-      self.state.compile;
+      self.states.compile;
       self.algVars.compile;
       self.controls.compile;
 %       self.parameters.compile;
       self.ode.compile;
       self.alg.compile;
       
-      self.systemFun = UserFunction(@self.evaluate,{self.state,self.algVars,self.controls,self.parameters},2);
+      self.systemFun = UserFunction(@self.evaluate,{self.states,self.algVars,self.controls,self.parameters},2);
       
     end
     
@@ -64,19 +64,19 @@ classdef (Abstract) System < handle
     function simulationCallback(self,states,algVars,controls,parameters)
     end
     
-    function [ode,alg] = evaluate(self,state,algVars,controls,parameters)
+    function [ode,alg] = evaluate(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned 
       
       self.alg = Var('alg');
 
-      self.setupEquation(state,algVars,controls,parameters);
+      self.setupEquation(states,algVars,controls,parameters);
       
       ode = self.ode;
       alg = self.alg;
     end
     
     function addState(self,id,size)
-      self.state.add(id,size);
+      self.states.add(id,size);
       self.ode.add([System.DOT_PREFIX id],size)
     end
     function addAlgVar(self,id,size)
@@ -91,10 +91,10 @@ classdef (Abstract) System < handle
     
     
     function state = getState(self,id)
-      state = self.state.get(id).value;
+      state = self.states.get(id).value;
     end
-    function algState = getAlgVar(self,id)
-      algState = self.algVars.get(id).value;
+    function algVar= getAlgVar(self,id)
+      algVar = self.algVars.get(id).value;
     end
     function control = getControl(self,id)
       control = self.controls.get(id).value;
@@ -117,27 +117,27 @@ classdef (Abstract) System < handle
       self.initialConditions = [self.initialConditions; value];      
     end
     
-    function  ic = getInitialCondition(self,state,parameters)
+    function  ic = getInitialCondition(self,states,parameters)
       self.initialConditions = [];
-      self.initialCondition(state,parameters)
+      self.initialCondition(states,parameters)
       ic = self.initialConditions;
     end
     
-    function controls = callIterationCallback(self,state,algVars,parameters)
+    function controls = callIterationCallback(self,states,algVars,parameters)
       controls = self.controls;
       controls.set(0);
-      self.simulationCallback(state,algVars,controls,parameters);
+      self.simulationCallback(states,algVars,controls,parameters);
     end
     
     function solutionCallback(self,solution)
       
-      N = solution.get('state').getNumberOfVars;
+      N = solution.get('states').getNumberOfVars;
       parameters = solution.get('parameters');
       
       for k=1:N-1
-        state = solution.get('state',k+1);
+        states = solution.get('states',k+1);
         algVars = solution.get('integratorVars',k).get('algVars',3);
-        self.callIterationCallback(state,algVars,parameters);
+        self.callIterationCallback(states,algVars,parameters);
       end
       
     end
