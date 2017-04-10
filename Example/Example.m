@@ -14,8 +14,6 @@ options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
-options.nlp.scaling = true;
-options.nlp.detectParameters = true;
 
 nlp = Solver.getNLP(ocp,system,options);
 

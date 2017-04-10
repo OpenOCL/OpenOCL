@@ -10,6 +10,8 @@ classdef CasadiNLPSolver < Solver
     
     scalingMin
     scalingMax
+    
+    timeMeasures = struct;
   end
   
   methods
@@ -19,7 +21,10 @@ classdef CasadiNLPSolver < Solver
       self.nlp = nlp;
       self.options = options;
       self.construct;
-      
+    end
+    
+    function t = getTimeMeasures(self)
+      t = self.timeMeasures;
     end
     
     function parameters = getParameters(self)
@@ -29,6 +34,8 @@ classdef CasadiNLPSolver < Solver
     
     function [outVars,times,objective,constraints] = solve(self,initialGuess)
       % solve(self,initialGuess)
+      
+      solveTotalTic = tic;
       
       self.initialGuess = initialGuess;
       
@@ -112,8 +119,9 @@ classdef CasadiNLPSolver < Solver
         casadiNLP.p = casadi.MX.sym('p',[0,1]);
       end
       
-      
+      constructSolverTic = tic;
       self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver, casadiNLP, opts);
+      constructSolverTime = toc(constructSolverTic);
       
       args = struct;
       % bounds for non-linear constraints function
@@ -127,7 +135,9 @@ classdef CasadiNLPSolver < Solver
       args.x0 = x0;
       
       % execute solver
+      solveCasadiTic = tic;
       sol = self.casadiSolver.call(args);
+      solveCasadiTime = toc(solveCasadiTic);
       
       if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
         error('Solver was interrupted by user.');
@@ -144,12 +154,19 @@ classdef CasadiNLPSolver < Solver
         x(varIndizes) = xsol;
         x(paramIndizes) = params;
         
+        nlpFunEvalTic = tic;
         [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(x);
         objective = full(objective);
         constraints = full(constraints);
+        nlpFunEvalTime = toc(nlpFunEvalTic);
         
         initialGuess.set(x);
         outVars = initialGuess;
+        
+        self.timeMeasures.solveTotal      = toc(solveTotalTic);
+        self.timeMeasures.solveCasadi     = solveCasadiTime;
+        self.timeMeasures.constructSolver = constructSolverTime;
+        self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
       end
       
     end
@@ -160,22 +177,31 @@ classdef CasadiNLPSolver < Solver
     
     function construct(self)
       
+      constructTotalTic = tic;
+      
       vars = self.nlp.nlpVars;
+      nv = prod(size(vars));
+      
+      
+      % create symbolic casadi variables for all decision variables
+      
+      constructSymVarTic = tic;
+      
       %       CasadiLib.setMX(vars);
       %       vsym = vars.flat;
       %       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
       
+%       vsym = casadi.MX.sym('v',[nv 1]);
+%       vsymMat = vsym;      
       
-      % create symbolic casadi variables for all decision variables
-      nv = prod(size(vars));
+      
       vsym = cell(1,nv);
       for k=1:nv
         vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
       end
       vsymMat = vertcat(vsym{:});
-
-%       vsym = casadi.MX.sym('v',[nv 1]);
-%       vsymMat = vsym;
+      
+      constructSymVarTime = toc(constructSymVarTic);
       
       
       % apply scaling
@@ -199,9 +225,14 @@ classdef CasadiNLPSolver < Solver
       
       
       % call nlp function
+      constructNLPFunTic = tic;
+      
       casadiNLPFun = self.nlp.nlpFun;
       [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMat);
       costs = costs + self.nlp.getDiscreteCost(vsymMat);
+      
+      constructNLPFunTime = toc(constructNLPFunTic);
+      %
       
       
       self.nlpData = struct;
@@ -211,7 +242,9 @@ classdef CasadiNLPSolver < Solver
       self.nlpData.constraints_LB = constraints_LB;
       self.nlpData.constraints_UB = constraints_UB;
       
-      
+      self.timeMeasures.constructTotal = toc(constructTotalTic);
+      self.timeMeasures.constructNLPFun = constructNLPFunTime;
+      self.timeMeasures.constructSymVar = constructSymVarTime;
       
     end
     
