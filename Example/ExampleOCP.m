@@ -8,23 +8,23 @@ classdef ExampleOCP < OCP
       % otherwise its 'free'.
       self = self@OCP(system);
     end
-    function pathCosts(self,state,algState,controls,time,parameters)
+    function pathCosts(self,states,algVars,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
-      x  = state.get('x').value;
-      y  = state.get('y').value;
+      x  = states.get('x').value;
+      y  = states.get('y').value;
       u  = controls.get('u').value;
       
       self.addPathCost( x^2 );
       self.addPathCost( y^2 );
       self.addPathCost( u^2 );
     end
-    function arrivalCosts(self,state,time,parameters)
+    function arrivalCosts(self,states,time,parameters)
       % Define terminal cost terms.
     end
-    function pathConstraints(self,state,algVars,controls,time,parameters)
+    function pathConstraints(self,states,algVars,controls,time,parameters)
       % Define non-linear path constraints on variables.
     end    
-    function boundaryConditions(self,state0,stateF,parameters)
+    function boundaryConditions(self,states0,statesF,parameters)
       % Define non-linear terminal constraints.
     end
     
@@ -32,9 +32,9 @@ classdef ExampleOCP < OCP
       
       times = 0:10/30:10;
       hold off
-      plot(times,variables.get('state').get('x').value,'-.')
+      plot(times,variables.get('states').get('x').value,'-.')
       hold on
-      plot(times,variables.get('state').get('y').value,'--k')
+      plot(times,variables.get('states').get('y').value,'--k')
       stairs(times(1:end-1),variables.get('controls').get('u').value,'r')
       xlabel('time')
       legend({'x','y','u'})
