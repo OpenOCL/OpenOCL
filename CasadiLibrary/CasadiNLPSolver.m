@@ -39,23 +39,17 @@ classdef CasadiNLPSolver < Solver
       
       self.initialGuess = initialGuess;
       
+      nv = self.nlp.getNumberOfVars;
       
       % get bound for decision variables
       lbx = self.nlp.lowerBounds.flat;
       ubx = self.nlp.upperBounds.flat;
-      
-      vsym = self.nlpData.vsym;
-      costs = self.nlpData.costs;
-      constraints = self.nlpData.constraint;
-      constraints_LB = self.nlpData.constraints_LB;
-      constraints_UB = self.nlpData.constraints_UB;
       x0 = initialGuess.flat;
       
-      nv = numel(vsym);
       
       % detect variables as parameters if they are constant
       paramIndizes = [];
-      psym = {};
+      psym = [];
       params = [];
       varIndizes = 1:nv;
       if (self.options.nlp.detectParameters)
@@ -68,14 +62,49 @@ classdef CasadiNLPSolver < Solver
         
         % get indizes of variables (in constrast to parameters)
         varIndizes(paramIndizes) = [];
-        
-        % select parameters and variables
-        psym = vsym(paramIndizes);
-        vsym = vsym(varIndizes);
-        lbx = lbx(varIndizes);
-        ubx = ubx(varIndizes);
-        x0 = x0(varIndizes);
       end
+      
+      
+      % create variables and parameter symbolics
+      vsym = casadi.MX.sym('vars',numel(varIndizes));
+      psym = casadi.MX.sym('params',numel(paramIndizes));
+      
+      vars = cell(nv,1);
+      vars(varIndizes) = vertsplit(vsym);
+      vars(paramIndizes) = vertsplit(psym);
+      vars = [vars{:}];
+      
+      
+      x0 = x0(varIndizes);
+      lbx = lbx(varIndizes);
+      ubx = ubx(varIndizes);
+      
+      
+      
+      % apply scaling
+      if self.options.nlp.scaling
+        
+        self.scalingMin = self.nlp.scalingMin.flat;
+        self.scalingMax = self.nlp.scalingMax.flat;
+        
+        % see if scaling information is available for all variables
+        % either from bounds or setScaling
+        self.nlp.checkScaling;
+        
+        % do not scale parameters and variables zero range scaling
+        zeroRange = [find((self.scalingMax-self.scalingMin)==0)];
+        self.scalingMin(zeroRange) = 0;
+        self.scalingMax(zeroRange) = 1;
+        
+        % get unscaled symbolic vars
+        vars = self.unscale(vars',self.scalingMin,self.scalingMax);
+      end
+      
+
+      % call nlp function with scaled variables
+      [costs,constraints,constraints_LB,constraints_UB] = self.nlpData.casadiNLPFun.evaluate(vars);
+      costs = costs + self.nlp.getDiscreteCost(vars);
+      
       
       if self.options.nlp.scaling
         scalingMinVars = self.scalingMin(varIndizes);
@@ -91,14 +120,12 @@ classdef CasadiNLPSolver < Solver
       
       
       
-      
       % get struct with nlp for casadi
       casadiNLP = struct;
-      casadiNLP.x = vertcat(vsym{:});
+      casadiNLP.x = vsym;
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
-      casadiNLP.p = vertcat(psym{:});
-      
+      casadiNLP.p = psym;
       
       
       opts = self.options.nlp.casadi;
@@ -178,74 +205,15 @@ classdef CasadiNLPSolver < Solver
     function construct(self)
       
       constructTotalTic = tic;
+      vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
       
-      vars = self.nlp.nlpVars;
-      nv = prod(size(vars));
-      
-      
-      % create symbolic casadi variables for all decision variables
-      
-      constructSymVarTic = tic;
-      
-      %       CasadiLib.setMX(vars);
-      %       vsym = vars.flat;
-      %       vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
-      
-%       vsym = casadi.MX.sym('v',[nv 1]);
-%       vsymMat = vsym;      
-      
-      
-      vsym = cell(1,nv);
-      for k=1:nv
-        vsym{k} = casadi.MX.sym(['v' num2str(k)],[1 1]);
-      end
-      vsymMat = vertcat(vsym{:});
-      
-      constructSymVarTime = toc(constructSymVarTic);
-      
-      
-      % apply scaling
-      if self.options.nlp.scaling
-        
-        self.scalingMin = self.nlp.scalingMin.flat;
-        self.scalingMax = self.nlp.scalingMax.flat;
-        
-        % see if scaling information is available for all variables
-        % either from bounds or setScaling
-        self.nlp.checkScaling;
-        
-        % do not scale parameters and variables zero range scaling
-        zeroRange = [find((self.scalingMax-self.scalingMin)==0)];
-        self.scalingMin(zeroRange) = 0;
-        self.scalingMax(zeroRange) = 1;
-        
-        % get unscaled symbolic vars
-        vsymMat = self.unscale(vsymMat,self.scalingMin,self.scalingMax);
-      end
-      
-      
-      % call nlp function
-      constructNLPFunTic = tic;
-      
-      casadiNLPFun = self.nlp.nlpFun;
-      [costs,constraints,constraints_LB,constraints_UB] = casadiNLPFun.evaluate(vsymMat);
-      costs = costs + self.nlp.getDiscreteCost(vsymMat);
-      
-      constructNLPFunTime = toc(constructNLPFunTic);
-      %
-      
-      
+      % create nlp function
+      casadiNLPFun = CasadiFunction(self.nlp.nlpFun);
+
       self.nlpData = struct;
-      self.nlpData.vsym = vsym;
-      self.nlpData.costs = costs;
-      self.nlpData.constraint = constraints;
-      self.nlpData.constraints_LB = constraints_LB;
-      self.nlpData.constraints_UB = constraints_UB;
+      self.nlpData.casadiNLPFun = casadiNLPFun;
       
       self.timeMeasures.constructTotal = toc(constructTotalTic);
-      self.timeMeasures.constructNLPFun = constructNLPFunTime;
-      self.timeMeasures.constructSymVar = constructSymVarTime;
-      
     end
     
     function callBackHandle(self,values,vars,varIndizes,paramIndizes,params)

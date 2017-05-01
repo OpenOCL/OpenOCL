@@ -78,6 +78,17 @@ classdef Simultaneous < handle
 
     end
     
+    function setOcpHandler(self,ocpHandler)
+      self.ocpHandler = ocpHandler;
+      self.nx = ocpHandler.getStatesSize;
+      self.nu = ocpHandler.getControlsSize;
+      self.np = ocpHandler.getParametersSize;
+      
+      nv = self.getNumberOfVars;
+      pSize = self.getParameters.size;
+      self.nlpFun = Function(@self.getNLPFun,{self.nlpVars},5);
+    end
+    
     function cost = getDiscreteCost(self,varValues)
       self.nlpVars.set(varValues);
       cost = self.ocpHandler.getDiscreteCost(self.nlpVars);
@@ -172,16 +183,7 @@ classdef Simultaneous < handle
     end
     
     
-    function setOcpHandler(self,ocpHandler)
-      self.ocpHandler = ocpHandler;
-      self.nx = ocpHandler.getStatesSize;
-      self.nu = ocpHandler.getControlsSize;
-      self.np = ocpHandler.getParametersSize;
-      
-      nv = self.getNumberOfVars;
-      pSize = self.getParameters.size;
-      self.nlpFun = Function(@self.getNLPFun,{[nv 1], pSize},5);
-    end
+
 
     function nv = getNumberOfVars(self)
       nv = self.N*self.nu + (self.N+1)*self.nx + self.N*self.ni+self.np+1;
