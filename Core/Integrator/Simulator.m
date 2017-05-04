@@ -141,9 +141,11 @@ classdef Simulator < handle
         
         consistentVars  = full(sol.x);
         varsOut.set(consistentVars);
-        statesOut = varsOut.get('states');
-        algVarsOut = varsOut.get('algVars');
+        
       end
+      
+      statesOut = varsOut.get('states');
+      algVarsOut = varsOut.get('algVars');
       
     end
     
