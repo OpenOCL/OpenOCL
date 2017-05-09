@@ -12,6 +12,7 @@ classdef Arithmetic < handle
       end
     end
     
+    %%% matrix and vector wise operations
     function v = horzcat(varargin)
       N = numel(varargin);
       inValues = cell(1,N);
@@ -109,16 +110,6 @@ classdef Arithmetic < handle
       v = Arithmetic(mpower(a,b));
     end
     
-    function v = mrdivide(a,b)
-      if isa(a,'Arithmetic') 
-        a = a.value;
-      end
-      if isa(b,'Arithmetic')
-        b = b.value;
-      end
-      v = Arithmetic(mrdivide(a,b));
-    end
-    
     function v = mldivide(a,b)
       if isa(a,'Arithmetic') 
         a = a.value;
@@ -133,49 +124,211 @@ classdef Arithmetic < handle
       end
     end
     
-        
-    rank(self)
-    sum_square(self)
-    linspace(self)
-    cross(self)
-    skew(self)
-    inv_skew(self)
-    det(self)
-    inv(self)
-    trace(self)
-    dot(self)
-    polyval(self)
-    diag(self)
-    solve(self)
-    jacobian(self)
-    jtimes(self)
+    function v = cross(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(cross(a,b));
+    end
     
-    plus(self)
-    minus(self)
-    times(self)
-    abs(self)
-    sqrt(self)
-    sin(self)
-    cos(self)
-    tan(self)
-    atan(self)
-    asin(self)
-    acos(self)
-    tanh(self)
-    sinh(self)
-    cosh(self)
-    atanh(self)
-    asinh(self)
-    acosh(self)
-    exp(self)
-    log(self)
-    log10(self)
-    floor(self)
-    power(self)
-    mod(self)
-    atan2(self)
-    min(self)
-    max(self)
+    function v = dot(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(dot(a,b));
+    end
+    
+    function v = inv(self)
+      v = Arithmetic(inv(self.value));
+    end
+    
+    function v = det(self)
+      v = Arithmetic(det(self.value));
+    end
+    
+    function v = trace(self)
+      v = Arithmetic(trace(self.value));
+    end
+    
+    function v = diag(self)
+      v = Arithmetic(diag(self.value));
+    end
+    
+    function v = polyval(p,a)
+      if isa(p,'Arithmetic') 
+        p = p.value;
+      end  
+      if isa(a,'Arithmetic')
+        a = a.value;
+      end   
+      v = Arithmetic(polyval(p,a));
+    end
+    
+    function v = jacobian(ex,arg)
+      if isa(ex,'Arithmetic') 
+        ex = ex.value;
+      end  
+      if isa(arg,'Arithmetic')
+        arg = arg.value;
+      end  
+      v = Arithmetic(jacobian(ex,arg));
+    end
+    
+    function r = jtimes(ex,arg,v)
+      if isa(ex,'Arithmetic') 
+        ex = ex.value;
+      end  
+      if isa(arg,'Arithmetic')
+        arg = arg.value;
+      end
+      if isa(v,'Arithmetic')
+        v = v.value;
+      end  
+      r = Arithmetic(jtimes(ex,arg,v));
+    end
+    
+    %%% element wise operations
+    function v = plus(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(plus(a,b));
+    end
+    
+    function v = minus(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(minus(a,b));
+    end
+    
+    function v = times(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(times(a,b));
+    end
+    
+    function v = power(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(power(a,b));
+    end
+    
+    function v = rdivide(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(rdivide(a,b));
+    end
+    
+    function v = ldivide(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(ldivide(a,b));
+    end
+    
+    function v = atan2(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(atan2(a,b));
+    end
+    
+    function v = abs(self)
+      v = Arithmetic(abs(self.value));
+    end
+
+    function v = sqrt(self)
+      v = Arithmetic(sqrt(self.value));
+    end
+    
+    function v = sin(self)
+      v = Arithmetic(sin(self.value));
+    end
+    
+    function v = cos(self)
+      v = Arithmetic(cos(self.value));
+    end
+    
+    function v = tan(self)
+      v = Arithmetic(tan(self.value));
+    end
+    
+    function v = atan(self)
+      v = Arithmetic(atan(self.value));
+    end
+    
+    function v = asin(self)
+      v = Arithmetic(asin(self.value));
+    end
+    
+    function v = acos(self)
+      v = Arithmetic(acos(self.value));
+    end
+    
+    function v = tanh(self)
+      v = Arithmetic(tanh(self.value));
+    end
+    
+    function v = cosh(self)
+      v = Arithmetic(cosh(self.value));
+    end
+    
+    function v = sinh(self)
+      v = Arithmetic(sinh(self.value));
+    end
+    
+    function v = atanh(self)
+      v = Arithmetic(atanh(self.value));
+    end
+    
+    function v = asinh(self)
+      v = Arithmetic(asinh(self.value));
+    end
+    
+    function v = acosh(self)
+      v = Arithmetic(acosh(self.value));
+    end
+    
+    function v = exp(self)
+      v = Arithmetic(exp(self.value));
+    end
+    
+    function v = log(self)
+      v = Arithmetic(log(self.value));
+    end
+    
+
     
   end
   
@@ -188,9 +341,6 @@ classdef Arithmetic < handle
     function setValue(self,v)
       self.thisValue = v;
     end
-    
-     
-    
     
   end
   
