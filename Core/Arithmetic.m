@@ -1,7 +1,7 @@
 classdef Arithmetic < handle
   
   properties
-    pseudoValue
+    thisValue
   end
   
   methods
@@ -345,11 +345,16 @@ classdef Arithmetic < handle
   methods
     
     function v = value(self)
-      v = self.pseudoValue;
+      v = self.thisValue;
     end
     
     function setValue(self,v)
-      self.pseudoValue = v;
+      self.thisValue = v;
+    end
+    
+    function disp(self)
+      builtin('disp',self);
+      disp(self.value);
     end
     
   end

@@ -8,7 +8,6 @@ classdef Var < Arithmetic
   properties (Access = public)
     id
     subVars
-    thisValue
     thisSize
     
     compiled
