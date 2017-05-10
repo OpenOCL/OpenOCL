@@ -1,4 +1,4 @@
-classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
+classdef Var < Arithmetic
   %Var Variable class
   %   Basic datatype to store structured variables.
   %   Inheriting of Copyable provides copy() method.
@@ -62,6 +62,21 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       self.compiled = false;
     end
     
+    function c = copy(self)
+      classType = str2func(class(self));
+      c = classType();
+      c.id        = self.id;
+      c.thisValue = self.thisValue;
+      c.thisSize  = self.thisSize;
+      c.varIds    = self.varIds;
+      c.compiled  = self.compiled;
+      
+      for k=1:length(self.subVars)
+        cp = copy(self.subVars{k});
+        c.subVars = builtin('horzcat',c.subVars,{cp});
+      end
+    end
+    
         
     function compile(self)
       
@@ -71,12 +86,12 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       
       % compile all subVars
       for i=1:length(self.subVars)
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
         subVar.compile;
       end
 
       for i=1:length(self.subVars)
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
 
         if isempty(self.thisSize)
           self.thisSize = [0 1];
@@ -102,7 +117,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
         sizeIn = varargin{2};
         varIn = UniformVar(idIn,sizeIn);
       elseif nargin == 2
-        varIn = varargin{1}.copy;
+        varIn = varargin{1};
       end
 
       self.addVar(varIn)
@@ -127,7 +142,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
         error('Can not add variables to a compiled var.');
       end   
       
-      self.subVars = builtin('horzcat',self.subVars,varIn);
+      self.subVars = builtin('horzcat',self.subVars,{varIn});
       
       thisIndex = length(self.subVars);
       
@@ -153,7 +168,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
         % sum up the sizes of subVars
         s = 0;
         for i=1:length(self.subVars)
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           if ~isempty(subVar.size)
             s = s + prod(subVar.size);
           end
@@ -177,7 +192,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
         % sum up the sizes of subVars
         v = [];
         for i=1:length(self.subVars)
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           v = [v; subVar.flat];
         end
       else
@@ -219,7 +234,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       counter = 0;
       slice = sliceOp;
       for i = indizes'
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
 
         if strcmp(subVar.id,id) && ~isempty(subVar.subVars)
           counter = counter+1;
@@ -254,7 +269,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       
       % if exactly one match, return the single matching Var
       if length(var.subVars) == 1
-        var = var.subVars(1);
+        var = var.subVars{1};
         return;
       end
       
@@ -295,7 +310,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       counter = 0;
       slice = sliceOp;
       for i = indizes'
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
         [var,counter,slice] = subVar.getSubVar(var,id,counter,slice);
         if isempty(slice)
           break
@@ -304,7 +319,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       
       % if exactly one match, return the single matching Var
       if length(var.subVars) == 1
-        var = var.subVars(1);
+        var = var.subVars{1};
         return;
       end
       var.compile;
@@ -334,7 +349,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       indizes = self.varIds.get(id)';
       
       for i = indizes
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
         [var,counter,slice] = subVar.getSubVar(var,id,counter,slice);
       end
       
@@ -377,7 +392,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       	% split value to subvars
         index = 1;
         for i = 1:length(self.subVars)
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           subVar.set(valueIn(index:index+prod(subVar.size)-1));
           index = index + prod(subVar.size);
         end 
@@ -386,17 +401,17 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
         % assign same value to all subvars if sizes match
         
         % check if all subvars have the same id and size
-        subVarId = self.subVars(1).id;
-        subVarSize = self.subVars(1).size;
+        subVarId = self.subVars{1}.id;
+        subVarSize = self.subVars{1}.size;
         for i = 2:length(self.subVars)
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           if ~strcmp(subVar.id,subVarId) || ~isequal(subVar.size,subVarSize)
             warning('All Variables have to have the same id and size, doing nothing.');
             return
           end
         end
         for i = 1:length(self.subVars) 
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           subVar.set(valueIn);
         end
       end
@@ -425,7 +440,7 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       
       for i = 1:length(self.subVars)
         
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
         indizes = self.varIds.get(subVar.id);
         
         % find i in indizes
@@ -442,19 +457,8 @@ classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
       values = linspace(startValue,endValue,N)';
       self.set(values); 
     end
-
+    
   end % methods
-
-  methods(Access = protected)
-    function cpObj  = copyElement(self)
-      % override copyElement to return a Var with deep copy of subVars 
-      % when calling copy()
-      cpObj = copyElement@matlab.mixin.Copyable(self);
-      if ~isempty(cpObj.subVars)
-        cpObj.subVars = copy(self.subVars);
-      end
-    end
-  end % protected methods
   
 end % class
 

@@ -19,7 +19,7 @@ classdef UniformVar < Var
       
       % compile all subVars
       for i=1:length(self.subVars)
-        subVar = self.subVars(i);
+        subVar = self.subVars{i};
         subVar.compile;
       end
 
@@ -27,7 +27,7 @@ classdef UniformVar < Var
       if N == 0
         nv = 0;
       else
-        nv = prod(self.subVars(1).size);
+        nv = prod(self.subVars{1}.size);
       end
       self.thisSize = [nv,N];
 
@@ -43,7 +43,7 @@ classdef UniformVar < Var
         s = self.thisSize;
       else
         % Return size of the Var based on the subVars
-        nv = prod(self.subVars(1).size);
+        nv = prod(self.subVars{1}.size);
         N = length(self.subVars);
         s = [nv,N];
       end
@@ -62,7 +62,7 @@ classdef UniformVar < Var
         % stack the variables recursively
         v = [];
         for i=1:length(self.subVars)
-          subVar = self.subVars(i);
+          subVar = self.subVars{i};
           v = [v, subVar.flat];
         end
       else
@@ -102,10 +102,10 @@ classdef UniformVar < Var
       
       
       % get subvars 
-      subIndizes = self.subVars(1).varIds.get(id);
+      subIndizes = self.subVars{1}.varIds.get(id);
 
       for i=1:length(self.subVars)
-        subVar = self.subVars(i).subVars(subIndizes);
+        subVar = self.subVars{i}.subVars{subIndizes};
 
         if strcmp(sliceOp,':')
           var.addVar(subVar);
@@ -120,7 +120,7 @@ classdef UniformVar < Var
       
       % if exactly one match, return the single matching Var
       if length(var.subVars) == 1
-        var = var.subVars(1);
+        var = var.subVars{1};
         return;
       end
       var.compile;
