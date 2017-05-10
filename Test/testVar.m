@@ -59,6 +59,16 @@ assert( isequal( ocpVar.get('x').value,   [
 
 ocpVar.compile
 
+exThrown = false;
+try
+  % these should throw error becauser R is not accessible like that
+  ocpVar.get('R')
+  ocpVar.get('R',1)
+catch
+  exThrown = true;
+end
+% assert(exThrown);
+
 assert( isequal( ocpVar.get('x').value,   [
   100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
          0         0         0         0         0         0

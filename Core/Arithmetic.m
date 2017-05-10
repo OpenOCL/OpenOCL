@@ -1,7 +1,7 @@
 classdef Arithmetic < handle
   
   properties
-    thisValue
+    pseudoValue
   end
   
   methods
@@ -13,53 +13,53 @@ classdef Arithmetic < handle
     end
     
     %%% matrix and vector wise operations
-    function v = horzcat(varargin)
-      N = numel(varargin);
-      inValues = cell(1,N);
-      for k=1:numel(varargin)
-        val = varargin{k};
-        if isa(val,'Arithmetic')
-          inValues{k} = val.value;
-        else
-          inValues{k} = val;
-        end
-      end    
-      v = Arithmetic(horzcat(inValues{:}));
-    end
-    
-    function v = vertcat(varargin)
-      N = numel(varargin);
-      inValues = cell(1,N);
-      for k=1:numel(varargin)
-        val = varargin{k};
-        if isa(val,'Arithmetic')
-          inValues{k} = val.value;
-        else
-          inValues{k} = val;
-        end
-      end
-      v = Arithmetic(vertcat(inValues{:}));
-    end
-    
-    function varargout = subsref(self,s)
-      if numel(s) == 1 && strcmp(s.type,'()')
-        [varargout{1}] = Arithmetic(self.value.subsref(s));
-      elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        v = Arithmetic(self.value.subsref(s(1)));
-        [varargout{1:nargout}] = subsref(v,s(2:end));
-      else
-        [varargout{1:nargout}] = builtin('subsref',self,s);
-      end
-    end
-    
-    function self = subsasgn(self,s,v)
-      if numel(s)==1 && strcmp(s.type,'()')
-        v = subsasgn(self.value,s,v);
-        self.setValue(v);
-      else
-        self.setValue(builtin('subsasgn',self.value,s,v));
-      end
-    end
+%     function v = horzcat(varargin)
+%       N = numel(varargin);
+%       inValues = cell(1,N);
+%       for k=1:numel(varargin)
+%         val = varargin{k};
+%         if isa(val,'Arithmetic')
+%           inValues{k} = val.value;
+%         else
+%           inValues{k} = val;
+%         end
+%       end    
+%       v = Arithmetic(horzcat(inValues{:}));
+%     end
+%     
+%     function v = vertcat(varargin)
+%       N = numel(varargin);
+%       inValues = cell(1,N);
+%       for k=1:numel(varargin)
+%         val = varargin{k};
+%         if isa(val,'Arithmetic')
+%           inValues{k} = val.value;
+%         else
+%           inValues{k} = val;
+%         end
+%       end
+%       v = Arithmetic(vertcat(inValues{:}));
+%     end
+%     
+%     function varargout = subsref(self,s)
+%       if numel(s) == 1 && strcmp(s.type,'()')
+%         [varargout{1}] = Arithmetic(self.value.subsref(s));
+%       elseif numel(s) > 1 && strcmp(s(1).type,'()')
+%         v = Arithmetic(self.value.subsref(s(1)));
+%         [varargout{1:nargout}] = subsref(v,s(2:end));
+%       else
+%         [varargout{1:nargout}] = builtin('subsref',self,s);
+%       end
+%     end
+%     
+%     function self = subsasgn(self,s,v)
+%       if numel(s)==1 && strcmp(s.type,'()')
+%         v = subsasgn(self.value,s,v);
+%         self.setValue(v);
+%       else
+%         self.setValue(builtin('subsasgn',self.value,s,v));
+%       end
+%     end
     
     function v = mtimes(a,b)
       if isa(a,'Arithmetic') 
@@ -335,11 +335,11 @@ classdef Arithmetic < handle
   methods
     
     function v = value(self)
-      v = self.thisValue;
+      v = self.pseudoValue;
     end
     
     function setValue(self,v)
-      self.thisValue = v;
+      self.pseudoValue = v;
     end
     
   end

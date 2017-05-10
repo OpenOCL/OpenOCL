@@ -42,12 +42,12 @@ classdef Simultaneous < handle
       
       
       states = system.states;
-      self.stateVars = Var('states');
+      self.stateVars = Var('states',true);
       self.stateVars.addRepeated({states},N+1);
       self.stateVars.compile;
       
       controls = system.controls;
-      self.controlVars = Var('controls');
+      self.controlVars = Var('controls',true);
       self.controlVars.addRepeated({controls},N);
       self.controlVars.compile;
       

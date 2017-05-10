@@ -1,8 +1,8 @@
-classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
+classdef Var < matlab.mixin.Copyable & Arithmetic & matlab.mixin.Heterogeneous
   %Var Variable class
   %   Basic datatype to store structured variables.
   %   Inheriting of Copyable provides copy() method.
-  %   Inheriting of Heterogenous allows for mixed class arrays, e.g. Vars
+  %   Inheriting of Heterogeneous allows for mixed class arrays, e.g. Vars
   %   and Parameters.
   
   properties (Access = public)
@@ -12,7 +12,6 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
     thisSize
     
     compiled
-    isUniform
     varIds
   end
 
@@ -39,12 +38,12 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       elseif ischar(varargin{1}) 
         % create a new variable from id and size
         self.id         = varargin{1};
-        if nargin == 2
+        if nargin > 1 && isa(varargin{2},'double')
           self.thisSize = varargin{2};
           self.compiled = true;
         end
 
-      elseif nargin == 2 && ischar(varargin{2})
+      elseif nargin > 1 && ischar(varargin{2})
         % create a new variable from value and id
         self.id         = varargin{2};
         self.thisSize   = size(varargin{1});
@@ -61,7 +60,6 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       self.thisSize = [0 1];
       self.varIds = java.util.HashMap;
       self.compiled = false;
-      self.isUniform = true;
     end
     
         
@@ -76,40 +74,14 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
         subVar = self.subVars(i);
         subVar.compile;
       end
-      
-      % check if variable is uniform
-      if ~self.isUniform
-        % check for size and id, stop if any of the two dont match
-        self.isUniform = true;
-        subVarId = self.subVars(1).id;
-        subVarSize = self.subVars(1).size;
-        for i = 2:length(self.subVars)
-          subVar = self.subVars(i);
-          if ~strcmp(subVar.id,subVarId) || ~isequal(subVar.size,subVarSize)
-            self.isUniform = false;
-            break
-          end
-        end
-      end
 
-      N = length(self.subVars);
-      if self.isUniform
-        if N == 0
-          nv = 0;
-        else
-          nv = prod(self.subVars(i).size);
-        end
-        self.thisSize = [nv,N];
-        
-      else
-        for i=1:length(self.subVars)
-          subVar = self.subVars(i);
+      for i=1:length(self.subVars)
+        subVar = self.subVars(i);
 
-          if isempty(self.thisSize)
-            self.thisSize = [0 1];
-          end
-          self.thisSize(1) = self.thisSize(1) + prod(subVar.size);
+        if isempty(self.thisSize)
+          self.thisSize = [0 1];
         end
+        self.thisSize(1) = self.thisSize(1) + prod(subVar.size);
       end
 
       self.compiled = true;
@@ -128,7 +100,7 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
         % create new Var from id and size
         idIn = varargin{1};
         sizeIn = varargin{2};
-        varIn = Var(idIn,sizeIn);
+        varIn = UniformVar(idIn,sizeIn);
       elseif nargin == 2
         varIn = varargin{1}.copy;
       end
@@ -151,21 +123,9 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       % addVar(var)
       %   Adds a reference of the var
       
-%       if ~varIn.compiled
-%         error('Only compiled vars can be added.');
-%       end
-      
       if self.compiled
         error('Can not add variables to a compiled var.');
-      end
-      
-      % check if var is still uniform
-      if self.isUniform && ~isempty(self.subVars)
-        if ~strcmp(varIn.id,self.subVars(1).id)
-          self.isUniform = false;
-        end
-      end
-      
+      end   
       
       self.subVars = builtin('horzcat',self.subVars,varIn);
       
@@ -181,74 +141,32 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       end
     end
     
-    function s = getNumberOfVars(self)
-      s = length(self.subVars);
-    end
-    
     function s = size(self)
       % size
       %   Returns the size of the variable
       %   The size is determined by the leave variables
       
-      if self.compiled
+      if self.compiled || isempty(self.subVars) 
         s = self.thisSize;
-        return
-      end
-      
-      % Return size of the Var based on the subVars, if any, otherwise assigned size.
-      
-      if ~isempty(self.subVars) 
-        
-        if self.isUniform
-          nv = prod(self.subVars(1).size);
-          N = length(self.subVars);
-          s = [nv,N];
-          return
-        else
-          
-          % sum up the sizes of subVars
-          s = 0;
-          for i=1:length(self.subVars)
-            subVar = self.subVars(i);
-            if ~isempty(subVar.size)
-              s = s + prod(subVar.size);
-            end
-          end
-          s = [s 1];
-        end
       else
-        s = self.thisSize;
+        % Return size of the Var based on the subVars.
+        % sum up the sizes of subVars
+        s = 0;
+        for i=1:length(self.subVars)
+          subVar = self.subVars(i);
+          if ~isempty(subVar.size)
+            s = s + prod(subVar.size);
+          end
+        end
+        s = [s 1];
       end
+      
     end
     
     function v = value(self)
       % value
       % Returns the values of the variable
-      
-      % Return value of the Var based on the subVars, if any, otherwise assigned value.
-      if ~isempty(self.subVars) 
-        
-        % if all subvars have the same id and size, make matrix, otherwise
-        % a column vector
-        
-        % stack the variables recursively
-        v = [];
-        for i=1:length(self.subVars)
-          subVar = self.subVars(i);
-          if self.isUniform
-            v = [v, subVar.flat];
-          else
-            v = [v; subVar.flat];
-          end
-        end
-        
-      else
-        if isempty(self.thisValue)
-          v = [];
-        else
-          v = reshape(self.thisValue, self.thisSize);
-        end
-      end
+      v = self.flat;
     end
     
     function v = flat(self)
@@ -292,19 +210,8 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       end
       
 
-      var = Var(newVarId);
+      var = UniformVar(newVarId);
       
-      
-      % check if all subvars have the same id which is not the designated id
-      % get all subvars
-%       if self.varIds.size == 1 && ~self.varIds.containsKey(id)
-      if ~strcmp(self.subVars(1).id,id) && all(strcmp({self.subVars.id},self.subVars(1).id))
-        for i=1:length(self.subVars)
-          subVar = self.subVars(i).get(id,sliceOp);
-          var.addVar(subVar);
-        end
-        
-      end
       
       % get child vars with id
       % 
@@ -313,10 +220,10 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       slice = sliceOp;
       for i = indizes'
         subVar = self.subVars(i);
-        
+
         if strcmp(subVar.id,id) && ~isempty(subVar.subVars)
           counter = counter+1;
-        
+
           if strcmp(slice,':')
             var.addVar(subVar);
           elseif counter == slice(1)
@@ -333,17 +240,17 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
             else
               newVar = Var(val(slice),id);
             end
-            
             var.addVar(newVar);  
           end
 
         end
-        
+
         if isempty(slice)
           break
         end
-        
+
       end
+
       
       % if exactly one match, return the single matching Var
       if length(var.subVars) == 1
@@ -351,7 +258,6 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
         return;
       end
       
-      var.isUniform = true;
       var.compile;
       
     end % get
@@ -385,7 +291,7 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       % get child vars recursively
       % 
       indizes = self.varIds.get(id);
-      var = Var(newVarId);
+      var = UniformVar(newVarId);
       counter = 0;
       slice = sliceOp;
       for i = indizes'
@@ -401,6 +307,7 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
         var = var.subVars(1);
         return;
       end
+      var.compile;
       
     end % get
     
@@ -535,69 +442,6 @@ classdef Var < matlab.mixin.Copyable & matlab.mixin.Heterogeneous
       values = linspace(startValue,endValue,N)';
       self.set(values); 
     end
-    
-
-%     overload operators
-    function c = plus(a,b)
-      if isa(a,'Var')
-        a = a.value;
-      end
-      if isa(b,'Var')
-        b = b.value;
-      end
-      c = Var(a + b,'add');
-    end
-    function c = minus(a,b)
-      if isa(a,'Var')
-        a = a.value;
-      end
-      if isa(b,'Var')
-        b = b.value;
-      end
-      c = Var(a - b,'minus');
-    end
-    function c = mtimes(a,b)
-      if isa(a,'Var')
-        a = a.value;
-      end
-      if isa(b,'Var')
-        b = b.value;
-      end
-      c = Var(a * b,'times');
-    end
-    function c = mrdivide(a,b)
-      if isa(a,'Var')
-        a = a.value;
-      end
-      if isa(b,'Var')
-        b = b.value;
-      end
-      c = Var(a / b,'divide');
-    end
-    function c = mpower(a,b)
-      if isa(a,'Var')
-        a = a.value;
-      end
-      if isa(b,'Var')
-        b = b.value;
-      end
-      c = Var(a^b,'power');
-    end
-    function c = ctranspose(a)
-      v = a.value;
-      c = Var(v','transpose');
-    end
-    
-%     function c = 	horzcat(varargin)
-%       c = vertcat(varargin{:});
-%     end
-%     
-%     function c = 	vertcat(varargin)
-%       c = Var('horzcat');
-%       for k=1:length(varargin)
-%         c.add(varargin{k})
-%       end
-%     end
 
   end % methods
 
