@@ -74,7 +74,7 @@ classdef CasadiLib
       
       % go recursively through subvars
       for i = 1:length(var.subVars)
-        subVar = var.subVars(i);
+        subVar = var.subVars{i};
         indizes = var.varIds.get(subVar.id);
         
         % find i in indizes

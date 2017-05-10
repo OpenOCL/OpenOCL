@@ -117,7 +117,7 @@ classdef Var < Arithmetic
         sizeIn = varargin{2};
         varIn = UniformVar(idIn,sizeIn);
       elseif nargin == 2
-        varIn = varargin{1};
+        varIn = varargin{1}.copy;
       end
 
       self.addVar(varIn)

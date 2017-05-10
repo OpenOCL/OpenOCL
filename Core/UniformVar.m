@@ -127,10 +127,6 @@ classdef UniformVar < Var
       
     end % get
     
-    function slice(self)
-      
-    end
-    
   end
   
 end

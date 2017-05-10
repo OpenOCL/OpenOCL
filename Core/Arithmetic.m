@@ -51,15 +51,15 @@ classdef Arithmetic < handle
         [varargout{1:nargout}] = builtin('subsref',self,s);
       end
     end
-%     
-%     function self = subsasgn(self,s,v)
-%       if numel(s)==1 && strcmp(s.type,'()')
-%         v = subsasgn(self.value,s,v);
-%         self.setValue(v);
-%       else
-%         self.setValue(builtin('subsasgn',self.value,s,v));
-%       end
-%     end
+    
+    function self = subsasgn(self,s,v)
+      if numel(s)==1 && strcmp(s.type,'()')
+        v = subsasgn(self.value,s,v);
+        self.setValue(v);
+      else
+        self.setValue(builtin('subsasgn',self.value,s,v));
+      end
+    end
     
     function v = mtimes(a,b)
       if isa(a,'Arithmetic') 
@@ -122,6 +122,16 @@ classdef Arithmetic < handle
       else
         v = Arithmetic(mldivide(a,b));
       end
+    end
+    
+    function v = mrdivide(a,b)
+      if isa(a,'Arithmetic') 
+        a = a.value;
+      end
+      if isa(b,'Arithmetic')
+        b = b.value;
+      end
+      v = Arithmetic(mrdivide(a,b));
     end
     
     function v = cross(a,b)
