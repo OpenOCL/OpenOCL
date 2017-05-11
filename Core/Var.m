@@ -57,7 +57,7 @@ classdef Var < Arithmetic
       self.subVars = {};
       self.thisValue = [];
       self.thisSize = [0 1];
-      self.varIds = java.util.HashMap;
+      self.varIds = struct;
       self.compiled = false;
     end
     
@@ -145,13 +145,22 @@ classdef Var < Arithmetic
       
       thisIndex = length(self.subVars);
       
-      indizes = [self.varIds.get(varIn.id);thisIndex];
-      self.varIds.put(varIn.id,indizes);
+      indizes = [];
+      if isfield(self.varIds,varIn.id)
+        indizes = self.varIds.(varIn.id);
+      end
+      indizes = [indizes;thisIndex];
       
-      for i = 1:length(varIn.varIds.keySet.toArray.cell)
-        key = varIn.varIds.keySet.toArray.cell{i};
-        indizes = [self.varIds.get(key);thisIndex];
-        self.varIds.put(key,indizes);
+      self.varIds.(varIn.id) = indizes;
+      
+      keys = fieldnames(varIn.varIds);
+      for i = 1:length(keys)
+        key = keys{i};
+        indizes = [];
+        if isfield(self.varIds,key)
+          indizes = self.varIds.(key);
+        end
+        self.varIds.(key) = [indizes;thisIndex];
       end
     end
     
@@ -204,7 +213,7 @@ classdef Var < Arithmetic
       % get(id)
       % get(id,slice)
       
-      if ~self.varIds.containsKey(id) && self.varIds.size ~= 1
+      if ~isfield(self.varIds,id) && self.varIds.size ~= 1
         var = Var([self.id '_' id '_empty']);
         warning('Did not find id in variable.');
         return;
@@ -229,7 +238,7 @@ classdef Var < Arithmetic
       
       % get child vars with id
       % 
-      indizes = self.varIds.get(id);
+      indizes = self.varIds.(id);
       counter = 0;
       slice = sliceOp;
       for i = indizes'
@@ -282,7 +291,7 @@ classdef Var < Arithmetic
       % get(id)
       % get(id,slice)
       
-      if ~self.varIds.containsKey(id)
+      if ~isfield(self.varIds,id)
         var = Var([self.id '_' id '_empty']);
         warning('Did not find id in variable.');
         return;
@@ -304,7 +313,7 @@ classdef Var < Arithmetic
 
       % get child vars recursively
       % 
-      indizes = self.varIds.get(id);
+      indizes = self.varIds.(id);
       var = UniformVar(newVarId);
       counter = 0;
       slice = sliceOp;
@@ -345,9 +354,9 @@ classdef Var < Arithmetic
       end
    
       % get indizes of subVars with given id
-      indizes = self.varIds.get(id)';
+      indizes = self.varIds.(id);
       
-      for i = indizes
+      for i = indizes'
         subVar = self.subVars{i};
         [var,counter,slice] = subVar.getSubVar(var,id,counter,slice);
       end
@@ -440,7 +449,7 @@ classdef Var < Arithmetic
       for i = 1:length(self.subVars)
         
         subVar = self.subVars{i};
-        indizes = self.varIds.get(subVar.id);
+        indizes = self.varIds.(subVar.id);
         
         % find i in indizes
         subIndex = num2str(find(indizes==i));

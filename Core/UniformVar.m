@@ -78,7 +78,7 @@ classdef UniformVar < Var
       % get(id)
       % get(id,slice)
       
-      if ~self.varIds.containsKey(id) && self.varIds.size ~= 1
+      if ~isfield(self.varIds,id) && self.varIds.size ~= 1
         var = Var([self.id '_' id '_empty']);
         warning('Did not find id in variable.');
         return;
@@ -102,7 +102,7 @@ classdef UniformVar < Var
       
       
       % get subvars 
-      subIndizes = self.subVars{1}.varIds.get(id);
+      subIndizes = self.subVars{1}.varIds.(id);
 
       for i=1:length(self.subVars)
         subVar = self.subVars{i}.subVars{subIndizes};
