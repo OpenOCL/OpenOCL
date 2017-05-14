@@ -1,4 +1,4 @@
-classdef SubExpression < Expression
+classdef SubExpression < ExpressionBase
   %SUBEXPRESSION Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -10,8 +10,7 @@ classdef SubExpression < Expression
   methods
     
     function self = SubExpression(treeVar,parent,positions)
-      self = self@Expression(treeVar);
-      self.treeVar    = treeVar;
+      self = self@ExpressionBase(treeVar);
       self.parent     = parent;
       self.positions  = positions;
     end
@@ -40,13 +39,14 @@ classdef SubExpression < Expression
       self.parent.set(valueIn,slices)
     end
     
-    function v = value(self,slicesIn)
+    function v = value(self,slicesIn,varIn)
       
       varLength = prod(self.treeVar.size);
       NPositions = length(self.positions);
       
       if nargin == 1
         slicesIn = {1:varLength};
+        varIn = self;
       end
 
       slices = cell(1,NPositions*length(slicesIn));
@@ -61,7 +61,7 @@ classdef SubExpression < Expression
         i = i+1;
       end
       
-      v = self.parent.value(slices);
+      v = self.parent.value(slices,varIn);
     end
     
   end

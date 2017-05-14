@@ -1,10 +1,12 @@
-classdef Var < VarPrimitive
+classdef Var < handle
   %Var Variable class
   %   Basic datatype to store structured variables.
   
   properties (Access = public)
     
+    id
     subVars
+    thisSize
     
     compiled
     varIds
@@ -14,15 +16,11 @@ classdef Var < VarPrimitive
     function self = Var(varargin)
       % Var(id)
       % Var(id,size)
-      % Var(value,id)
       % Var(var)
       % Var()
-      
-      self = self@VarPrimitive('blanc',[0,1]);
 
       narginchk(0,2);
       self.clear
-      
       
       
       % if no arguments give, return empty var
@@ -42,13 +40,6 @@ classdef Var < VarPrimitive
           self.thisSize = varargin{2};
           self.compiled = true;
         end
-
-      elseif nargin > 1 && ischar(varargin{2})
-        % create a new variable from value and id
-        self.id         = varargin{2};
-        self.thisSize   = size(varargin{1});
-        self.set(varargin{1});
-        self.compiled = true;
       else
         error('Error in the argument list.');
       end
@@ -56,7 +47,6 @@ classdef Var < VarPrimitive
     
     function clear(self)
       self.subVars = {};
-      self.thisValue = [];
       self.thisSize = [0 1];
       self.varIds = struct;
       self.compiled = false;
@@ -66,7 +56,6 @@ classdef Var < VarPrimitive
       classType = str2func(class(self));
       c = classType();
       c.id        = self.id;
-      c.thisValue = self.thisValue;
       c.thisSize  = self.thisSize;
       c.varIds    = self.varIds;
       c.compiled  = self.compiled;

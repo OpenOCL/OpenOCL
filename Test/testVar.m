@@ -2,31 +2,19 @@ function testVar
 
 
 % clear classes
-state = Var('x');
-state.add('p',[3,1]);
-state.add('R',[3,3]);
-state.add('v',[3,1]);
-state.add('w',[3,1]);
-state.compile;
+x = Var('x');
+x.add('p',[3,1]);
+x.add('R',[3,3]);
+x.add('v',[3,1]);
+x.add('w',[3,1]);
+x.compile;
 
-control = Var('u');
-control.add('elev',[1,1]);
-control.add('ail',[1,1]);
-control.compile;
+u = Var('u');
+u.add('elev',[1,1]);
+u.add('ail',[1,1]);
+u.compile;
 
-ocpVar = Var('ocpvar');
-ocpVar.addRepeated({state,control},5);
-ocpVar.add(state);
-
-
-v = Expression(ocpVar);
-v.set(2)
-v.set(rand(ocpVar.size))
-x = v.get('x',':')
-R = x.get('R',':')
-
-
-
+state = Expression(x,0);
 
 state.get('R').set(eye(3))
 state.get('p').set([100;0;-50])
@@ -50,10 +38,19 @@ assert( isequal( state2.get('p').value,   [1;2;3] ) )
 assert( isequal( state.size,   [18 1] ) )
 
 
+ocpVar = Var('ocpvar');
+ocpVar.addRepeated({x,u},5);
+ocpVar.add(x);
+ocpVar.compile;
 
+v = Expression(ocpVar,0);
+state = v.get('x');
+state.get('R').set(eye(3))
+state.get('p').set([100;0;50])
+state.get('v').set([20;0;0])
+state.get('w').set([0;1;0.1])
 
-
-assert( isequal( ocpVar.get('x').value,   [
+assert( isequal( state.value,   [
   100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
          0         0         0         0         0         0
    50.0000   50.0000   50.0000   50.0000   50.0000   50.0000
@@ -85,7 +82,7 @@ ocpVar.compile
 % end
 % assert(exThrown);
 
-assert( isequal( ocpVar.get('x').value,   [
+assert( isequal( state.value,   [
   100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
          0         0         0         0         0         0
    50.0000   50.0000   50.0000   50.0000   50.0000   50.0000
@@ -109,7 +106,7 @@ assert( isequal( ocpVar.get('x').value,   [
 
   
   
-assert( isequal( ocpVar.get('x',4:6).get('p').value, ... 
+assert( isequal( v.get('x',4:6).get('p').value, ... 
                  [100   100   100
                    0     0     0
                   50    50    50]));
@@ -122,15 +119,16 @@ assert( isequal( ocpVar.get('x',4:6).get('p').value, ...
 
 %%
 
-assert( isequal(ocpVar.get('x',4:6).get('p').size, [3 3]) );
+
 
 % this should not print warnings
-ocpVar.get('x',4:6).get('p').set(eye(3));
-assert( isequal(ocpVar.get('x',4:6).get('p').value, eye(3)) );
+v.get('x',4:6).get('p').set(eye(3));
+assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
 
+assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
 
-ocpVar.get('x').get('R').set(eye(3));
-assert( isequal(ocpVar.get('x').get('R').value, ...
+v.get('x').get('R').set(eye(3));
+assert( isequal(v.get('x').get('R').value, ...
   [...
      1     1     1     1     1     1
      0     0     0     0     0     0
@@ -144,8 +142,8 @@ assert( isequal(ocpVar.get('x').get('R').value, ...
   ] ...
 ) );
 
-ocpVar.get('x').get('R').set(ones(9,1))
-assert( isequal(ocpVar.get('x').get('R').value, ones(9,6)) );
+v.get('x').get('R').set(ones(9,1))
+assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
 
 % assert( isequal(ocpVar.get('x').get('R',1).value,ones(1,6)) );

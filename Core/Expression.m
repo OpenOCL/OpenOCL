@@ -1,38 +1,20 @@
-classdef Expression < Arithmetic & TreeVar
+classdef Expression < ExpressionBase
   %EXPRESSION Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
-    treeVar
+    thisValue
   end
   
   methods
     
-    function self = Expression(treeVar)
-      self.treeVar = treeVar;
+    function self = Expression(treeVar,value)
+      self = self@ExpressionBase(treeVar);
+      self.set(value);
     end
     
-    function e = get(self,id,selector)
-      [subVar,indizes] = self.treeVar.get(id,selector);
-      sizes = self.treeVar.getSizes();
-      
-      positions = [];
-      
-      pos = 1;
-      for k=1:length(sizes)
-        
-        if k == indizes(1)
-          positions = [positions,pos];
-          indizes(1) = [];
-          if isempty(indizes)
-            break
-          end
-        end
-
-        pos = pos + prod(sizes{k});
-      end
-      
-      e = SubExpression(subVar,self,positions);
+    function c = copy(self)
+      c = Expression(self.treeVar,self.value');
     end
     
     function set(self,valueIn,sliceIn)
@@ -42,7 +24,7 @@ classdef Expression < Arithmetic & TreeVar
       end
       
       if nargin == 2
-        self.thisValue = valueIn';
+        self.thisValue = valueIn;
       else
         for k=1:length(sliceIn)
           slice = sliceIn{k};
@@ -52,20 +34,17 @@ classdef Expression < Arithmetic & TreeVar
       
     end
     
-    function s = size(self)
-      s = self.treeVar.size;
-    end
-    
-    function v = value(self,sliceIn)
+    function v = value(self,sliceIn,varIn)
       
-      if nargin == 2
-        v = [];
-        for k=1:length(sliceIn)
-          v = [v;self.thisValue(sliceIn{k})];
-        end
-        v = v';
-      else
+      if nargin == 1
         v = self.thisValue';
+      else
+        v = [];
+        sizeIn = varIn.size;
+        for k=1:length(sliceIn)
+          val = reshape( self.thisValue(sliceIn{k}) , sizeIn );
+          v = [v,val];
+        end
       end
       
     end
