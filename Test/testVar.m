@@ -21,6 +21,7 @@ ocpVar.add(state);
 
 v = Expression(ocpVar);
 v.set(2)
+v.set(rand(ocpVar.size))
 x = v.get('x',':')
 R = x.get('R',':')
 
