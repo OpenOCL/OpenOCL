@@ -1,41 +1,50 @@
-classdef VarPrimitive < Var
+classdef VarPrimitive < Arithmetic
 
-  properties (Access = private)
-    value
-    lowerBound
-    upperBound
+  properties (Access = public)
     
-    % scaling properties
-    min
-    max
-    mean
-    variance
+    id
+    thisSize
+    
+    thisSlice
+    
   end
   
   methods
-    function self = VarPrimitive()
-      self=self@Var;
+    
+    function self = VarPrimitive(idIn,sizeIn,valueIn)
+      self.id = idIn;
+      self.thisSize = sizeIn;
+      self.thisSlice = {':',':'};
       
-      self.value      = [];
-      self.lowerBound = [];
-      self.upperBound = [];
-      
-      self.min      = [];
-      self.max      = [];
-      self.mean     = [];
-      self.variance = [];
+      if nargin == 3
+        self.set(valueIn);
+      end
     end
     
-    function out = Var(self)
-      out = Var;
-      out.id = self.id;
-      out.subVars = self.subVars;
-      out.thisValue = self.thisValue;
-      out.thisSize = self.thisSize;
+    function v = copy(self)
+      v = VarPrimitive(self.id,self.thisSize);
+      v.thisValue = self.thisValue;
+    end
     
-      out.compiled = self.compiled;
-      out.isUniform = self.isUniform;
-      out.varIds = self.varIds;
+    function s = size(self)
+      s = self.thisSize;
+    end
+    
+    function v = slice(self,sliceOp)
+      self.thisSlice = sliceOp;
+      v = self;
+    end
+    
+    function v = value(self)
+      v = value@Arithmetic(self,self.thisSlice);
+    end
+    
+    function v = flat(self)
+      v = reshape(self.value,prod(self.size),1);
+    end
+    
+    function set(self,valueIn)
+      self.setValue(valueIn);
     end
     
   end

@@ -1,14 +1,10 @@
-classdef Var < Arithmetic
+classdef Var < VarPrimitive
   %Var Variable class
   %   Basic datatype to store structured variables.
-  %   Inheriting of Copyable provides copy() method.
-  %   Inheriting of Heterogeneous allows for mixed class arrays, e.g. Vars
-  %   and Parameters.
   
   properties (Access = public)
-    id
+    
     subVars
-    thisSize
     
     compiled
     varIds
@@ -20,9 +16,14 @@ classdef Var < Arithmetic
       % Var(id,size)
       % Var(value,id)
       % Var(var)
+      % Var()
+      
+      self = self@VarPrimitive('blanc',[0,1]);
 
       narginchk(0,2);
       self.clear
+      
+      
       
       % if no arguments give, return empty var
       % should only be used by subclasses
@@ -75,7 +76,6 @@ classdef Var < Arithmetic
         c.subVars = builtin('horzcat',c.subVars,{cp});
       end
     end
-    
         
     function compile(self)
       
@@ -86,7 +86,9 @@ classdef Var < Arithmetic
       % compile all subVars
       for i=1:length(self.subVars)
         subVar = self.subVars{i};
-        subVar.compile;
+        if isa(subVar,'Var')
+          subVar.compile;
+        end
       end
 
       for i=1:length(self.subVars)
@@ -114,7 +116,7 @@ classdef Var < Arithmetic
         % create new Var from id and size
         idIn = varargin{1};
         sizeIn = varargin{2};
-        varIn = UniformVar(idIn,sizeIn);
+        varIn = Var(idIn,sizeIn);
       elseif nargin == 2
         varIn = varargin{1}.copy;
       end
@@ -153,15 +155,18 @@ classdef Var < Arithmetic
       
       self.varIds.(varIn.id) = indizes;
       
-      keys = fieldnames(varIn.varIds);
-      for i = 1:length(keys)
-        key = keys{i};
-        indizes = [];
-        if isfield(self.varIds,key)
-          indizes = self.varIds.(key);
+      if isa(varIn,'Var')
+        keys = fieldnames(varIn.varIds);
+        for i = 1:length(keys)
+          key = keys{i};
+          indizes = [];
+          if isfield(self.varIds,key)
+            indizes = self.varIds.(key);
+          end
+          self.varIds.(key) = [indizes;thisIndex];
         end
-        self.varIds.(key) = [indizes;thisIndex];
       end
+      
     end
     
     function s = size(self)
@@ -169,7 +174,7 @@ classdef Var < Arithmetic
       %   Returns the size of the variable
       %   The size is determined by the leave variables
       
-      if self.compiled || isempty(self.subVars) 
+      if self.compiled
         s = self.thisSize;
       else
         % Return size of the Var based on the subVars.
@@ -186,245 +191,32 @@ classdef Var < Arithmetic
       
     end
     
-    function v = value(self)
-      % value
-      % Returns the values of the variable
-      v = self.flat;
-    end
-    
-    function v = flat(self)
-      % Returns a flat representation of the variable (columns vector)
-      
-      % Return value of the Var based on the subVars, if any, otherwise assigned value.
-      if ~isempty(self.subVars) 
-        % sum up the sizes of subVars
-        v = [];
-        for i=1:length(self.subVars)
-          subVar = self.subVars{i};
-          v = [v; subVar.flat];
-        end
-      else
-        v = self.thisValue';
-      end      
-    end % flat
-    
-    
-    function var = get(self,id,varargin)
+    function [var,indizes] = get(self,id,selector)
       % get(id)
-      % get(id,slice)
+      % get(id,selector)
       
-      if ~isfield(self.varIds,id) && self.varIds.size ~= 1
-        var = Var([self.id '_' id '_empty']);
-        warning('Did not find id in variable.');
-        return;
-      end
-
-      narginchk(2,3);
-      sliceOp = ':';
-      if nargin == 3
-        sliceOp = varargin{1};
+      if nargin == 2
+        selector = ':';
       end
       
-      % create new Var containing all matching subVars, and indicate slice
-      % in the variables name
-      newVarId = [self.id '_' id];
-      if ~strcmp(sliceOp,':')
-        newVarId = [self.id '_' num2str(sliceOp(1)) ':' num2str(sliceOp(end))];
+      if ~isfield(self.varIds,id)
+        error('Error: Can not obtain id from this variable.');
       end
-      
-
-      var = UniformVar(newVarId);
-      
       
       % get child vars with id
       % 
       indizes = self.varIds.(id);
-      counter = 0;
-      slice = sliceOp;
-      for i = indizes'
-        subVar = self.subVars{i};
-
-        if strcmp(subVar.id,id) && ~isempty(subVar.subVars)
-          counter = counter+1;
-
-          if strcmp(slice,':')
-            var.addVar(subVar);
-          elseif counter == slice(1)
-            slice = slice(2:end);
-            var.addVar(subVar);
-          end
-        elseif strcmp(subVar.id,id) && isempty(subVar.subVars)
-          if strcmp(slice,':')
-            var.addVar(subVar);
-          else
-            val = subVar.value;
-            if isempty(val)
-              newVar = Var([],id);
-            else
-              newVar = Var(val(slice),id);
-            end
-            var.addVar(newVar);  
-          end
-
-        end
-
-        if isempty(slice)
-          break
-        end
-
-      end
-
+      indizes = indizes(selector);
       
-      % if exactly one match, return the single matching Var
-      if length(var.subVars) == 1
-        var = var.subVars{1};
-        return;
+      var = self.subVars{indizes(1)};
+      
+      if isa(var,'Var')
+        var.compile;
       end
       
-      var.compile;
-      
-    end % get
-    
+    end % get    
     
 
-    function var = getDeep(self,id,varargin)
-      % get(id)
-      % get(id,slice)
-      
-      if ~isfield(self.varIds,id)
-        var = Var([self.id '_' id '_empty']);
-        warning('Did not find id in variable.');
-        return;
-      end
-
-      narginchk(2,3);
-      sliceOp = ':';
-      if nargin == 3
-        sliceOp = varargin{1};
-      end
-      
-      % create new Var containing all matching subVars, and indicate slice
-      % in the variables name
-      newVarId = [self.id '_' id];
-      if ~strcmp(sliceOp,':')
-        newVarId = [self.id '_' num2str(sliceOp(1)) ':' num2str(sliceOp(end))];
-      end
-      
-
-      % get child vars recursively
-      % 
-      indizes = self.varIds.(id);
-      var = UniformVar(newVarId);
-      counter = 0;
-      slice = sliceOp;
-      for i = indizes'
-        subVar = self.subVars{i};
-        [var,counter,slice] = subVar.getSubVar(var,id,counter,slice);
-        if isempty(slice)
-          break
-        end
-      end
-      
-      % if exactly one match, return the single matching Var
-      if length(var.subVars) == 1
-        var = var.subVars{1};
-        return;
-      end
-      var.compile;
-      
-    end % get
-    
-    
-    function [var,counter,slice] = getSubVar(self,var,id,counter,slice)
-      % This function is private and used by the get method
-      
-      if isempty(slice)
-        return
-      end
-      
-      if strcmp(self.id,id)
-        counter = counter+1;
-        if strcmp(slice,':')
-          var.addVar(self);
-        elseif counter == slice(1)
-          slice = slice(2:end);
-          var.addVar(self);
-        end
-        return
-      end
-   
-      % get indizes of subVars with given id
-      indizes = self.varIds.(id);
-      
-      for i = indizes'
-        subVar = self.subVars{i};
-        [var,counter,slice] = subVar.getSubVar(var,id,counter,slice);
-      end
-      
-    end
-
-    
-    function set(self,valueIn)
-      % set(value)
-      
-      if numel(valueIn)==1 && prod(size(self))~=1
-        % assign scalar value to all variables
-        valueIn = valueIn * ones(size(self));
-      end
-      
-      
-      % assign value if there are no subVars
-      if isempty(self.subVars)
-        
-        if isempty(self.size) || numel(valueIn) ==0
-          % nothing to assign
-          return;
-        end
-        
-        if ~isequal(prod(self.size),numel(valueIn))
-          % number of element don't match, cant assign
-          warning('Size of var and size of value (number of elements) dont match, ignoring.');
-          return
-        end
-        
-        % assign value
-        self.thisValue = reshape(valueIn,1,prod(self.size));
-        return
-        
-      end
-      
-      % assign value to subvars
-      if isequal(self.size,size(valueIn)) || isequal( prod(self.size), prod(size(valueIn)) )
-        % Split value to subvars if size of value corresponds to size of variable
-
-      	% split value to subvars
-        index = 1;
-        for i = 1:length(self.subVars)
-          subVar = self.subVars{i};
-          subVar.set(valueIn(index:index+prod(subVar.size)-1));
-          index = index + prod(subVar.size);
-        end 
-      
-      else
-        % assign same value to all subvars if sizes match
-        
-        % check if all subvars have the same id and size
-        subVarId = self.subVars{1}.id;
-        subVarSize = self.subVars{1}.size;
-        for i = 2:length(self.subVars)
-          subVar = self.subVars{i};
-          if ~strcmp(subVar.id,subVarId) || ~isequal(subVar.size,subVarSize)
-            warning('All Variables have to have the same id and size, doing nothing.');
-            return
-          end
-        end
-        for i = 1:length(self.subVars) 
-          subVar = self.subVars{i};
-          subVar.set(valueIn);
-        end
-      end
-    end % set
-    
     
     function printStructure(self, varargin)
       
@@ -459,11 +251,13 @@ classdef Var < Arithmetic
         subVar.printStructure(level,prefix,subIndex);
       end
     end
-
-    function setLinear(self,startValue,endValue)
-      N = prod(self.size);
-      values = linspace(startValue,endValue,N)';
-      self.set(values); 
+    
+    function s = getSizes(self)
+      N = length(self.subVars);
+      s = cell(1,N);
+      for k=1:N
+        s{k} = self.subVars{k}.size;
+      end
     end
     
   end % methods

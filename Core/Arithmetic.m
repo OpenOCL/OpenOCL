@@ -338,23 +338,29 @@ classdef Arithmetic < handle
       v = Arithmetic(log(self.value));
     end
     
-
-    
   end
   
   methods
     
-    function v = value(self)
-      v = self.thisValue;
+    function v = value(self,sliceOp)
+      if nargin==2
+        v = self.thisValue(sliceOp{1},sliceOp{2});
+      else
+        v = self.thisValue;
+      end
     end
     
-    function setValue(self,v)
-      self.thisValue = v;
+    function setValue(self,v,sliceOp)
+      if nargin==3
+        self.thisValue(sliceOp{1},sliceOp{2}) = v;
+      else
+        self.thisValue = v;
+      end
     end
     
     function disp(self)
       builtin('disp',self);
-      disp(self.value);
+%       disp(self.value);
     end
     
   end

@@ -109,7 +109,7 @@ classdef (Abstract) System < handle
     end
     
     function setAlgEquation(self,equation)
-      self.alg.add(Var(equation,'algEq'));
+      self.alg.add(VarPrimitive('algEq',size(equation),equation));
     end
     
     
