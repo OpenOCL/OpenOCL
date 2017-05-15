@@ -1,4 +1,4 @@
-classdef ExpressionBase < handle
+classdef VarBase < handle
   %EXPRESSIONBASE Summary of this class goes here
   %   Detailed explanation goes here
   
@@ -8,7 +8,7 @@ classdef ExpressionBase < handle
   
   methods
     
-    function self = ExpressionBase(treeVar)
+    function self = VarBase(treeVar)
       self.treeVar = treeVar;
     end
     
@@ -33,7 +33,7 @@ classdef ExpressionBase < handle
         pos = pos + prod(sizes{k});
       end
       
-      e = SubExpression(subVar,self,positions);
+      e = SubVar(subVar,self,positions);
     end
     
     function s = size(self)

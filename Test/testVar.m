@@ -2,19 +2,19 @@ function testVar
 
 
 % clear classes
-x = Var('x');
+x = VarStructure('x');
 x.add('p',[3,1]);
 x.add('R',[3,3]);
 x.add('v',[3,1]);
 x.add('w',[3,1]);
 x.compile;
 
-u = Var('u');
+u = VarStructure('u');
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 u.compile;
 
-state = Expression(x,0);
+state = Var(x,0);
 
 state.get('R').set(eye(3))
 state.get('p').set([100;0;-50])
@@ -38,12 +38,12 @@ assert( isequal( state2.get('p').value,   [1;2;3] ) )
 assert( isequal( state.size,   [18 1] ) )
 
 
-ocpVar = Var('ocpvar');
+ocpVar = VarStructure('ocpvar');
 ocpVar.addRepeated({x,u},5);
 ocpVar.add(x);
 ocpVar.compile;
 
-v = Expression(ocpVar,0);
+v = Var(ocpVar,0);
 state = v.get('x');
 state.get('R').set(eye(3))
 state.get('p').set([100;0;50])
@@ -125,33 +125,30 @@ assert( isequal( v.get('x',4:6).get('p').value, ...
 v.get('x',4:6).get('p').set(eye(3));
 assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
 
-assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
+% not sure if size should be supported!?
+% assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
 
 v.get('x').get('R').set(eye(3));
-assert( isequal(v.get('x').get('R').value, ...
-  [...
-     1     1     1     1     1     1
-     0     0     0     0     0     0
-     0     0     0     0     0     0
-     0     0     0     0     0     0
-     1     1     1     1     1     1
-     0     0     0     0     0     0
-     0     0     0     0     0     0
-     0     0     0     0     0     0
-     1     1     1     1     1     1
-  ] ...
-) );
+assert( isequal(v.get('x').get('R').value, repmat(eye(3),1,1,6)) );
+
+v.get('x').get('R').set(repmat([1,2,3;4,5,6;2,3,4],1,1,6));
+assert( isequal(v.get('x').get('R').value, repmat([1,2,3;4,5,6;2,3,4],1,1,6)) );
 
 v.get('x').get('R').set(ones(9,1))
-assert( isequal(v.get('x').get('R').value, ones(9,6)) );
+assert( isequal(v.get('x').get('R').value, ones(3,3,6)) );
 
 
-% assert( isequal(ocpVar.get('x').get('R',1).value,ones(1,6)) );
+% assert( isequal(v.get('x').get('R',1,1).value,ones(1,6)) );
+
+% how about v.get(1,'x') to get the first x
+% v.get('x').get(2,'R') to get the second R in x
+% vs v.get('x').get('p',2) to get the second element of the ps: py
+% could do v.get(1,'x').get('R',2)
 
 
-p1 = ocpVar.get('x',1).get('p');
-p2 = ocpVar.get('x',2).get('p');
-p3 = p1 + p2;
-p3 = p1 - p2;
-p3 = p1 / p2;
-p3 = p1'*p2;
+% p1 = ocpVar.get('x',1).get('p');
+% p2 = ocpVar.get('x',2).get('p');
+% p3 = p1 + p2;
+% p3 = p1 - p2;
+% p3 = p1 / p2;
+% p3 = p1'*p2;
