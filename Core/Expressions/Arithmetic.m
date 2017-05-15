@@ -1,16 +1,10 @@
 classdef Arithmetic < handle
   
-  properties
-    thisValue
+  methods (Abstract)
+    value(self)
   end
   
   methods
-    
-    function self = Arithmetic(v)
-      if nargin == 1
-        self.setValue(v);
-      end
-    end
     
     %%% matrix and vector wise operations
     function v = horzcat(varargin)
@@ -24,7 +18,7 @@ classdef Arithmetic < handle
           inValues{k} = val;
         end
       end    
-      v = Arithmetic(horzcat(inValues{:}));
+      v = Expression(horzcat(inValues{:}));
     end
     
     function v = vertcat(varargin)
@@ -38,7 +32,7 @@ classdef Arithmetic < handle
           inValues{k} = val;
         end
       end
-      v = Arithmetic(vertcat(inValues{:}));
+      v = Expression(vertcat(inValues{:}));
     end
     
 %     function varargout = subsref(self,s)
@@ -68,7 +62,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(mtimes(a,b));
+      v = Expression(mtimes(a,b));
     end
    
     function v = ctranspose(self)
@@ -77,27 +71,27 @@ classdef Arithmetic < handle
       v = transpose(self);
     end
     function v = transpose(self)
-      v = Arithmetic(transpose(self.value));
+      v = Expression(transpose(self.value));
     end
     
     function v = reshape(self,varargin)
-      v = Arithmetic(reshape(self.value,varargin{:}));
+      v = Expression(reshape(self.value,varargin{:}));
     end
     
     function v = triu(self)
-      v = Arithmetic(triu(self.value));
+      v = Expression(triu(self.value));
     end
     
     function v = repmat(self,varargin)
-      v = Arithmetic(repmat(self.value,varargin{:}));
+      v = Expression(repmat(self.value,varargin{:}));
     end
     
     function v = sum(a)
-      v = Arithmetic(sum(a.value));
+      v = Expression(sum(a.value));
     end
     
     function v = norm(a,varargin)
-      v = Arithmetic(norm(a.value,varargin{:}));
+      v = Expression(norm(a.value,varargin{:}));
     end
     
     function v = mpower(a,b)
@@ -107,7 +101,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(mpower(a,b));
+      v = Expression(mpower(a,b));
     end
     
     function v = mldivide(a,b)
@@ -118,9 +112,9 @@ classdef Arithmetic < handle
         b = b.value;
       end
       if (numel(a) > 1) && (numel(b) > 1)
-        v = Arithmetic(solve(a,b));
+        v = Expression(solve(a,b));
       else
-        v = Arithmetic(mldivide(a,b));
+        v = Expression(mldivide(a,b));
       end
     end
     
@@ -131,7 +125,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(mrdivide(a,b));
+      v = Expression(mrdivide(a,b));
     end
     
     function v = cross(a,b)
@@ -141,7 +135,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(cross(a,b));
+      v = Expression(cross(a,b));
     end
     
     function v = dot(a,b)
@@ -151,23 +145,23 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(dot(a,b));
+      v = Expression(dot(a,b));
     end
     
     function v = inv(self)
-      v = Arithmetic(inv(self.value));
+      v = Expression(inv(self.value));
     end
     
     function v = det(self)
-      v = Arithmetic(det(self.value));
+      v = Expression(det(self.value));
     end
     
     function v = trace(self)
-      v = Arithmetic(trace(self.value));
+      v = Expression(trace(self.value));
     end
     
     function v = diag(self)
-      v = Arithmetic(diag(self.value));
+      v = Expression(diag(self.value));
     end
     
     function v = polyval(p,a)
@@ -177,7 +171,7 @@ classdef Arithmetic < handle
       if isa(a,'Arithmetic')
         a = a.value;
       end   
-      v = Arithmetic(polyval(p,a));
+      v = Expression(polyval(p,a));
     end
     
     function v = jacobian(ex,arg)
@@ -187,7 +181,7 @@ classdef Arithmetic < handle
       if isa(arg,'Arithmetic')
         arg = arg.value;
       end  
-      v = Arithmetic(jacobian(ex,arg));
+      v = Expression(jacobian(ex,arg));
     end
     
     function r = jtimes(ex,arg,v)
@@ -200,7 +194,7 @@ classdef Arithmetic < handle
       if isa(v,'Arithmetic')
         v = v.value;
       end  
-      r = Arithmetic(jtimes(ex,arg,v));
+      r = Expression(jtimes(ex,arg,v));
     end
     
     %%% element wise operations
@@ -211,7 +205,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(plus(a,b));
+      v = Expression(plus(a,b));
     end
     
     function v = minus(a,b)
@@ -221,7 +215,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(minus(a,b));
+      v = Expression(minus(a,b));
     end
     
     function v = times(a,b)
@@ -231,7 +225,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(times(a,b));
+      v = Expression(times(a,b));
     end
     
     function v = power(a,b)
@@ -241,7 +235,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(power(a,b));
+      v = Expression(power(a,b));
     end
     
     function v = rdivide(a,b)
@@ -251,7 +245,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(rdivide(a,b));
+      v = Expression(rdivide(a,b));
     end
     
     function v = ldivide(a,b)
@@ -261,7 +255,7 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(ldivide(a,b));
+      v = Expression(ldivide(a,b));
     end
     
     function v = atan2(a,b)
@@ -271,96 +265,71 @@ classdef Arithmetic < handle
       if isa(b,'Arithmetic')
         b = b.value;
       end
-      v = Arithmetic(atan2(a,b));
+      v = Expression(atan2(a,b));
     end
     
     function v = abs(self)
-      v = Arithmetic(abs(self.value));
+      v = Expression(abs(self.value));
     end
 
     function v = sqrt(self)
-      v = Arithmetic(sqrt(self.value));
+      v = Expression(sqrt(self.value));
     end
     
     function v = sin(self)
-      v = Arithmetic(sin(self.value));
+      v = Expression(sin(self.value));
     end
     
     function v = cos(self)
-      v = Arithmetic(cos(self.value));
+      v = Expression(cos(self.value));
     end
     
     function v = tan(self)
-      v = Arithmetic(tan(self.value));
+      v = Expression(tan(self.value));
     end
     
     function v = atan(self)
-      v = Arithmetic(atan(self.value));
+      v = Expression(atan(self.value));
     end
     
     function v = asin(self)
-      v = Arithmetic(asin(self.value));
+      v = Expression(asin(self.value));
     end
     
     function v = acos(self)
-      v = Arithmetic(acos(self.value));
+      v = Expression(acos(self.value));
     end
     
     function v = tanh(self)
-      v = Arithmetic(tanh(self.value));
+      v = Expression(tanh(self.value));
     end
     
     function v = cosh(self)
-      v = Arithmetic(cosh(self.value));
+      v = Expression(cosh(self.value));
     end
     
     function v = sinh(self)
-      v = Arithmetic(sinh(self.value));
+      v = Expression(sinh(self.value));
     end
     
     function v = atanh(self)
-      v = Arithmetic(atanh(self.value));
+      v = Expression(atanh(self.value));
     end
     
     function v = asinh(self)
-      v = Arithmetic(asinh(self.value));
+      v = Expression(asinh(self.value));
     end
     
     function v = acosh(self)
-      v = Arithmetic(acosh(self.value));
+      v = Expression(acosh(self.value));
     end
     
     function v = exp(self)
-      v = Arithmetic(exp(self.value));
+      v = Expression(exp(self.value));
     end
     
     function v = log(self)
-      v = Arithmetic(log(self.value));
-    end
-    
-  end
-  
-  methods
-    
-    function v = value(self,sliceOp)
-      if nargin==2
-        v = self.thisValue(sliceOp{1},sliceOp{2});
-      else
-        v = self.thisValue;
-      end
-    end
-    
-    function setValue(self,v,sliceOp)
-      if nargin==3
-        self.thisValue(sliceOp{1},sliceOp{2}) = v;
-      else
-        self.thisValue = v;
-      end
-    end
-    
-    function disp(self)
-      builtin('disp',self);
-%       disp(self.value);
+      v = Expression(log(self.value));
     end
     
   end

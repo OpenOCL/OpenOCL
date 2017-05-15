@@ -1,4 +1,4 @@
-classdef VarBase < handle
+classdef VarBase < Arithmetic
   %EXPRESSIONBASE Summary of this class goes here
   %   Detailed explanation goes here
   

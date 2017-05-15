@@ -146,9 +146,9 @@ assert( isequal(v.get('x').get('R').value, ones(3,3,6)) );
 % could do v.get(1,'x').get('R',2)
 
 
-% p1 = ocpVar.get('x',1).get('p');
-% p2 = ocpVar.get('x',2).get('p');
-% p3 = p1 + p2;
-% p3 = p1 - p2;
-% p3 = p1 / p2;
-% p3 = p1'*p2;
+p1 = v.get('x',1).get('p');
+p2 = v.get('x',2).get('p');
+p3 = p1 + p2;
+p3 = p1 - p2;
+p3 = p1 / p2;
+p3 = p1'*p2;
