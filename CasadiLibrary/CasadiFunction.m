@@ -25,16 +25,11 @@ classdef CasadiFunction < handle
       end
       
       nInputs = length(inputFunction.inputs);
-      if isa(inputFunction,'UserFunction')
-        for k=1:nInputs
-          CasadiLib.setSX(inputFunction.inputs{k});
-        end
-        inputs = inputFunction.inputs;
-      else
-        inputs = cell(1,nInputs);
-        for k=1:nInputs
-          inputs{k} = casadi.SX.sym('in',inputFunction.inputs{k}.size);
-        end
+      inputs = cell(1,nInputs);
+      for k=1:nInputs
+        varStruct = inputFunction.inputs{k};
+        varValue = casadi.SX.sym(varStruct.id,varStruct.size);
+        inputs{k} = Var(varStruct,varValue);
       end
       
       outputs = cell(1,inputFunction.nOutputs);

@@ -18,6 +18,10 @@ classdef Var < VarBase
     end
     
     function set(self,valueIn,sliceIn)
+      
+      if isa(valueIn,'Arithmetic')
+        valueIn = valueIn.value;
+      end
 
       if nargin == 2
         

@@ -30,9 +30,16 @@ classdef Constraint < handle
     end
     
     function add(self,varargin)
-      % add(lhs,op,rhs)
+      % add(self,lhs,op,rhs)
+      % add(self,lb,expr,ub)
+      % add(self,constraint)
       if nargin==4
-        self.addEntry(varargin{1},varargin{2},varargin{3})
+        if isa(varargin{1},'Expression')
+          self.addEntryBounds(varargin{1},varargin{2},varargin{3})
+        else
+          self.addEntryOperator(varargin{1},varargin{2},varargin{3})
+        end
+        
       elseif nargin==2
         self.appendConstraint(varargin{1});
       else
@@ -41,7 +48,13 @@ classdef Constraint < handle
       
     end
     
-    function addEntry(self, lhs, op, rhs)
+    function addEntryBounds(self,lb,expr,ub)
+      self.lowerBounds  = [self.lowerBounds;lb];
+      self.values       = [self.values;expr];
+      self.upperBounds  = [self.upperBounds;ub];
+    end
+    
+    function addEntryOperator(self, lhs, op, rhs)
       
       % Create new constraint entry
       if strcmp(op,'==')
