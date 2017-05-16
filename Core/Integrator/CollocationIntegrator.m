@@ -14,47 +14,40 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
     B
     C
     D
-    pathCostsFun
-    
-    integratorVars
-    
+    pathCostsFun    
   end
   
   
   methods
     
-    function self = CollocationIntegrator(system,d,parameters)
+    function self = CollocationIntegrator(system,pathCostsFun,d)
       self = self@ImplicitIntegrationScheme(system);
       
+      self.pathCostsFun = pathCostsFun;
       
-      self.nx     = prod(self.system.states.size);
-      self.nz     = prod(self.system.algVars.size);
+      self.nx     = prod(self.system.statesStruct.size);
+      self.nz     = prod(self.system.algVarsStruct.size);
       self.d      = d;
       self.ni     = d*self.nx+d*self.nz;
-      np          = prod(parameters.size);
-      nu          = prod(system.controls.size);
+      np          = prod(system.parametersStruct.size);
+      nu          = prod(system.controlsStruct.size);
 
       self.tau_root = collocationPoints(d);
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
-      self.integratorVars = Var('integratorVars');
-      self.integratorVars.addRepeated({self.system.states,self.system.algVars},self.d);
-      self.integratorVars.compile;
+      integratorVarsStruct = VarStructure('integratorVars');
+      integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
+      integratorVarsStruct.compile;
       
-      time0 = Var('time0',[1 1]);
-      timeF = Var('timeF', [1 1]);
+      time0 = VarStructure('time0',[1 1]);
+      timeF = VarStructure('timeF', [1 1]);
       
-      self.integratorFun = Function(@self.evaluate,{self.system.states,...
-                                                    self.integratorVars,...
-                                                    self.system.controls,...
-                                                    time0,timeF,parameters},4);
-      
-      
-    end
-    
-    function setPathCostsFun(self,pathCostsFun)
-      self.pathCostsFun = pathCostsFun;
+      self.integratorFun = Function(@self.getIntegrator,{system.statesStruct,...
+                                                    integratorVarsStruct,...
+                                                    system.controlsStruct,...
+                                                    time0,timeF,...
+                                                    system.parametersStruct},4);
     end
 
     function ni = getIntegratorVarsSize(self)
@@ -65,20 +58,12 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       var = self.integratorVars;
     end
 
-    function [finalStates, finalAlgVars, costs, equations] = evaluate(self,states,integratorVars,controls,startTime,finalTime,parameters)
-      
+    function [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,parameters)
       
       h = finalTime-startTime;
-      
-      self.integratorVars.set(integratorVars);
 
-      % split integrator vars
-%       colStateVars  = reshape(integratorVars(1:d*nx),nx,d);
-%       algVars       = reshape(integratorVars(d*nx+1:end),nz,d);
-
-
-      equations = [];
-      J = 0;
+      equations = Expression;
+      J = Expression;
       
       % Loop over collocation points
       finalStates = self.D(1)*states;
@@ -86,26 +71,26 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          % Expression for the state derivative at the collocation point
          xp = self.C(1,j+1)*states;
          for r=1:self.d
-             xp = xp + self.C(r+1,j+1)*self.integratorVars.get('states',r).flat;
+             xp = xp + self.C(r+1,j+1)*integratorVars.get('states',r);
          end
 
          time = startTime + self.tau_root(j+1);
 
          % Append collocation equations
-         [ode,alg] = self.system.systemFun.evaluate(self.integratorVars.get('states',j).flat, ...
-                                         self.integratorVars.get('algVars',j).flat, ...
+         [ode,alg] = self.system.evaluate(integratorVars.get('states',j), ...
+                                         integratorVars.get('algVars',j), ...
                                          controls,parameters);
          equations = [equations; h*ode-xp; alg];
 
          % Add contribution to the end state
-         finalStates = finalStates + self.D(j+1)*self.integratorVars.get('states',j).flat;
+         finalStates = finalStates + self.D(j+1)*integratorVars.get('states',j);
 
          % Add contribution to quadrature function
-         qj = self.pathCostsFun.evaluate(self.integratorVars.get('states',j).flat,self.integratorVars.get('algVars',j).flat,controls,time,parameters);
+         qj = self.pathCostsFun.evaluate(integratorVars.get('states',j),integratorVars.get('algVars',j),controls,time,parameters);
          J = J + self.B(j+1)*qj*h;
       end
 
-      finalAlgVars = self.integratorVars.get('algVars',self.d).flat;
+      finalAlgVars = integratorVars.get('algVars',self.d);
       costs = J;
 
     end

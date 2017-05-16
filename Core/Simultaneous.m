@@ -41,7 +41,7 @@ classdef Simultaneous < handle
       self.system = system;
       
       
-      states = system.states;
+      states = system.statesStruct;
       self.stateVars = Var('states',true);
       self.stateVars.addRepeated({states},N+1);
       self.stateVars.compile;
