@@ -1,7 +1,7 @@
-classdef Parameters < Var  
+classdef Parameters < VarStructure  
   methods
     function self = Parameters()
-      self = self@Var('parameters');
+      self = self@VarStructure('parameters');
     end
   end
 end

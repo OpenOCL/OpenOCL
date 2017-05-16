@@ -18,17 +18,20 @@ classdef Var < VarBase
     end
     
     function set(self,valueIn,sliceIn)
-      
-      if isscalar(valueIn)
-        valueIn = valueIn * ones(prod(self.size),1);
-      end
-      
+
       if nargin == 2
+        
+        if isscalar(valueIn)
+          valueIn = valueIn * ones(prod(self.size),1);
+        end
+        
         % directly assign
         if iscolumn(valueIn)
           self.thisValue = valueIn;
         elseif isrow(valueIn)
           self.thisValue = valueIn';
+        elseif isempty(valueIn)
+          self.thisValue = [];
         else
           error('Can not assign matrix valued value to this variable.');
         end

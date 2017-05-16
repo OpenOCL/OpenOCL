@@ -13,7 +13,7 @@ classdef OCP < handle
     thisPathConstraints
     thisBoundaryConditions
     
-    parameters
+    parametersStruct
     endTime
   end
   
@@ -25,37 +25,31 @@ classdef OCP < handle
       
       self.thisPathConstraints = Constraint;
       self.thisBoundaryConditions = Constraint;
-      self.thisArrivalCosts = Var(0,'pathCost');
-      self.thisPathCosts = Var(0,'pathCost');
+      self.thisArrivalCosts = Expression(0);
+      self.thisPathCosts = Expression(0);
       
-      self.parameters = system.parameters;
+      self.parametersStruct = system.parametersStruct;
       
     end
     
-    function c = discreteCost(self,vars)
-      c = 0;
+    %%% overridable methods
+    function c = discreteCost(~,~)
+      % c = discreteCost(self,vars)
+      c = Expression(0);
     end
-    
-    function pathCosts(self,states,algVars,controls,time,parameters)
+    function pathCosts(~,~,~,~,~,~)
+      % pathCosts(self,states,algVars,controls,time,parameters);
     end
-    
-    function arrivalCosts(self,states,time,parameters)
+    function arrivalCosts(~,~,~,~)
+      % arrivalCosts(self,states,time,parameters)
     end
-    
-    function pathConstraints(self,states,controls,time,parameters)
+    function pathConstraints(~,~,~,~,~)
+      % pathConstraints(self,states,controls,time,parameters)
     end
-    
-    function boundaryConditions(self,initialStates,finalStates,parameters)
+    function boundaryConditions(~,~,~,~)
+      % boundaryConditions(self,initialStates,finalStates,parameters)
     end
         
-    function system = getSystem(self)
-      system = self.system;
-    end
-    
-    function p = getParameters(self)
-      p = self.parameters;
-    end
-
     function pc = getPathConstraints(self,states,algVars,controls,time,parameters)
       self.thisPathConstraints.clear;
       self.pathConstraints(states,algVars,controls,time,parameters);

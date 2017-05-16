@@ -2,3 +2,8 @@
 
 jit_tmp.c
 *.asv
+*.m~
+*.mex*
+slprj/
+octave-workspace
+.autosave

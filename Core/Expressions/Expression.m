@@ -16,6 +16,10 @@ classdef Expression < Arithmetic
       
     end
     
+    function c = copy(self)
+      c = Expression(self.value);
+    end
+    
     function varargout = subsref(self,s)
       if numel(s) == 1 && strcmp(s.type,'()')
         [varargout{1}] = Expression(self.value.subsref(s));
