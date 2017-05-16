@@ -4,7 +4,7 @@ classdef Simultaneous < handle
   
   properties
     nlpFun
-    nlpVars
+    nlpVarsStruct
     integratorFun
     lowerBounds
     upperBounds
@@ -31,8 +31,10 @@ classdef Simultaneous < handle
   
   methods
     
-    function self = Simultaneous(system,integrator,N)
+    function self = Simultaneous(system,integrator,ocpHandler,N)
+      
       self.N = N;
+      self.ocpHandler = ocpHandler;
       
       
       self.integratorFun = integrator.integratorFun;
@@ -40,41 +42,26 @@ classdef Simultaneous < handle
       
       self.system = system;
       
+      integratorVarsStruct = integrator.integratorVarsStruct;
+      self.nlpVarsStruct = VarStructure('nlpVars');
+      self.nlpVarsStruct.addRepeated({system.statesStruct,...
+                                      integratorVarsStruct,...
+                                      system.controlsStruct},self.N);
+      self.nlpVarsStruct.add(system.statesStruct);
       
-      states = system.statesStruct;
-      self.stateVars = Var('states',true);
-      self.stateVars.addRepeated({states},N+1);
-      self.stateVars.compile;
+%       system.parametersStruct.compile;
+      self.nlpVarsStruct.add(self.system.parametersStruct);
+      self.nlpVarsStruct.add('time',[1 1]);
       
-      controls = system.controls;
-      self.controlVars = Var('controls',true);
-      self.controlVars.addRepeated({controls},N);
-      self.controlVars.compile;
+      self.nlpVarsStruct.compile;
       
-      
-      integratorVars = integrator.getIntegratorVars;
-      self.nlpVars = Var('nlpVars');
-      self.nlpVars.addRepeated({self.system.states,...
-                                integratorVars,...
-                                self.system.controls},self.N);
-      self.nlpVars.add(self.system.states);
-      
-      self.system.parameters.compile;
-      self.nlpVars.add(self.system.parameters);
-      self.nlpVars.add('time',[1 1]);
-      
-      self.nlpVars.compile;
-      
-      % initialize bounds
-      self.lowerBounds = self.nlpVars.copy;
-      self.upperBounds = self.nlpVars.copy;
-      
-      self.lowerBounds.set(-inf);
-      self.upperBounds.set(inf);
+      % initialize bounds      
+      self.lowerBounds = Var(self.nlpVarsStruct,-inf);
+      self.upperBounds = Var(self.nlpVarsStruct,inf);
       self.lowerBounds.get('time').set(0);
       
-      self.scalingMin = self.lowerBounds.copy;
-      self.scalingMax = self.upperBounds.copy;
+      self.scalingMin = Var(self.nlpVarsStruct,0);
+      self.scalingMax = Var(self.nlpVarsStruct,1);
 
     end
     

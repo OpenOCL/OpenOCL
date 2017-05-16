@@ -2,6 +2,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
   
   properties
     integratorFun
+    integratorVarsStruct
   end
   
   properties(Access = private)
@@ -36,18 +37,19 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
-      integratorVarsStruct = VarStructure('integratorVars');
-      integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
-      integratorVarsStruct.compile;
+      self.integratorVarsStruct = VarStructure('integratorVars');
+      self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
+      self.integratorVarsStruct.compile;
       
       time0 = VarStructure('time0',[1 1]);
       timeF = VarStructure('timeF', [1 1]);
       
       self.integratorFun = Function(@self.getIntegrator,{system.statesStruct,...
-                                                    integratorVarsStruct,...
+                                                    self.integratorVarsStruct,...
                                                     system.controlsStruct,...
                                                     time0,timeF,...
                                                     system.parametersStruct},4);
+                                                  
     end
 
     function ni = getIntegratorVarsSize(self)
