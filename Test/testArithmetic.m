@@ -10,8 +10,8 @@ v1 = [5;2.8;2];
 v2 = [1,5.01,3;6,5,4];
 
 %%% constructor
-a1 = Arithmetic;
-a2 = Arithmetic;
+a1 = Expression;
+a2 = Expression;
 a1.setValue(s1);
 a2.setValue(s2);
 assert(isa(a1.value,'casadi.SX'));
@@ -105,8 +105,8 @@ b = [0.9631,0.5468,0.5211]';
 
 sxSquare = casadi.SX.sym('xSquare',3,3);
 
-aA = Arithmetic(sxSquare);
-ab = Arithmetic(s1);
+aA = Expression(sxSquare);
+ab = Expression(s1);
 
 aTest = aA\ab;
 vTest = A\b;
@@ -155,7 +155,7 @@ vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
-aTest = polyval(Arithmetic([2,5,4]),a1);
+aTest = polyval(Expression([2,5,4]),a1);
 vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))

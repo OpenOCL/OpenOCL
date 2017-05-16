@@ -35,26 +35,6 @@ classdef Arithmetic < handle
       v = Expression(vertcat(inValues{:}));
     end
     
-%     function varargout = subsref(self,s)
-%       if numel(s) == 1 && strcmp(s.type,'()')
-%         [varargout{1}] = Arithmetic(self.value.subsref(s));
-%       elseif numel(s) > 1 && strcmp(s(1).type,'()')
-%         v = Arithmetic(self.value.subsref(s(1)));
-%         [varargout{1:nargout}] = subsref(v,s(2:end));
-%       else
-%         [varargout{1:nargout}] = builtin('subsref',self,s);
-%       end
-%     end
-    
-%     function self = subsasgn(self,s,v)
-%       if numel(s)==1 && strcmp(s.type,'()')
-%         v = subsasgn(self.value,s,v);
-%         self.setValue(v);
-%       else
-%         self.setValue(builtin('subsasgn',self.value,s,v));
-%       end
-%     end
-    
     function v = mtimes(a,b)
       if isa(a,'Arithmetic') 
         a = a.value;

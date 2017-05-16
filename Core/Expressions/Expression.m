@@ -16,6 +16,26 @@ classdef Expression < Arithmetic
       
     end
     
+    function varargout = subsref(self,s)
+      if numel(s) == 1 && strcmp(s.type,'()')
+        [varargout{1}] = Expression(self.value.subsref(s));
+      elseif numel(s) > 1 && strcmp(s(1).type,'()')
+        v = Expression(self.value.subsref(s(1)));
+        [varargout{1:nargout}] = subsref(v,s(2:end));
+      else
+        [varargout{1:nargout}] = builtin('subsref',self,s);
+      end
+    end
+    
+    function self = subsasgn(self,s,v)
+      if numel(s)==1 && strcmp(s.type,'()')
+        v = subsasgn(self.value,s,v);
+        self.setValue(v);
+      else
+        self.setValue(builtin('subsasgn',self.value,s,v));
+      end
+    end
+    
     function v = value(self,sliceOp)
       if nargin==2
         v = self.thisValue(sliceOp{1},sliceOp{2});
