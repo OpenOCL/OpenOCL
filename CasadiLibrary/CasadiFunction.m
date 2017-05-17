@@ -28,8 +28,7 @@ classdef CasadiFunction < handle
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        varValue = casadi.SX.sym(varStruct.id,varStruct.size);
-        inputs{k} = Var(varStruct,varValue);
+        inputs{k} = CasadiVar(varStruct);
       end
       
       outputs = cell(1,inputFunction.nOutputs);
