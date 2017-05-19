@@ -1,54 +1,40 @@
-classdef SubVar < VarBase
+classdef NodeSelection < handle
   %SUBEXPRESSION Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
     parent
     positions
+    varType
   end
   
   methods
     
-    function self = SubVar(treeVar,parent,positions)
-      self = self@VarBase(treeVar);
+    function self = NodeSelection(varType,parent,positions)
+      
+      self.varType = varType;
+
       self.parent     = parent;
       self.positions  = positions;
     end
     
-    function set(self,valueIn,slices)
-      % set(self,valueIn,slicesIn)
+    function r = get(self,id,selector)
       
-      if nargin == 2
-        slices = self.mergeSlices();
-      else
-        slices = self.mergeSlices(slices);
-      end
-
-      self.parent.set(valueIn,slices);
+      r = self.varType.get(id,selector);
       
     end
     
-    function v = value(self,slices,var)
-      % value(self,slicesIn,varIn)
+    function r = getIndizes(self,slicesIn)
       
       if nargin == 1
-        var = self;
-        slices = self.mergeSlices();
+        slices = mergeSlices(self);
       else
-        slices = self.mergeSlices(slices);
+        slices = mergeSlices(self,slicesIn);
       end
       
-      v = self.parent.value(slices,var);
+      r = self.parent.getIndizes(slices);
+      
     end
-    
-%     function s = size(self,slices)
-%       if nargin == 1
-%         slices = self.mergeSlices();
-%       else
-%         slices = self.mergeSlices(slices);
-%       end
-%       s = self.parent.size(slices);
-%     end
     
   end
   
@@ -57,7 +43,7 @@ classdef SubVar < VarBase
     function slices = mergeSlices(self,slicesIn)
       % slices = mergeSlices(self,slicesIn)
       
-      varLength = prod(self.treeVar.size);
+      varLength = prod(self.varType.size);
       if nargin == 1
         slicesIn = {1:varLength};
       end

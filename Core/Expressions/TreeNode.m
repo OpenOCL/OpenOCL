@@ -1,4 +1,4 @@
-classdef VarStructure < handle
+classdef TreeNode < handle
   %VarStructure
   %   Basic datatype represent variables in a tree like structure.
   
@@ -13,7 +13,7 @@ classdef VarStructure < handle
   end
 
   methods
-    function self = VarStructure(varargin)
+    function self = TreeNode(varargin)
       % VarStructure(id)
       % VarStructure(id,size)
       % VarStructure(var)
@@ -29,9 +29,9 @@ classdef VarStructure < handle
         return
       end
 
-      if isa(varargin{1},'VarStructure')
+      if isa(varargin{1},'TreeNode')
         % copy recursively from given var
-        self            = varargin{1}.copy;
+        self            = varargin{1};
 
       elseif ischar(varargin{1}) 
         % create a new variable from id and size
@@ -75,7 +75,7 @@ classdef VarStructure < handle
       % compile all subVars
       for i=1:length(self.subVars)
         subVar = self.subVars{i};
-        if isa(subVar,'VarStructure')
+        if isa(subVar,'TreeNode')
           subVar.compile;
         end
       end
@@ -105,7 +105,7 @@ classdef VarStructure < handle
         % create new VarStructure from id and size
         idIn = varargin{1};
         sizeIn = varargin{2};
-        varIn = VarStructure(idIn,sizeIn);
+        varIn = TreeNode(idIn,sizeIn);
       elseif nargin == 2
         varIn = varargin{1}.copy;
       end
@@ -144,7 +144,7 @@ classdef VarStructure < handle
       
       self.varIds.(varIn.id) = indizes;
       
-      if isa(varIn,'Var')
+      if isa(varIn,'')
         keys = fieldnames(varIn.varIds);
         for i = 1:length(keys)
           key = keys{i};
@@ -180,7 +180,7 @@ classdef VarStructure < handle
       
     end
     
-    function [var,indizes] = get(self,id,selector)
+    function subVar = get(self,id,selector)
       % get(id)
       % get(id,selector)
       
@@ -197,15 +197,35 @@ classdef VarStructure < handle
       indizes = self.varIds.(id);
       indizes = indizes(selector);
       
-      var = self.subVars{indizes(1)};
+      subNode = self.subVars{indizes(1)};
       
-      if isa(var,'VarStructure')
-        var.compile;
+      if isa(subNode,'TreeNode')
+        subNode.compile;
       end
+      
+      sizes = self.getSizes();
+      positions = [];
+      pos = 1;
+      for k=1:length(sizes)
+        if k == indizes(1)
+          positions = [positions,pos];
+          indizes(1) = [];
+          if isempty(indizes)
+            break
+          end
+        end
+        pos = pos + prod(sizes{k});
+      end
+      
+      subVar = NodeSelection(subNode,self,positions);
       
     end % get    
     
+    function indizes = getIndizes(self,slices)
 
+      indizes = slices;
+      
+    end
     
     function printStructure(self, varargin)
       
