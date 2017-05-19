@@ -7,6 +7,11 @@ classdef VarBase < Arithmetic
   end
   
   methods
+    set(self)
+    value(self)
+  end
+  
+  methods
     
     function self = VarBase(treeVar)
       self.treeVar = treeVar;
