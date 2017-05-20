@@ -1,15 +1,15 @@
-classdef TreeNode < handle
+classdef TreeNode < VarStructure
   %VarStructure
   %   Basic datatype represent variables in a tree like structure.
   
+  
   properties (Access = public)
     
+    % thisSize inherited from VarStructure
     id
-    subVars
-    thisSize
+    childPointers
+    thisLength
     
-    compiled
-    varIds
   end
 
   methods
@@ -38,7 +38,7 @@ classdef TreeNode < handle
         self.id         = varargin{1};
         if nargin > 1 && isa(varargin{2},'double')
           self.thisSize = varargin{2};
-          self.compiled = true;
+          self.thisLength = prod(self.thisSize);
         end
       else
         error('Error in the argument list.');
@@ -46,53 +46,15 @@ classdef TreeNode < handle
     end % VarStructure constructor
     
     function clear(self)
-      self.subVars = {};
       self.thisSize = [0 1];
-      self.varIds = struct;
-      self.compiled = false;
+      self.childPointers = struct;
+      self.thisLength = 0;
     end
     
-    function c = copy(self)
-      classType = str2func(class(self));
-      c = classType();
-      c.id        = self.id;
-      c.thisSize  = self.thisSize;
-      c.varIds    = self.varIds;
-      c.compiled  = self.compiled;
-      
-      for k=1:length(self.subVars)
-        cp = copy(self.subVars{k});
-        c.subVars = builtin('horzcat',c.subVars,{cp});
-      end
+    function r = positions(self)
+      r = {1:self.thisLength};
     end
-        
-    function compile(self)
-      
-      if self.compiled
-        return
-      end
-      
-      % compile all subVars
-      for i=1:length(self.subVars)
-        subVar = self.subVars{i};
-        if isa(subVar,'TreeNode')
-          subVar.compile;
-        end
-      end
 
-      for i=1:length(self.subVars)
-        subVar = self.subVars{i};
-
-        if isempty(self.thisSize)
-          self.thisSize = [0 1];
-        end
-        self.thisSize(1) = self.thisSize(1) + prod(subVar.size);
-      end
-
-      self.compiled = true;
-    
-    end
-    
     function add(self,varargin)
       % add(id,size)
       %   Add a new variable from id and size
@@ -107,7 +69,7 @@ classdef TreeNode < handle
         sizeIn = varargin{2};
         varIn = TreeNode(idIn,sizeIn);
       elseif nargin == 2
-        varIn = varargin{1}.copy;
+        varIn = varargin{1};
       end
 
       self.addVar(varIn)
@@ -128,33 +90,18 @@ classdef TreeNode < handle
       % addVar(var)
       %   Adds a reference of the var
       
-      if self.compiled
-        error('Can not add variables to a compiled var.');
-      end   
+      varLength = prod(varIn.size);
+      positions = self.thisLength+1:self.thisLength+varLength;
       
-      self.subVars = builtin('horzcat',self.subVars,{varIn});
-      
-      thisIndex = length(self.subVars);
-      
-      indizes = [];
-      if isfield(self.varIds,varIn.id)
-        indizes = self.varIds.(varIn.id);
+      if isfield(self.childPointers,varIn.id)
+        % TODO check that sizes match
+        self.childPointers.(varIn.id).positions = [self.childPointers.(varIn.id).positions,positions]; 
+      else
+        self.childPointers.(varIn.id).node = varIn; 
+        self.childPointers.(varIn.id).positions = {positions};
       end
-      indizes = [indizes;thisIndex];
       
-      self.varIds.(varIn.id) = indizes;
-      
-      if isa(varIn,'')
-        keys = fieldnames(varIn.varIds);
-        for i = 1:length(keys)
-          key = keys{i};
-          indizes = [];
-          if isfield(self.varIds,key)
-            indizes = self.varIds.(key);
-          end
-          self.varIds.(key) = [indizes;thisIndex];
-        end
-      end
+      self.thisLength = self.thisLength+varLength;
       
     end
     
@@ -163,111 +110,50 @@ classdef TreeNode < handle
       %   Returns the size of the variable
       %   The size is determined by the leave variables
       
-      if self.compiled
+      if isempty(fieldnames(self.childPointers))
         s = self.thisSize;
       else
-        % Return size of the Var based on the subVars.
-        % sum up the sizes of subVars
-        s = 0;
-        for i=1:length(self.subVars)
-          subVar = self.subVars{i};
-          if ~isempty(subVar.size)
-            s = s + prod(subVar.size);
-          end
-        end
-        s = [s 1];
+        s = [self.thisLength 1];
       end
       
     end
     
-    function subVar = get(self,id,selector)
+    function subVar = get(self,id,parentPositions)
       % get(id)
       % get(id,selector)
       
-      if nargin == 2
-        selector = ':';
-      end
       
-      if ~isfield(self.varIds,id)
+      if ~isfield(self.childPointers,id)
         error('Error: Can not obtain id from this variable.');
       end
       
-      % get child vars with id
-      % 
-      indizes = self.varIds.(id);
-      indizes = indizes(selector);
+      nodeLength = self.thisLength;
       
-      subNode = self.subVars{indizes(1)};
-      
-      if isa(subNode,'TreeNode')
-        subNode.compile;
+      if nargin == 2
+        parentPositions = {1:nodeLength};
       end
       
-      sizes = self.getSizes();
-      positions = [];
-      pos = 1;
-      for k=1:length(sizes)
-        if k == indizes(1)
-          positions = [positions,pos];
-          indizes(1) = [];
-          if isempty(indizes)
-            break
-          end
+      % get children
+      child = self.childPointers.(id);
+      
+      % get merge all parent and child positions
+      Nchilds = length(child.positions);
+      
+      positions = cell(1,Nchilds*length(parentPositions));
+      i = 1;
+      for k=1:Nchilds
+        pos = child.positions{k};
+        
+        for l=1:length(parentPositions)
+          thisParentPos = parentPositions{l};
+          positions{i} = thisParentPos(pos);
         end
-        pos = pos + prod(sizes{k});
-      end
+        i = i+1;
+      end    
       
-      subVar = NodeSelection(subNode,self,positions);
+      subVar = NodeSelection(child.node,positions);
       
     end % get    
-    
-    function indizes = getIndizes(self,slices)
-
-      indizes = slices;
-      
-    end
-    
-    function printStructure(self, varargin)
-      
-      level = 0;
-      prefix = '';
-      if nargin == 4
-        level = varargin{1};
-        prefix = varargin{2};
-        index = varargin{3};
-        
-        delimiter = '';
-        if ~strcmp(prefix,'')
-          delimiter = '_';
-        end
-        prefix = [prefix delimiter self.id index];
-      end
-      
-      fprintf('%s%s\n', repmat('-', 1,4*level), prefix);
-      
-      level = level+1;
-      
-      for i = 1:length(self.subVars)
-        
-        subVar = self.subVars{i};
-        indizes = self.varIds.(subVar.id);
-        
-        % find i in indizes
-        subIndex = num2str(find(indizes==i));
-        if length(indizes)==1
-          subIndex = '';
-        end
-        subVar.printStructure(level,prefix,subIndex);
-      end
-    end
-    
-    function s = getSizes(self)
-      N = length(self.subVars);
-      s = cell(1,N);
-      for k=1:N
-        s{k} = self.subVars{k}.size;
-      end
-    end
     
   end % methods
   

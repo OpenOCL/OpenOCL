@@ -1,10 +1,107 @@
 classdef Arithmetic < handle
   
-  methods (Abstract)
-    value(self)
+  properties
+    varStructure
+    thisValue
+  end
+  
+  methods (Static)
+    
+    function obj = create(arithmeticObj,structureType,value)
+      % Factory method to create Arithmetic objects
+      
+      if isa(arithmeticObj,'Arithmetic')
+        obj = Arithmetic(structureType,value);
+      else
+        error('Arithmetic not implemented.');
+      end
+      
+    end
+    
+    function obj = createExpression(arithmeticObj,value)
+      % Factory method to create Matrix valued Arithmetic objects
+      
+      if isa(arithmeticObj,'Arithmetic')
+        obj = Arithmetic(MatrixStructure(size(value)),value);
+      else
+        error('Arithmetic not implemented.');
+      end
+      
+    end
   end
   
   methods
+    
+    function self = Arithmetic(varStructure,value)
+      self.varStructure = varStructure;
+      
+      if isa(value,'Value')
+        self.thisValue = value;
+      else
+        self.thisValue = Value();
+        self.set(value);
+      end
+    end
+    
+    %%% Delegate methods of varStructure
+    function s = size(self)
+      s = self.varStructure.size;
+    end
+    function r = positions(self)
+      r = self.varStructure.positions;
+    end
+    function r = get(self,id)
+      r = Arithmetic.create(self,self.varStructure.get(id),self.thisValue);
+    end
+    %%%
+    
+    
+    function set(self,valueIn)
+      
+      if isa(valueIn,'Arithmetic')
+        valueIn = valueIn.value;
+      end
+      
+      positions = self.positions;
+      
+      if isscalar(valueIn)
+        % assign scalar
+        for k=1:length(positions)
+          s = size(positions{k});
+          val = valueIn * ones(s);
+          self.thisValue.set(val,positions{k});
+        end
+      elseif numel(positions{1}) == numel(valueIn)
+        % assign same value repeatetly to each position
+        for k=1:length(positions)
+          self.thisValue.set(valueIn,positions{k});
+        end
+      elseif ismatrix(valueIn) && length(positions) == size(valueIn,2)
+        % assign each column of value to each position
+        for k=1:length(positions)
+          self.thisValue.set(valueIn(:,k),positions{k});
+        end
+      else
+        error('Error: Can not assign value to variable, dimensions do not match.');
+      end
+      
+    end
+    
+    function v = value(self)
+      
+      positions = self.varStructure.positions;
+      if length(positions) == 1
+        s = self.size;
+        v = reshape(self.thisValue.value(positions{1}),s);
+      else
+        % stack vectors
+        v = [];
+        for k=1:length(positions)
+          v = [v,self.thisValue.value(positions{k})];
+        end
+      end        
+    end
+    
     
     %%% matrix and vector wise operations
     function v = horzcat(varargin)
@@ -14,11 +111,12 @@ classdef Arithmetic < handle
         val = varargin{k};
         if isa(val,'Arithmetic')
           inValues{k} = val.value;
+          obj = val;
         else
           inValues{k} = val;
         end
       end    
-      v = Expression(horzcat(inValues{:}));
+      v = Arithmetic.createExpression(obj,horzcat(inValues{:}));
     end
     
     function v = vertcat(varargin)
@@ -28,21 +126,24 @@ classdef Arithmetic < handle
         val = varargin{k};
         if isa(val,'Arithmetic')
           inValues{k} = val.value;
+          obj = val;
         else
           inValues{k} = val;
         end
       end
-      v = Expression(vertcat(inValues{:}));
+      v = Arithmetic.createExpression(obj,vertcat(inValues{:}));
     end
     
     function v = mtimes(a,b)
       if isa(a,'Arithmetic') 
+        obj = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        obj = b;
         b = b.value;
       end
-      v = Expression(mtimes(a,b));
+      v = Arithmetic.createExpression(obj,mtimes(a,b));
     end
    
     function v = ctranspose(self)
@@ -51,265 +152,296 @@ classdef Arithmetic < handle
       v = transpose(self);
     end
     function v = transpose(self)
-      v = Expression(transpose(self.value));
+      v = Arithmetic.createExpression(self,transpose(self.value));
     end
     
     function v = reshape(self,varargin)
-      v = Expression(reshape(self.value,varargin{:}));
+      v = Arithmetic.createExpression(self,reshape(self.value,varargin{:}));
     end
     
     function v = triu(self)
-      v = Expression(triu(self.value));
+      v = Arithmetic.createExpression(self,triu(self.value));
     end
     
     function v = repmat(self,varargin)
-      v = Expression(repmat(self.value,varargin{:}));
+      v = Arithmetic.createExpression(self,repmat(self.value,varargin{:}));
     end
     
-    function v = sum(a)
-      v = Expression(sum(a.value));
+    function v = sum(self)
+      v = Arithmetic.createExpression(self,sum(self.value));
     end
     
-    function v = norm(a,varargin)
-      v = Expression(norm(a.value,varargin{:}));
+    function v = norm(self,varargin)
+      v = Arithmetic.createExpression(self,norm(self.value,varargin{:}));
     end
     
     function v = mpower(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(mpower(a,b));
+      v = Arithmetic.createExpression(self,mpower(a,b));
     end
     
     function v = mldivide(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
       if (numel(a) > 1) && (numel(b) > 1)
-        v = Expression(solve(a,b));
+        v = Arithmetic.createExpression(self,solve(a,b));
       else
-        v = Expression(mldivide(a,b));
+        v = Arithmetic.createExpression(self,mldivide(a,b));
       end
     end
     
     function v = mrdivide(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(mrdivide(a,b));
+      v = Arithmetic.createExpression(self,mrdivide(a,b));
     end
     
     function v = cross(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(cross(a,b));
+      v = Arithmetic.createExpression(self,cross(a,b));
     end
     
     function v = dot(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(dot(a,b));
+      v = Arithmetic.createExpression(self,dot(a,b));
     end
     
     function v = inv(self)
-      v = Expression(inv(self.value));
+      v = Arithmetic.createExpression(self,inv(self.value));
     end
     
     function v = det(self)
-      v = Expression(det(self.value));
+      v = Arithmetic.createExpression(self,det(self.value));
     end
     
     function v = trace(self)
-      v = Expression(trace(self.value));
+      v = Arithmetic.createExpression(self,trace(self.value));
     end
     
     function v = diag(self)
-      v = Expression(diag(self.value));
+      v = Arithmetic.createExpression(self,diag(self.value));
     end
     
     function v = polyval(p,a)
       if isa(p,'Arithmetic') 
+        self = p;
         p = p.value;
       end  
       if isa(a,'Arithmetic')
+        self = a;
         a = a.value;
       end   
-      v = Expression(polyval(p,a));
+      v = Arithmetic.createExpression(self,polyval(p,a));
     end
     
     function v = jacobian(ex,arg)
       if isa(ex,'Arithmetic') 
+        self = ex;
         ex = ex.value;
       end  
       if isa(arg,'Arithmetic')
+        self = arg;
         arg = arg.value;
       end  
-      v = Expression(jacobian(ex,arg));
+      v = Arithmetic.createExpression(self,jacobian(ex,arg));
     end
     
     function r = jtimes(ex,arg,v)
       if isa(ex,'Arithmetic') 
+        self = ex;
         ex = ex.value;
       end  
       if isa(arg,'Arithmetic')
+        self = arg;
         arg = arg.value;
       end
       if isa(v,'Arithmetic')
+        self = v;
         v = v.value;
       end  
-      r = Expression(jtimes(ex,arg,v));
+      r = Arithmetic.createExpression(self,jtimes(ex,arg,v));
     end
     
     %%% element wise operations
     function v = plus(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(plus(a,b));
+      v = Arithmetic.createExpression(self,plus(a,b));
     end
     
     function v = minus(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(minus(a,b));
+      v = Arithmetic.createExpression(self,minus(a,b));
     end
     
     function v = times(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(times(a,b));
+      v = Arithmetic.createExpression(self,times(a,b));
     end
     
     function v = power(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(power(a,b));
+      v = Arithmetic.createExpression(self,power(a,b));
     end
     
     function v = rdivide(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(rdivide(a,b));
+      v = Arithmetic.createExpression(self,rdivide(a,b));
     end
     
     function v = ldivide(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(ldivide(a,b));
+      v = Arithmetic.createExpression(self,ldivide(a,b));
     end
     
     function v = atan2(a,b)
       if isa(a,'Arithmetic') 
+        self = a;
         a = a.value;
       end
       if isa(b,'Arithmetic')
+        self = b;
         b = b.value;
       end
-      v = Expression(atan2(a,b));
+      v = Arithmetic.createExpression(self,atan2(a,b));
     end
     
     function v = abs(self)
-      v = Expression(abs(self.value));
+      v = Arithmetic.createExpression(self,abs(self.value));
     end
 
     function v = sqrt(self)
-      v = Expression(sqrt(self.value));
+      v = Arithmetic.createExpression(self,sqrt(self.value));
     end
     
     function v = sin(self)
-      v = Expression(sin(self.value));
+      v = Arithmetic.createExpression(self,sin(self.value));
     end
     
     function v = cos(self)
-      v = Expression(cos(self.value));
+      v = Arithmetic.createExpression(self,cos(self.value));
     end
     
     function v = tan(self)
-      v = Expression(tan(self.value));
+      v = Arithmetic.createExpression(self,tan(self.value));
     end
     
     function v = atan(self)
-      v = Expression(atan(self.value));
+      v = Arithmetic.createExpression(self,atan(self.value));
     end
     
     function v = asin(self)
-      v = Expression(asin(self.value));
+      v = Arithmetic.createExpression(self,asin(self.value));
     end
     
     function v = acos(self)
-      v = Expression(acos(self.value));
+      v = Arithmetic.createExpression(self,acos(self.value));
     end
     
     function v = tanh(self)
-      v = Expression(tanh(self.value));
+      v = Arithmetic.createExpression(self,tanh(self.value));
     end
     
     function v = cosh(self)
-      v = Expression(cosh(self.value));
+      v = Arithmetic.createExpression(self,cosh(self.value));
     end
     
     function v = sinh(self)
-      v = Expression(sinh(self.value));
+      v = Arithmetic.createExpression(self,sinh(self.value));
     end
     
     function v = atanh(self)
-      v = Expression(atanh(self.value));
+      v = Arithmetic.createExpression(self,atanh(self.value));
     end
     
     function v = asinh(self)
-      v = Expression(asinh(self.value));
+      v = Arithmetic.createExpression(self,asinh(self.value));
     end
     
     function v = acosh(self)
-      v = Expression(acosh(self.value));
+      v = Arithmetic.createExpression(self,acosh(self.value));
     end
     
     function v = exp(self)
-      v = Expression(exp(self.value));
+      v = Arithmetic.createExpression(self,exp(self.value));
     end
     
     function v = log(self)
-      v = Expression(log(self.value));
+      v = Arithmetic.createExpression(self,log(self.value));
     end
     
   end

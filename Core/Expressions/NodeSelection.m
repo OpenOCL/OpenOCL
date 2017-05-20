@@ -1,70 +1,35 @@
-classdef NodeSelection < handle
+classdef NodeSelection < VarStructure
   %SUBEXPRESSION Summary of this class goes here
   %   Detailed explanation goes here
   
   properties
-    parent
     positions
-    varType
+    nodeType
   end
   
   methods
     
-    function self = NodeSelection(varType,parent,positions)
+    function self = NodeSelection(nodeType,positions)
       
-      self.varType = varType;
-
-      self.parent     = parent;
+      self.nodeType = nodeType;
       self.positions  = positions;
     end
     
-    function r = get(self,id,selector)
-      
-      r = self.varType.get(id,selector);
-      
-    end
-    
-    function r = getIndizes(self,slicesIn)
-      
-      if nargin == 1
-        slices = mergeSlices(self);
+    function s = size(self)
+      l = length(self.positions);
+      if l == 1
+        s = self.nodeType.size;
       else
-        slices = mergeSlices(self,slicesIn);
+        s = [prod(self.nodeType.size),length(self.positions)];
       end
-      
-      r = self.parent.getIndizes(slices);
-      
+    end
+    
+    function childSelection = get(self,id)
+      childSelection = self.nodeType.get(id,self.positions);
     end
     
   end
-  
-  methods (Access = private)
-    
-    function slices = mergeSlices(self,slicesIn)
-      % slices = mergeSlices(self,slicesIn)
-      
-      varLength = prod(self.varType.size);
-      if nargin == 1
-        slicesIn = {1:varLength};
-      end
-            
-      NPositions = length(self.positions);
-      
-      slices = cell(1,NPositions*length(slicesIn));
-      i = 1;
-      for k=1:NPositions
-        pos = self.positions(k);
-        slice = pos:pos+varLength-1;
-        
-        for l=1:length(slicesIn)
-          slices{i} = slice(slicesIn{l});
-        end
-        i = i+1;
-      end
-      
-    end
-    
-  end
+
   
 end
 
