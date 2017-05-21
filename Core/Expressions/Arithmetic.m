@@ -28,6 +28,11 @@ classdef Arithmetic < handle
       end
       
     end
+    
+    function obj = Matrix(value)
+      obj = Arithmetic(MatrixStructure(size(value)),value);
+    end
+    
   end
   
   methods
@@ -35,11 +40,17 @@ classdef Arithmetic < handle
     function self = Arithmetic(varStructure,value)
       self.varStructure = varStructure;
       
-      if isa(value,'Value')
-        self.thisValue = value;
-      else
+      if nargin == 1
         self.thisValue = Value();
-        self.set(value);
+      end
+      
+      if nargin ==2 
+        if isa(value,'Value')
+          self.thisValue = value;
+        else
+          self.thisValue = Value(value);
+          self.set(value);
+        end
       end
     end
     
@@ -74,7 +85,9 @@ classdef Arithmetic < handle
       elseif numel(positions{1}) == numel(valueIn)
         % assign same value repeatetly to each position
         for k=1:length(positions)
-          self.thisValue.set(valueIn,positions{k});
+          p = positions{k};
+          val = reshape(valueIn,size(p));
+          self.thisValue.set(val,p);
         end
       elseif ismatrix(valueIn) && length(positions) == size(valueIn,2)
         % assign each column of value to each position

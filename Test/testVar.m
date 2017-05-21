@@ -2,19 +2,17 @@ function testVar
 
 
 % clear classes
-x = VarStructure('x');
+x = TreeNode('x');
 x.add('p',[3,1]);
 x.add('R',[3,3]);
 x.add('v',[3,1]);
 x.add('w',[3,1]);
-x.compile;
 
-u = VarStructure('u');
+u = TreeNode('u');
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
-u.compile;
 
-state = Var(x,0);
+state = Arithmetic(x,0);
 
 state.get('R').set(eye(3))
 state.get('p').set([100;0;-50])
@@ -38,12 +36,11 @@ assert( isequal( state2.get('p').value,   [1;2;3] ) )
 assert( isequal( state.size,   [18 1] ) )
 
 
-ocpVar = VarStructure('ocpvar');
+ocpVar = TreeNode('ocpvar');
 ocpVar.addRepeated({x,u},5);
 ocpVar.add(x);
-ocpVar.compile;
 
-v = Var(ocpVar,0);
+v = Arithmetic(ocpVar,0);
 state = v.get('x');
 state.get('R').set(eye(3))
 state.get('p').set([100;0;50])
@@ -70,7 +67,6 @@ assert( isequal( state.value,   [
     1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
     0.1000    0.1000    0.1000    0.1000    0.1000    0.1000] ) );
 
-ocpVar.compile
 
 % exThrown = false;
 % try

@@ -3,21 +3,19 @@ function testArithmetic
 % small number of numeric value comparison
 eps = 1e-5;
 
-s1 = casadi.SX.sym('x1',3,1);
-s2 = casadi.SX.sym('x2',2,3);
-
 v1 = [5;2.8;2];
 v2 = [1,5.01,3;6,5,4];
 
 %%% constructor
-a1 = Expression;
-a2 = Expression;
-a1.setValue(s1);
-a2.setValue(s2);
-assert(isa(a1.value,'casadi.SX'));
-f = casadi.Function('f',{s1},{a1.value});
+a1 = CasadiArithmetic.Matrix([3,1]);
+a2 = CasadiArithmetic.Matrix([2,3]);
+s1 = a1.value;
+s2 = a2.value;
+
+assert(isa(s1,'casadi.SX'));
+f = casadi.Function('f',{s1},{s1});
 assert(isequal(full(f(v1)),v1))
-f = casadi.Function('f',{s2},{a2.value});
+f = casadi.Function('f',{s2},{s2});
 assert(isequal(full(f(v2)),v2))
 
 %%% horzcat, vertcat, subsref
@@ -25,7 +23,7 @@ aTest = [a1,a1,a1;a2];
 aTest = aTest(3:5,2);
 vTest = [v1,v1,v1;v2];
 vTest = vTest(3:5,2);
-f = casadi.Function('f',{s1,s2},{aTest(1:2).value});
+f = casadi.Function('f',{s1,s1},{aTest(1:2).value});
 assert(isequal(full(f(v1,v2)),vTest(1:2)))
 
 %%% subsasgn
