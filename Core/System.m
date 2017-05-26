@@ -31,9 +31,9 @@ classdef (Abstract) System < handle
   methods
     
     function self = System(parametersStruct)
-      self.statesStruct     = VarStructure('states');
-      self.algVarsStruct    = VarStructure('algVars');
-      self.controlsStruct   = VarStructure('controls');
+      self.statesStruct     = TreeNode('states');
+      self.algVarsStruct    = TreeNode('algVars');
+      self.controlsStruct   = TreeNode('controls');
       
       if nargin == 0
         self.parametersStruct = Parameters;
@@ -41,11 +41,11 @@ classdef (Abstract) System < handle
         self.parametersStruct  = parametersStruct.copy;
       end
       
-      self.initialConditions = Expression;
+      self.initialConditions = Arithmetic.Matrix([]);
       
 
-      self.ode         = VarStructure('ode');
-      self.alg         = Expression;
+      self.ode         = TreeNode('ode');
+      self.alg         = Arithmetic.Matrix([]);
       
       self.setupVariables;
       
@@ -54,7 +54,7 @@ classdef (Abstract) System < handle
       self.controlsStruct.compile;
       
       self.ode.compile;
-      self.ode = Var(self.ode,nan);
+      self.ode = Arithmetic(self.ode,nan);
       
       self.systemFun = Function(@self.getEquations, ...
         {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);

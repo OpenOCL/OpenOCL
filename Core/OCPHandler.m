@@ -28,7 +28,7 @@ classdef OCPHandler < handle
       controls = self.system.controlsStruct;
       algVars = self.system.algVarsStruct;
       params = self.system.parametersStruct;
-      time = VarStructure('time',[1,1]);
+      time = TreeNode('time',[1,1]);
 
       self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,params},1);
       self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,time,params},1);

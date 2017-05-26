@@ -1,7 +1,7 @@
-classdef Parameters < VarStructure  
+classdef Parameters < TreeNode  
   methods
     function self = Parameters()
-      self = self@VarStructure('parameters');
+      self = self@TreeNode('parameters');
     end
   end
 end

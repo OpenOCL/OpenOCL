@@ -37,12 +37,12 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
-      self.integratorVarsStruct = VarStructure('integratorVars');
+      self.integratorVarsStruct = TreeNode('integratorVars');
       self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
       self.integratorVarsStruct.compile;
       
-      time0 = VarStructure('time0',[1 1]);
-      timeF = VarStructure('timeF', [1 1]);
+      time0 = TreeNode('time0',[1 1]);
+      timeF = TreeNode('timeF', [1 1]);
       
       self.integratorFun = Function(@self.getIntegrator,{system.statesStruct,...
                                                     self.integratorVarsStruct,...

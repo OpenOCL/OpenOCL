@@ -30,7 +30,7 @@ classdef Simultaneous < handle
       self.system = system;
       
       integratorVarsStruct = integrator.integratorVarsStruct;
-      self.nlpVarsStruct = VarStructure('nlpVars');
+      self.nlpVarsStruct = TreeNode('nlpVars');
       self.nlpVarsStruct.addRepeated({system.statesStruct,...
                                       integratorVarsStruct,...
                                       system.controlsStruct},self.N);
@@ -43,12 +43,12 @@ classdef Simultaneous < handle
       self.nlpVarsStruct.compile;
       
       % initialize bounds      
-      self.lowerBounds = Var(self.nlpVarsStruct,-inf);
-      self.upperBounds = Var(self.nlpVarsStruct,inf);
+      self.lowerBounds = Arithmetic(self.nlpVarsStruct,-inf);
+      self.upperBounds = Arithmetic(self.nlpVarsStruct,inf);
       self.lowerBounds.get('time').set(0);
       
-      self.scalingMin = Var(self.nlpVarsStruct,0);
-      self.scalingMax = Var(self.nlpVarsStruct,1);
+      self.scalingMin = Arithmetic(self.nlpVarsStruct,0);
+      self.scalingMax = Arithmetic(self.nlpVarsStruct,1);
       
       self.nlpFun = Function(@self.getNLPFun,{self.nlpVarsStruct},5);
 
@@ -56,7 +56,7 @@ classdef Simultaneous < handle
     
     function initialGuess = getInitialGuess(self)
       
-      initialGuess = Var(self.nlpVarsStruct,0);
+      initialGuess = Arithmetic(self.nlpVarsStruct,0);
       
       lowVal  = self.lowerBounds.value;
       upVal   = self.upperBounds.value;

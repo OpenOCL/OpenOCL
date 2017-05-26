@@ -28,7 +28,7 @@ classdef CasadiFunction < handle
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        inputs{k} = CasadiVar(varStruct);
+        inputs{k} = CasadiArithmetic(varStruct);
       end
       
       outputs = cell(1,inputFunction.nOutputs);
