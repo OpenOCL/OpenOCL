@@ -39,11 +39,16 @@ u.add('x3',[3,3]);
 x = TreeNode('x');
 x.add('x1',[1,3]);
 x.add(u);
+x.add(u);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
 
-assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18]} ));
 
+
+assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
+
+uhat = x.get('u');
+assert( isequal( uhat.get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
 
 % positions
 x = TreeNode('x',[3 3]);

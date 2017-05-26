@@ -24,14 +24,9 @@ assert( isequal( state.get('p').value,   [100;0;-50] ) )
 assert( isequal( state.get('v').value,   [20;0;0] ) )
 assert( isequal( state.get('w').value,   [0;1;0.1] ) )
 
-state2 = state.copy;
-assert( isequal( state.value, state2.value ))
-
-state2.get('p').set([1;2;3])
 state.get('p').set([100;0;50])
 
 assert( isequal( state.get('p').value,   [100;0;50] ) )
-assert( isequal( state2.get('p').value,   [1;2;3] ) )
 
 assert( isequal( state.size,   [18 1] ) )
 
@@ -125,13 +120,10 @@ assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
 % assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
 
 v.get('x').get('R').set(eye(3));
-assert( isequal(v.get('x').get('R').value, repmat(eye(3),1,1,6)) );
-
-v.get('x').get('R').set(repmat([1,2,3;4,5,6;2,3,4],1,1,6));
-assert( isequal(v.get('x').get('R').value, repmat([1,2,3;4,5,6;2,3,4],1,1,6)) );
+assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
 
 v.get('x').get('R').set(ones(9,1))
-assert( isequal(v.get('x').get('R').value, ones(3,3,6)) );
+assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
 
 % assert( isequal(v.get('x').get('R',1,1).value,ones(1,6)) );
@@ -146,5 +138,5 @@ p1 = v.get('x',1).get('p');
 p2 = v.get('x',2).get('p');
 p3 = p1 + p2;
 p3 = p1 - p2;
-p3 = p1 / p2;
+p3 = p1 ./ p2;
 p3 = p1'*p2;

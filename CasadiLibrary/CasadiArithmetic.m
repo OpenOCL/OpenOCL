@@ -13,10 +13,13 @@ classdef CasadiArithmetic < Arithmetic
   
   methods
     
-    function self = CasadiArithmetic(varStructure)
+    function self = CasadiArithmetic(varStructure,value)
       
       self = self@Arithmetic(varStructure);
-      value = casadi.SX.sym('v',prod(varStructure.size),1);
+
+      if nargin == 1
+        value = casadi.SX.sym('v',prod(varStructure.size),1);
+      end
       self.thisValue.set(value);
       
     end

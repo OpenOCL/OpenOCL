@@ -118,42 +118,48 @@ classdef TreeNode < VarStructure
       
     end
     
-    function subVar = get(self,id,parentPositions)
+    function subVar = get(self,id,varargin)
       % get(id)
       % get(id,selector)
       
+      parentPositions = {1:self.thisLength};
+      subVar = self.getWithPositions(id,parentPositions,varargin{:});
+      
+      
+    end % get    
+    
+    function subVar = getWithPositions(self,id,parentPositions,selector)
       
       if ~isfield(self.childPointers,id)
         error('Error: Can not obtain id from this variable.');
       end
       
-      nodeLength = self.thisLength;
-      
-      if nargin == 2
-        parentPositions = {1:nodeLength};
+      if nargin < 4
+        selector = ':';
       end
       
       % get children
       child = self.childPointers.(id);
+      
+      % access children by index
+      child.positions = child.positions(selector);
       
       % get merge all parent and child positions
       Nchilds = length(child.positions);
       
       positions = cell(1,Nchilds*length(parentPositions));
       i = 1;
-      for k=1:Nchilds
-        pos = child.positions{k};
-        
-        for l=1:length(parentPositions)
-          thisParentPos = parentPositions{l};
+      for l=1:length(parentPositions)
+        thisParentPos = parentPositions{l};
+        for k=1:Nchilds
+          pos = child.positions{k};
           positions{i} = thisParentPos(pos);
+          i = i+1;
         end
-        i = i+1;
       end    
       
       subVar = NodeSelection(child.node,positions);
-      
-    end % get    
+    end
     
   end % methods
   

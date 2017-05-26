@@ -3,7 +3,7 @@ classdef NodeSelection < VarStructure
   %   Detailed explanation goes here
   
   properties
-    positions
+    thisPositions
     nodeType
   end
   
@@ -12,7 +12,7 @@ classdef NodeSelection < VarStructure
     function self = NodeSelection(nodeType,positions)
       
       self.nodeType = nodeType;
-      self.positions  = positions;
+      self.thisPositions  = positions;
     end
     
     function s = size(self)
@@ -25,7 +25,11 @@ classdef NodeSelection < VarStructure
     end
     
     function childSelection = get(self,id)
-      childSelection = self.nodeType.get(id,self.positions);
+      childSelection = self.nodeType.getWithPositions(id,self.positions);
+    end
+    
+    function r = positions(self)
+      r = self.thisPositions;
     end
     
   end

@@ -10,7 +10,9 @@ classdef Arithmetic < handle
     function obj = create(arithmeticObj,structureType,value)
       % Factory method to create Arithmetic objects
       
-      if isa(arithmeticObj,'Arithmetic')
+      if isa(arithmeticObj,'CasadiArithmetic')
+        obj = CasadiArithmetic(structureType,value);
+      elseif isa(arithmeticObj,'Arithmetic')
         obj = Arithmetic(structureType,value);
       else
         error('Arithmetic not implemented.');
@@ -21,7 +23,9 @@ classdef Arithmetic < handle
     function obj = createExpression(arithmeticObj,value)
       % Factory method to create Matrix valued Arithmetic objects
       
-      if isa(arithmeticObj,'Arithmetic')
+      if isa(arithmeticObj,'CasadiArithmetic')
+        obj = CasadiArithmetic(MatrixStructure(size(value)),value);
+      elseif isa(arithmeticObj,'Arithmetic')
         obj = Arithmetic(MatrixStructure(size(value)),value);
       else
         error('Arithmetic not implemented.');
@@ -48,7 +52,7 @@ classdef Arithmetic < handle
         if isa(value,'Value')
           self.thisValue = value;
         else
-          self.thisValue = Value(value);
+          self.thisValue = Value(zeros(prod(varStructure.size),1));
           self.set(value);
         end
       end
@@ -61,8 +65,10 @@ classdef Arithmetic < handle
     function r = positions(self)
       r = self.varStructure.positions;
     end
-    function r = get(self,id)
-      r = Arithmetic.create(self,self.varStructure.get(id),self.thisValue);
+    function r = get(self,id,varargin)
+      % r = get(self,id)
+      % r = get(self,id,selector)
+      r = Arithmetic.create(self,self.varStructure.get(id,varargin{:}),self.thisValue);
     end
     %%%
     
@@ -78,8 +84,8 @@ classdef Arithmetic < handle
       if isscalar(valueIn)
         % assign scalar
         for k=1:length(positions)
-          s = size(positions{k});
-          val = valueIn * ones(s);
+          s = numel(positions{k});
+          val = valueIn * ones(s,1);
           self.thisValue.set(val,positions{k});
         end
       elseif numel(positions{1}) == numel(valueIn)
@@ -145,6 +151,26 @@ classdef Arithmetic < handle
         end
       end
       v = Arithmetic.createExpression(obj,vertcat(inValues{:}));
+    end
+    
+    function varargout = subsref(self,s)
+      if numel(s) == 1 && strcmp(s.type,'()')
+        [varargout{1}] = Arithmetic.createExpression(self,self.value.subsref(s));
+      elseif numel(s) > 1 && strcmp(s(1).type,'()')
+        v = Arithmetic.createExpression(self,self.value.subsref(s(1)));
+        [varargout{1:nargout}] = subsref(v,s(2:end));
+      else
+        [varargout{1:nargout}] = builtin('subsref',self,s);
+      end
+    end
+    
+    function self = subsasgn(self,s,v)
+      if numel(s)==1 && strcmp(s.type,'()')
+        v = subsasgn(self.value,s,v);
+        self.set(v);
+      else
+        self.setValue(builtin('subsasgn',self.value,s,v));
+      end
     end
     
     function v = mtimes(a,b)

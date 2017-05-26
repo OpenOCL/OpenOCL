@@ -23,8 +23,8 @@ aTest = [a1,a1,a1;a2];
 aTest = aTest(3:5,2);
 vTest = [v1,v1,v1;v2];
 vTest = vTest(3:5,2);
-f = casadi.Function('f',{s1,s1},{aTest(1:2).value});
-assert(isequal(full(f(v1,v2)),vTest(1:2)))
+f = casadi.Function('f',{s1,s2},{aTest(2:3).value});
+assert(isequal(full(f(v1,v2)),vTest(2:3)))
 
 %%% subsasgn
 aTest(2:3) = 11;
@@ -90,10 +90,10 @@ assert(isequal(full(f(v1,v2)),vTest))
 errorThrown = false;
 try
   [~] = aTest(:,1:6)^2;
-catch
+catch e
   errorThrown = true;
 end
-assert(errorThrown)
+assert(errorThrown && (strfind(e.message,'Not implemented')>0));
 
 %%% mldivide (solve in casadi)
 A = [0.2625    0.9289    0.5785;
@@ -101,14 +101,15 @@ A = [0.2625    0.9289    0.5785;
      0.0292    0.4886    0.4588];
 b = [0.9631,0.5468,0.5211]';
 
-sxSquare = casadi.SX.sym('xSquare',3,3);
+aA = CasadiArithmetic.Matrix([3,3]);
+ab = CasadiArithmetic.Matrix([3,1]);
 
-aA = Expression(sxSquare);
-ab = Expression(s1);
+sA = aA.value;
+sb = ab.value;
 
 aTest = aA\ab;
 vTest = A\b;
-f = casadi.Function('f',{sxSquare,s1},{aTest.value});
+f = casadi.Function('f',{sA,sb},{aTest.value});
 assert(all( abs(full(f(A,b))-vTest) <= eps))
 
 %%% cross
@@ -126,25 +127,25 @@ assert(isequal(full(f(v1,v2)),vTest))
 %%% inv
 aTest = inv(aA);
 vTest = inv(A);
-f = casadi.Function('f',{sxSquare},{aTest.value});
+f = casadi.Function('f',{sA},{aTest.value});
 assert( all(all( abs(full(f(A))-vTest) <= eps)))
 
 %%% det
 aTest = det(aA);
 vTest = det(A);
-f = casadi.Function('f',{sxSquare},{aTest.value});
+f = casadi.Function('f',{sA},{aTest.value});
 assert( abs(full(f(A))-vTest) <= eps)
 
 %%% trace
 aTest = trace(aA);
 vTest = trace(A);
-f = casadi.Function('f',{sxSquare},{aTest.value});
+f = casadi.Function('f',{sA},{aTest.value});
 assert(isequal(full(f(A)),vTest))
 
 %%% diag
 aTest = diag(aA);
 vTest = diag(A);
-f = casadi.Function('f',{sxSquare},{aTest.value});
+f = casadi.Function('f',{sA},{aTest.value});
 assert(isequal(full(f(A)),vTest))
 
 %%% polyval
@@ -153,7 +154,8 @@ vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
-aTest = polyval(Expression([2,5,4]),a1);
+ab.set([2,5,4]);
+aTest = polyval(ab,a1);
 vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
@@ -210,4 +212,8 @@ aTest = atan2(a1(1).^2.*a1(2)+a1(3),atan(a1(1)).^2);
 vTest = atan2(v1(1).^2.*v1(2)+v1(3),atan(v1(1)).^2);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
+
+% keep type
+assert(isa(aTest,'CasadiArithmetic'));
+
 end
