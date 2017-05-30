@@ -53,9 +53,6 @@ classdef (Abstract) System < handle
       self.algVarsStruct.compile;
       self.controlsStruct.compile;
       
-      self.ode.compile;
-      self.ode = Arithmetic(self.ode,nan);
-      
       self.systemFun = Function(@self.getEquations, ...
         {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);
       
@@ -78,7 +75,7 @@ classdef (Abstract) System < handle
       % evaluate the system equations for the assigned 
       
       self.alg = Expression([]);
-      self.ode.set(nan);
+      self.ode = Arithmetic.create(statesIn,statesIn.varStructure);
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
@@ -88,7 +85,6 @@ classdef (Abstract) System < handle
     
     function addState(self,id,size)
       self.statesStruct.add(id,size);
-      self.ode.add([System.DOT_PREFIX id],size)
     end
     function addAlgVar(self,id,size)
       self.algVarsStruct.add(id,size);
@@ -101,7 +97,7 @@ classdef (Abstract) System < handle
     end
 
     function setODE(self,id,equation)
-      self.ode.get([System.DOT_PREFIX id]).set(equation);
+      self.ode.get(id).set(equation);
     end
     
     function setAlgEquation(self,equation)

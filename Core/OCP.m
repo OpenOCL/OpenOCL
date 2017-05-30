@@ -29,8 +29,8 @@ classdef OCP < handle
       
       self.thisPathConstraints = Constraint;
       self.thisBoundaryConditions = Constraint;
-      self.thisArrivalCosts = Expression(0);
-      self.thisPathCosts = Expression(0);
+      self.thisArrivalCosts = Arithmetic.Matrix(0);
+      self.thisPathCosts = Arithmetic.Matrix(0);
       
       self.parametersStruct = system.parametersStruct;
       
@@ -39,7 +39,7 @@ classdef OCP < handle
     %%% overridable methods
     function c = discreteCost(~,~)
       % c = discreteCost(self,vars)
-      c = Expression(0);
+      c = Arithmetic.Matrix(0);
     end
     function pathCosts(~,~,~,~,~,~)
       % pathCosts(self,states,algVars,controls,time,parameters);

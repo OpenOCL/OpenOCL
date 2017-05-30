@@ -20,7 +20,12 @@ classdef CasadiArithmetic < Arithmetic
       if nargin == 1
         value = casadi.SX.sym('v',prod(varStructure.size),1);
       end
-      self.thisValue.set(value);
+      
+      if isa(value,'Value')
+        self.thisValue = value;
+      else
+        self.thisValue.set(value);
+      end
       
     end
     

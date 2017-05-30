@@ -17,9 +17,9 @@ classdef Constraint < handle
     end
 
     function clear(self)
-      self.values = Expression;
-      self.lowerBounds = Expression;
-      self.upperBounds = Expression;
+      self.values = Arithmetic.Matrix([]);
+      self.lowerBounds = Arithmetic.Matrix([]);;
+      self.upperBounds = Arithmetic.Matrix([]);;
     end
     
     function c = copy(self)

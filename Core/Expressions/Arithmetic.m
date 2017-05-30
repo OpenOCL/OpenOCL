@@ -7,13 +7,15 @@ classdef Arithmetic < handle
   
   methods (Static)
     
-    function obj = create(arithmeticObj,structureType,value)
+    function obj = create(arithmeticObj,structureType,varargin)
+      % obj = create(arithmeticObj,structureType)
+      % obj = create(arithmeticObj,structureType,value)
       % Factory method to create Arithmetic objects
       
       if isa(arithmeticObj,'CasadiArithmetic')
-        obj = CasadiArithmetic(structureType,value);
+        obj = CasadiArithmetic(structureType,varargin{:});
       elseif isa(arithmeticObj,'Arithmetic')
-        obj = Arithmetic(structureType,value);
+        obj = Arithmetic(structureType,varargin{:});
       else
         error('Arithmetic not implemented.');
       end
@@ -21,6 +23,7 @@ classdef Arithmetic < handle
     end
     
     function obj = createExpression(arithmeticObj,value)
+      % obj = createExpression(arithmeticObj,value)
       % Factory method to create Matrix valued Arithmetic objects
       
       if isa(arithmeticObj,'CasadiArithmetic')
@@ -45,7 +48,7 @@ classdef Arithmetic < handle
       self.varStructure = varStructure;
       
       if nargin == 1
-        self.thisValue = Value();
+        self.thisValue = Value(zeros(prod(varStructure.size),1));
       end
       
       if nargin ==2 

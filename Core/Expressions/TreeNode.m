@@ -165,6 +165,57 @@ classdef TreeNode < VarStructure
       subVar = NodeSelection(child.node,positions);
     end
     
+    
+    function tree = getFlat(self)
+      
+      
+      tree = TreeNode(self.id);
+      tree.thisLength = self.thisLength;
+      parentPositions = {1:self.thisLength};
+      self.iterateLeafs(parentPositions,tree);
+      
+      
+      
+    end
+    
+    function iterateLeafs(self,parentPositions,treeOut)
+      
+      childsFields = fieldnames(self.childPointers);
+      
+      if isempty(childsFields)
+        treeOut.childPointers.(self.id) = struct;
+        treeOut.childPointers.(self.id).node = self;
+        treeOut.childPointers.(self.id).positions = parentPositions;
+        return
+      end
+
+      for m=1:length(childsFields)
+        % get children
+        child = self.childPointers.(childsFields{m});
+
+        % access children by index
+        child.positions = child.positions;
+
+        % get merge all parent and child positions
+        Nchilds = length(child.positions);
+
+        positions = cell(1,Nchilds*length(parentPositions));
+        i = 1;
+        for l=1:length(parentPositions)
+          thisParentPos = parentPositions{l};
+          for k=1:Nchilds
+            pos = child.positions{k};
+            positions{i} = thisParentPos(pos);
+            i = i+1;
+          end
+        end  
+        
+        child.node.iterateLeafs(positions,treeOut);
+        
+      end
+      
+    end
+    
   end % methods
   
 end % class

@@ -43,12 +43,14 @@ classdef Simultaneous < handle
       self.nlpVarsStruct.compile;
       
       % initialize bounds      
-      self.lowerBounds = Arithmetic(self.nlpVarsStruct,-inf);
-      self.upperBounds = Arithmetic(self.nlpVarsStruct,inf);
+      nlpVarsFlatFlat = self.nlpVarsStruct.getFlat;
+      
+      self.lowerBounds = Arithmetic(nlpVarsFlatFlat,-inf);
+      self.upperBounds = Arithmetic(nlpVarsFlatFlat,inf);
       self.lowerBounds.get('time').set(0);
       
-      self.scalingMin = Arithmetic(self.nlpVarsStruct,0);
-      self.scalingMax = Arithmetic(self.nlpVarsStruct,1);
+      self.scalingMin = Arithmetic(nlpVarsFlatFlat,0);
+      self.scalingMax = Arithmetic(nlpVarsFlatFlat,1);
       
       self.nlpFun = Function(@self.getNLPFun,{self.nlpVarsStruct},5);
 
@@ -96,11 +98,11 @@ classdef Simultaneous < handle
         upper = lower;
       end
       
-      self.lowerBounds.getDeep(id,slice).set(lower);
-      self.upperBounds.getDeep(id,slice).set(upper);
+      self.lowerBounds.get(id,slice).set(lower);
+      self.upperBounds.get(id,slice).set(upper);
       
-      self.scalingMin.getDeep(id,slice).set(lower);
-      self.scalingMax.getDeep(id,slice).set(upper);
+      self.scalingMin.get(id,slice).set(lower);
+      self.scalingMax.get(id,slice).set(upper);
       
     end
     
@@ -109,8 +111,8 @@ classdef Simultaneous < handle
       if valMin == valMax
         error('Can not scale with zero range for the variable');
       end
-      self.scalingMin.getDeep(id,slice).set(valMin);
-      self.scalingMax.getDeep(id,slice).set(valMax);     
+      self.scalingMin.get(id,slice).set(valMin);
+      self.scalingMax.get(id,slice).set(valMax);     
       
     end
     
