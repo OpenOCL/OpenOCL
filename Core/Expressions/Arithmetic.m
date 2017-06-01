@@ -22,6 +22,17 @@ classdef Arithmetic < handle
       
     end
     
+    function obj = createFromValue(structure, value)
+      if isa(value,'CasadiArithmetic')
+        obj = CasadiArithmetic(structure,value);
+      elseif isa(value,'Arithmetic')
+        obj = Arithmetic(structure,value);
+      else
+        error('Arithmetic not implemented.');
+      end
+    end
+    
+    
     function obj = createExpression(arithmeticObj,value)
       % obj = createExpression(arithmeticObj,value)
       % Factory method to create Matrix valued Arithmetic objects

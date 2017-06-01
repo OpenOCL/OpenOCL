@@ -29,6 +29,15 @@ classdef CasadiArithmetic < Arithmetic
       
     end
     
+    function y = linspace(d1,d2,n)
+      n1 = n-1;
+      y = d1 + (0:n1).*(d2 - d1)/n1;
+    end
+    
+    
   end
+  
+
+  
 end
 

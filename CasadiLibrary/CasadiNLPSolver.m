@@ -205,7 +205,6 @@ classdef CasadiNLPSolver < Solver
     function construct(self)
       
       constructTotalTic = tic;
-      vsym = casadi.MX.sym('vars',self.nlp.getNumberOfVars);
       
       % create nlp function
       casadiNLPFun = CasadiFunction(self.nlp.nlpFun);

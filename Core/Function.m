@@ -6,26 +6,31 @@ classdef Function < handle
     functionHandle
     result
     inputs
-    nOutputs
+    outputs
   end
   
   methods
     
-    function self = Function(functionHandle,inputs,nOutputs)
+    function self = Function(functionHandle,inputs,outputs)
       self.functionHandle    = functionHandle;
       self.inputs = inputs;
-      self.nOutputs = nOutputs;
+      self.outputs = outputs;
     end
     
     function varargout = evaluate(self,varargin)
       
       ins = cell(1,length(self.inputs));
       for k=1:length(ins)
-        ins{k} = Var(self.inputs{k},varargin{k});
+        ins{k} = Arithmetic.createFromValue(self.inputs{k},varargin{k});
       end
       
-      varargout = cell(1,self.nOutputs);
+      varargout = cell(1,length(self.outputs));
       [varargout{:}] = self.functionHandle(ins{:});
+      
+      for k=1:length(varargout)
+        varargout{k} = Arithmetic.create(ins{1},self.outputs{k},varargout{k});
+      end
+      
     end
     
   end

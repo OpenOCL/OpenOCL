@@ -54,7 +54,7 @@ classdef (Abstract) System < handle
       self.controlsStruct.compile;
       
       self.systemFun = Function(@self.getEquations, ...
-        {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);
+        {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},{Arithmetic.Matrix([]),Arithmetic.Matrix([])});
       
     end
     
