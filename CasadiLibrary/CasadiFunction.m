@@ -3,8 +3,6 @@ classdef CasadiFunction < handle
   %   Detailed explanation goes here
   
   properties (Access = private)
-    inputs
-    outputs
     fun
     casadiFun
     numericOutputIndizes
@@ -20,6 +18,11 @@ classdef CasadiFunction < handle
       % CasadiFunction(function,jit)
       % CasadiFunction(userFunction,jit)
       
+      if isa(inputFunction,'CasadiFunction')
+        self = inputFunction;
+        return;
+      end
+      
       self.fun = inputFunction;
       
       if nargin ==1
@@ -27,31 +30,30 @@ classdef CasadiFunction < handle
       end
       
       nInputs = length(inputFunction.inputs);
-      self.inputs = cell(1,nInputs);
+      inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        self.inputs{k} = CasadiArithmetic(varStruct);
+        inputs{k} = CasadiArithmetic(varStruct);
       end
       
       nOutputs = length(inputFunction.outputs);
-      self.outputs = cell(1,nOutputs);
-      [self.outputs{:}] = inputFunction.functionHandle(self.inputs{:});
+      outputs = cell(1,nOutputs);
+      
+      [outputs{:}] = inputFunction.functionHandle(inputs{:});
       
       for k=1:nInputs
-        self.inputs{k} = self.inputs{k}.value;
+        inputs{k} = inputs{k}.value;
       end
 
-      outputsCasadi = cell(1,nOutputs);
       for k=1:nOutputs
-        outputsCasadi{k} = self.outputs{k}.value;
+        outputs{k} = outputs{k}.value;
       end
-      self.outputs = outputsCasadi;
       
       % check for numieric/constant outputs
-      self.numericOutputIndizes = logical(cellfun(@isnumeric,self.outputs));
-      self.numericOutputValues = self.outputs(self.numericOutputIndizes);
+      self.numericOutputIndizes = logical(cellfun(@isnumeric,outputs));
+      self.numericOutputValues = outputs(self.numericOutputIndizes);
       
-      self.casadiFun = casadi.Function('fun',self.inputs,self.outputs,struct('jit',jit));
+      self.casadiFun = casadi.Function('fun',inputs,outputs,struct('jit',jit));
 %       self.casadiFun.expand();
       if jit
         delete jit_tmp.c
@@ -60,7 +62,7 @@ classdef CasadiFunction < handle
     
     function varargout = evaluate(self,varargin)
       
-      ins = cell(1,length(self.inputs));
+      ins = cell(1,length(self.fun.inputs));
       for k=1:length(ins)
         ins{k} = varargin{k}.value;
       end
@@ -73,7 +75,7 @@ classdef CasadiFunction < handle
       varargout(self.numericOutputIndizes) = self.numericOutputValues;
       
       for k=1:length(varargout)
-        varargout{k} = CasadiArithmetic(self.outputs{k},varargout{k});
+        varargout{k} = CasadiArithmetic(self.fun.outputs{k},varargout{k});
       end
       
     end
