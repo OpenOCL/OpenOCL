@@ -3,7 +3,7 @@ StartupOC
 
 Example
 
-assert(all(abs(solution.get('controls').flat - ...
+assert(all(abs(solution.get('controls').value - ...
   [ 0.2434
     0.9611
     0.9074
@@ -33,4 +33,4 @@ assert(all(abs(solution.get('controls').flat - ...
    -0.0037
    -0.0017
    -0.0005
-   -0.0000]) < 1e-3 ), 'Control vector of solution is wrong in Example.');
+   -0.0000]') < 1e-3 ), 'Control vector of solution is wrong in Example.');

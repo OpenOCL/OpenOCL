@@ -10,6 +10,8 @@ classdef CasadiFunction < handle
     
     compiled
     name = 'test'
+    
+    outputStructs
   end
   
   methods
@@ -36,10 +38,16 @@ classdef CasadiFunction < handle
         inputs{k} = CasadiArithmetic(varStruct);
       end
       
-      nOutputs = length(inputFunction.outputs);
+      nOutputs = inputFunction.nOutputs;
+      
+      self.outputStructs = cell(1,nOutputs);
       outputs = cell(1,nOutputs);
       
       [outputs{:}] = inputFunction.functionHandle(inputs{:});
+      
+      for k=1:nOutputs
+        self.outputStructs{k} = outputs{k}.varStructure;
+      end
       
       for k=1:nInputs
         inputs{k} = inputs{k}.value;
@@ -48,6 +56,8 @@ classdef CasadiFunction < handle
       for k=1:nOutputs
         outputs{k} = outputs{k}.value;
       end
+      
+
       
       % check for numieric/constant outputs
       self.numericOutputIndizes = logical(cellfun(@isnumeric,outputs));
@@ -68,14 +78,18 @@ classdef CasadiFunction < handle
       end
           
       % evaluate casadi function
-      varargout = cell(1,length(self.fun.outputs));
+      varargout = cell(1,self.fun.nOutputs);
       [varargout{:}] = self.casadiFun(ins{:});
       
       % replace numerical outputs
       varargout(self.numericOutputIndizes) = self.numericOutputValues;
       
       for k=1:length(varargout)
-        varargout{k} = CasadiArithmetic(self.fun.outputs{k},varargout{k});
+        if isa(varargout{k},'casadi.DM')
+          varargout{k} = CasadiArithmetic(self.outputStructs{k},full(varargout{k}));
+        else
+          varargout{k} = CasadiArithmetic(self.outputStructs{k},varargout{k});
+        end
       end
       
     end

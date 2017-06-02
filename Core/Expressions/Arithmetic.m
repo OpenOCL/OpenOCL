@@ -22,11 +22,11 @@ classdef Arithmetic < handle
       
     end
     
-    function obj = createFromValue(structure, value)
-      if isa(value,'CasadiArithmetic')
-        obj = CasadiArithmetic(structure,value);
-      elseif isa(value,'Arithmetic')
-        obj = Arithmetic(structure,value);
+    function obj = createFromArithmetic(structure, arithmetic)
+      if isa(arithmetic,'CasadiArithmetic')
+        obj = CasadiArithmetic(structure,arithmetic.value);
+      elseif isa(arithmetic,'Arithmetic')
+        obj = Arithmetic(structure,arithmetic.value);
       else
         error('Arithmetic not implemented.');
       end
@@ -135,6 +135,11 @@ classdef Arithmetic < handle
       end        
     end
     
+    function y = linspace(d1,d2,n)
+      n1 = n-1;
+      y = d1 + (0:n1).*(d2 - d1)/n1;
+    end
+    
     
     %%% matrix and vector wise operations
     function v = horzcat(varargin)
@@ -169,9 +174,9 @@ classdef Arithmetic < handle
     
     function varargout = subsref(self,s)
       if numel(s) == 1 && strcmp(s.type,'()')
-        [varargout{1}] = Arithmetic.createExpression(self,self.value.subsref(s));
+        [varargout{1}] = Arithmetic.createExpression(self,subsref(self.value,s));
       elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        v = Arithmetic.createExpression(self,self.value.subsref(s(1)));
+        v = Arithmetic.createExpression(self,subsref(self.value,s(1)));
         [varargout{1:nargout}] = subsref(v,s(2:end));
       else
         [varargout{1:nargout}] = builtin('subsref',self,s);

@@ -6,9 +6,6 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
   end
   
   properties(Access = private)
-    ni
-    nx
-    nz
     d
 
     tau_root
@@ -25,13 +22,8 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       self = self@ImplicitIntegrationScheme(system);
       
       self.pathCostsFun = pathCostsFun;
+      self.d            = d;
       
-      self.nx     = prod(self.system.statesStruct.size);
-      self.nz     = prod(self.system.algVarsStruct.size);
-      self.d      = d;
-      self.ni     = d*self.nx+d*self.nz;
-      np          = prod(system.parametersStruct.size);
-      nu          = prod(system.controlsStruct.size);
 
       self.tau_root = collocationPoints(d);
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
@@ -52,20 +44,12 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
                                                   
     end
 
-    function ni = getIntegratorVarsSize(self)
-      ni          = self.ni;
-    end
-    
-    function var = getIntegratorVars(self)
-      var = self.integratorVars;
-    end
-
     function [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,parameters)
       
       h = finalTime-startTime;
 
-      equations = Expression;
-      J = Expression;
+      equations = Arithmetic.createExpression(states,[]);
+      J = Arithmetic.createExpression(states,0);
       
       % Loop over collocation points
       finalStates = self.D(1)*states;
@@ -93,6 +77,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       end
 
       finalAlgVars = integratorVars.get('algVars',self.d);
+      finalAlgVars = Arithmetic.createExpression(finalAlgVars,finalAlgVars.value);
       costs = J;
 
     end

@@ -27,19 +27,14 @@ classdef OCP < handle
       self.endTime = 'free';
       self.system = system;
       
-      self.thisPathConstraints = Constraint;
-      self.thisBoundaryConditions = Constraint;
-      self.thisArrivalCosts = Arithmetic.Matrix(0);
-      self.thisPathCosts = Arithmetic.Matrix(0);
-      
       self.parametersStruct = system.parametersStruct;
       
     end
     
     %%% overridable methods
-    function c = discreteCost(~,~)
+    function c = discreteCost(~,vars)
       % c = discreteCost(self,vars)
-      c = Arithmetic.Matrix(0);
+      c = Arithmetic.createExpression(vars,0);
     end
     function pathCosts(~,~,~,~,~,~)
       % pathCosts(self,states,algVars,controls,time,parameters);
@@ -55,7 +50,7 @@ classdef OCP < handle
     end
         
     function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
-      self.thisPathConstraints.clear;
+      self.thisPathConstraints = Constraint(states);
       self.pathConstraints(states,algVars,controls,time,parameters);
       val = self.thisPathConstraints.values;
       lb = self.thisPathConstraints.lowerBounds;
@@ -63,7 +58,7 @@ classdef OCP < handle
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
-      self.thisBoundaryConditions.clear;
+      self.thisBoundaryConditions = Constraint(initialStates);
       self.boundaryConditions(initialStates,finalStates,parameters);
       val = self.thisBoundaryConditions.values;
       lb = self.thisBoundaryConditions.lowerBounds;
@@ -71,13 +66,13 @@ classdef OCP < handle
     end
 
     function pc = getPathCosts(self,states,algVars,controls,time,parameters)
-      self.thisPathCosts = Expression(0);
+      self.thisPathCosts = Arithmetic.createExpression(states,0);
       self.pathCosts(states,algVars,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     
     function tc = getArrivalCosts(self,states,time,parameters)
-      self.thisArrivalCosts = Expression(0);
+      self.thisArrivalCosts = Arithmetic.createExpression(states,0);
       self.arrivalCosts(states,time,parameters);
       tc = self.thisArrivalCosts;
     end

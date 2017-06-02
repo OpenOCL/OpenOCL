@@ -39,12 +39,12 @@ classdef CasadiNLPSolver < Solver
       
       self.initialGuess = initialGuess;
       
-      nv = self.nlp.getNumberOfVars;
+      nv = prod(initialGuess.size);
       
       % get bound for decision variables
-      lbx = self.nlp.lowerBounds.flat;
-      ubx = self.nlp.upperBounds.flat;
-      x0 = initialGuess.flat;
+      lbx = self.nlp.lowerBounds.value;
+      ubx = self.nlp.upperBounds.value;
+      x0 = initialGuess.value;
       
       
       % detect variables as parameters if they are constant
@@ -102,8 +102,8 @@ classdef CasadiNLPSolver < Solver
       
 
       % call nlp function with scaled variables
-      [costs,constraints,constraints_LB,constraints_UB] = self.nlpData.casadiNLPFun.evaluate(vars);
-      costs = costs + self.nlp.getDiscreteCost(vars);
+      v = CasadiArithmetic(self.nlp.nlpVarsStruct,vars);
+      [costs,constraints,constraints_LB,constraints_UB] = self.nlpData.casadiNLPFun.evaluate(v);
       
       
       if self.options.nlp.scaling
@@ -123,8 +123,8 @@ classdef CasadiNLPSolver < Solver
       % get struct with nlp for casadi
       casadiNLP = struct;
       casadiNLP.x = vsym;
-      casadiNLP.f = costs;
-      casadiNLP.g = constraints;
+      casadiNLP.f = costs.value;
+      casadiNLP.g = constraints.value;
       casadiNLP.p = psym;
       
       
@@ -152,8 +152,8 @@ classdef CasadiNLPSolver < Solver
       
       args = struct;
       % bounds for non-linear constraints function
-      args.lbg = constraints_LB;
-      args.ubg = constraints_UB;
+      args.lbg = constraints_LB.value;
+      args.ubg = constraints_UB.value;
       args.p = params;
       args.lbx = lbx;
       args.ubx = ubx;
@@ -177,17 +177,13 @@ classdef CasadiNLPSolver < Solver
           xsol = self.unscale(xsol,scalingMinVars,scalingMaxVars);
         end
         
-        x = initialGuess.flat;
-        x(varIndizes) = xsol;
-        x(paramIndizes) = params;
+        initialGuess(varIndizes) = xsol;
+        initialGuess(paramIndizes) = params;
         
         nlpFunEvalTic = tic;
-        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(x);
-        objective = full(objective);
-        constraints = full(constraints);
+        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(initialGuess);
         nlpFunEvalTime = toc(nlpFunEvalTic);
-        
-        initialGuess.set(x);
+
         outVars = initialGuess;
         
         self.timeMeasures.solveTotal      = toc(solveTotalTic);

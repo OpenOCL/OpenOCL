@@ -139,7 +139,7 @@ classdef Simultaneous < handle
 
       timeGrid = linspace(0,T,self.N+1);
       
-      constraints = Constraint;
+      constraints = Constraint(nlpVars);
       costs = Arithmetic.Matrix(0);
       
       initialStates = nlpVars.get('states',1);

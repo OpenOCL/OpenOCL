@@ -5,8 +5,6 @@ classdef ImplicitIntegrationScheme < handle
   end
   
   methods(Abstract)
-    var = getIntegratorVars(self)
-    ni = getIntegratorVarsSize(self)
     [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,parameters)
   end
   

@@ -12,14 +12,14 @@ classdef Constraint < handle
   
   methods
     
-    function self = Constraint()
-      self.clear;
+    function self = Constraint(arithmetic)
+      self.clear(arithmetic);
     end
 
-    function clear(self)
-      self.values = Arithmetic.Matrix([]);
-      self.lowerBounds = Arithmetic.Matrix([]);;
-      self.upperBounds = Arithmetic.Matrix([]);;
+    function clear(self,arithmetic)
+      self.values = Arithmetic.createExpression(arithmetic,[]);
+      self.lowerBounds = Arithmetic.createExpression(arithmetic,[]);
+      self.upperBounds = Arithmetic.createExpression(arithmetic,[]);
     end
     
     function c = copy(self)
@@ -34,10 +34,10 @@ classdef Constraint < handle
       % add(self,lb,expr,ub)
       % add(self,constraint)
       if nargin==4
-        if isa(varargin{1},'Expression')
-          self.addEntryBounds(varargin{1},varargin{2},varargin{3})
-        else
+        if ischar(varargin{2})
           self.addEntryOperator(varargin{1},varargin{2},varargin{3})
+        else
+          self.addEntryBounds(varargin{1},varargin{2},varargin{3})
         end
         
       elseif nargin==2

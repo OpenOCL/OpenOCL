@@ -30,10 +30,10 @@ classdef OCPHandler < handle
       params = self.system.parametersStruct;
       time = TreeNode('time',[1,1]);
 
-      self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,params},{Arithmetic.Matrix([])});
-      self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,time,params},{Arithmetic.Matrix([])});
-      self.boundaryConditionsFun = Function(@ocp.getBoundaryConditions,{states,states,params},{Arithmetic.Matrix([]),Arithmetic.Matrix([]),Arithmetic.Matrix([])});
-      self.pathConstraintsFun = Function(@ocp.getPathConstraints,{states,algVars,controls,time,params},{Arithmetic.Matrix([]),Arithmetic.Matrix([]),Arithmetic.Matrix([])});
+      self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,params},1);
+      self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,time,params},1);
+      self.boundaryConditionsFun = Function(@ocp.getBoundaryConditions,{states,states,params},3);
+      self.pathConstraintsFun = Function(@ocp.getPathConstraints,{states,algVars,controls,time,params},3);
       
     end
  
