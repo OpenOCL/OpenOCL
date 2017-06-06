@@ -183,9 +183,29 @@ classdef TreeNode < VarStructure
       childsFields = fieldnames(self.childPointers);
       
       if isempty(childsFields)
-        treeOut.childPointers.(self.id) = struct;
-        treeOut.childPointers.(self.id).node = self;
-        treeOut.childPointers.(self.id).positions = parentPositions;
+        
+        if isfield(treeOut.childPointers,self.id)
+          
+          % combine, sort positions
+          positions = treeOut.childPointers.(self.id).positions;
+          positions = sort([positions{:},parentPositions{:}]);
+          
+          % split positions to cell
+          cellLength = self.thisLength;
+          cellN      = length(positions)/cellLength;         
+          
+          pCell = cell(1,cellN);
+          for k=1:cellN
+            pCell{k} = positions(cellLength*(k-1)+1:cellLength*k);
+          end
+          treeOut.childPointers.(self.id).positions = pCell;
+          
+        else
+          treeOut.childPointers.(self.id) = struct;
+          treeOut.childPointers.(self.id).node = self;
+          treeOut.childPointers.(self.id).positions = parentPositions;
+        end
+
         return
       end
 
