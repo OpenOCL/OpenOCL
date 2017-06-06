@@ -38,6 +38,12 @@ vTest = norm(vTest);
 f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
+%%% uplus, uminus
+aTest = -+(+aTest);
+vTest = -+(+vTest);
+f = casadi.Function('f',{s1,s2},{aTest.value});
+assert(isequal(full(f(v1,v2)),vTest))
+
 %%% sum
 aTest = [a1,a1,a1;a2];
 aTest = sum(aTest);

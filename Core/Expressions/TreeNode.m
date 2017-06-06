@@ -99,7 +99,7 @@ classdef TreeNode < VarStructure
       
       if isfield(self.childPointers,varIn.id)
         % TODO check that sizes match
-        self.childPointers.(varIn.id).positions = [self.childPointers.(varIn.id).positions,positions]; 
+        self.childPointers.(varIn.id).positions = [self.childPointers.(varIn.id).positions,{positions}]; 
       else
         self.childPointers.(varIn.id).node = varIn; 
         self.childPointers.(varIn.id).positions = {positions};
@@ -146,7 +146,11 @@ classdef TreeNode < VarStructure
       child = self.childPointers.(id);
       
       % access children by index
-      child.positions = child.positions(selector);
+      if strcmp(selector,'end')
+        child.positions = child.positions(end);
+      else
+        child.positions = child.positions(selector);
+      end
       
       % get merge all parent and child positions
       Nchilds = length(child.positions);
