@@ -21,8 +21,9 @@ classdef Simulator < handle
     end
     
     function controls = getControlsSeries(self,N)
-      controls = Var('controls');
-      controls.addRepeated({self.system.controls},N);
+        controlsSeriesStruct  = TreeNode('controls');
+        controlsSeriesStruct.addRepeated({self.system.controlsStruct},N);
+        controls = Arithmetic(controlsSeriesStruct,0);
     end
     
     function [statesVec,algVarsVec,controlsSeries] = simulate(self,initialStates,times,varargin)
@@ -33,10 +34,11 @@ classdef Simulator < handle
       N = length(times)-1;
       callback = true;
       
+      times = Arithmetic.Matrix(times);
+      
       if nargin == 4
         parameters      = varargin{1};
-        controlsSeries  = TreeNode('controls');
-        controlsSeries.addRepeated({self.system.controls},N);
+        controlsSeries = getControlsSeries(self,N);
       elseif nargin == 5
         controlsSeries  = varargin{1};
         parameters      = varargin{2};
@@ -47,13 +49,14 @@ classdef Simulator < handle
       end
       
       
-      statesVec = TreeNode('states');
-      statesVec.addRepeated({self.system.states},N+1);
-      algVarsVec = TreeNode('algVars');
-      algVarsVec.addRepeated({self.system.algVars},N);
+      statesVecStruct = TreeNode('states');
+      statesVecStruct.addRepeated({self.system.statesStruct},N+1);
+      algVarsVecStruct = TreeNode('algVars');
+      algVarsVecStruct.addRepeated({self.system.algVarsStruct},N);
       
-      algVars = self.system.algVars.copy;
-      algVars.set(0);
+      algVars = Arithmetic(self.system.algVarsStruct,0);
+      statesVec = Arithmetic(statesVecStruct,0);
+      algVarsVec = Arithmetic(algVarsVecStruct,0);
       
       if nargin == 4
         controls = self.system.callIterationCallback(initialStates,algVars,parameters);
@@ -64,7 +67,7 @@ classdef Simulator < handle
       [states,algVars] = self.getConsistentIntitialCondition(initialStates,algVars,controls,parameters);
       
  
-      statesVec.get('states',1).set(states.flat);
+      statesVec.get('states',1).set(states);
       
       % setup callback
       if callback
@@ -83,16 +86,14 @@ classdef Simulator < handle
           controls = controlsSeries.get('controls',k);
         end
         
-        [statesVal,algVarsVal] = self.integrator.evaluate(states.flat,algVars.flat,controls.flat,timestep,parameters.flat);
-        statesVal = full(statesVal);
-        algVarsVal = full(algVarsVal);
+        [statesVal,algVarsVal] = self.integrator.evaluate(states,algVars,controls,timestep,parameters);
         
         statesVec.get('states',k+1).set(statesVal);
         
         if ~isempty(algVarsVal)
           algVarsVec.get('algVars',k).set(algVarsVal);
         end
-        controlsSeries.get('controls',k).set(controls.flat);
+        controlsSeries.get('controls',k).set(controls);
         
         states.set(statesVal);
         algVars.set(algVarsVal);
@@ -105,41 +106,40 @@ classdef Simulator < handle
     
     function [statesOut,algVarsOut] = getConsistentIntitialCondition(self,states,algVars,controls,parameters)
       
-      varsOut = Var('varsOut');
-      varsOut.add(states);
-      varsOut.add(algVars);
+      varsOutStruct = TreeNode('varsOut');
+      varsOutStruct.add(states.varStructure);
+      varsOutStruct.add(algVars.varStructure);
+      
+      varsOut = Arithmetic(varsOutStruct,0);
             
       % check initial condition
       constraints = self.system.getInitialCondition(states,parameters);
       
       % append algebraic equation
-      [ode,alg] = self.system.systemFun.evaluate(states.flat,algVars.flat,controls.flat,parameters.flat);
+      [ode,alg] = self.system.systemFun.evaluate(states,algVars,controls,parameters);
       
-      constraints = [constraints;full(alg)];
+      constraints = [constraints;alg];
       
       if ~all(constraints==0)
         warning('Initial state is not consistent, trying to find a consistent initial condition...');
-        stateSym  = states.copy;
-        CasadiLib.setSX(stateSym);
-        algVarsSym  = algVars.copy;
-        CasadiLib.setSX(algVarsSym);
+        stateSym  = CasadiArithmetic(states.varStructure);
+        algVarsSym  = CasadiArithmetic(algVars.varStructure);
         
         constraints = self.system.getInitialCondition(stateSym,parameters);
-        [ode,alg] = self.system.systemFun.evaluate(stateSym.flat,algVarsSym.flat,controls.flat,parameters.flat);
+        [ode,alg] = self.system.systemFun.evaluate(stateSym,algVarsSym,controls,parameters);
         constraints = [constraints;alg];
         
-        optVars = [stateSym.flat;algVarsSym.flat];
-        x0      = [states.flat;algVars.flat];
+        optVars = [stateSym;algVarsSym];
+        x0      = [states;algVars];
         
-        statesErr = (stateSym.flat-states.flat);
+        statesErr = (-states+stateSym);
         cost = statesErr'*statesErr;
         
-        nlp    = struct('x', optVars, 'f', cost, 'g', constraints);
+        nlp    = struct('x', optVars.value, 'f', cost.value, 'g', constraints.value);
         solver = casadi.nlpsol('solver', 'ipopt', nlp);
-        sol    = solver('x0', x0, 'lbx', -inf, 'ubx', inf,'lbg', 0, 'ubg', 0);
-        
-        consistentVars  = full(sol.x);
-        varsOut.set(consistentVars);
+        sol    = solver('x0', x0.value, 'lbx', -inf, 'ubx', inf,'lbg', 0, 'ubg', 0);
+
+        varsOut.set(full(sol.x));
         
       end
       

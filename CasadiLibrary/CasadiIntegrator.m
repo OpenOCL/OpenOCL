@@ -39,16 +39,18 @@ classdef CasadiIntegrator < Integrator
     
     function [statesNext,algVars] = evaluate(self,states,algVarsGuess,controls,timestep,parameters)
       
-      x = states;
-      u = controls;
-      z = algVarsGuess;
+      x = states.value;
+      u = controls.value;
+      z = algVarsGuess.value;
+      p = parameters.value;
+      dt = timestep.value;
       
       integrationStep = self.systemIntegrator('x0', x, ...
-                                             'p', [timestep;u;parameters], ...
+                                             'p', [dt;u;p], ...
                                              'z0', z);
                                            
-      statesNext = integrationStep.xf;
-      algVars = integrationStep.zf;
+      statesNext = Arithmetic(states.varStructure,full(integrationStep.xf));
+      algVars = Arithmetic(algVarsGuess.varStructure,full(integrationStep.zf));
       
     end
     
