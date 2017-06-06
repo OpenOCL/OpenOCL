@@ -84,7 +84,7 @@ classdef Simultaneous < handle
     function interpolateGuess(self,guess)
       
       for i=1:self.N
-        state = guess.get('states',i).flat;
+        state = guess.get('states',i).value;
         guess.get('integratorVars',i).get('states').set(state);
       end
       

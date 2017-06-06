@@ -38,7 +38,7 @@ classdef (Abstract) System < handle
       if nargin == 0
         self.parametersStruct = Parameters;
       else
-        self.parametersStruct  = parametersStruct.copy;
+        self.parametersStruct  = parametersStruct;
       end
       
       self.initialConditions = Arithmetic.Matrix([]);
@@ -74,7 +74,7 @@ classdef (Abstract) System < handle
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned 
       
-      self.alg = Expression([]);
+      self.alg = Arithmetic.create(statesIn,MatrixStructure([0,1]));
       self.ode = Arithmetic.create(statesIn,statesIn.varStructure);
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
@@ -109,28 +109,28 @@ classdef (Abstract) System < handle
     end
     
     function  ic = getInitialCondition(self,statesIn,parametersIn)
-      self.initialConditions = Expression;
+      self.initialConditions = Arithmetic.create(statesIn,MatrixStructure([0,1]));
       self.initialCondition(statesIn,parametersIn)
       ic = self.initialConditions;
     end
     
     function controls = callIterationCallback(self,states,algVars,parameters)
-      controls = Var(self.controlsStruct,0);
+      controls =  Arithmetic(self.controlsStruct,0);
       self.simulationCallback(states,algVars,controls,parameters);
     end
     
-%     function solutionCallback(self,solution)
-%       
-%       N = solution.get('states').getNumberOfVars;
-%       parameters = solution.get('parameters');
-%       
-%       for k=1:N-1
-%         states = solution.get('states',k+1);
-%         algVars = solution.get('integratorVars',k).get('algVars',3);
-%         self.callIterationCallback(states,algVars,parameters);
-%       end
-%       
-%     end
+    function solutionCallback(self,solution)
+      sN = solution.get('states').size;
+      N = sN(2);
+      parameters = solution.get('parameters');
+      
+      for k=1:N-1
+        states = solution.get('states',k+1);
+        algVars = solution.get('integratorVars',k).get('algVars');
+        self.callIterationCallback(states,algVars(end),parameters);
+      end
+      
+    end
     
   end
   

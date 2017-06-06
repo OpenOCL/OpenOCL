@@ -11,22 +11,22 @@ classdef CasadiIntegrator < Integrator
       
       self = self@Integrator(system);
       
-      states = casadi.SX.sym('x',prod(system.states.size),1);
-      algVars = casadi.SX.sym('z',prod(system.algVars.size),1);
-      controls = casadi.SX.sym('u',prod(system.controls.size),1);
-      h = casadi.SX.sym('h',1);
-      parameters = casadi.SX.sym('p',prod(system.parameters.size),1);
+      states = CasadiArithmetic(system.statesStruct);
+      algVars = CasadiArithmetic(system.algVarsStruct);
+      controls = CasadiArithmetic(system.controlsStruct);
+      h = CasadiArithmetic(MatrixStructure([1,1]));
+      parameters = CasadiArithmetic(system.parametersStruct);
       
       [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
       
       
       
       dae = struct;
-      dae.x = system.states.value;
-      dae.z = system.algVars.value;
-      dae.p = [h;system.controls.value;system.parameters.value];
-      dae.ode = h*ode;
-      dae.alg = alg;
+      dae.x = states.value;
+      dae.z = algVars.value;
+      dae.p = [h.value;controls.value;parameters.value];
+      dae.ode = h.value*ode.value;
+      dae.alg = alg.value;
       
       integratorOptions = struct;
 %       integratorOptions.calc_ic	= false;

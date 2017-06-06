@@ -35,7 +35,7 @@ classdef Simulator < handle
       
       if nargin == 4
         parameters      = varargin{1};
-        controlsSeries  = Var('controls');
+        controlsSeries  = TreeNode('controls');
         controlsSeries.addRepeated({self.system.controls},N);
       elseif nargin == 5
         controlsSeries  = varargin{1};
@@ -47,9 +47,9 @@ classdef Simulator < handle
       end
       
       
-      statesVec = Var('states');
+      statesVec = TreeNode('states');
       statesVec.addRepeated({self.system.states},N+1);
-      algVarsVec = Var('algVars');
+      algVarsVec = TreeNode('algVars');
       algVarsVec.addRepeated({self.system.algVars},N);
       
       algVars = self.system.algVars.copy;
@@ -100,8 +100,7 @@ classdef Simulator < handle
     end
     
     function states = getStates(self)
-      states = self.system.states.copy;
-      states.set(0);
+      states = Arithmetic(self.system.statesStruct,0);
     end
     
     function [statesOut,algVarsOut] = getConsistentIntitialCondition(self,states,algVars,controls,parameters)

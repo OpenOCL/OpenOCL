@@ -10,9 +10,9 @@ classdef ExampleOCP < OCP
     end
     function pathCosts(self,states,algVars,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
-      x  = states.get('x').value;
-      y  = states.get('y').value;
-      u  = controls.get('u').value;
+      x  = states.get('x');
+      y  = states.get('y');
+      u  = controls.get('u');
       
       self.addPathCost( x^2 );
       self.addPathCost( y^2 );
