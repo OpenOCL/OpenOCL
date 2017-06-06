@@ -176,7 +176,6 @@ classdef Simultaneous < handle
       % add terminal constraints
       [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialStates,thisStates,parameters);
       constraints.add(lb,boundaryConditions,ub);
-      constraints = [constraints; boundaryConditions];
       
       costs = costs + self.ocpHandler.getDiscreteCost(nlpVars);
       
