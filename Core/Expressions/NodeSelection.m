@@ -24,8 +24,14 @@ classdef NodeSelection < VarStructure
       end
     end
     
-    function childSelection = get(self,id)
-      childSelection = self.nodeType.getWithPositions(id,self.positions);
+    function childSelection = get(self,id,selector)
+      
+      if nargin == 2
+        childSelection = self.nodeType.getWithPositions(id,self.positions);
+      else
+        childSelection = self.nodeType.getWithPositions(id,self.positions,selector);
+      end
+
     end
     
     function r = positions(self)
