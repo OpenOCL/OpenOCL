@@ -20,6 +20,10 @@ classdef Simulator < handle
       self.system.systemFun = CasadiFunction(self.system.systemFun);
     end
     
+    function p = getParameters(self)
+      p = Arithmetic(self.system.parametersStruct,0);
+    end
+    
     function controls = getControlsSeries(self,N)
         controlsSeriesStruct  = TreeNode('controls');
         controlsSeriesStruct.addRepeated({self.system.controlsStruct},N);
@@ -48,15 +52,12 @@ classdef Simulator < handle
         callback        = varargin{3};
       end
       
-      
-      statesVecStruct = TreeNode('states');
-      statesVecStruct.addRepeated({self.system.statesStruct},N+1);
-      algVarsVecStruct = TreeNode('algVars');
-      algVarsVecStruct.addRepeated({self.system.algVarsStruct},N);
+      simVarsStruct = TreeNode('simVars');
+      simVarsStruct.addRepeated({self.system.statesStruct},N+1);
+      simVarsStruct.addRepeated({self.system.algVarsStruct},N);
       
       algVars = Arithmetic(self.system.algVarsStruct,0);
-      statesVec = Arithmetic(statesVecStruct,0);
-      algVarsVec = Arithmetic(algVarsVecStruct,0);
+      simVars = Arithmetic(simVarsStruct,0);
       
       if nargin == 4
         controls = self.system.callIterationCallback(initialStates,algVars,parameters);
@@ -67,7 +68,7 @@ classdef Simulator < handle
       [states,algVars] = self.getConsistentIntitialCondition(initialStates,algVars,controls,parameters);
       
  
-      statesVec.get('states',1).set(states);
+      simVars.get('states',1).set(states);
       
       % setup callback
       if callback
@@ -88,16 +89,21 @@ classdef Simulator < handle
         
         [statesVal,algVarsVal] = self.integrator.evaluate(states,algVars,controls,timestep,parameters);
         
-        statesVec.get('states',k+1).set(statesVal);
+        simVars.get('states',k+1).set(statesVal);
         
         if ~isempty(algVarsVal)
-          algVarsVec.get('algVars',k).set(algVarsVal);
+          simVars.get('algVars',k).set(algVarsVal);
         end
         controlsSeries.get('controls',k).set(controls);
         
         states.set(statesVal);
         algVars.set(algVarsVal);
       end  
+      
+      statesVec = simVars.get('states');
+      algVarsVec = simVars.get('algVars');
+      controlsSeries = controlsSeries.get('controls');
+      
     end
     
     function states = getStates(self)

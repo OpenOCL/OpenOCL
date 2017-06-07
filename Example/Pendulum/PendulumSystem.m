@@ -1,8 +1,8 @@
 classdef PendulumSystem < System
   methods
     
-    function self = PendulumSystem(parameters)
-      self = self@System(parameters);
+    function self = PendulumSystem()
+      self = self@System();
     end
     
     function setupVariables(self)
@@ -10,6 +10,10 @@ classdef PendulumSystem < System
       self.addState('v',[2,1]);
       self.addControl('F',[1,1]);
       self.addAlgVar('lambda',[1,1]);
+      
+      self.addParameter('m',[1 1]);
+      self.addParameter('l',[1 1]);
+      
     end
     function setupEquation(self,state,algVars,controls,parameters)
       p       = state.get('p').value;

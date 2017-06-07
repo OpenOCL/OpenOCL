@@ -1,11 +1,7 @@
 StartupOC
 
-% Create system and OCP
-parameters = Parameters;
-parameters.add('m',[1 1]);
-parameters.add('l',[1 1]);
-
-system = PendulumSystem(parameters);
+% Create system and simulator
+system = PendulumSystem;
 simulator = Simulator(system,struct);
 
 states = simulator.getStates;
@@ -13,7 +9,7 @@ states.get('p').set([0,1]);
 states.get('v').set([0.5,1]);
 times = 0:0.1:10;
 
-p = Arithmetic(parameters,0);
+p = simulator.getParameters;
 p.get('m').set(1);
 p.get('l').set(1);
 
