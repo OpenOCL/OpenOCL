@@ -39,7 +39,7 @@ classdef CasadiLib
       % setSX(type,varIndex)
       %   not public only for recursion
       
-      assert(isa(var,'Var'), 'Input has to be a Var.');
+%       assert(isa(var,'Var'), 'Input has to be a Var.');
       
       % variable index is used in the naming of the symbolic variable
       varPrefix = var.id;
@@ -58,7 +58,7 @@ classdef CasadiLib
       
       
       % create symbolic variable and assign as value if var has no subvars
-      if isempty(var.subVars)
+      if strcmp(class(var),'VarPrimitive')
         
         if prod(var.size) == 0
           return
@@ -74,8 +74,8 @@ classdef CasadiLib
       
       % go recursively through subvars
       for i = 1:length(var.subVars)
-        subVar = var.subVars(i);
-        indizes = var.varIds.get(subVar.id);
+        subVar = var.subVars{i};
+        indizes = var.varIds.(subVar.id);
         
         % find i in indizes
         subIndex = num2str(find(indizes==i));

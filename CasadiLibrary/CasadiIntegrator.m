@@ -11,22 +11,22 @@ classdef CasadiIntegrator < Integrator
       
       self = self@Integrator(system);
       
-      states = casadi.SX.sym('x',prod(system.states.size),1);
-      algVars = casadi.SX.sym('z',prod(system.algVars.size),1);
-      controls = casadi.SX.sym('u',prod(system.controls.size),1);
-      h = casadi.SX.sym('h',1);
-      parameters = casadi.SX.sym('p',prod(system.parameters.size),1);
+      states = CasadiArithmetic(system.statesStruct);
+      algVars = CasadiArithmetic(system.algVarsStruct);
+      controls = CasadiArithmetic(system.controlsStruct);
+      h = CasadiArithmetic(MatrixStructure([1,1]));
+      parameters = CasadiArithmetic(system.parametersStruct);
       
       [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
       
       
       
       dae = struct;
-      dae.x = system.states.value;
-      dae.z = system.algVars.value;
-      dae.p = [h;system.controls.value;system.parameters.value];
-      dae.ode = h*ode;
-      dae.alg = alg;
+      dae.x = states.value;
+      dae.z = algVars.value;
+      dae.p = [h.value;controls.value;parameters.value];
+      dae.ode = h.value*ode.value;
+      dae.alg = alg.value;
       
       integratorOptions = struct;
 %       integratorOptions.calc_ic	= false;
@@ -39,16 +39,18 @@ classdef CasadiIntegrator < Integrator
     
     function [statesNext,algVars] = evaluate(self,states,algVarsGuess,controls,timestep,parameters)
       
-      x = states;
-      u = controls;
-      z = algVarsGuess;
+      x = states.value;
+      u = controls.value;
+      z = algVarsGuess.value;
+      p = parameters.value;
+      dt = timestep.value;
       
       integrationStep = self.systemIntegrator('x0', x, ...
-                                             'p', [timestep;u;parameters], ...
+                                             'p', [dt;u;p], ...
                                              'z0', z);
                                            
-      statesNext = integrationStep.xf;
-      algVars = integrationStep.zf;
+      statesNext = Arithmetic(states.varStructure,full(integrationStep.xf));
+      algVars = Arithmetic(algVarsGuess.varStructure,full(integrationStep.zf));
       
     end
     

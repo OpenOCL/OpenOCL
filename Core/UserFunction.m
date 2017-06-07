@@ -12,7 +12,7 @@ classdef UserFunction < Function
     end
     
     function varargout = evaluate(self,varargin)
-      
+      ins = cell(1,length(self.inputs));
       for k=1:length(varargin)
         self.inputs{k}.set(varargin{k});
       end
@@ -20,7 +20,7 @@ classdef UserFunction < Function
       [varargout{:}] = self.functionHandle(self.inputs{:});
       
       for k=1:self.nOutputs
-        varargout{k} = varargout{k}.flat;
+        varargout{k} = varargout{k}.value;
       end
       
     end

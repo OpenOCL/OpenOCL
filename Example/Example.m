@@ -47,6 +47,8 @@ initialGuess.get('states').get('x').set(-0.2);
 % Run solver to obtain solution
 [solution,times] = solver.solve(initialGuess);
 
+times = times.value;
+
 figure
 hold on 
 plot(times,solution.get('states').get('x').value,'-.')

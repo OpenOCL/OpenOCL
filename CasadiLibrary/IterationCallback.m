@@ -3,7 +3,7 @@ classdef IterationCallback < casadi.Callback
     nx
     ng
     np
-    callbackFun;
+    callbackFun
   end
   methods
     function self = IterationCallback(name,nx,ng,np,callbackFun)

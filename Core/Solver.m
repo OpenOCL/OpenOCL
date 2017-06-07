@@ -56,23 +56,16 @@ classdef Solver < handle
       end
       
       N = options.nlp.controlIntervals;
-
-      parameters = ocp.getParameters;
-      integrator = CollocationIntegrator(system,options.nlp.collocationOrder,parameters);
-      
-      nlp = Simultaneous(system,integrator,N);
-      
-      ocpHandler = OCPHandler(ocp,nlp.nlpVars);
-
-      nlp.setOcpHandler(ocpHandler);
-      integrator.setPathCostsFun(ocpHandler.pathCostsFun);
+      ocpHandler = OCPHandler(ocp,system);
+      integrator = CollocationIntegrator(system,ocpHandler.pathCostsFun,options.nlp.collocationOrder);
+      nlp = Simultaneous(system,integrator,ocpHandler,N);
       
 %       ocpHandler.pathCostsFun           = CasadiFunction(ocpHandler.pathCostsFun);
 %       ocpHandler.arrivalCostsFun        = CasadiFunction(ocpHandler.arrivalCostsFun);
 %       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
 %       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-      system.systemFun                  = CasadiFunction(system.systemFun);
-%       nlp.integratorFun                 = CasadiFunction(nlp.integratorFun);
+%       system.systemFun                  = CasadiFunction(system.systemFun);
+      nlp.integratorFun                 = CasadiFunction(nlp.integratorFun);
 
     end
     

@@ -5,10 +5,11 @@ classdef (Abstract) System < handle
   end  
   
   properties
-    states
-    algVars
-    controls
-    parameters
+    statesStruct
+    algVarsStruct
+    controlsStruct
+    parametersStruct
+    
     ode
     alg
     
@@ -18,6 +19,10 @@ classdef (Abstract) System < handle
     systemFun
   end
   
+  properties (Access = private)
+    odeVar
+  end
+  
   methods (Abstract)
    setupVariables(self)
    setupEquation(self)
@@ -25,33 +30,26 @@ classdef (Abstract) System < handle
   
   methods
     
-    function self = System(parameters)
-      self.states     = Var('states');
-      self.algVars    = Var('algVars');
-      self.controls   = Var('controls');
+    function self = System()
+      self.statesStruct     = TreeNode('states');
+      self.algVarsStruct    = TreeNode('algVars');
+      self.controlsStruct   = TreeNode('controls');
+      self.parametersStruct = TreeNode('parameters');
       
-      if nargin == 0
-        self.parameters = Parameters;
-      else
-        self.parameters  = parameters.copy;
-      end
-      
-      self.initialConditions = [];
+      self.initialConditions = Arithmetic.Matrix([]);
       
 
-      self.ode         = Var('ode');
-      self.alg         = Var('alg');
+      self.ode         = TreeNode('ode');
+      self.alg         = Arithmetic.Matrix([]);
       
       self.setupVariables;
       
-      self.states.compile;
-      self.algVars.compile;
-      self.controls.compile;
-%       self.parameters.compile;
-      self.ode.compile;
-      self.alg.compile;
+      self.statesStruct.compile;
+      self.algVarsStruct.compile;
+      self.controlsStruct.compile;
       
-      self.systemFun = UserFunction(@self.evaluate,{self.states,self.algVars,self.controls,self.parameters},2);
+      self.systemFun = Function(@self.getEquations, ...
+        {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);
       
     end
     
@@ -65,79 +63,66 @@ classdef (Abstract) System < handle
     end
     
     function [ode,alg] = evaluate(self,states,algVars,controls,parameters)
+      [ode,alg] = self.systemFun.evaluate(states,algVars,controls,parameters);
+    end
+    
+    function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned 
       
-      self.alg = Var('alg');
+      self.alg = Arithmetic.create(statesIn,MatrixStructure([0,1]));
+      self.ode = Arithmetic.create(statesIn,statesIn.varStructure);
 
-      self.setupEquation(states,algVars,controls,parameters);
+      self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
       ode = self.ode;
       alg = self.alg;
     end
     
     function addState(self,id,size)
-      self.states.add(id,size);
-      self.ode.add([System.DOT_PREFIX id],size)
+      self.statesStruct.add(id,size);
     end
     function addAlgVar(self,id,size)
-      self.algVars.add(id,size);
+      self.algVarsStruct.add(id,size);
     end
     function addControl(self,id,size)
-      self.controls.add(id,size);
+      self.controlsStruct.add(id,size);
     end
     function addParameter(self,id,size)
-      self.parameters.add(id,size);
-    end
-    
-    
-    function state = getState(self,id)
-      state = self.states.get(id).value;
-    end
-    function algVar= getAlgVar(self,id)
-      algVar = self.algVars.get(id).value;
-    end
-    function control = getControl(self,id)
-      control = self.controls.get(id).value;
-    end
-    function param = getParameter(self,id)
-      param = self.parameters.get(id).value;
+      self.parametersStruct.add(id,size);
     end
 
     function setODE(self,id,equation)
-      %
-      self.ode.get([System.DOT_PREFIX id]).set(equation);
+      self.ode.get(id).set(equation);
     end
     
     function setAlgEquation(self,equation)
-      self.alg.add(Var(equation,'algEq'));
+      self.alg = [self.alg;equation];
     end
-    
     
     function setInitialCondition(self,value)
       self.initialConditions = [self.initialConditions; value];      
     end
     
-    function  ic = getInitialCondition(self,states,parameters)
-      self.initialConditions = [];
-      self.initialCondition(states,parameters)
+    function  ic = getInitialCondition(self,statesIn,parametersIn)
+      self.initialConditions = Arithmetic.create(statesIn,MatrixStructure([0,1]));
+      self.initialCondition(statesIn,parametersIn)
       ic = self.initialConditions;
     end
     
     function controls = callIterationCallback(self,states,algVars,parameters)
-      controls = self.controls;
-      controls.set(0);
+      controls =  Arithmetic(self.controlsStruct,0);
       self.simulationCallback(states,algVars,controls,parameters);
     end
     
     function solutionCallback(self,solution)
-      
-      N = solution.get('states').getNumberOfVars;
+      sN = solution.get('states').size;
+      N = sN(2);
       parameters = solution.get('parameters');
       
       for k=1:N-1
         states = solution.get('states',k+1);
-        algVars = solution.get('integratorVars',k).get('algVars',3);
-        self.callIterationCallback(states,algVars,parameters);
+        algVars = solution.get('integratorVars',k).get('algVars');
+        self.callIterationCallback(states,algVars(end),parameters);
       end
       
     end

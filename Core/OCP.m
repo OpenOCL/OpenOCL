@@ -13,8 +13,12 @@ classdef OCP < handle
     thisPathConstraints
     thisBoundaryConditions
     
-    parameters
+    parametersStruct
     endTime
+  end
+  
+  properties (Access = public)
+    
   end
   
   methods(Access = public)
@@ -23,59 +27,52 @@ classdef OCP < handle
       self.endTime = 'free';
       self.system = system;
       
-      self.thisPathConstraints = Constraint;
-      self.thisBoundaryConditions = Constraint;
-      self.thisArrivalCosts = Var(0,'pathCost');
-      self.thisPathCosts = Var(0,'pathCost');
-      
-      self.parameters = system.parameters;
+      self.parametersStruct = system.parametersStruct;
       
     end
     
-    function c = discreteCost(self,vars)
-      c = 0;
+    %%% overridable methods
+    function c = discreteCost(~,vars)
+      % c = discreteCost(self,vars)
+      c = Arithmetic.createExpression(vars,0);
     end
-    
-    function pathCosts(self,states,algVars,controls,time,parameters)
+    function pathCosts(~,~,~,~,~,~)
+      % pathCosts(self,states,algVars,controls,time,parameters);
     end
-    
-    function arrivalCosts(self,states,time,parameters)
+    function arrivalCosts(~,~,~,~)
+      % arrivalCosts(self,states,time,parameters)
     end
-    
-    function pathConstraints(self,states,controls,time,parameters)
+    function pathConstraints(~,~,~,~,~)
+      % pathConstraints(self,states,controls,time,parameters)
     end
-    
-    function boundaryConditions(self,initialStates,finalStates,parameters)
+    function boundaryConditions(~,~,~,~)
+      % boundaryConditions(self,initialStates,finalStates,parameters)
     end
         
-    function system = getSystem(self)
-      system = self.system;
-    end
-    
-    function p = getParameters(self)
-      p = self.parameters;
-    end
-
-    function pc = getPathConstraints(self,states,algVars,controls,time,parameters)
-      self.thisPathConstraints.clear;
+    function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
+      self.thisPathConstraints = Constraint(states);
       self.pathConstraints(states,algVars,controls,time,parameters);
-      pc = self.thisPathConstraints;
+      val = self.thisPathConstraints.values;
+      lb = self.thisPathConstraints.lowerBounds;
+      ub = self.thisPathConstraints.upperBounds;
     end
     
-    function tc = getBoundaryConditions(self,initialStates,finalStates,parameters)
-      self.thisBoundaryConditions.clear;
+    function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
+      self.thisBoundaryConditions = Constraint(initialStates);
       self.boundaryConditions(initialStates,finalStates,parameters);
-      tc = self.thisBoundaryConditions;
+      val = self.thisBoundaryConditions.values;
+      lb = self.thisBoundaryConditions.lowerBounds;
+      ub = self.thisBoundaryConditions.upperBounds;
     end
 
     function pc = getPathCosts(self,states,algVars,controls,time,parameters)
-      self.thisPathCosts = Var(0,'pathCost');
+      self.thisPathCosts = Arithmetic.createExpression(states,0);
       self.pathCosts(states,algVars,controls,time,parameters);
       pc = self.thisPathCosts;
     end
     
     function tc = getArrivalCosts(self,states,time,parameters)
-      self.thisArrivalCosts = Var(0,'arrivalCost');
+      self.thisArrivalCosts = Arithmetic.createExpression(states,0);
       self.arrivalCosts(states,time,parameters);
       tc = self.thisArrivalCosts;
     end
