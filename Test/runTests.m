@@ -8,6 +8,13 @@ function runTests(version,changeMessage)
   StartupOC
   global testDir
   
+  tests{1}.name = 'Arithmetic';   tests{1}.file = 'testArithmetic';
+  tests{2}.name = 'Example';      tests{2}.file = 'testExample';
+  tests{3}.name = 'Var';          tests{3}.file = 'testVar';
+  tests{4}.name = 'VarStructure'; tests{4}.file = 'testVarStructure';
+  
+  NTests = length(tests);
+  
   if nargin == 0
     version       = 'undefined';
     changeMessage = 'undefined';
@@ -15,28 +22,23 @@ function runTests(version,changeMessage)
 
   close all
   set(0,'DefaultFigureVisible','off');
-
-  coreTestsPassed     = true;
-  casadiTestsPassed   = true;
-  exmapleTestsPassed  = true;
-
-  %% run core class tests
-  coreTestsResult = runTest('Core',@testVar);
-
-  %% run casadi tests
-  casadiTestsResult = runTest('Casadi',@testCasadiVar);
-
-  %% run examples
-  exampleTestsResult = runTest('Example',@testExample);
+  
+  %% run all tests
+  testResults = cell(1,NTests);
+  for k=1:NTests
+    test = tests{k};
+    testResults{k} = runTest(test.name,str2func(test.file));
+  end
 
   %% save results
   fileName = [datestr(now,'yyyy-mm-dd_HHMMSS') '.txt'];
   filePath = fullfile(testDir,fileName);
   resultsFile = fopen(filePath,'w');
   fprintf(resultsFile,'Test on %s\nVersion: %s\nChange message: %s\n\n',datestr(now),version,changeMessage);
-  printResults(coreTestsResult);
-  printResults(casadiTestsResult);
-  printResults(exampleTestsResult);
+  
+  for k=1:NTests
+    printResults(testResults{k});
+  end
   fclose(resultsFile);
   
   set(0,'DefaultFigureVisible','on');

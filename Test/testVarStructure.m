@@ -50,20 +50,3 @@ assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],
 uhat = x.get('u');
 assert( isequal( uhat.get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
 
-% positions
-x = TreeNode('x',[3 3]);
-y = TreeNode('y',[1 1]);
-z = TreeNode('z',[4 5]);
-v = TreeNode('v');
-v.add(x);
-v.add(y);
-v.add(z);
-v.add(x);
-
-vars = Arithmetic(v,0);
-vars.get('z').value
-vars.get('x').value
-
-vars.get('x').set(rand(3));
-
-
