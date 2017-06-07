@@ -1,12 +1,7 @@
 StartupOC
 
-% set up parameters
-parameters = Parameters;
-parameters.add('m',[1 1]);
-parameters.add('l',[1 1]);
-
 % Create system and OCP
-system = PendulumSystem(parameters);
+system = PendulumSystem;
 ocp = PendulumOCP(system);
 
 % Get and set solver options
