@@ -30,16 +30,11 @@ classdef (Abstract) System < handle
   
   methods
     
-    function self = System(parametersStruct)
+    function self = System()
       self.statesStruct     = TreeNode('states');
       self.algVarsStruct    = TreeNode('algVars');
       self.controlsStruct   = TreeNode('controls');
-      
-      if nargin == 0
-        self.parametersStruct = Parameters;
-      else
-        self.parametersStruct  = parametersStruct;
-      end
+      self.parametersStruct = TreeNode('parameters');
       
       self.initialConditions = Arithmetic.Matrix([]);
       

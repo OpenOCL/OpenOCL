@@ -84,8 +84,8 @@ classdef CasadiNLPSolver < Solver
       % apply scaling
       if self.options.nlp.scaling
         
-        self.scalingMin = self.nlp.scalingMin.flat;
-        self.scalingMax = self.nlp.scalingMax.flat;
+        self.scalingMin = self.nlp.scalingMin.value;
+        self.scalingMax = self.nlp.scalingMax.value;
         
         % see if scaling information is available for all variables
         % either from bounds or setScaling

@@ -118,7 +118,7 @@ classdef Simultaneous < handle
     
     function checkScaling(self)
       
-      if any(isinf(self.scalingMin.flat)) || any(isinf(self.scalingMax.flat))
+      if any(isinf(self.scalingMin.value)) || any(isinf(self.scalingMax.value))
         error('Scaling information for some variable missing. Provide scaling for all variables or set scaling option to false.');
       end
       
