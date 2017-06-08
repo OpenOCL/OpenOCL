@@ -42,7 +42,7 @@ classdef OCP < handle
     function arrivalCosts(~,~,~,~)
       % arrivalCosts(self,states,time,parameters)
     end
-    function pathConstraints(~,~,~,~,~)
+    function pathConstraints(~,~,~,~,~,~)
       % pathConstraints(self,states,controls,time,parameters)
     end
     function boundaryConditions(~,~,~,~)
