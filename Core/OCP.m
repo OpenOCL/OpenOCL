@@ -82,11 +82,7 @@ classdef OCP < handle
   methods(Access = protected)
     
     function addParameter(self,id,size)
-      self.parameters.add(id,size);
-    end
-    
-    function parameter = getParameter(self,id)
-      parameter = self.parameters.get(id);
+      self.parametersStruct.add(id,size);
     end
     
     function addPathConstraint(self,lhs, op, rhs)
