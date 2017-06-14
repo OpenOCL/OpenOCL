@@ -10,13 +10,10 @@ classdef ExampleOCP < OCP
     end
     function pathCosts(self,states,algVars,controls,time,parameters)
       % Define lagrange (intermediate) cost terms.
-      x  = states.get('x');
-      y  = states.get('y');
-      u  = controls.get('u');
       
-      self.addPathCost( x^2 );
-      self.addPathCost( y^2 );
-      self.addPathCost( u^2 );
+      self.addPathCost( states.x^2 );
+      self.addPathCost( states.y^2 );
+      self.addPathCost( controls.u^2 );
     end
     function arrivalCosts(self,states,time,parameters)
       % Define terminal cost terms.
@@ -32,10 +29,10 @@ classdef ExampleOCP < OCP
       
       times = 0:10/30:10;
       hold off
-      plot(times,variables.get('states').get('x').value,'-.')
+      plot(times,variables.states.x.value,'-.')
       hold on
-      plot(times,variables.get('states').get('y').value,'--k')
-      stairs(times(1:end-1),variables.get('controls').get('u').value,'r')
+      plot(times,variables.states.z.value,'--k')
+      stairs(times(1:end-1),variables.controls.u.value,'r')
       xlabel('time')
       legend({'x','y','u'})
       

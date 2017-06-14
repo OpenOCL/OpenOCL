@@ -22,10 +22,10 @@ classdef ExampleSystem < System
       % implemented in the setupEquation method
       
       % Get access to the system variables
-      x = states.get('x');
-      y = states.get('y');
-      u = controls.get('u');
-      z = algVars.get('z');
+      x = states.x;
+      y = states.y;
+      u = controls.u;
+      z = algVars.z;
       
       % Define differential equations
       self.setODE('x',(1-y^2)*x - y + u); 
