@@ -43,10 +43,13 @@ x.add(u);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
 
-
-
+%%% get by name
 assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
 
+%%% get by name in two steps
 uhat = x.get('u');
 assert( isequal( uhat.get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
+
+%%% get by selector
+assert( isequal( uhat.get(1).get('x1').positions, {[4,5,6],[16,17,18]} ));
 

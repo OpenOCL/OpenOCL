@@ -24,12 +24,19 @@ classdef NodeSelection < VarStructure
       end
     end
     
-    function childSelection = get(self,id,selector)
+    function childSelection = get(self,in1,in2)
+      % childSelection = get(self,id,selector)
+      % childSelection = get(self,id)
+      % childSelection = get(self,selector)
       
-      if nargin == 2
-        childSelection = self.nodeType.getWithPositions(id,self.positions);
+      if nargin == 2 && ischar(in1)
+        childSelection = self.nodeType.getWithPositions(in1,self.positions);
+      elseif nargin == 2
+        positions = self.positions;
+        childSelection = NodeSelection(self.nodeType,positions(in1));
       else
-        childSelection = self.nodeType.getWithPositions(id,self.positions,selector);
+        childSelection = self.nodeType.getWithPositions(in1,self.positions,in2);
+
       end
 
     end

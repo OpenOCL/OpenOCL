@@ -79,10 +79,15 @@ classdef Arithmetic < handle
     function r = positions(self)
       r = self.varStructure.positions;
     end
-    function r = get(self,id,varargin)
+    function r = get(self,in1,in2)
       % r = get(self,id)
       % r = get(self,id,selector)
-      r = Arithmetic.create(self,self.varStructure.get(id,varargin{:}),self.thisValue);
+      % r = get(self,selector)
+      if nargin == 2
+        r = Arithmetic.create(self,self.varStructure.get(in1),self.thisValue);
+      else
+        r = Arithmetic.create(self,self.varStructure.get(in1,in2),self.thisValue);
+      end
     end
     %%%
     
@@ -173,14 +178,51 @@ classdef Arithmetic < handle
     end
     
     function varargout = subsref(self,s)
-      if numel(s) == 1 && strcmp(s.type,'()')
-        [varargout{1}] = Arithmetic.createExpression(self,subsref(self.value,s));
-      elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        v = Arithmetic.createExpression(self,subsref(self.value,s(1)));
-        [varargout{1:nargout}] = subsref(v,s(2:end));
-      else
-        [varargout{1:nargout}] = builtin('subsref',self,s);
+      
+      % number of output arguments is always 1 except if the set method is
+      % being called.
+      nargout = 1;
+      if length(s) > 1 && strcmp(s(end-1).subs,'set')
+        nargout = 0;
       end
+      
+      varargout=cell(1,nargout);
+      
+      if numel(s) == 1 && strcmp(s.type,'()')
+        % slice on value
+        [varargout{1}] = self.slice(s.subs{:});
+      elseif numel(s) > 1 && strcmp(s(1).type,'()')
+        % slice and call recursive
+        v = self.slice(s(1).subs{:});
+        [varargout{1:nargout}] = subsref(v,s(2:end));
+      elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
+        
+        try
+          % call class method
+          [varargout{1:nargout}] = builtin('subsref',self,s);
+        catch
+          % get by id
+          id = s(1).subs;
+          if numel(s) > 1
+            if strcmp(s(2).type,'()')
+              % check for selector
+              selector = s(2).subs{1};
+              v = self.get(id,selector);
+              [varargout{1:nargout}] = subsref(v,s(3:end));
+            else
+              v = self.get(id);
+              [varargout{1:nargout}] = subsref(v,s(2:end));
+            end
+          else
+            v = self.get(id);
+            [varargout{1:nargout}] = v;
+          end
+        end
+      else
+        [varargout{1:nargout}] = self;
+      end
+      
+      
     end
     
     function self = subsasgn(self,s,v)
@@ -190,6 +232,13 @@ classdef Arithmetic < handle
       else
         self.setValue(builtin('subsasgn',self.value,s,v));
       end
+    end
+    
+    function slicedVar = slice(self,varargin)
+      % slicedVar = slice(self,el)
+      % slicedVar = slice(self,row,col)
+      val = self.value;
+      slicedVar = Arithmetic.createExpression(self,val(varargin{:}));
     end
 
     % TODO: test
@@ -201,6 +250,8 @@ classdef Arithmetic < handle
           n=1;
       end
     end
+    
+    
     
     function v = uplus(a)
       v = Arithmetic.createExpression(a,uplus(a.value));
