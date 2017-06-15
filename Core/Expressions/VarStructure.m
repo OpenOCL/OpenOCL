@@ -7,6 +7,7 @@ classdef VarStructure < handle
   methods (Abstract)
     positions(self)
     size(self)
+    getChildPointers(self)
   end
   
   methods

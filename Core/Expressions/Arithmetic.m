@@ -185,15 +185,6 @@ classdef Arithmetic < handle
     
     function varargout = subsref(self,s)
       
-%       % number of output arguments is always 1 except if the set method is
-%       % being called.
-%       nargout = 1;
-%       if length(s) > 1 && strcmp(s(end-1).subs,'set')
-%         nargout = 0;
-%       end
-%       
-%       varargout=cell(1,nargout);
-      
       if numel(s) == 1 && strcmp(s.type,'()')
         % slice on value
         [varargout{1}] = self.slice(s.subs{:});
@@ -211,7 +202,7 @@ classdef Arithmetic < handle
           id = s(1).subs;
           
           % check if id is a children
-          if ~isfield(self.varStructure.childPointers,id)
+          if ~isfield(self.varStructure.getChildPointers,id)
             throw(e);
           end
           

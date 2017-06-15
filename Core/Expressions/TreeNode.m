@@ -240,6 +240,10 @@ classdef TreeNode < VarStructure
       
     end
     
+    function r = getChildPointers(self)
+      r = self.childPointers;
+    end
+    
   end % methods
   
 end % class

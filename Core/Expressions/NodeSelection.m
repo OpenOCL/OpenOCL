@@ -45,6 +45,10 @@ classdef NodeSelection < VarStructure
       r = self.thisPositions;
     end
     
+    function r = getChildPointers(self)
+      r = self.nodeType.getChildPointers();
+    end
+    
   end
 
   
