@@ -14,6 +14,8 @@ classdef Arithmetic < handle
       
       if isa(arithmeticObj,'CasadiArithmetic')
         obj = CasadiArithmetic(structureType,varargin{:});
+      elseif isa(arithmeticObj,'SymArithmetic')
+        obj = SymArithmetic(structureType,varargin{:});
       elseif isa(arithmeticObj,'Arithmetic')
         obj = Arithmetic(structureType,varargin{:});
       else
@@ -25,6 +27,8 @@ classdef Arithmetic < handle
     function obj = createFromArithmetic(structure, arithmetic)
       if isa(arithmetic,'CasadiArithmetic')
         obj = CasadiArithmetic(structure,arithmetic.value);
+      elseif isa(arithmetic,'SymArithmetic')
+        obj = SymArithmetic(structure,arithmetic.value);
       elseif isa(arithmetic,'Arithmetic')
         obj = Arithmetic(structure,arithmetic.value);
       else
@@ -39,6 +43,8 @@ classdef Arithmetic < handle
       
       if isa(arithmeticObj,'CasadiArithmetic')
         obj = CasadiArithmetic(MatrixStructure(size(value)),value);
+      elseif isa(arithmeticObj,'SymArithmetic')
+        obj = SymArithmetic(MatrixStructure(size(value)),value);
       elseif isa(arithmeticObj,'Arithmetic')
         obj = Arithmetic(MatrixStructure(size(value)),value);
       else
@@ -179,14 +185,14 @@ classdef Arithmetic < handle
     
     function varargout = subsref(self,s)
       
-      % number of output arguments is always 1 except if the set method is
-      % being called.
-      nargout = 1;
-      if length(s) > 1 && strcmp(s(end-1).subs,'set')
-        nargout = 0;
-      end
-      
-      varargout=cell(1,nargout);
+%       % number of output arguments is always 1 except if the set method is
+%       % being called.
+%       nargout = 1;
+%       if length(s) > 1 && strcmp(s(end-1).subs,'set')
+%         nargout = 0;
+%       end
+%       
+%       varargout=cell(1,nargout);
       
       if numel(s) == 1 && strcmp(s.type,'()')
         % slice on value
@@ -198,11 +204,17 @@ classdef Arithmetic < handle
       elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
         
         try
-          % call class method
+          % try to call class method
           [varargout{1:nargout}] = builtin('subsref',self,s);
-        catch
+        catch e
           % get by id
           id = s(1).subs;
+          
+          % check if id is a children
+          if ~isfield(self.varStructure.childPointers,id)
+            throw(e);
+          end
+          
           if numel(s) > 1
             if strcmp(s(2).type,'()')
               % check for selector
@@ -230,7 +242,7 @@ classdef Arithmetic < handle
         v = subsasgn(self.value,s,v);
         self.set(v);
       else
-        self.setValue(builtin('subsasgn',self.value,s,v));
+        self.set(builtin('subsasgn',self,s,v));
       end
     end
     
