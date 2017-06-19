@@ -126,7 +126,7 @@ classdef Simulator < handle
       
       constraints = [constraints;alg];
       
-      if ~all(constraints==0)
+%       if ~all(constraints.value==0)
         warning('Initial state is not consistent, trying to find a consistent initial condition...');
         stateSym  = CasadiArithmetic(states.varStructure);
         algVarsSym  = CasadiArithmetic(algVars.varStructure);
@@ -134,6 +134,8 @@ classdef Simulator < handle
         constraints = self.system.getInitialCondition(stateSym,parameters);
         [ode,alg] = self.system.systemFun.evaluate(stateSym,algVarsSym,controls,parameters);
         constraints = [constraints;alg];
+        
+        algVars.set(rand);
         
         optVars = [stateSym;algVarsSym];
         x0      = [states;algVars];
@@ -147,7 +149,7 @@ classdef Simulator < handle
 
         varsOut.set(full(sol.x));
         
-      end
+%       end
       
       statesOut = varsOut.get('states');
       algVarsOut = varsOut.get('algVars');
