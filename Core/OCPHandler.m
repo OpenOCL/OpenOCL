@@ -42,23 +42,6 @@ classdef OCPHandler < handle
       cost = self.ocp.discreteCost(nlpVars);
     end
     
-    function nx = getStatesSize(self)
-      nx = prod(self.system.statesStruct.size);
-    end
-    function nu = getControlsSize(self)
-      nu = prod(self.system.controlsStruct.size);
-    end
-    function nz = getAlgVarsSize(self)
-      nz = prod(self.system.algVarsStruct.size);
-    end
-    function np = getParametersSize(self)
-      np = prod(self.system.parametersStruct.size);
-    end
-    
-    function endTime = getEndTime(self)
-      endTime = self.ocp.getEndTime;
-    end
-      
     function callbackFunction(self,nlpVars,variableValues)
       nlpVars.set(variableValues);
       self.ocp.iterationCallback(nlpVars);
