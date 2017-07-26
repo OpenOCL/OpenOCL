@@ -5,7 +5,7 @@ classdef PendulumOCP < OCP
       self = self@OCP(system);
     end
     
-    function pathCosts(self,states,algVars,controls,time,parameters)
+    function pathCosts(self,states,algVars,controls,time,endTime,parameters)
       p  = states.get('p').value;
       l  = parameters.get('l').value;
       F  = controls.get('F').value;
@@ -14,11 +14,11 @@ classdef PendulumOCP < OCP
       self.addPathCost( 1e-3 * (pe'*pe) );
       self.addPathCost( 1e-4 * F^2 );
     end
-    function arrivalCosts(self,states,time,parameters)
+    function arrivalCosts(self,states,endTime,parameters)
       p  = states.get('p').value;
       l  = parameters.get('l').value;
       pe = p-[0;l];
-      self.addArrivalCost(  (pe'*pe) + 1e-1*time.value );
+      self.addArrivalCost(  (pe'*pe) + 1e-1*endTime.value );
     end
     function pathConstraints(self,states,algVars,controls,time,parameters)
     end    

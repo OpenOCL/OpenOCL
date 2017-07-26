@@ -33,18 +33,19 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
       self.integratorVarsStruct.compile;
       
-      time0 = TreeNode('time0',[1 1]);
-      timeF = TreeNode('timeF', [1 1]);
+      time0 = MatrixStructure([1,1]);
+      timeF = MatrixStructure([1,1]);
+      endTime = MatrixStructure([1,1]);
       
       self.integratorFun = Function(@self.getIntegrator,{system.statesStruct,...
                                                     self.integratorVarsStruct,...
                                                     system.controlsStruct,...
-                                                    time0,timeF,...
+                                                    time0,timeF,endTime,...
                                                     system.parametersStruct},4);
                                                   
     end
 
-    function [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,parameters)
+    function [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,endTime,parameters)
       
       h = finalTime-startTime;
 
@@ -72,7 +73,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
          finalStates = finalStates + self.D(j+1)*integratorVars.get('states',j);
 
          % Add contribution to quadrature function
-         qj = self.pathCostsFun.evaluate(integratorVars.get('states',j),integratorVars.get('algVars',j),controls,time,parameters);
+         qj = self.pathCostsFun.evaluate(integratorVars.get('states',j),integratorVars.get('algVars',j),controls,time,endTime,parameters);
          J = J + self.B(j+1)*qj*h;
       end
 
