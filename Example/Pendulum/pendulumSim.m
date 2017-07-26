@@ -20,7 +20,7 @@ figure;
 
 % simulate again using a given series of control inputs
 controlsSeries = simulator.getControlsSeries(length(times)-1);
-controlsSeries.get('controls').get('F').set(1);
+controlsSeries.get('F').set(1);
 
 figure;
 [statesVec,algVarsVec,controlsVec] = simulator.simulate(states,times,controlsSeries,p);
