@@ -61,7 +61,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
              xp = xp + self.C(r+1,j+1)*integratorVars.get('states',r);
          end
 
-         time = startTime + self.tau_root(j+1);
+         time = startTime + self.tau_root(j+1) * h;
 
          % Append collocation equations
          [ode,alg] = self.system.evaluate(integratorVars.get('states',j), ...
