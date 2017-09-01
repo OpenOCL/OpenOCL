@@ -66,19 +66,11 @@ classdef CasadiNLPSolver < Solver
       
       
       % create variables and parameter symbolics
-      vsym = casadi.MX.sym('vars',numel(varIndizes));
-      psym = casadi.MX.sym('params',numel(paramIndizes));
-      
-      vars = cell(nv,1);
-      vars(varIndizes) = vertsplit(vsym);
-      vars(paramIndizes) = vertsplit(psym);
-      vars = [vars{:}];
-      
+      vars = CasadiArithmetic(initialGuess.varStructure);
       
       x0 = x0(varIndizes);
       lbx = lbx(varIndizes);
       ubx = ubx(varIndizes);
-      
       
       
       % apply scaling
@@ -102,8 +94,7 @@ classdef CasadiNLPSolver < Solver
       
 
       % call nlp function with scaled variables
-      v = CasadiArithmetic(self.nlp.nlpVarsStruct,vars);
-      [costs,constraints,constraints_LB,constraints_UB] = self.nlpData.casadiNLPFun.evaluate(v);
+      [costs,constraints,constraints_LB,constraints_UB] = self.nlpData.casadiNLPFun.evaluate(vars);
       
       
       if self.options.nlp.scaling
@@ -122,7 +113,7 @@ classdef CasadiNLPSolver < Solver
       
       % get struct with nlp for casadi
       casadiNLP = struct;
-      casadiNLP.x = vsym;
+      casadiNLP.x = vars.value;
       casadiNLP.f = costs.value;
       casadiNLP.g = constraints.value;
       casadiNLP.p = psym;
@@ -143,7 +134,7 @@ classdef CasadiNLPSolver < Solver
       
       % fix bug with 0x1 vs 0x0 parameter
       if isempty(psym)
-        casadiNLP.p = casadi.MX.sym('p',[0,1]);
+        casadiNLP.p = casadi.SX.sym('p',[0,1]);
       end
       
       constructSolverTic = tic;
@@ -181,7 +172,9 @@ classdef CasadiNLPSolver < Solver
         initialGuess(paramIndizes) = params;
         
         nlpFunEvalTic = tic;
-        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(initialGuess);
+        if nargout > 1
+          [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(initialGuess);
+        end
         nlpFunEvalTime = toc(nlpFunEvalTic);
 
         outVars = initialGuess;

@@ -6,7 +6,6 @@ ocp = PendulumOCP(system);
 
 % Get and set solver options
 options = Solver.getOptions;
-options.nlp.scaling = false;
 nlp = Solver.getNLP(ocp,system,options);
 
 % state bounds
