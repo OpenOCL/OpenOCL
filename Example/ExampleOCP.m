@@ -8,14 +8,14 @@ classdef ExampleOCP < OCP
       % otherwise its 'free'.
       self = self@OCP(system);
     end
-    function pathCosts(self,states,algVars,controls,time,parameters)
+    function pathCosts(self,states,algVars,controls,time,endTime,parameters)
       % Define lagrange (intermediate) cost terms.
       
       self.addPathCost( states.x^2 );
       self.addPathCost( states.y^2 );
       self.addPathCost( controls.u^2 );
     end
-    function arrivalCosts(self,states,time,parameters)
+    function arrivalCosts(self,states,endTime,parameters)
       % Define terminal cost terms.
     end
     function pathConstraints(self,states,algVars,controls,time,parameters)

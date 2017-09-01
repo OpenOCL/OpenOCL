@@ -127,7 +127,7 @@ classdef CasadiNLPSolver < Solver
       
       if self.options.iterationCallback == true
         callbackFun = IterationCallback('itCbFun', ...
-          numel(vsym), numel(constraints), numel(psym), ...
+          numel(vsym), numel(constraints.value), numel(psym), ...
           @(values)self.callBackHandle(values,initialGuess,varIndizes,paramIndizes,params) );
         opts.iteration_callback = callbackFun;
       end
@@ -206,7 +206,7 @@ classdef CasadiNLPSolver < Solver
     
     function callBackHandle(self,values,vars,varIndizes,paramIndizes,params)
       
-      x = vars.flat;
+      x = vars.value;
       x(varIndizes) = values;
       
       %remove scaling from decision variables

@@ -29,9 +29,10 @@ classdef OCPHandler < handle
       algVars = self.system.algVarsStruct;
       params = self.system.parametersStruct;
       time = MatrixStructure([1,1]);
+      endTime = MatrixStructure([1,1]);
 
-      self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,params},1);
-      self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,time,params},1);
+      self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,endTime,params},1);
+      self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,endTime,params},1);
       self.boundaryConditionsFun = Function(@ocp.getBoundaryConditions,{states,states,params},3);
       self.pathConstraintsFun = Function(@ocp.getPathConstraints,{states,algVars,controls,time,params},3);
       
@@ -40,8 +41,7 @@ classdef OCPHandler < handle
     function cost = getDiscreteCost(self,nlpVars)
       cost = self.ocp.discreteCost(nlpVars);
     end
-
-      
+    
     function callbackFunction(self,nlpVars,variableValues)
       nlpVars.set(variableValues);
       self.ocp.iterationCallback(nlpVars);

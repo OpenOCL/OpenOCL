@@ -18,7 +18,11 @@ classdef CasadiArithmetic < Arithmetic
       self = self@Arithmetic(varStructure);
 
       if nargin == 1
-        value = casadi.SX.sym('v',prod(varStructure.size),1);
+        if isa(varStructure,'MatrixStructure')
+          value = casadi.SX.sym('v',prod(varStructure.size),1);
+        else
+          value = casadi.SX.sym(varStructure.id,prod(varStructure.size),1);
+        end
       end
       
       if isa(value,'Value')

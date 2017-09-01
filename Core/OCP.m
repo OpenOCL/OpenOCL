@@ -36,11 +36,11 @@ classdef OCP < handle
       % c = discreteCost(self,vars)
       c = Arithmetic.createExpression(vars,0);
     end
-    function pathCosts(~,~,~,~,~,~)
-      % pathCosts(self,states,algVars,controls,time,parameters);
+    function pathCosts(~,~,~,~,~,~,~)
+      % pathCosts(self,states,algVars,controls,time,endTime,parameters);
     end
     function arrivalCosts(~,~,~,~)
-      % arrivalCosts(self,states,time,parameters)
+      % arrivalCosts(self,states,endTime,parameters)
     end
     function pathConstraints(~,~,~,~,~,~)
       % pathConstraints(self,states,controls,time,parameters)
@@ -65,15 +65,15 @@ classdef OCP < handle
       ub = self.thisBoundaryConditions.upperBounds;
     end
 
-    function pc = getPathCosts(self,states,algVars,controls,time,parameters)
+    function pc = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
       self.thisPathCosts = Arithmetic.createExpression(states,0);
-      self.pathCosts(states,algVars,controls,time,parameters);
+      self.pathCosts(states,algVars,controls,time,endTime,parameters);
       pc = self.thisPathCosts;
     end
     
-    function tc = getArrivalCosts(self,states,time,parameters)
+    function tc = getArrivalCosts(self,states,endTime,parameters)
       self.thisArrivalCosts = Arithmetic.createExpression(states,0);
-      self.arrivalCosts(states,time,parameters);
+      self.arrivalCosts(states,endTime,parameters);
       tc = self.thisArrivalCosts;
     end
     

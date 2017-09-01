@@ -151,7 +151,7 @@ classdef Simultaneous < handle
         thisControls = nlpVars.get('controls',k);
         
         % add integrator equation of direction collocation
-        [finalStates, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisStates,thisIntegratorVars,thisControls,timeGrid(k),timeGrid(k+1),parameters);
+        [finalStates, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisStates,thisIntegratorVars,thisControls,timeGrid(k),timeGrid(k+1),T,parameters);
 
         constraints.add(integratorEquations,'==',0);
         
