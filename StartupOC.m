@@ -41,4 +41,6 @@ addpath(fullfile(startupDir,'Core','Expressions'))
 
 % addpath('Interfaces')
 addpath(fullfile(startupDir,'Example'))
+addpath(fullfile(startupDir,'Example','Pendulum'))
+addpath(fullfile(startupDir,'Example','BallAndBeam'))
 addpath(fullfile(startupDir,'Test'))
