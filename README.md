@@ -1,4 +1,8 @@
-# Dynamic optimization toolbox
+# Open Optimal Control Library
+
+## Introduction
+
+The Open Optimal Control Library is a toolbox in Matlab for facilitating modelling and formulation of (parametric) optimal control problems. Interfaces casadi and ipopt.
 
 ## Quick start
 
