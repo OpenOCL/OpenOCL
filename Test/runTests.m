@@ -27,9 +27,12 @@ function runTests(testExamples,version,changeMessage)
   
   NTests = length(tests);
  
-
-  close all
-  set(0,'DefaultFigureVisible','off');
+  
+  % turn off figures for testing examples
+  if testExamples
+    close all
+    set(0,'DefaultFigureVisible','off');
+  end
   
   %% run all tests
   testResults = cell(1,NTests);
@@ -49,8 +52,9 @@ function runTests(testExamples,version,changeMessage)
   end
   fclose(resultsFile);
   
-  set(0,'DefaultFigureVisible','on');
-  
+  if testExamples
+    set(0,'DefaultFigureVisible','on');
+  end
   
   function testResult = runTest(testName,scriptHandle)
     testResult = struct;
