@@ -1,5 +1,3 @@
-StartupOC
-
 FINALTIME = 10;               % horizon length (seconds)
 CONTROL_INTERVALS = 30;    % horizon discretization
 

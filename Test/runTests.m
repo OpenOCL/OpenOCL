@@ -5,7 +5,6 @@ function runTests(version,changeMessage)
   % Indicate wether examples or tests were added because than the runtime
   % of test will differ from preious versions.
   
-  StartupOC
   global testDir
   
   tests{1}.name = 'Arithmetic';   tests{1}.file = 'testArithmetic';

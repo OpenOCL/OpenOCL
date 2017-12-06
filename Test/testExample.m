@@ -1,5 +1,4 @@
 function testExample
-StartupOC
 
 Example
 

@@ -1,5 +1,3 @@
-StartupOC
-
 % Create system and OCP
 system = PendulumSystem;
 ocp = PendulumOCP(system);

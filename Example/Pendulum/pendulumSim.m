@@ -1,5 +1,3 @@
-StartupOC
-
 % Create system and simulator
 system = PendulumSystem;
 simulator = Simulator(system,struct);
