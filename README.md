@@ -8,7 +8,7 @@ https://github.com/JonasKoenemann/optimal-control/wiki
 ## Legal notice
 
 Please see license information in the LICENSE file.
-Please contact Jonas.Koenemann@yahoo.de for more information.
+Please contact Jonas.Koenemann [at] yahoo.de for more information.
 
 Dynamic Optimization toolbox
 Copyright (C) 2016-2017  Jonas Koenemann
@@ -33,6 +33,6 @@ Use without warranty.
 
 Jonas Koenemann
 University of Freiburg, Ampyx Power
-Jonas.Koenemann@imtek.de
+Jonas.Koenemann [at] yahoo.de
 
 
