@@ -1,23 +1,32 @@
-function runTests(version,changeMessage)
+function runTests(testExamples,version,changeMessage)
   % runTests(version,changeMessage)
   % Run all tests with version (e.g. 1.01a) and a message that describes
   % the changes of this test with respect to the previous version.
   % Indicate wether examples or tests were added because than the runtime
   % of test will differ from preious versions.
   
+  if nargin < 1
+    testExamples  = false;
+  end
+  if nargin < 2
+    version       = 'undefined';   
+  end
+  if nargin < 3
+    changeMessage = 'undefined';   
+  end
+  
   global testDir
   
   tests{1}.name = 'Arithmetic';   tests{1}.file = 'testArithmetic';
-  tests{2}.name = 'Example';      tests{2}.file = 'testExample';
-  tests{3}.name = 'Var';          tests{3}.file = 'testVar';
-  tests{4}.name = 'VarStructure'; tests{4}.file = 'testVarStructure';
+  tests{2}.name = 'Var';          tests{2}.file = 'testVar';
+  tests{3}.name = 'VarStructure'; tests{3}.file = 'testVarStructure';
+  
+  if testExamples
+    tests{4}.name = 'Example';      tests{4}.file = 'testExamples';
+  end
   
   NTests = length(tests);
-  
-  if nargin == 0
-    version       = 'undefined';
-    changeMessage = 'undefined';
-  end
+ 
 
   close all
   set(0,'DefaultFigureVisible','off');
