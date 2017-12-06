@@ -1,6 +1,7 @@
 % Create system and simulator
 system = PendulumSystem;
-simulator = Simulator(system,struct);
+options = Simulator.getOptions;
+simulator = Simulator(system,options);
 
 states = simulator.getStates;
 states.get('p').set([0,1]);
