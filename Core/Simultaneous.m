@@ -96,19 +96,19 @@ classdef Simultaneous < handle
       self.setBound(id,1,varargin{:})
     end
     
-    function setInitialBound(self,id,varargin)
+    function setInitialBounds(self,id,varargin)
       % setInitialBound(id,lower,upper)
       % setInitialBound(id,value)     
       self.setBound(id,1,varargin{:})
     end
     
-    function setEndBound(self,id,varargin)
+    function setEndBounds(self,id,varargin)
       % setEndBound(id,lower,upper)
       % setEndBound(id,value)     
       self.setBound(id,'end',varargin{:})
     end
     
-    function setVariableBound(self,id,varargin)
+    function setBounds(self,id,varargin)
       % setVariableBound(id,lower,upper)
       % setVariableBound(id,value)     
       self.setBound(id,':',varargin{:})
@@ -127,7 +127,6 @@ classdef Simultaneous < handle
       
       self.scalingMin.get(id,slice).set(lower);
       self.scalingMax.get(id,slice).set(upper);
-      
     end
     
     function setVariableScaling(self,id,varargin)

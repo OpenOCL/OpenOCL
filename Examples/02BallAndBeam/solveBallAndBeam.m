@@ -27,23 +27,23 @@ dtheta_b = deg2rad(50); % max angular speed [deg/s]
 tau_b    = 20;          % bound torque [Nm]
 
 
-nlp.setVariableBound('r'     ,  -r_b      , r_b);   
-nlp.setVariableBound('theta' ,  -theta_b  , theta_b);
-nlp.setVariableBound('dtheta',  -dtheta_b , dtheta_b); 
-nlp.setVariableBound('tau'   ,  -tau_b    , tau_b);
+nlp.setBounds('r'     ,  -r_b      , r_b);   
+nlp.setBounds('theta' ,  -theta_b  , theta_b);
+nlp.setBounds('dtheta',  -dtheta_b , dtheta_b); 
+nlp.setBounds('tau'   ,  -tau_b    , tau_b);
 
 %% STEP4: set bounds for initial and end time
 % Intial conditions
-nlp.setInitialBound('r'      , -0.8);
-nlp.setInitialBound('dr'     , 0.3);
-nlp.setInitialBound('theta'  , deg2rad(5));
-nlp.setInitialBound('dtheta' , 0.0);
+nlp.setInitialBounds('r'      , -0.8);
+nlp.setInitialBounds('dr'     , 0.3);
+nlp.setInitialBounds('theta'  , deg2rad(5));
+nlp.setInitialBounds('dtheta' , 0.0);
 
 % Final conditions
-nlp.setEndBound('r'      , 0);
-nlp.setEndBound('dr'     , 0);
-nlp.setEndBound('theta'  , 0);
-nlp.setEndBound('dtheta' , 0);
+nlp.setEndBounds('r'      , 0);
+nlp.setEndBounds('dr'     , 0);
+nlp.setEndBounds('theta'  , 0);
+nlp.setEndBounds('dtheta' , 0);
 
 %% Solve OCP
 solver   = Solver.getSolver(nlp,options);   % Create solver

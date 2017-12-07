@@ -19,12 +19,12 @@ nlp = Solver.getNLP(ocp,system,options);
 % Define bounds on the state, control, and algebraic variables.
 
 % state and control bounds
-nlp.setVariableBound('x',    -0.25, inf);   % -0.25 <= x <= inf
-nlp.setVariableBound('u',    -1,    1);     % -1    <= u <= 1
+nlp.setBounds('x',    -0.25, inf);   % -0.25 <= x <= inf
+nlp.setBounds('u',    -1,    1);     % -1    <= u <= 1
 
 % intial state bounds
-nlp.setInitialBound('x',     0);            % x1 == 0
-nlp.setInitialBound('y',     1);            % y1 == 1
+nlp.setInitialBounds('x',     0);            % x1 == 0
+nlp.setInitialBounds('y',     1);            % y1 == 1
 
 nlp.setParameter('time',  FINALTIME);
 

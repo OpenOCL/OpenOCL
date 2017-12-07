@@ -39,16 +39,16 @@ nlp.setParameter('time', 0,FINALTIME);       %   T0 <= T <= Tf
 
 %% set boundary conditions
 % Intial conditions
-nlp.setInitialBound( 'x',   0.0); % x(t=0) = x0
-nlp.setInitialBound('vx',   0.0); % x(t=0) = x0
-nlp.setInitialBound( 'y',   0.0); % x(t=0) = x0
-nlp.setInitialBound('vy',   0.0); % x(t=0) = x0
+nlp.setInitialBounds( 'x',   0.0); % x(t=0) = x0
+nlp.setInitialBounds('vx',   0.0); % x(t=0) = x0
+nlp.setInitialBounds( 'y',   0.0); % x(t=0) = x0
+nlp.setInitialBounds('vy',   0.0); % x(t=0) = x0
 
 % Final conditions
-nlp.setEndBound( 'x',  2*pi); % x(t=T) = xf
-nlp.setEndBound('vx',  0.0 ); % x(t=T) = xf
-nlp.setEndBound( 'y',  0.0 ); % x(t=T) = xf
-nlp.setEndBound('vy',  0.0 ); % x(t=T) = xf
+nlp.setEndBounds( 'x',  2*pi); % x(t=T) = xf
+nlp.setEndBounds('vx',  0.0 ); % x(t=T) = xf
+nlp.setEndBounds( 'y',  0.0 ); % x(t=T) = xf
+nlp.setEndBounds('vy',  0.0 ); % x(t=T) = xf
 
 %% initialize NLP 
 solver          = Solver.getSolver(nlp,options); % Create solver
