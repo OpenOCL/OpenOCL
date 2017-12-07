@@ -31,14 +31,12 @@ classdef VanDerPolOCP < OCP
       hold off
       plot(times,variables.states.x.value,'-.')
       hold on
-      plot(times,variables.states.z.value,'--k')
+      plot(times,variables.states.y.value,'--k')
       stairs(times(1:end-1),variables.controls.u.value,'r')
       xlabel('time')
       legend({'x','y','u'})
       
       drawnow;
-      waitforbuttonpress
-      
     end
     
   end
