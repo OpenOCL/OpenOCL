@@ -17,30 +17,23 @@ nlp = Solver.getNLP(ocp,system,options);
 
 %
 % Define bounds on the state, control, and algebraic variables.
-% Set bound either on all (':'), the first (1), or last ('end')
-% time interval along the horizon.
 
-% state bounds
-nlp.setBound('x',    ':',   -0.25, inf);   % -0.25 <= x <= inf
-nlp.setBound('u',    ':',   -1,    1);     % -1    <= u <= 1
+% state and control bounds
+nlp.setVariableBound('x',    -0.25, inf);   % -0.25 <= x <= inf
+nlp.setVariableBound('u',    -1,    1);     % -1    <= u <= 1
 
 % intial state bounds
-nlp.setBound('x',     1,    0);            % x1 == 0
-nlp.setBound('y',     1,    1);            % y1 == 1
+nlp.setInitialBound('x',     0);            % x1 == 0
+nlp.setInitialBound('y',     1);            % y1 == 1
 
-nlp.setBound('time',  ':',  FINALTIME);
-
-nlp.setScaling('x', ':', -0.25, 1);
-nlp.setScaling('y', ':', -1, 1);
-nlp.setScaling('z', ':', -1*ones(3,1),ones(3,1));
-
+nlp.setParameter('time',  FINALTIME);
 
 % Create solver
 solver = Solver.getSolver(nlp,options);
 
 % Get and set initial guess
 initialGuess = nlp.getInitialGuess;
-initialGuess.get('states').get('x').set(-0.2);
+initialGuess.states.x.set(-0.2);
 
 % Run solver to obtain solution
 [solution,times] = solver.solve(initialGuess);
@@ -49,8 +42,8 @@ times = times.value;
 
 figure
 hold on 
-plot(times,solution.get('states').get('x').value,'-.')
-plot(times,solution.get('states').get('y').value,'--k')
-stairs(times(1:end-1),solution.get('controls').get('u').value,'r')
+plot(times,solution.states.x.value,'-.')
+plot(times,solution.states.y.value,'--k')
+stairs(times(1:end-1),solution.controls.u.value,'r')
 xlabel('time')
 legend({'x','y','u'})

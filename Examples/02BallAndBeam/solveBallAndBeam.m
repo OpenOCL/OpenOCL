@@ -12,37 +12,37 @@ options = Solver.getOptions;
 options.nlp.controlIntervals = 50;
 nlp = Solver.getNLP(ocp,system,options);
 
-%% STEP2: set parameters
-nlp.setBound('I', 1, 0.5);
-nlp.setBound('J', 1, 25*10^(-3));
-nlp.setBound('m', 1, 2);
-nlp.setBound('R', 1, 0.05);
-nlp.setBound('g', 1, 9.81);
+%% STEP2: assign values to system parameters
+nlp.setParameter('I', 0.5);
+nlp.setParameter('J', 25*10^(-3));
+nlp.setParameter('m', 2);
+nlp.setParameter('R', 0.05);
+nlp.setParameter('g', 9.81);
 
-%% STEP3: set constraints    
+%% STEP3: set bounds    
 r_b      = 1;           % beam length [m]
 theta_b  = deg2rad(30); % max angle [deg]
 dtheta_b = deg2rad(50); % max angular speed [deg/s]
 tau_b    = 20;          % bound torque [Nm]
 
-nlp.setBound('time'  ,  ':' ,  1,FINALTIME);           %   T0 <= T <= Tf
-nlp.setBound('r'     ,  ':' ,      -r_b , r_b);        % xmin <= x <= xmax
-nlp.setBound('theta' ,  ':' ,  -theta_b , theta_b);    % xmin <= x <= xmax
-nlp.setBound('dtheta',  ':' , -dtheta_b , dtheta_b);   % xmin <= x <= xmax
-nlp.setBound('tau'   ,  ':' ,    -tau_b , tau_b);      % umin <= u <= umax
+nlp.setVariableBound('time'  ,  1         , FINALTIME);  %   T0 <= T <= Tf
+nlp.setVariableBound('r'     ,  -r_b      , r_b);        % xmin <= x <= xmax
+nlp.setVariableBound('theta' ,  -theta_b  , theta_b);    % xmin <= x <= xmax
+nlp.setVariableBound('dtheta',  -dtheta_b , dtheta_b);   % xmin <= x <= xmax
+nlp.setVariableBound('tau'   ,  -tau_b    , tau_b);      % umin <= u <= umax
 
-%% STEP4: set boundary conditions
+%% STEP4: set bounds for initial and end time
 % Intial conditions
-nlp.setBound('r'      , 1  ,-0.8); % x(t=0) = x0
-nlp.setBound('dr'     , 1  , 0.3); % x(t=0) = x0
-nlp.setBound('theta'  , 1  , deg2rad(5)); % x(t=0) = x0
-nlp.setBound('dtheta' , 1  , 0.0); % x(t=0) = x0
+nlp.setInitialBound('r'      , -0.8);
+nlp.setInitialBound('dr'     , 0.3);
+nlp.setInitialBound('theta'  , deg2rad(5));
+nlp.setInitialBound('dtheta' , 0.0);
 
 % Final conditions
-nlp.setBound('r'      , 'end', 0);
-nlp.setBound('dr'     , 'end', 0);
-nlp.setBound('theta'  , 'end', 0);
-nlp.setBound('dtheta' , 'end', 0);
+nlp.setEndBound('r'      , 0);
+nlp.setEndBound('dr'     , 0);
+nlp.setEndBound('theta'  , 0);
+nlp.setEndBound('dtheta' , 0);
 
 %% Solve OCP
 solver   = Solver.getSolver(nlp,options);   % Create solver

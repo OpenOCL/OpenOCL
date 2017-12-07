@@ -6,26 +6,28 @@ ocp = PendulumOCP(system);
 options = Solver.getOptions;
 nlp = Solver.getNLP(ocp,system,options);
 
-% state bounds
-nlp.setBound('p',     ':',   -[2;2], [3;3]); 
-nlp.setBound('v',     ':',   -[2;2], [3;3]); 
-nlp.setBound('F',     ':',   -20, 20); 
-nlp.setBound('lambda',':',   -50, 50); 
-nlp.setBound('time',  ':',   1, 10);
-nlp.setBound('m',     ':',   1);
-nlp.setBound('l',     ':',   1);
+% set time parameter
+nlp.setParameter('time',  1, 10);
 
-nlp.setBound('p', 1, [-inf;-1],[inf,-1]);
-nlp.setBound('v', 1, [0.5;0]);
+% state bounds
+nlp.setVariableBound('p',       -[2;2], [3;3]); 
+nlp.setVariableBound('v',       -[2;2], [3;3]); 
+nlp.setVariableBound('F',       -20, 20); 
+nlp.setVariableBound('lambda',  -50, 50); 
+nlp.setVariableBound('m',       1);
+nlp.setVariableBound('l',       1);
+
+nlp.setInitialBound('p', [-inf;-1],[inf,-1]);
+nlp.setInitialBound('v', [0.5;0]);
 
 % Create solver
 solver = Solver.getSolver(nlp,options);
 
 % Get and set initial guess
 initialGuess = nlp.getInitialGuess;
-initialGuess.get('states').get('p').set([0;-1]);
-initialGuess.get('states').get('v').set([0.1;0]);
-initialGuess.get('controls').get('F').set(-10);
+initialGuess.states.p.set([0;-1]);
+initialGuess.states.v.set([0.1;0]);
+initialGuess.controls.F.set(-10);
 
 nlp.interpolateGuess(initialGuess);
 

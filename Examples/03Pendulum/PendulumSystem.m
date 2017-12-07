@@ -16,11 +16,11 @@ classdef PendulumSystem < System
       
     end
     function setupEquation(self,state,algVars,controls,parameters)
-      p       = state.get('p').value;
-      v       = state.get('v').value;
-      F       = controls.get('F').value;
-      lambda  = algVars.get('lambda').value;
-      m       = parameters.get('m').value;
+      p       = state.p;
+      v       = state.v;
+      F       = controls.F;
+      lambda  = algVars.lambda;
+      m       = parameters.m;
 
       ddp     = - 1/m * lambda*p - [0;9.81] + [F;0];
 
@@ -30,16 +30,16 @@ classdef PendulumSystem < System
       self.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
     end
     function initialCondition(self,state,parameters)
-      l = parameters.get('l').value;
-      p = state.get('p').value;
-      v = state.get('v').value;
+      l = parameters.l.value;
+      p = state.p.value;
+      v = state.v.value;
       
       self.setInitialCondition(p(1)^2+p(2)^2-l^2);
       self.setInitialCondition(dot(p,v));
     end
     function simulationCallback(self,states,algVars,controls,parameters)
-      p = states.get('p').value;
-      l = parameters.get('l').value;
+      p = states.p.value;
+      l = parameters.l.value;
       
       plot(0,0,'ob')
       hold on

@@ -1,8 +1,8 @@
 function animateRaceCar(time,solution,x_road,y_center,y_min,y_max)
 
 ts = time(2)-time(1);
-x_car = solution.get('states').get('x').value;
-y_car = solution.get('states').get('y').value;
+x_car = solution.states.x.value;
+y_car = solution.states.y.value;
 
 %% Initialize animation
 figure('units','normalized','outerposition',[0 0 1 1]);hold on;grid on;
