@@ -18,6 +18,7 @@ nlp.setParameter('J', 25*10^(-3));
 nlp.setParameter('m', 2);
 nlp.setParameter('R', 0.05);
 nlp.setParameter('g', 9.81);
+nlp.setParameter('time'  ,  1, FINALTIME);  %   T0 <= T <= Tf
 
 %% STEP3: set bounds    
 r_b      = 1;           % beam length [m]
@@ -25,11 +26,11 @@ theta_b  = deg2rad(30); % max angle [deg]
 dtheta_b = deg2rad(50); % max angular speed [deg/s]
 tau_b    = 20;          % bound torque [Nm]
 
-nlp.setVariableBound('time'  ,  1         , FINALTIME);  %   T0 <= T <= Tf
-nlp.setVariableBound('r'     ,  -r_b      , r_b);        % xmin <= x <= xmax
-nlp.setVariableBound('theta' ,  -theta_b  , theta_b);    % xmin <= x <= xmax
-nlp.setVariableBound('dtheta',  -dtheta_b , dtheta_b);   % xmin <= x <= xmax
-nlp.setVariableBound('tau'   ,  -tau_b    , tau_b);      % umin <= u <= umax
+
+nlp.setVariableBound('r'     ,  -r_b      , r_b);   
+nlp.setVariableBound('theta' ,  -theta_b  , theta_b);
+nlp.setVariableBound('dtheta',  -dtheta_b , dtheta_b); 
+nlp.setVariableBound('tau'   ,  -tau_b    , tau_b);
 
 %% STEP4: set bounds for initial and end time
 % Intial conditions
