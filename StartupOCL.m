@@ -7,7 +7,6 @@ function StartupOCL(workingDirLocation)
 %   workingDirLocation - path to location where the working directory 
 %                        should be created.
 
-
 startupDir  = fileparts(which('StartupOCL'));
 
 if isempty(startupDir)
@@ -46,3 +45,15 @@ addpath(fullfile(startupDir,'Examples','02BallAndBeam'))
 addpath(fullfile(startupDir,'Examples','03Pendulum'))
 addpath(fullfile(startupDir,'Examples','04RaceCar'))
 addpath(fullfile(startupDir,'Test'))
+
+
+% check if casadi is working
+try
+  casadi.SX.sym('x');
+catch e
+  if ~strcmp(e.identifier,'MATLAB:undefinedVarOrClass')
+    error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
+  else
+    error('Casadi installation not found. Please setup casadi 3.2');
+  end
+end

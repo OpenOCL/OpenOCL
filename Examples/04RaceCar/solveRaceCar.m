@@ -93,8 +93,8 @@ subplot(3,2,5);hold on;grid on;
 plot(times(1:end-1),solution.get('controls').get('Fx').value,'Color','b','LineWidth',1.5)
 plot(times(1:end-1),solution.get('controls').get('Fy').value,'Color','r','LineWidth',1.5)
 legend({'Fx','Fy'});
-plot(times(1:end-1),-F_bound.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
-plot(times(1:end-1), F_bound.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times(1:end-1),-Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times(1:end-1), Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
 ylabel('[N]');xlabel('time');
 
 % build street
