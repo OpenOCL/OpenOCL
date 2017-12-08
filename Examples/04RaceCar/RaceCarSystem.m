@@ -1,12 +1,6 @@
 classdef RaceCarSystem < System
-  % The system is defined by inheriting from the System class
-  % and implementing its abstract methods
   methods
-    
     function setupVariables(self)
-      % State, control, and algebraic variables can be defined
-      % by implementing the setupVariables method 
-      
       % Define two scalar state variables
       self.addState('x' ,[1,1]); % position x[m]
       self.addState('vx',[1,1]); % velocity vx[m/s]
@@ -27,9 +21,6 @@ classdef RaceCarSystem < System
       
     end
     function setupEquation(self,state,algVars,controls,parameters)
-      % The differential and algebraic equations of the system are 
-      % implemented in the setupEquation method
-      
       % Get access to the system parameters      
       m    = parameters.m;
       A    = parameters.A;
