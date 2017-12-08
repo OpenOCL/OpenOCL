@@ -14,7 +14,6 @@ classdef OCP < handle
     thisBoundaryConditions
     
     parametersStruct
-    endTime
   end
   
   properties (Access = public)
@@ -24,9 +23,7 @@ classdef OCP < handle
   methods(Access = public)
     function self = OCP(system)
       
-      self.endTime = 'free';
       self.system = system;
-      
       self.parametersStruct = system.parametersStruct;
       
     end
