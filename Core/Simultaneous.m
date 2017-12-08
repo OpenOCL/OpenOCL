@@ -138,9 +138,11 @@ classdef Simultaneous < handle
           showWarning = varargin{3};
       end
       
-      if showWarning && (any(~isinf(self.lowerBounds.get(id,slice).value)) || ...
-         any(~isinf(self.upperBounds.get(id,slice).value)))
-        warning('Existing bound overwritten. Make sure that setBounds is always called before setInitialBounds and setEndBounds');
+      lowValNotInf = ~isinf(self.lowerBounds.get(id,slice).value);
+      upValNotInf  = ~isinf(self.upperBounds.get(id,slice).value);
+      if showWarning && (any(lowValNotInf(:)) || any(upValNotInf(:)))
+        warning(['Existing bound overwritten. Make sure that setBounds ', ...
+                 'is always called before setInitialBounds and setEndBounds']);
       end
       
       self.lowerBounds.get(id,slice).set(lower);
