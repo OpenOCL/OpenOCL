@@ -93,19 +93,19 @@ classdef Simultaneous < handle
     function setParameter(self,id,varargin)
       % setParameter(id,lower,upper)
       % setParameter(id,value)     
-      self.setBound(id,1,varargin{:})
+      self.setBound(id,1,varargin{:},false)
     end
     
     function setInitialBounds(self,id,varargin)
       % setInitialBound(id,lower,upper)
       % setInitialBound(id,value)     
-      self.setBound(id,1,varargin{:})
+      self.setBound(id,1,varargin{:},false)
     end
     
     function setEndBounds(self,id,varargin)
       % setEndBound(id,lower,upper)
       % setEndBound(id,value)     
-      self.setBound(id,'end',varargin{:})
+      self.setBound(id,'end',varargin{:},false)
     end
     
     function setBounds(self,id,varargin)
@@ -114,12 +114,33 @@ classdef Simultaneous < handle
       self.setBound(id,':',varargin{:})
     end
     
-    function setBound(self,id,slice,lower,upper)
-      % addBound(id,slice,lower,upper)
-      % addBound(id,slice,value)
+    function setBound(self,id,slice,varargin)
+      % addBound(id,slice,lower,upper,showWarning=true)
+      % addBound(id,slice,value,showWarning=true)
       
       if nargin == 4
-        upper = lower;
+        lower = varargin{1};
+        upper = varargin{1};
+        showWarning = true;
+      elseif nargin == 5
+        if islogical(varargin{2})
+          lower = varargin{1};
+          upper = varargin{1};
+          showWarning = varargin{2};
+        else
+          lower = varargin{1};
+          upper = varargin{2};
+          showWarning = true;
+        end
+      elseif nargin == 6
+          lower = varargin{1};
+          upper = varargin{2};
+          showWarning = varargin{3};
+      end
+      
+      if showWarning && (any(~isinf(self.lowerBounds.get(id,slice).value)) || ...
+         any(~isinf(self.upperBounds.get(id,slice).value)))
+        warning('Existing bound overwritten. Make sure that setBounds is always called before setInitialBounds and setEndBounds');
       end
       
       self.lowerBounds.get(id,slice).set(lower);
