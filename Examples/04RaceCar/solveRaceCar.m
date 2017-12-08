@@ -65,7 +65,7 @@ initialGuess.states.y.set(y_center);
 [solution,times] = solver.solve(initialGuess);    % Run solver to obtain solution
 times = times.value;
 
-%% Plote solution
+%% Plot solution
 figure('units','normalized','outerposition',[0 0 1 1])
 subplot(3,2,1);hold on;grid on; 
 plot(times,solution.states.x.value,'Color','b','LineWidth',1.5);
