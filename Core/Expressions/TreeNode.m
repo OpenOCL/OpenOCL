@@ -1,7 +1,6 @@
 classdef TreeNode < VarStructure
-  %VarStructure
-  %   Basic datatype represent variables in a tree like structure.
-  
+  % TREENODE Basic datatype represent variables in a tree like structure.
+  %
   
   properties (Access = public)
     

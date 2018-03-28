@@ -1,4 +1,7 @@
 classdef Arithmetic < handle
+    % ARITHMETIC Default implementation for arithemtic operations
+    %    Methods can be overridden to provide operations for specific data
+    %    types, e.g. casadi variables, or symbolic variables.
   
   properties
     varStructure

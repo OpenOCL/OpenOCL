@@ -1,4 +1,6 @@
 classdef SymArithmetic < Arithmetic
+  % SYMARITHMETIC Arithmetic operations for Matlab symbolic toolbox
+  % variables
   
   properties
   end
