@@ -38,10 +38,6 @@ classdef (Abstract) System < handle
       
       self.initialConditions = Arithmetic.Matrix([]);
       
-
-      self.ode         = TreeNode('ode');
-      self.alg         = Arithmetic.Matrix([]);
-      
       self.setupVariables;
       
       self.statesStruct.compile;
