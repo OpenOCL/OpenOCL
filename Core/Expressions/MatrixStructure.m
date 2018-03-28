@@ -1,6 +1,6 @@
 classdef MatrixStructure < VarStructure
-  %MATRIXSTRUCTURE Summary of this class goes here
-  %   Detailed explanation goes here
+  %MATRIXSTRUCTURE Matrix valued variables
+  %   
   
   properties
   end

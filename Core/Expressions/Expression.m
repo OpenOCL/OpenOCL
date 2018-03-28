@@ -1,6 +1,6 @@
 classdef Expression < Arithmetic
-  %EXPRESSION Summary of this class goes here
-  %   Detailed explanation goes here
+  %EXPRESSION Simple arithemtic expression
+  %   
   
   properties
   end

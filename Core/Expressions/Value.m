@@ -1,4 +1,5 @@
 classdef Value < handle
+  % VALUE Class for storing values in expressions or structures
   
   properties
     thisValue

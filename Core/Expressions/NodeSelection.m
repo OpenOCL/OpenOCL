@@ -1,6 +1,6 @@
 classdef NodeSelection < VarStructure
-  %SUBEXPRESSION Summary of this class goes here
-  %   Detailed explanation goes here
+  % NODESELECTION Uniform selection of variables
+  %   Normally comes from selecting specific variables in a tree 
   
   properties
     thisPositions
