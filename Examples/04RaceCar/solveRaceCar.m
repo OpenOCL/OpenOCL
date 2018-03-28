@@ -1,7 +1,7 @@
 %% Title: Race Car Problem Example
 %  Author: PhD students Jonas Koenneman & Giovanni Licitra
 
-DISCRETIZATIONPOINTS = 100;    % horizon discretization
+DISCRETIZATIONPOINTS = 50;    % horizon discretization
 
 %% Create system and OCP
 system = RaceCarSystem();
