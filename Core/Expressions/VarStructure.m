@@ -13,7 +13,7 @@ classdef VarStructure < handle
   end
   
   methods
-    function get(self,id)
+    function get(varargin)
       error('Not Implemented.');
     end
   end

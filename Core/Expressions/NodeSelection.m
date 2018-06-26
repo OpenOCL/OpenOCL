@@ -30,13 +30,15 @@ classdef NodeSelection < VarStructure
       % childSelection = get(self,selector)
       
       if nargin == 2 && ischar(in1)
+        % args: id
         childSelection = self.nodeType.getWithPositions(in1,self.positions);
       elseif nargin == 2
+        % args: selector
         positions = self.positions;
         childSelection = NodeSelection(self.nodeType,positions(in1));
       else
+        % args: id,selector
         childSelection = self.nodeType.getWithPositions(in1,self.positions,in2);
-
       end
 
     end
