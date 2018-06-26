@@ -91,15 +91,11 @@ f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
 %%% mpower
-% Matrix power is not support by the time of writing so it should raise an
-% error. This test should adapted once casadi support matrix power.
-errorThrown = false;
-try
-  [~] = aTest(:,1:6)^2;
-catch e
-  errorThrown = true;
-end
-assert(errorThrown && (strfind(e.message,'Not implemented')>0));
+% mpower is supported since casadi 3.3
+aTest = aTest(:,1:6)^2;
+vTest = vTest(:,1:6)^2;
+f = casadi.Function('f',{s1,s2},{aTest.value});
+assert(isequal(full(f(v1,v2)),vTest))
 
 %%% mldivide (solve in casadi)
 A = [0.2625    0.9289    0.5785;
