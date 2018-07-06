@@ -11,8 +11,16 @@ classdef MatrixStructure < VarStructure
       self.thisSize = s;
     end
     
-    function s = size(self)
-      s = self.thisSize;
+    function s = size(self,varargin)
+      if nargin == 2
+        if varargin{1} > 2
+          s = 1;
+        else
+          s = self.thisSize(varargin{1});
+        end
+      else
+        s = self.thisSize;
+      end
     end
     
     function r = positions(self)

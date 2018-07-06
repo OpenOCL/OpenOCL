@@ -82,8 +82,8 @@ classdef Arithmetic < handle
     end
     
     %%% Delegate methods of varStructure
-    function s = size(self)
-      s = self.varStructure.size;
+    function s = size(self,varargin)
+      s = self.varStructure.size(varargin{:});
     end
     function r = positions(self)
       r = self.varStructure.positions;
@@ -232,6 +232,11 @@ classdef Arithmetic < handle
     end
     
     function self = subsasgn(self,s,v)
+      
+      if isa(v,'Arithmetic') 
+        v = v.value;
+      end
+      
       if numel(s)==1 && strcmp(s.type,'()')
         v = subsasgn(self.value,s,v);
         self.set(v);
@@ -243,6 +248,10 @@ classdef Arithmetic < handle
     function slicedVar = slice(self,varargin)
       % slicedVar = slice(self,el)
       % slicedVar = slice(self,row,col)
+      
+      if nargin == 4 && varargin{3} == 1
+        varargin(3) = [];
+      end
       val = self.value;
       slicedVar = Arithmetic.createExpression(self,val(varargin{:}));
     end
