@@ -82,6 +82,9 @@ classdef Arithmetic < handle
     end
     
     %%% Delegate methods of varStructure
+    function l = length(self)
+      l = max(size(self));
+    end
     function s = size(self,varargin)
       s = self.varStructure.size(varargin{:});
     end
