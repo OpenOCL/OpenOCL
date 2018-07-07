@@ -14,7 +14,6 @@ classdef TreeNode < VarStructure
   methods
     function self = TreeNode(varargin)
       % VarStructure(id)
-      % VarStructure(id,size)
       % VarStructure(var)
       % VarStructure()
 
@@ -33,12 +32,8 @@ classdef TreeNode < VarStructure
         self            = varargin{1};
 
       elseif ischar(varargin{1}) 
-        % create a new variable from id and size
+        % create a new variable from id
         self.id         = varargin{1};
-        if nargin > 1 && isa(varargin{2},'double')
-          self.thisSize = varargin{2};
-          self.thisLength = prod(self.thisSize);
-        end
       else
         error('Error in the argument list.');
       end
@@ -70,12 +65,12 @@ classdef TreeNode < VarStructure
         % create new VarStructure from id and size
         idIn = varargin{1};
         sizeIn = varargin{2};
-        varIn = TreeNode(idIn,sizeIn);
+        self.addMatrix(idIn,sizeIn);
       elseif nargin == 2
         varIn = varargin{1};
+        self.addVar(varIn)
       end
-
-      self.addVar(varIn)
+      
     end % add
     
     function addRepeated(self,varArray,N)
@@ -97,7 +92,6 @@ classdef TreeNode < VarStructure
       positions = self.thisLength+1:self.thisLength+varLength;
       
       if isfield(self.childPointers,varIn.id)
-        % TODO check that sizes match
         self.childPointers.(varIn.id).positions = [self.childPointers.(varIn.id).positions,{positions}]; 
       else
         self.childPointers.(varIn.id).node = varIn; 
@@ -108,13 +102,34 @@ classdef TreeNode < VarStructure
       
     end
     
-    function s = size(self)
+    function addMatrix(self,id,size)
+      % Adds a Matrix as Leave of tree
+      
+      varLength = prod(size);
+      positions = self.thisLength+1:self.thisLength+varLength;
+      
+      if isfield(self.childPointers,id)
+        self.childPointers.(id).positions = [self.childPointers.(id).positions,{positions}]; 
+      else
+        self.childPointers.(id).node = MatrixStructure(size); 
+        self.childPointers.(id).positions = {positions};
+      end
+      
+      self.thisLength = self.thisLength+varLength;
+      
+    end
+    
+    function s = size(self,varargin)
       % size
       %   Returns the size of the variable
       %   The size is determined by the leave variables
       
       if isempty(fieldnames(self.childPointers))
-        s = self.thisSize;
+        if nargin > 1
+          s = self.thisSize(varargin{1});
+        else
+          s = self.thisSize;
+        end
       else
         s = [self.thisLength 1];
       end
@@ -171,46 +186,16 @@ classdef TreeNode < VarStructure
     
     function tree = getFlat(self)
       
-      
       tree = TreeNode(self.id);
       tree.thisLength = self.thisLength;
       parentPositions = {1:self.thisLength};
       self.iterateLeafs(parentPositions,tree);
-      
-      
       
     end
     
     function iterateLeafs(self,parentPositions,treeOut)
       
       childsFields = fieldnames(self.childPointers);
-      
-      if isempty(childsFields)
-        
-        if isfield(treeOut.childPointers,self.id)
-          
-          % combine, sort positions
-          positions = treeOut.childPointers.(self.id).positions;
-          positions = sort([positions{:},parentPositions{:}]);
-          
-          % split positions to cell
-          cellLength = self.thisLength;
-          cellN      = length(positions)/cellLength;         
-          
-          pCell = cell(1,cellN);
-          for k=1:cellN
-            pCell{k} = positions(cellLength*(k-1)+1:cellLength*k);
-          end
-          treeOut.childPointers.(self.id).positions = pCell;
-          
-        else
-          treeOut.childPointers.(self.id) = struct;
-          treeOut.childPointers.(self.id).node = self;
-          treeOut.childPointers.(self.id).positions = parentPositions;
-        end
-
-        return
-      end
 
       for m=1:length(childsFields)
         % get children
@@ -233,7 +218,36 @@ classdef TreeNode < VarStructure
           end
         end  
         
-        child.node.iterateLeafs(positions,treeOut);
+        if isa(child.node,'MatrixStructure')
+          
+          this = child.node;
+          thisID = childsFields{m};
+        
+          if isfield(treeOut.childPointers,thisID)
+
+            % combine, sort positions
+            oldPositions = treeOut.childPointers.(thisID).positions;
+            newPositions = sort([oldPositions{:},positions{:}]);
+
+            % split positions to cell
+            cellLength = prod(this.size);
+            cellN      = length(newPositions)/cellLength;         
+
+            pCell = cell(1,cellN);
+            for k=1:cellN
+              pCell{k} = newPositions(cellLength*(k-1)+1:cellLength*k);
+            end
+            treeOut.childPointers.(thisID).positions = pCell;
+
+          else
+            treeOut.childPointers.(thisID) = struct;
+            treeOut.childPointers.(thisID).node = this;
+            treeOut.childPointers.(thisID).positions = positions;
+          end
+        
+        else
+          child.node.iterateLeafs(positions,treeOut);
+        end
         
       end
       

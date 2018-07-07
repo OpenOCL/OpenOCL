@@ -15,10 +15,15 @@ classdef NodeSelection < VarStructure
       self.thisPositions  = positions;
     end
     
-    function s = size(self)
+    function s = size(self, varargin)
       l = length(self.positions);
       if l == 1
-        s = self.nodeType.size;
+        if nargin > 1
+          s = self.nodeType.size(varargin{1});
+        else
+          s = self.nodeType.size;
+        end
+          
       else
         s = [prod(self.nodeType.size),length(self.positions)];
       end
