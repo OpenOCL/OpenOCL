@@ -1,9 +1,5 @@
 classdef (Abstract) System < handle
   
-  properties(Constant)
-    DOT_PREFIX = 'D';
-  end  
-  
   properties
     statesStruct
     algVarsStruct
@@ -14,8 +10,6 @@ classdef (Abstract) System < handle
     alg
     
     initialConditions
-    
-    algEqIndex    = 1;
     systemFun
   end
   
