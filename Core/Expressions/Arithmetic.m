@@ -258,18 +258,6 @@ classdef Arithmetic < handle
       val = self.value;
       slicedVar = Arithmetic.createExpression(self,val(varargin{:}));
     end
-
-    % TODO: test
-    function n = numArgumentsFromSubscript(self,s,indexingContext)
-      switch indexingContext
-        case matlab.mixin.util.IndexingContext.Statement
-          n=1;
-        case matlab.mixin.util.IndexingContext.Expression
-          n=1;
-      end
-    end
-    
-    
     
     function v = uplus(a)
       v = Arithmetic.createExpression(a,uplus(a.value));
