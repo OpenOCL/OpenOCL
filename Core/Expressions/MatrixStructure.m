@@ -26,10 +26,7 @@ classdef MatrixStructure < VarStructure
     function r = positions(self)
       r = {1:prod(self.size)};
     end
-    
-    function r = getChildPointers(~)
-      r = struct;
-    end
+
     
   end
   

@@ -36,11 +36,9 @@ classdef Simultaneous < handle
                                       system.controlsStruct},self.N);
       self.nlpVarsStruct.add(system.statesStruct);
       
-%       system.parametersStruct.compile;
       self.nlpVarsStruct.add(self.system.parametersStruct);
       self.nlpVarsStruct.add('time',[1 1]);
       
-      self.nlpVarsStruct.compile;
       
       % initialize bounds      
       nlpVarsFlatFlat = self.nlpVarsStruct.getFlat;

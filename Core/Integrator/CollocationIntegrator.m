@@ -31,7 +31,6 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       self.integratorVarsStruct = TreeNode('integratorVars');
       self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
-      self.integratorVarsStruct.compile;
       
       time0 = MatrixStructure([1,1]);
       timeF = MatrixStructure([1,1]);

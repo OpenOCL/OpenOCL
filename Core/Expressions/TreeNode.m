@@ -45,10 +45,6 @@ classdef TreeNode < VarStructure
       self.thisLength = 0;
     end
     
-    function compile(self)
-      
-    end
-    
     function r = positions(self)
       r = {1:self.thisLength};
     end

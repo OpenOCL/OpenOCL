@@ -40,10 +40,6 @@ classdef (Abstract) System < handle
       
       self.setupVariables;
       
-      self.statesStruct.compile;
-      self.algVarsStruct.compile;
-      self.controlsStruct.compile;
-      
       self.systemFun = Function(@self.getEquations, ...
         {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);
       
