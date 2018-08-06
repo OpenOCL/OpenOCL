@@ -11,7 +11,7 @@ https://github.com/JonasKoenemann/optimal-control/wiki
 
 ## Models
 
-* airborne wind energy: openawe.github.io
+* airborne wind energy: https://openawe.github.io/
 * robotics: https://github.com/JonasKoenemann/openocl_models (very experimental)
 
 ## Publications
