@@ -58,8 +58,7 @@ This project has received funding from the European Union’s Horizon 2020 resea
 
 Use without warranty.
 
-Jonas Koenemann
-University of Freiburg, Ampyx Power
+Jonas Koenemann  
 Jonas.Koenemann [at] yahoo.de
 
 
