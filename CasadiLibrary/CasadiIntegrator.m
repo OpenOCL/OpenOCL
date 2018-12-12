@@ -11,11 +11,11 @@ classdef CasadiIntegrator < Integrator
       
       self = self@Integrator(system);
       
-      states = CasadiArithmetic(system.statesStruct);
-      algVars = CasadiArithmetic(system.algVarsStruct);
-      controls = CasadiArithmetic(system.controlsStruct);
-      h = CasadiArithmetic(MatrixStructure([1,1]));
-      parameters = CasadiArithmetic(system.parametersStruct);
+      states = CasadiVariable(system.statesStruct);
+      algVars = CasadiVariable(system.algVarsStruct);
+      controls = CasadiVariable(system.controlsStruct);
+      h = CasadiVariable(MatrixStructure([1,1]));
+      parameters = CasadiVariable(system.parametersStruct);
       
       [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
       
@@ -49,8 +49,8 @@ classdef CasadiIntegrator < Integrator
                                              'p', [dt;u;p], ...
                                              'z0', z);
                                            
-      statesNext = Arithmetic(states.varStructure,full(integrationStep.xf));
-      algVars = Arithmetic(algVarsGuess.varStructure,full(integrationStep.zf));
+      statesNext = Variable(states.varStructure,full(integrationStep.xf));
+      algVars = Variable(algVarsGuess.varStructure,full(integrationStep.zf));
       
     end
     
