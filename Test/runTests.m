@@ -15,7 +15,7 @@ function runTests(testExamples,version,changeMessage)
     changeMessage = 'undefined';   
   end
   
-  global testDir
+  testDir = getenv('OPENOCL_TEST');
   
   if isempty(testDir)
     error('Test directory not set. Run StartupOCL again.')

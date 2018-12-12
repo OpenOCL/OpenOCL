@@ -17,9 +17,6 @@ if nargin == 0
   workingDirLocation = fullfile(startupDir,'..');
 end
 
-global testDir
-global exportDir
-
 % add current directory to path
 addpath(pwd);
 
@@ -28,6 +25,10 @@ testDir     = fullfile(workingDirLocation,'OpenOCL_WorkingDir','test');
 exportDir   = fullfile(workingDirLocation,'OpenOCL_WorkingDir','export');
 [~,~] = mkdir(testDir);
 [~,~] = mkdir(exportDir);
+
+% set environment variables for directories
+setenv('OPENOCL_TEST', testDir)
+setenv('OPENOCL_EXPORT', exportDir)
 
 % setup directories
 addpath(startupDir)
