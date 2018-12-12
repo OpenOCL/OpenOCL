@@ -6,17 +6,17 @@ classdef PendulumOCP < OCP
     end
     
     function pathCosts(self,states,algVars,controls,time,endTime,parameters)
-      p  = states.get('p').value;
-      l  = parameters.get('l').value;
-      F  = controls.get('F').value;
+      p  = states.p;
+      l  = parameters.l;
+      F  = controls.F;
       
       pe = p-[0;l];
       self.addPathCost( 1e-3 * (pe'*pe) );
       self.addPathCost( 1e-4 * F^2 );
     end
     function arrivalCosts(self,states,endTime,parameters)
-      p  = states.get('p').value;
-      l  = parameters.get('l').value;
+      p  = states.p;
+      l  = parameters.l;
       pe = p-[0;l];
       self.addArrivalCost(  (pe'*pe) + 1e-1*endTime.value );
     end
