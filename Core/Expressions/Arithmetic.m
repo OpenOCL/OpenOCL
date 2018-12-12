@@ -10,17 +10,24 @@ classdef Arithmetic < handle
   
   methods (Static)
     
-    function obj = create(arithmeticObj,structureType,varargin)
-      % obj = create(arithmeticObj,structureType)
-      % obj = create(arithmeticObj,structureType,value)
-      % Factory method to create Arithmetic objects
+    function obj = createLike(input,structure,varargin)
+      % obj = createLike(arithmeticObj,structureType)
+      % obj = createLike(arithmeticObj,structureType,value)
+      %
+      % Factory method to create Arithmetic objects width the same type as
+      % given input.
+      %
+      % Args:
+      %   input (Arithmetic): Inherit type of this object.
+      %   structure (VarStructure): Structure of the variable.
+      %   value: Value to asign to the variable (optional).
       
-      if isa(arithmeticObj,'CasadiArithmetic')
-        obj = CasadiArithmetic(structureType,varargin{:});
-      elseif isa(arithmeticObj,'SymArithmetic')
-        obj = SymArithmetic(structureType,varargin{:});
-      elseif isa(arithmeticObj,'Arithmetic')
-        obj = Arithmetic(structureType,varargin{:});
+      if isa(input,'CasadiArithmetic')
+        obj = CasadiArithmetic(structure,varargin{:});
+      elseif isa(input,'SymArithmetic')
+        obj = SymArithmetic(structure,varargin{:});
+      elseif isa(input,'Arithmetic')
+        obj = Arithmetic(structure,varargin{:});
       else
         error('Arithmetic not implemented.');
       end
@@ -96,9 +103,9 @@ classdef Arithmetic < handle
       % r = get(self,id,selector)
       % r = get(self,selector)
       if nargin == 2
-        r = Arithmetic.create(self,self.varStructure.get(in1),self.thisValue);
+        r = Arithmetic.createLike(self,self.varStructure.get(in1),self.thisValue);
       else
-        r = Arithmetic.create(self,self.varStructure.get(in1,in2),self.thisValue);
+        r = Arithmetic.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
       end
     end
     %%%

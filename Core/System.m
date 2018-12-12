@@ -55,8 +55,8 @@ classdef (Abstract) System < handle
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned 
       
-      self.alg = Arithmetic.create(statesIn,MatrixStructure([0,1]));
-      self.ode = Arithmetic.create(statesIn,statesIn.varStructure);
+      self.alg = Arithmetic.createLike(statesIn,MatrixStructure([0,1]));
+      self.ode = Arithmetic.createLike(statesIn,statesIn.varStructure);
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
@@ -90,7 +90,7 @@ classdef (Abstract) System < handle
     end
     
     function  ic = getInitialCondition(self,statesIn,parametersIn)
-      self.initialConditions = Arithmetic.create(statesIn,MatrixStructure([0,1]));
+      self.initialConditions = Arithmetic.createLike(statesIn,MatrixStructure([0,1]));
       self.initialCondition(statesIn,parametersIn)
       ic = self.initialConditions;
     end

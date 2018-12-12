@@ -1,7 +1,7 @@
 function testExamples
 
 % test basic example (VanDerPol)
-solveVanDerPol
+mainVanDerPol
 assert(all(abs(solution.get('controls').value - ...
   [ 0.2434
   0.9611
@@ -36,7 +36,7 @@ assert(all(abs(solution.get('controls').value - ...
 
 
 % test pendulum swing up problem
-solvePendulum
+mainPendulum
 assert(all(abs(solution.controls.value - ...
   [-1.9956
   -2.6805
@@ -61,7 +61,7 @@ assert(all(abs(solution.controls.value - ...
 
 
 % test ball and beam example problem
-solveBallAndBeam
+mainBallAndBeam
 assert(all(abs(vars.controls.value - ...
   [-20.0000
   -20.0000
@@ -117,7 +117,7 @@ assert(all(abs(vars.controls.value - ...
 
 
 % test race car problem
-solveRaceCar
+mainRaceCar
 assert(all(all(abs(solution.controls.value - ...
   [0.8984    0.4393
     0.8970    0.4421
