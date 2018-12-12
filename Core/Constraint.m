@@ -12,14 +12,14 @@ classdef Constraint < handle
   
   methods
     
-    function self = Constraint(arithmetic)
-      self.clear(arithmetic);
+    function self = Constraint(variable)
+      self.clear(variable);
     end
 
     function clear(self,arithmetic)
-      self.values = Arithmetic.createExpression(arithmetic,[]);
-      self.lowerBounds = Arithmetic.createExpression(arithmetic,[]);
-      self.upperBounds = Arithmetic.createExpression(arithmetic,[]);
+      self.values = Variable.createMatrixLike(arithmetic,[]);
+      self.lowerBounds = Variable.createMatrixLike(arithmetic,[]);
+      self.upperBounds = Variable.createMatrixLike(arithmetic,[]);
     end
     
     function c = copy(self)

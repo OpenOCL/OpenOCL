@@ -30,7 +30,7 @@ classdef (Abstract) System < handle
       self.controlsStruct   = TreeNode('controls');
       self.parametersStruct = TreeNode('parameters');
       
-      self.initialConditions = Arithmetic.Matrix([]);
+      self.initialConditions = Variable.Matrix([]);
       
       self.setupVariables;
       
@@ -55,8 +55,8 @@ classdef (Abstract) System < handle
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned 
       
-      self.alg = Arithmetic.createLike(statesIn,MatrixStructure([0,1]));
-      self.ode = Arithmetic.createLike(statesIn,statesIn.varStructure);
+      self.alg = Variable.createLike(statesIn,MatrixStructure([0,1]));
+      self.ode = Variable.createLike(statesIn,statesIn.varStructure);
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
@@ -90,13 +90,13 @@ classdef (Abstract) System < handle
     end
     
     function  ic = getInitialCondition(self,statesIn,parametersIn)
-      self.initialConditions = Arithmetic.createLike(statesIn,MatrixStructure([0,1]));
+      self.initialConditions = Variable.createLike(statesIn,MatrixStructure([0,1]));
       self.initialCondition(statesIn,parametersIn)
       ic = self.initialConditions;
     end
     
     function controls = callIterationCallback(self,states,algVars,parameters)
-      controls =  Arithmetic(self.controlsStruct,0);
+      controls =  Variable(self.controlsStruct,0);
       self.simulationCallback(states,algVars,controls,parameters);
     end
     

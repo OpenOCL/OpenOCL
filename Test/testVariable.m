@@ -1,4 +1,4 @@
-function testArithmetic
+function testVariable
 
 % small number of numeric value comparison
 eps = 1e-5;
@@ -7,8 +7,8 @@ v1 = [5;2.8;2];
 v2 = [1,5.01,3;6,5,4];
 
 %%% constructor
-a1 = CasadiArithmetic.Matrix([3,1]);
-a2 = CasadiArithmetic.Matrix([2,3]);
+a1 = CasadiVariable.Matrix([3,1]);
+a2 = CasadiVariable.Matrix([2,3]);
 s1 = a1.value;
 s2 = a2.value;
 
@@ -103,8 +103,8 @@ A = [0.2625    0.9289    0.5785;
      0.0292    0.4886    0.4588];
 b = [0.9631,0.5468,0.5211]';
 
-aA = CasadiArithmetic.Matrix([3,3]);
-ab = CasadiArithmetic.Matrix([3,1]);
+aA = CasadiVariable.Matrix([3,3]);
+ab = CasadiVariable.Matrix([3,1]);
 
 sA = aA.value;
 sb = ab.value;
@@ -216,7 +216,7 @@ f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
 % keep type
-assert(isa(aTest,'CasadiArithmetic'));
+assert(isa(aTest,'CasadiVariable'));
 
 
 %%% tree Arithemtic
@@ -225,7 +225,7 @@ xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);
 
-x = Arithmetic(xStruct,4);
+x = Variable(xStruct,4);
 
 %%% set
 x.set(1:10);

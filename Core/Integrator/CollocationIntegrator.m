@@ -48,8 +48,8 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       
       h = finalTime-startTime;
 
-      equations = Arithmetic.createExpression(states,[]);
-      J = Arithmetic.createExpression(states,0);
+      equations = Variable.createMatrixLike(states,[]);
+      J = Variable.createMatrixLike(states,0);
       
       % Loop over collocation points
       finalStates = self.D(1)*states;
@@ -77,7 +77,7 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       end
 
       finalAlgVars = integratorVars.get('algVars',self.d);
-      finalAlgVars = Arithmetic.createExpression(finalAlgVars,finalAlgVars.value);
+      finalAlgVars = Variable.createMatrixLike(finalAlgVars,finalAlgVars.value);
       costs = J;
 
     end

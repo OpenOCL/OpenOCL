@@ -1,4 +1,4 @@
-classdef CasadiArithmetic < Arithmetic
+classdef CasadiVariable < Variable
   
   properties
   end
@@ -6,16 +6,16 @@ classdef CasadiArithmetic < Arithmetic
   methods (Static)
     
     function obj = Matrix(sizeIn)
-      obj = CasadiArithmetic(MatrixStructure(sizeIn));
+      obj = CasadiVariable(MatrixStructure(sizeIn));
     end
     
   end
   
   methods
     
-    function self = CasadiArithmetic(varStructure,value)
+    function self = CasadiVariable(varStructure,value)
       
-      self = self@Arithmetic(varStructure);
+      self = self@Variable(varStructure);
 
       if nargin == 1
         if isa(varStructure,'MatrixStructure')

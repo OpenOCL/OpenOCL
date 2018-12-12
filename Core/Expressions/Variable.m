@@ -1,7 +1,8 @@
-classdef Arithmetic < handle
-    % ARITHMETIC Default implementation for arithemtic operations
-    %    Methods can be overridden to provide operations for specific data
-    %    types, e.g. casadi variables, or symbolic variables.
+classdef Variable < handle
+    % VARIABLE Default implementation of arithemtic operations for
+    % variables
+    % This class can be derived from to implement new arithemtics for 
+    % variables e.g. casadi variables, or symbolic variables.
   
   properties
     varStructure
@@ -11,67 +12,68 @@ classdef Arithmetic < handle
   methods (Static)
     
     function obj = createLike(input,structure,varargin)
-      % obj = createLike(arithmeticObj,structureType)
-      % obj = createLike(arithmeticObj,structureType,value)
+      % obj = createLike(input,structure)
+      % obj = createLike(input,structure,value)
       %
-      % Factory method to create Arithmetic objects width the same type as
+      % Factory method to create Variables with the same type as
       % given input.
       %
       % Args:
-      %   input (Arithmetic): Inherit type of this object.
+      %   input (Variable): Inherit variable type of this object.
       %   structure (VarStructure): Structure of the variable.
       %   value: Value to asign to the variable (optional).
       
-      if isa(input,'CasadiArithmetic')
-        obj = CasadiArithmetic(structure,varargin{:});
-      elseif isa(input,'SymArithmetic')
-        obj = SymArithmetic(structure,varargin{:});
-      elseif isa(input,'Arithmetic')
-        obj = Arithmetic(structure,varargin{:});
+      if isa(input,'CasadiVariable')
+        obj = CasadiVariable(structure,varargin{:});
+      elseif isa(input,'SymVariable')
+        obj = SymVariable(structure,varargin{:});
+      elseif isa(input,'Variable')
+        obj = Variable(structure,varargin{:});
       else
-        error('Arithmetic not implemented.');
+        error('Variable type not implemented.');
       end
       
     end
     
-    function obj = createFromArithmetic(structure, arithmetic)
-      if isa(arithmetic,'CasadiArithmetic')
-        obj = CasadiArithmetic(structure,arithmetic.value);
-      elseif isa(arithmetic,'SymArithmetic')
-        obj = SymArithmetic(structure,arithmetic.value);
-      elseif isa(arithmetic,'Arithmetic')
-        obj = Arithmetic(structure,arithmetic.value);
+    function obj = createFromVariable(structure, variable)
+      if isa(variable,'CasadiVariable')
+        obj = CasadiVariable(structure,variable.value);
+      elseif isa(variable,'SymVariable')
+        obj = SymVariable(structure,variable.value);
+      elseif isa(variable,'Variable')
+        obj = Variable(structure,variable.value);
       else
-        error('Arithmetic not implemented.');
+        error('Variable not implemented.');
       end
     end
     
     
-    function obj = createExpression(arithmeticObj,value)
-      % obj = createExpression(arithmeticObj,value)
-      % Factory method to create Matrix valued Arithmetic objects
+    function obj = createMatrixLike(input, value)
+      % obj = createMatrixLike(input,value)
+      % Factory method to create Matrix valued variables with the type of
+      % input.
       
-      if isa(arithmeticObj,'CasadiArithmetic')
-        obj = CasadiArithmetic(MatrixStructure(size(value)),value);
-      elseif isa(arithmeticObj,'SymArithmetic')
-        obj = SymArithmetic(MatrixStructure(size(value)),value);
-      elseif isa(arithmeticObj,'Arithmetic')
-        obj = Arithmetic(MatrixStructure(size(value)),value);
+      if isa(input,'CasadiVariable')
+        obj = CasadiVariable(MatrixStructure(size(value)),value);
+      elseif isa(input,'SymVariable')
+        obj = SymVariable(MatrixStructure(size(value)),value);
+      elseif isa(input,'Variable')
+        obj = Variable(MatrixStructure(size(value)),value);
       else
-        error('Arithmetic not implemented.');
+        error('Variable type not implemented.');
       end
       
     end
     
     function obj = Matrix(value)
-      obj = Arithmetic(MatrixStructure(size(value)),value);
+      obj = Variable(MatrixStructure(size(value)),value);
     end
     
   end
   
   methods
     
-    function self = Arithmetic(varStructure,value)
+    function self = Variable(varStructure,value)
       self.varStructure = varStructure;
       
       if nargin == 1
@@ -103,9 +105,9 @@ classdef Arithmetic < handle
       % r = get(self,id,selector)
       % r = get(self,selector)
       if nargin == 2
-        r = Arithmetic.createLike(self,self.varStructure.get(in1),self.thisValue);
+        r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
       else
-        r = Arithmetic.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+        r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
       end
     end
     %%%
@@ -113,7 +115,7 @@ classdef Arithmetic < handle
     
     function set(self,valueIn)
       
-      if isa(valueIn,'Arithmetic')
+      if isa(valueIn,'Variable')
         valueIn = valueIn.value;
       end
       
@@ -171,14 +173,14 @@ classdef Arithmetic < handle
       inValues = cell(1,N);
       for k=1:numel(varargin)
         val = varargin{k};
-        if isa(val,'Arithmetic')
+        if isa(val,'Variable')
           inValues{k} = val.value;
           obj = val;
         else
           inValues{k} = val;
         end
       end    
-      v = Arithmetic.createExpression(obj,horzcat(inValues{:}));
+      v = Variable.createMatrixLike(obj,horzcat(inValues{:}));
     end
     
     function v = vertcat(varargin)
@@ -186,14 +188,14 @@ classdef Arithmetic < handle
       inValues = cell(1,N);
       for k=1:numel(varargin)
         val = varargin{k};
-        if isa(val,'Arithmetic')
+        if isa(val,'Variable')
           inValues{k} = val.value;
           obj = val;
         else
           inValues{k} = val;
         end
       end
-      v = Arithmetic.createExpression(obj,vertcat(inValues{:}));
+      v = Variable.createMatrixLike(obj,vertcat(inValues{:}));
     end
     
     function varargout = subsref(self,s)
@@ -243,7 +245,7 @@ classdef Arithmetic < handle
     
     function self = subsasgn(self,s,v)
       
-      if isa(v,'Arithmetic') 
+      if isa(v,'Variable') 
         v = v.value;
       end
       
@@ -263,27 +265,27 @@ classdef Arithmetic < handle
         varargin(3) = [];
       end
       val = self.value;
-      slicedVar = Arithmetic.createExpression(self,val(varargin{:}));
+      slicedVar = Variable.createMatrixLike(self,val(varargin{:}));
     end
     
     function v = uplus(a)
-      v = Arithmetic.createExpression(a,uplus(a.value));
+      v = Variable.createMatrixLike(a,uplus(a.value));
     end
     
     function v = uminus(a)
-      v = Arithmetic.createExpression(a,uminus(a.value));
+      v = Variable.createMatrixLike(a,uminus(a.value));
     end
     
     function v = mtimes(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         obj = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         obj = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(obj,mtimes(a,b));
+      v = Variable.createMatrixLike(obj,mtimes(a,b));
     end
    
     function v = ctranspose(self)
@@ -292,296 +294,296 @@ classdef Arithmetic < handle
       v = transpose(self);
     end
     function v = transpose(self)
-      v = Arithmetic.createExpression(self,transpose(self.value));
+      v = Variable.createMatrixLike(self,transpose(self.value));
     end
     
     function v = reshape(self,varargin)
-      v = Arithmetic.createExpression(self,reshape(self.value,varargin{:}));
+      v = Variable.createMatrixLike(self,reshape(self.value,varargin{:}));
     end
     
     function v = triu(self)
-      v = Arithmetic.createExpression(self,triu(self.value));
+      v = Variable.createMatrixLike(self,triu(self.value));
     end
     
     function v = repmat(self,varargin)
-      v = Arithmetic.createExpression(self,repmat(self.value,varargin{:}));
+      v = Variable.createMatrixLike(self,repmat(self.value,varargin{:}));
     end
     
     function v = sum(self)
-      v = Arithmetic.createExpression(self,sum(self.value));
+      v = Variable.createMatrixLike(self,sum(self.value));
     end
     
     function v = norm(self,varargin)
-      v = Arithmetic.createExpression(self,norm(self.value,varargin{:}));
+      v = Variable.createMatrixLike(self,norm(self.value,varargin{:}));
     end
     
     function v = mpower(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,mpower(a,b));
+      v = Variable.createMatrixLike(self,mpower(a,b));
     end
     
     function v = mldivide(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
       if (numel(a) > 1) && (numel(b) > 1)
-        v = Arithmetic.createExpression(self,solve(a,b));
+        v = Variable.createMatrixLike(self,solve(a,b));
       else
-        v = Arithmetic.createExpression(self,mldivide(a,b));
+        v = Variable.createMatrixLike(self,mldivide(a,b));
       end
     end
     
     function v = mrdivide(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,mrdivide(a,b));
+      v = Variable.createMatrixLike(self,mrdivide(a,b));
     end
     
     function v = cross(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,cross(a,b));
+      v = Variable.createMatrixLike(self,cross(a,b));
     end
     
     function v = dot(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,dot(a,b));
+      v = Variable.createMatrixLike(self,dot(a,b));
     end
     
     function v = inv(self)
-      v = Arithmetic.createExpression(self,inv(self.value));
+      v = Variable.createMatrixLike(self,inv(self.value));
     end
     
     function v = det(self)
-      v = Arithmetic.createExpression(self,det(self.value));
+      v = Variable.createMatrixLike(self,det(self.value));
     end
     
     function v = trace(self)
-      v = Arithmetic.createExpression(self,trace(self.value));
+      v = Variable.createMatrixLike(self,trace(self.value));
     end
     
     function v = diag(self)
-      v = Arithmetic.createExpression(self,diag(self.value));
+      v = Variable.createMatrixLike(self,diag(self.value));
     end
     
     function v = polyval(p,a)
-      if isa(p,'Arithmetic') 
+      if isa(p,'Variable') 
         self = p;
         p = p.value;
       end  
-      if isa(a,'Arithmetic')
+      if isa(a,'Variable')
         self = a;
         a = a.value;
       end   
-      v = Arithmetic.createExpression(self,polyval(p,a));
+      v = Variable.createMatrixLike(self,polyval(p,a));
     end
     
     function v = jacobian(ex,arg)
-      if isa(ex,'Arithmetic') 
+      if isa(ex,'Variable') 
         self = ex;
         ex = ex.value;
       end  
-      if isa(arg,'Arithmetic')
+      if isa(arg,'Variable')
         self = arg;
         arg = arg.value;
       end  
-      v = Arithmetic.createExpression(self,jacobian(ex,arg));
+      v = Variable.createMatrixLike(self,jacobian(ex,arg));
     end
     
     function r = jtimes(ex,arg,v)
-      if isa(ex,'Arithmetic') 
+      if isa(ex,'Variable') 
         self = ex;
         ex = ex.value;
       end  
-      if isa(arg,'Arithmetic')
+      if isa(arg,'Variable')
         self = arg;
         arg = arg.value;
       end
-      if isa(v,'Arithmetic')
+      if isa(v,'Variable')
         self = v;
         v = v.value;
       end  
-      r = Arithmetic.createExpression(self,jtimes(ex,arg,v));
+      r = Variable.createMatrixLike(self,jtimes(ex,arg,v));
     end
     
     %%% element wise operations
     function v = plus(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,plus(a,b));
+      v = Variable.createMatrixLike(self,plus(a,b));
     end
     
     function v = minus(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,minus(a,b));
+      v = Variable.createMatrixLike(self,minus(a,b));
     end
     
     function v = times(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,times(a,b));
+      v = Variable.createMatrixLike(self,times(a,b));
     end
     
     function v = power(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,power(a,b));
+      v = Variable.createMatrixLike(self,power(a,b));
     end
     
     function v = rdivide(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,rdivide(a,b));
+      v = Variable.createMatrixLike(self,rdivide(a,b));
     end
     
     function v = ldivide(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,ldivide(a,b));
+      v = Variable.createMatrixLike(self,ldivide(a,b));
     end
     
     function v = atan2(a,b)
-      if isa(a,'Arithmetic') 
+      if isa(a,'Variable') 
         self = a;
         a = a.value;
       end
-      if isa(b,'Arithmetic')
+      if isa(b,'Variable')
         self = b;
         b = b.value;
       end
-      v = Arithmetic.createExpression(self,atan2(a,b));
+      v = Variable.createMatrixLike(self,atan2(a,b));
     end
     
     function v = abs(self)
-      v = Arithmetic.createExpression(self,abs(self.value));
+      v = Variable.createMatrixLike(self,abs(self.value));
     end
 
     function v = sqrt(self)
-      v = Arithmetic.createExpression(self,sqrt(self.value));
+      v = Variable.createMatrixLike(self,sqrt(self.value));
     end
     
     function v = sin(self)
-      v = Arithmetic.createExpression(self,sin(self.value));
+      v = Variable.createMatrixLike(self,sin(self.value));
     end
     
     function v = cos(self)
-      v = Arithmetic.createExpression(self,cos(self.value));
+      v = Variable.createMatrixLike(self,cos(self.value));
     end
     
     function v = tan(self)
-      v = Arithmetic.createExpression(self,tan(self.value));
+      v = Variable.createMatrixLike(self,tan(self.value));
     end
     
     function v = atan(self)
-      v = Arithmetic.createExpression(self,atan(self.value));
+      v = Variable.createMatrixLike(self,atan(self.value));
     end
     
     function v = asin(self)
-      v = Arithmetic.createExpression(self,asin(self.value));
+      v = Variable.createMatrixLike(self,asin(self.value));
     end
     
     function v = acos(self)
-      v = Arithmetic.createExpression(self,acos(self.value));
+      v = Variable.createMatrixLike(self,acos(self.value));
     end
     
     function v = tanh(self)
-      v = Arithmetic.createExpression(self,tanh(self.value));
+      v = Variable.createMatrixLike(self,tanh(self.value));
     end
     
     function v = cosh(self)
-      v = Arithmetic.createExpression(self,cosh(self.value));
+      v = Variable.createMatrixLike(self,cosh(self.value));
     end
     
     function v = sinh(self)
-      v = Arithmetic.createExpression(self,sinh(self.value));
+      v = Variable.createMatrixLike(self,sinh(self.value));
     end
     
     function v = atanh(self)
-      v = Arithmetic.createExpression(self,atanh(self.value));
+      v = Variable.createMatrixLike(self,atanh(self.value));
     end
     
     function v = asinh(self)
-      v = Arithmetic.createExpression(self,asinh(self.value));
+      v = Variable.createMatrixLike(self,asinh(self.value));
     end
     
     function v = acosh(self)
-      v = Arithmetic.createExpression(self,acosh(self.value));
+      v = Variable.createMatrixLike(self,acosh(self.value));
     end
     
     function v = exp(self)
-      v = Arithmetic.createExpression(self,exp(self.value));
+      v = Variable.createMatrixLike(self,exp(self.value));
     end
     
     function v = log(self)
-      v = Arithmetic.createExpression(self,log(self.value));
+      v = Variable.createMatrixLike(self,log(self.value));
     end
     
   end

@@ -31,7 +31,7 @@ classdef OCP < handle
     %%% overridable methods
     function c = discreteCost(~,vars)
       % c = discreteCost(self,vars)
-      c = Arithmetic.createExpression(vars,0);
+      c = Variable.createMatrixLike(vars,0);
     end
     function pathCosts(~,~,~,~,~,~,~)
       % pathCosts(self,states,algVars,controls,time,endTime,parameters);
@@ -63,13 +63,13 @@ classdef OCP < handle
     end
 
     function pc = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
-      self.thisPathCosts = Arithmetic.createExpression(states,0);
+      self.thisPathCosts = Variable.createMatrixLike(states,0);
       self.pathCosts(states,algVars,controls,time,endTime,parameters);
       pc = self.thisPathCosts;
     end
     
     function tc = getArrivalCosts(self,states,endTime,parameters)
-      self.thisArrivalCosts = Arithmetic.createExpression(states,0);
+      self.thisArrivalCosts = Variable.createMatrixLike(states,0);
       self.arrivalCosts(states,endTime,parameters);
       tc = self.thisArrivalCosts;
     end

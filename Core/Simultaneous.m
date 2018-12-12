@@ -43,12 +43,12 @@ classdef Simultaneous < handle
       % initialize bounds      
       nlpVarsFlatFlat = self.nlpVarsStruct.getFlat;
       
-      self.lowerBounds = Arithmetic(nlpVarsFlatFlat,-inf);
-      self.upperBounds = Arithmetic(nlpVarsFlatFlat,inf);
+      self.lowerBounds = Variable(nlpVarsFlatFlat,-inf);
+      self.upperBounds = Variable(nlpVarsFlatFlat,inf);
       self.lowerBounds.get('time').set(0);
       
-      self.scalingMin = Arithmetic(nlpVarsFlatFlat,0);
-      self.scalingMax = Arithmetic(nlpVarsFlatFlat,1);
+      self.scalingMin = Variable(nlpVarsFlatFlat,0);
+      self.scalingMax = Variable(nlpVarsFlatFlat,1);
       
       self.nlpFun = Function(@self.getNLPFun,{self.nlpVarsStruct},5);
 
@@ -56,7 +56,7 @@ classdef Simultaneous < handle
     
     function initialGuess = getInitialGuess(self)
       
-      initialGuess = Arithmetic(self.nlpVarsStruct,0);
+      initialGuess = Variable(self.nlpVarsStruct,0);
       
       lowVal  = self.lowerBounds.value;
       upVal   = self.upperBounds.value;
@@ -190,7 +190,7 @@ classdef Simultaneous < handle
       timeGrid = linspace(0,T,self.N+1);
       
       constraints = Constraint(nlpVars);
-      costs = Arithmetic.Matrix(0);
+      costs = Variable.Matrix(0);
       
       initialStates = nlpVars.get('states',1);
       thisStates = initialStates;

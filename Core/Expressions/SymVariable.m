@@ -1,6 +1,6 @@
-classdef SymArithmetic < Arithmetic
-  % SYMARITHMETIC Arithmetic operations for Matlab symbolic toolbox
-  % variables
+classdef SymVariable < Variable
+  % SYMVARIABLE Variable arithmetic operations for Matlab symbolic 
+  % toolbox variables
   
   properties
   end
@@ -8,16 +8,16 @@ classdef SymArithmetic < Arithmetic
   methods (Static)
     
     function obj = Matrix(sizeIn)
-      obj = SymArithmetic(MatrixStructure(sizeIn));
+      obj = SymVariable(MatrixStructure(sizeIn));
     end
     
   end
   
   methods
     
-    function self = SymArithmetic(varStructure,value)
+    function self = SymVariable(varStructure,value)
       
-      self = self@Arithmetic(varStructure);
+      self = self@Variable(varStructure);
       
       if prod(varStructure.size) == 0
         return
@@ -37,11 +37,11 @@ classdef SymArithmetic < Arithmetic
     end
     
     function v = polyval(p,a)
-      if isa(p,'Arithmetic') 
+      if isa(p,'Variable') 
         self = p;
         p = p.value;
       end  
-      if isa(a,'Arithmetic')
+      if isa(a,'Variable')
         self = a;
         a = a.value;
       end
@@ -55,7 +55,7 @@ classdef SymArithmetic < Arithmetic
         y = a .* y + p(i);
       end
     
-      v = Arithmetic.createExpression(self,y);
+      v = Variable.createMatrixLike(self,y);
     end
     
     

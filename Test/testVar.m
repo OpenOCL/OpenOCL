@@ -12,7 +12,7 @@ u = TreeNode('u');
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 
-state = Arithmetic(x,0);
+state = Variable(x,0);
 
 state.get('R').set(eye(3))
 state.get('p').set([100;0;-50])
@@ -35,7 +35,7 @@ ocpVar = TreeNode('ocpvar');
 ocpVar.addRepeated({x,u},5);
 ocpVar.add(x);
 
-v = Arithmetic(ocpVar,0);
+v = Variable(ocpVar,0);
 state = v.get('x');
 state.get('R').set(eye(3))
 state.get('p').set([100;0;50])

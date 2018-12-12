@@ -35,7 +35,7 @@ classdef CasadiFunction < handle
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        inputs{k} = CasadiArithmetic(varStruct);
+        inputs{k} = CasadiVariable(varStruct);
       end
       
       nOutputs = inputFunction.nOutputs;
@@ -86,9 +86,9 @@ classdef CasadiFunction < handle
       
       for k=1:length(varargout)
         if isa(varargout{k},'casadi.DM')
-          varargout{k} = CasadiArithmetic(self.outputStructs{k},full(varargout{k}));
+          varargout{k} = CasadiVariable(self.outputStructs{k},full(varargout{k}));
         else
-          varargout{k} = CasadiArithmetic(self.outputStructs{k},varargout{k});
+          varargout{k} = CasadiVariable(self.outputStructs{k},varargout{k});
         end
       end
       

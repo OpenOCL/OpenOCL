@@ -21,7 +21,7 @@ function runTests(testExamples,version,changeMessage)
     error('Test directory not set. Run StartupOCL again.')
   end
   
-  tests{1}.name = 'Arithmetic';   tests{1}.file = 'testArithmetic';
+  tests{1}.name = 'Variable';   tests{1}.file = 'testVariable';
   tests{2}.name = 'Var';          tests{2}.file = 'testVar';
   tests{3}.name = 'VarStructure'; tests{3}.file = 'testVarStructure';
   
