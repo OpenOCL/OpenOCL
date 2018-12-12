@@ -39,7 +39,7 @@ classdef Simulator < handle
       N = length(times)-1;
       callback = true;
       
-      times = Arithmetic.Matrix(times);
+      times = Variable.Matrix(times);
       
       if nargin == 4
         parameters      = varargin{1};
