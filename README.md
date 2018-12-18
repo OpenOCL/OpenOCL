@@ -7,6 +7,8 @@
 <img src="https://openocl.org/imgs/pend.png" width="200px">
 <img src="https://openocl.org/imgs/vdp.png" width="200px">
 
+![](https://openocl.org/imgs/vdp.png)
+
 ## Introduction
 
 The Open Optimal Control Library is a toolbox in Matlab for facilitating modelling and formulation of (parametric) optimal control problems. Interfaces casadi and ipopt.
