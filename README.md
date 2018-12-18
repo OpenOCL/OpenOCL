@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The Open Optimal Control Library is a toolbox in Matlab for facilitating modelling and formulation of (parametric) optimal control problems. It interfaces Ipopt [1] to solve the optimal control problems numerically and CasADi [2] to calcuate derivatives automatically by algorithmic differentiation.
+The Open Optimal Control Library is a toolbox in Matlab for facilitating modelling and formulation of (parametric) optimal control problems. It interfaces Ipopt [1] to numerically solve the optimal control problems and CasADi [2] to automatically calcuate the necessary derivatives by algorithmic differentiation.
 
 ## Quick start
 
