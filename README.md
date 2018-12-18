@@ -1,6 +1,6 @@
 # Open Optimal Control Library
 
-<img src="https://openocl.org/imgs/vdp.png" width="200px"><img src="https://openocl.org/imgs/car.png" width="200px"><img src="https://openocl.org/imgs/circ.png" width="200px">
+<img src="https://openocl.org/imgs/vdp.png" width="200px"><img src="https://openocl.org/imgs/car.png" width="200px"><img src="https://openocl.org/imgs/circ.png" width="200px">  
 <img src="https://openocl.org/imgs/pend.png" width="200px"><img src="https://openocl.org/imgs/ballbeam.png" width="200px"><img src="https://openocl.org/imgs/lemn.png" width="200px">    
 
 ## Introduction
