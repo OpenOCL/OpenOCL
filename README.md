@@ -1,7 +1,5 @@
 # Open Optimal Control Library
-![test image size](imgs/vdp.png){:width="50%"}
-
-<img src="https://openocl.org/imgs/vdp.png" style="max-width: 30%; flex: 30%;"> <img src="https://openocl.org/imgs/car.png" style="max-width: 30%; flex: 30%;"> <img src="https://openocl.org/imgs/circ.png" style="max-width: 30%; flex: 30%;">  
+<img src="https://openocl.org/imgs/vdp.png" width="30%">> <img src="https://openocl.org/imgs/car.png" width="200px">> <img src="https://openocl.org/imgs/circ.png" style="max-width: 30%; flex: 30%;">  
 <img src="https://openocl.org/imgs/pend.png" width="200px"> <img src="https://openocl.org/imgs/ballbeam.png" width="200px"> <img src="https://openocl.org/imgs/lemn.png" width="200px">    
 
 ## Introduction
