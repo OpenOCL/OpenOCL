@@ -1,5 +1,5 @@
 # Open Optimal Control Library
-<img src="https://openocl.org/imgs/vdp.png" width="30%"> <img src="https://openocl.org/imgs/car.png" width="30%" <img src="https://openocl.org/imgs/circ.png" width="30%">  
+<img src="https://openocl.org/imgs/vdp.png" width="30%"> <img src="https://openocl.org/imgs/car.png" width="30%"> <img src="https://openocl.org/imgs/circ.png" width="30%">  
 <img src="https://openocl.org/imgs/pend.png" width="30%"> <img src="https://openocl.org/imgs/ballbeam.png" width="30%"> <img src="https://openocl.org/imgs/lemn.png" width="30%">    
 
 ## Introduction
