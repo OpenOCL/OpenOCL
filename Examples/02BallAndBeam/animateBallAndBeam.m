@@ -13,8 +13,8 @@ Yball = rTrajectory(1)*sin(thetaTrajectory(1));
 
 figure;hold on;grid on;
 Beam = plot(Xbeam,Ybeam,'LineWidth',4,'Color','b');
-plot(0,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',8)
-Ball = plot(Xball,Yball,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',8);
+plot(0,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',22)
+Ball = plot(Xball,Yball,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',22);
 axis([-1.2, 1.2, -0.7, 0.7]);
 xlabel('x [m]');ylabel('y [m]');
 

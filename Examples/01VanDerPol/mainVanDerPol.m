@@ -42,8 +42,8 @@ times = times.value;
 
 figure
 hold on 
-plot(times,solution.states.x.value,'-.')
-plot(times,solution.states.y.value,'--k')
-stairs(times(1:end-1),solution.controls.u.value,'r')
+plot(times,solution.states.x.value,'-.','LineWidth',2)
+plot(times,solution.states.y.value,'--k','LineWidth',2)
+stairs(times(1:end-1),solution.controls.u.value,'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})

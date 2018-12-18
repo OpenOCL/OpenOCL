@@ -41,14 +41,16 @@ classdef PendulumSystem < System
       p = states.p.value;
       l = parameters.l.value;
       
-      plot(0,0,'ob')
+      plot(0,0,'ob', 'MarkerSize', 22)
       hold on
-      plot([0,p(1)],[0,p(2)],'-k')
-      plot(p(1),p(2),'or')
+      plot([0,p(1)],[0,p(2)],'-k', 'LineWidth', 4)
+      plot(p(1),p(2),'ok', 'MarkerSize', 22, 'MarkerFaceColor','r')
       xlim([-l,l])
       ylim([-l,l])
       
       pause(0.1);
+      
+      hold off
       
     end
   end
