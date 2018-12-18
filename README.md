@@ -1,5 +1,12 @@
 # Open Optimal Control Library
 
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+![Circular Pattern](https://openocl.org/imgs/circ.png)
+
 ## Introduction
 
 The Open Optimal Control Library is a toolbox in Matlab for facilitating modelling and formulation of (parametric) optimal control problems. Interfaces casadi and ipopt.
