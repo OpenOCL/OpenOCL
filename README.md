@@ -42,7 +42,7 @@ Mathematical Programming 106 (2006) 25-57, Available at: https://projects.coin-o
 
 [2] CasADi - A software framework for nonlinear optimization and optimal control  
 J.A.E. Andersson, J. Gillis, G. Horn, J.B. Rawlings, M. Diehl  
-Mathematical Programming Computation, In Press, 2018, Available at: https://casadi.org
+Mathematical Programming Computation, In Press, 2018, Available at: http://casadi.org
 
 ## Legal notice
 
