@@ -1,11 +1,6 @@
 # Open Optimal Control Library
 
-![Circular Pattern](https://openocl.org/imgs/circ.png | width=100)
-![Circular Pattern](https://openocl.org/imgs/circ.png)
-![Circular Pattern](https://openocl.org/imgs/circ.png)
-![Circular Pattern](https://openocl.org/imgs/circ.png)
-![Circular Pattern](https://openocl.org/imgs/circ.png)
-![Circular Pattern](https://openocl.org/imgs/circ.png)
+<img src="https://openocl.org/imgs/circ.png" alt="alt text" width="100px">
 
 ## Introduction
 
