@@ -16,7 +16,7 @@ classdef CasadiFunction < handle
   
   methods
     
-    function self = CasadiFunction(inputFunction,jit)
+    function self = CasadiFunction(inputFunction, jit, mx)
       % CasadiFunction(function,jit)
       % CasadiFunction(userFunction,jit)
       
@@ -27,15 +27,18 @@ classdef CasadiFunction < handle
       
       self.fun = inputFunction;
       
-      if nargin ==1
+      if nargin == 1
         jit = false;
+        mx = false;
+      elseif nargin == 2
+        mx = false;
       end
       
       nInputs = length(inputFunction.inputs);
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        inputs{k} = CasadiVariable(varStruct);
+        inputs{k} = CasadiVariable(varStruct, mx);
       end
       
       nOutputs = inputFunction.nOutputs;
@@ -86,7 +89,7 @@ classdef CasadiFunction < handle
       
       for k=1:length(varargout)
         if isa(varargout{k},'casadi.DM')
-          varargout{k} = CasadiVariable(self.outputStructs{k},full(varargout{k}));
+          varargout{k} = Variable(self.outputStructs{k},full(varargout{k}));
         else
           varargout{k} = CasadiVariable(self.outputStructs{k},varargout{k});
         end

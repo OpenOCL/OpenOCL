@@ -13,6 +13,7 @@ classdef Solver < handle
       options = struct;
       options.solverInterface   = 'casadi';
       options.iterationCallback = false;
+      options.system_casadi_mx  = false;
       
       options.nlp = struct;
       options.nlp.discretization         = 'collocation';
@@ -64,7 +65,7 @@ classdef Solver < handle
 %       ocpHandler.arrivalCostsFun        = CasadiFunction(ocpHandler.arrivalCostsFun);
 %       ocpHandler.boundaryConditionsFun  = CasadiFunction(ocpHandler.boundaryConditionsFun);
 %       ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-%       system.systemFun                  = CasadiFunction(system.systemFun);
+      system.systemFun                  = CasadiFunction(system.systemFun,false,true);
       nlp.integratorFun                 = CasadiFunction(nlp.integratorFun);
 
     end

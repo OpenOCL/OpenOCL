@@ -24,7 +24,7 @@ classdef Variable < handle
       %   value: Value to asign to the variable (optional).
       
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable(structure,varargin{:});
+        obj = CasadiVariable(structure,input.mx,varargin{:});
       elseif isa(input,'SymVariable')
         obj = SymVariable(structure,varargin{:});
       elseif isa(input,'Variable')
