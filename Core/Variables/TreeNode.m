@@ -84,6 +84,10 @@ classdef TreeNode < VarStructure
       % addVar(var)
       %   Adds a reference of the var
       
+      if isempty(varIn)
+        return
+      end
+            
       varLength = prod(varIn.size);
       positions = self.thisLength+1:self.thisLength+varLength;
       
@@ -149,6 +153,10 @@ classdef TreeNode < VarStructure
       end
       
       if nargin < 4
+        selector = ':';
+      end
+      
+      if strcmp(selector,'all')
         selector = ':';
       end
       

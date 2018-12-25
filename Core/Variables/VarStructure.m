@@ -6,13 +6,16 @@ classdef VarStructure < handle
     thisSize
   end
   
-  methods (Abstract)
-    positions(self)
-    size(self)
-  end
-  
   methods
     function get(varargin)
+      error('Not Implemented.');
+    end
+    
+    function positions(varargin)
+      error('Not Implemented.');
+    end
+    
+    function size(varargin)
       error('Not Implemented.');
     end
   end
