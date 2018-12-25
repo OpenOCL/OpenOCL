@@ -4,10 +4,6 @@ classdef Solver < handle
   properties
   end
   
-  methods(Abstract)
-    solve(initialGuess)
-  end
-  
   methods(Static)
     function options = getOptions()
       options = struct;
@@ -68,6 +64,10 @@ classdef Solver < handle
         system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
         nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
 
+    end
+  
+    function solve(varargin)
+      error('Not Implemented.');
     end
     
     function solver = getSolver(nlp,options)

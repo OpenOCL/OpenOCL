@@ -7,11 +7,13 @@ classdef Function < handle
     result
     inputs
     nOutputs
+    obj
   end
   
   methods
     
-    function self = Function(functionHandle,inputs,nOutputs)
+    function self = Function(obj,functionHandle,inputs,nOutputs)
+      self.obj = obj;
       self.functionHandle    = functionHandle;
       self.inputs = inputs;
       self.nOutputs = nOutputs;
@@ -25,7 +27,7 @@ classdef Function < handle
       end
       
       varargout = cell(1,self.nOutputs);
-      [varargout{:}] = self.functionHandle(ins{:});
+      [varargout{:}] = self.functionHandle(self.obj,ins{:});
       
     end
     

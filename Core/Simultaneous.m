@@ -50,7 +50,7 @@ classdef Simultaneous < handle
       self.scalingMin = Variable(nlpVarsFlatFlat,0);
       self.scalingMax = Variable(nlpVarsFlatFlat,1);
       
-      self.nlpFun = Function(@self.getNLPFun,{self.nlpVarsStruct},5);
+      self.nlpFun = Function(self,@(self,varargin)self.getNLPFun(varargin{:}),{self.nlpVarsStruct},5);
 
     end    
     
@@ -109,7 +109,7 @@ classdef Simultaneous < handle
     function setBounds(self,id,varargin)
       % setVariableBound(id,lower,upper)
       % setVariableBound(id,value)     
-      self.setBound(id,':',varargin{:})
+      self.setBound(id,'all',varargin{:})
     end
     
     function setBound(self,id,slice,varargin)

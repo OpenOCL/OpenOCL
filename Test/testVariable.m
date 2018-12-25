@@ -95,7 +95,7 @@ assert(isequal(full(f(v1,v2)),vTest))
 aTest = aTest(:,1:6)^2;
 vTest = vTest(:,1:6)^2;
 f = casadi.Function('f',{s1,s2},{aTest.value});
-assert(isequal(full(f(v1,v2)),vTest))
+assert(all(all(vTest-full(f(v1,v2))< eps)))
 
 %%% mldivide (solve in casadi)
 A = [0.2625    0.9289    0.5785;
@@ -164,21 +164,6 @@ assert(isequal(full(f(v1)),vTest))
 
 %%% jacobian
 % test against finite diff jacobian
-  function v = testJacobianFun(x)
-    v = x*x(1)+cross([x(1);x(3)^2;x(2)],x);
-  end
-  function J = finiteDiffJac(functionHandle,x)
-    FDeps = 1e-6;
-    fx = functionHandle(x);
-    Ncols = numel(x);
-    Nrows = numel(fx);
-    J = zeros(Nrows,Ncols);
-    for k=1:Ncols
-      dx = zeros(Ncols,1);
-      dx(k) = FDeps;
-      J(:,k) = (functionHandle(x+dx) - fx) / FDeps;
-    end
-  end
 
 aTest = jacobian(testJacobianFun(a1),a1);
 vTest = finiteDiffJac(@testJacobianFun,v1);
@@ -199,15 +184,15 @@ assert(isequal(full(f(v1)),vTest))
 
 %%% abs,sqrt,sin,cos,tan,atan,asin,acos,atanh,asinh,acosh,exp,log,tanh,cosh,sinh
 aTest = tanh(acosh(atan(a1(1)).^2));
-aTest = cosh(aTest * sqrt(a1(2))+asinh(abs(a1(3))-log(sin(a1(2)))));
-aTest = sinh(acos(asin(aTest * exp(atanh(cos(a1(3)))).\tan(a1(1))+1)));
+aTest = sinh(aTest * sqrt(a1(2))+asinh(abs(a1(3))-log(sin(a1(2)))));
+aTest = cosh(acos(asin(aTest * exp(atanh(cos(a1(3)))).\tan(a1(1))+1)));
 
 vTest = tanh(acosh(atan(v1(1)).^2));
 vTest = sinh(vTest * sqrt(v1(2))+asinh(abs(v1(3))-log(sin(v1(2)))));
 vTest = cosh(acos(asin(vTest * exp(atanh(cos(v1(3)))).\tan(v1(1))+1)));
 
 f = casadi.Function('f',{s1},{aTest.value});
-assert(abs(full(f(v1))) - vTest < eps)
+assert(abs(full(f(v1)) - vTest) < eps)
 
 %%% atan2, times
 aTest = atan2(a1(1).^2.*a1(2)+a1(3),atan(a1(1)).^2);
@@ -244,4 +229,20 @@ assert(isequal(x.x1(2).value,[9,10]));
 x1.get(2).set([4,5])
 assert(isequal(x1.get(2).value,[4,5]));
 
+end
+
+function v = testJacobianFun(x)
+  v = x*x(1)+cross([x(1);x(3)^2;x(2)],x);
+end
+function J = finiteDiffJac(functionHandle,x)
+  FDeps = 1e-6;
+  fx = functionHandle(x);
+  Ncols = numel(x);
+  Nrows = numel(fx);
+  J = zeros(Nrows,Ncols);
+  for k=1:Ncols
+    dx = zeros(Ncols,1);
+    dx(k) = FDeps;
+    J(:,k) = (functionHandle(x+dx) - fx) / FDeps;
+  end
 end

@@ -1,6 +1,7 @@
-classdef CollocationIntegrator < ImplicitIntegrationScheme
+classdef CollocationIntegrator < handle
   
   properties
+    system
     integratorFun
     integratorVarsStruct
   end
@@ -19,8 +20,8 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
   methods
     
     function self = CollocationIntegrator(system,pathCostsFun,d)
-      self = self@ImplicitIntegrationScheme(system);
       
+      self.system = system;
       self.pathCostsFun = pathCostsFun;
       self.d            = d;
       
@@ -36,7 +37,8 @@ classdef CollocationIntegrator < ImplicitIntegrationScheme
       timeF = MatrixStructure([1,1]);
       endTime = MatrixStructure([1,1]);
       
-      self.integratorFun = Function(@self.getIntegrator,{system.statesStruct,...
+      self.integratorFun = Function(self,@(self,varargin)self.getIntegrator(varargin{:}),...
+                                                    {system.statesStruct,...
                                                     self.integratorVarsStruct,...
                                                     system.controlsStruct,...
                                                     time0,timeF,endTime,...

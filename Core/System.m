@@ -16,12 +16,7 @@ classdef (Abstract) System < handle
   properties (Access = private)
     odeVar
   end
-  
-  methods (Abstract)
-   setupVariables(self)
-   setupEquation(self)
-  end
-  
+
   methods
     
     function self = System()
@@ -34,9 +29,16 @@ classdef (Abstract) System < handle
       
       self.setupVariables;
       
-      self.systemFun = Function(@self.getEquations, ...
+      self.systemFun = Function(self,@(self,varargin)self.getEquations(varargin{:}), ...
         {self.statesStruct,self.algVarsStruct,self.controlsStruct,self.parametersStruct},2);
       
+    end
+    
+    function setupVariables(varargin)
+      error('Not Implemented.');
+    end
+    function setupEquation(varargin)
+      error('Not Implemented.');
     end
     
     function initialCondition(~,~,~)

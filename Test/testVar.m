@@ -1,6 +1,5 @@
 function testVar
 
-
 % clear classes
 x = TreeNode('x');
 x.add('p',[3,1]);

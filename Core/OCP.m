@@ -83,34 +83,18 @@ classdef OCP < handle
     end
     
     function addPathConstraint(self,lhs, op, rhs)
-      
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getPathConstraints'), ...
-              'This method must be called from OCP.pathConstraints().');
-      
       self.thisPathConstraints.add(lhs,op,rhs);
     end
     
     function addBoundaryCondition(self,lhs, op, rhs)
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getBoundaryConditions'), ...
-              'This method must be called from OCP.boundaryConditions().');
-            
       self.thisBoundaryConditions.add(lhs,op,rhs);
     end
     
     function addArrivalCost(self,expr)
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getArrivalCosts'), ...
-              'This method must be called from OCP.mayerTerms().');
-            
       self.thisArrivalCosts = self.thisArrivalCosts + expr;
     end
     
     function addPathCost(self,expr)
-      callers=dbstack(2);
-      assert( strcmp(callers(1).name, 'OCP.getPathCosts'), ...
-              'This method must be called from OCP.lagrangeTerms().');
       self.thisPathCosts = self.thisPathCosts + expr;
     end
     

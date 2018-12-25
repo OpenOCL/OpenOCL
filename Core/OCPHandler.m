@@ -31,10 +31,14 @@ classdef OCPHandler < handle
       time = MatrixStructure([1,1]);
       endTime = MatrixStructure([1,1]);
 
-      self.pathCostsFun = Function(@ocp.getPathCosts,{states,algVars,controls,time,endTime,params},1);
-      self.arrivalCostsFun = Function(@ocp.getArrivalCosts,{states,endTime,params},1);
-      self.boundaryConditionsFun = Function(@ocp.getBoundaryConditions,{states,states,params},3);
-      self.pathConstraintsFun = Function(@ocp.getPathConstraints,{states,algVars,controls,time,params},3);
+      self.pathCostsFun = Function(ocp,@(ocp,varargin) ocp.getPathCosts(varargin{:}),...
+                                   {states,algVars,controls,time,endTime,params},1);
+      self.arrivalCostsFun = Function(ocp,@(ocp,varargin) ocp.getArrivalCosts(varargin{:}),...
+                                      {states,endTime,params},1);
+      self.boundaryConditionsFun = Function(ocp,@(ocp,varargin)ocp.getBoundaryConditions(varargin{:}),...
+                                            {states,states,params},3);
+      self.pathConstraintsFun = Function(ocp,@(ocp,varargin)ocp.getPathConstraints(varargin{:}),...
+                                         {states,algVars,controls,time,params},3);
       
     end
  

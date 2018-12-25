@@ -1,15 +1,16 @@
-classdef CasadiIntegrator < Integrator
+classdef CasadiIntegrator < handle
   %CASADIINTEGRATOR Casadi Integrator
   %   
   
   properties
     systemIntegrator
+    system
   end
   
   methods
     function self = CasadiIntegrator(system)
       
-      self = self@Integrator(system);
+      self.system = system;
       
       states = CasadiVariable(system.statesStruct);
       algVars = CasadiVariable(system.algVarsStruct);
