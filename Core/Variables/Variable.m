@@ -37,7 +37,7 @@ classdef Variable < handle
     
     function obj = createFromVariable(structure, variable)
       if isa(variable,'CasadiVariable')
-        obj = CasadiVariable(structure,variable.value);
+        obj = CasadiVariable(structure,variable.mx,variable.value);
       elseif isa(variable,'SymVariable')
         obj = SymVariable(structure,variable.value);
       elseif isa(variable,'Variable')
@@ -54,7 +54,7 @@ classdef Variable < handle
       % input.
       
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable(MatrixStructure(size(value)),value);
+        obj = CasadiVariable(MatrixStructure(size(value)),input.mx,value);
       elseif isa(input,'SymVariable')
         obj = SymVariable(MatrixStructure(size(value)),value);
       elseif isa(input,'Variable')

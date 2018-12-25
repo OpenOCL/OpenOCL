@@ -11,6 +11,8 @@ classdef CasadiFunction < handle
     compiled
     name = 'test'
     
+    mx
+    
     outputStructs
   end
   
@@ -27,18 +29,21 @@ classdef CasadiFunction < handle
       
       self.fun = inputFunction;
       
+      
       if nargin == 1
         jit = false;
-        mx = false;
+        self.mx = false;
       elseif nargin == 2
-        mx = false;
+        self.mx = false;
+      else
+        self.mx = mx;
       end
       
       nInputs = length(inputFunction.inputs);
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        inputs{k} = CasadiVariable(varStruct, mx);
+        inputs{k} = CasadiVariable(varStruct, self.mx);
       end
       
       nOutputs = inputFunction.nOutputs;
@@ -91,7 +96,7 @@ classdef CasadiFunction < handle
         if isa(varargout{k},'casadi.DM')
           varargout{k} = Variable(self.outputStructs{k},full(varargout{k}));
         else
-          varargout{k} = CasadiVariable(self.outputStructs{k},varargout{k});
+          varargout{k} = CasadiVariable(self.outputStructs{k},self.mx,varargout{k});
         end
       end
       

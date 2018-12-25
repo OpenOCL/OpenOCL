@@ -53,14 +53,18 @@ classdef (Abstract) System < handle
     end
     
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
-      % evaluate the system equations for the assigned 
+      % evaluate the system equations for the assigned variables
       
       self.alg = Variable.createLike(statesIn,MatrixStructure([0,1]));
-      self.ode = Variable.createLike(statesIn,statesIn.varStructure);
+%       self.ode = Variable.createLike(statesIn,statesIn.varStructure);
+      
+      self.ode = struct;
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
-      ode = self.ode;
+      ode = struct2cell(self.ode);
+      ode = vertcat(ode{:});
+      ode = CasadiVariable.createLike(statesIn,MatrixStructure(size(ode)),ode);
       alg = self.alg;
     end
     
@@ -78,7 +82,7 @@ classdef (Abstract) System < handle
     end
 
     function setODE(self,id,equation)
-      self.ode.get(id).set(equation);
+      self.ode.(id) = equation.value;
     end
     
     function setAlgEquation(self,equation)

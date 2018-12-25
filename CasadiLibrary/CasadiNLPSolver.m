@@ -66,7 +66,7 @@ classdef CasadiNLPSolver < Solver
       
       
       % create variables and parameter symbolics
-      vars = CasadiVariable(initialGuess.varStructure);
+      vars = CasadiVariable(initialGuess.varStructure,true);
       
       x0 = x0(varIndizes);
       lbx = lbx(varIndizes);
@@ -134,7 +134,7 @@ classdef CasadiNLPSolver < Solver
       
       % fix bug with 0x1 vs 0x0 parameter
       if isempty(psym)
-        casadiNLP.p = casadi.SX.sym('p',[0,1]);
+        casadiNLP.p = casadi.MX.sym('p',[0,1]);
       end
       
       constructSolverTic = tic;
@@ -196,7 +196,8 @@ classdef CasadiNLPSolver < Solver
       constructTotalTic = tic;
       
       % create nlp function
-      casadiNLPFun = CasadiFunction(self.nlp.nlpFun);
+%       casadiNLPFun = CasadiFunction(self.nlp.nlpFun, false, true);
+      casadiNLPFun = self.nlp.nlpFun;
 
       self.nlpData = struct;
       self.nlpData.casadiNLPFun = casadiNLPFun;
