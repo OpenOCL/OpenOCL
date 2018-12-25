@@ -16,6 +16,11 @@ https://github.com/JonasKoenemann/optimal-control/wiki
 * airborne wind energy: https://openawe.github.io/
 * robotics: https://github.com/JonasKoenemann/openocl_models (very experimental)
 
+## Additional Information
+
+* If you need the moodel to work with MX type variables in your system, you can pass the option "system_casadi_mx" to the solver
+* For larger problems it can be beneficial to install HSL linear solvers for ipopt (http://www.hsl.rl.ac.uk/ipopt/) and pass the linear solver name to the solver
+
 ## Publications
 
 Performance Assessment of a Rigid Wing Airborne Wind Energy Pumping System  
