@@ -56,9 +56,7 @@ classdef (Abstract) System < handle
       % evaluate the system equations for the assigned variables
       
       self.alg = Variable.createLike(statesIn,MatrixStructure([0,1]));
-%       self.ode = Variable.createLike(statesIn,statesIn.varStructure);
-      
-      self.ode = struct;
+      self.ode = statesIn.varStructure.childPointers;
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       

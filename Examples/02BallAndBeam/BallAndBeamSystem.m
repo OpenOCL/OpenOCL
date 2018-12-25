@@ -31,10 +31,10 @@ classdef BallAndBeamSystem < System
       tau    = controls.tau;
            
       % Define differential equations
-      self.setODE('r'     ,dr); 
-      self.setODE('dr'    ,(-m*g*sin(theta) + m*r*dtheta^2)/(m + J/R^2));
       self.setODE('theta' ,dtheta); 
       self.setODE('dtheta',(tau - m*g*r*cos(theta) - 2*m*r*dr*dtheta)/(I + m*r^2));
+      self.setODE('r'     ,dr); 
+      self.setODE('dr'    ,(-m*g*sin(theta) + m*r*dtheta^2)/(m + J/R^2));
     end
   end
 end
