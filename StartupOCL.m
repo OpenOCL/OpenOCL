@@ -38,6 +38,7 @@ addpath(fullfile(startupDir,'CasadiLibrary'))
 addpath(fullfile(startupDir,'Core'))
 addpath(fullfile(startupDir,'Core','Integrator'))
 addpath(fullfile(startupDir,'Core','Variables'))
+addpath(fullfile(startupDir,'Core','utils'))
 
 % addpath('Interfaces')
 addpath(fullfile(startupDir,'Examples'))

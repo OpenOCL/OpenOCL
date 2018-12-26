@@ -218,8 +218,11 @@ classdef Variable < handle
           
           % check if id is a children
           if ~isfield(self.varStructure.getChildPointers,id)
-            error('Can access field in variable');  %% Octave
-            %throw(e);   %% Matlab
+            if isOctave()
+              error('Can access field in variable');  %% OCTAVE
+            else
+              throw(e);  %% MATLAB
+            end
           end
           
           if numel(s) > 1
