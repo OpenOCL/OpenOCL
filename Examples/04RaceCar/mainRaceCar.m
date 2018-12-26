@@ -1,28 +1,24 @@
 %% Title: Race Car Problem Example
-%  Author: PhD students Jonas Koenneman & Giovanni Licitra
+%  Authors: Jonas Koenneman & Giovanni Licitra
 
-DISCRETIZATIONPOINTS = 50;    % horizon discretization
+CONTROL_INTERVALS = 50;     % control discretization
+FINALTIME = 20;             % [s]
 
-%% Create system and OCP
 system = RaceCarSystem();
 ocp    = RaceCarOCP(system);
 
-%% Get and set solver options
 options = Solver.getOptions;
 options.iterationCallback = false;
-options.nlp.controlIntervals = DISCRETIZATIONPOINTS;
+options.nlp.controlIntervals = CONTROL_INTERVALS;
 nlp = Solver.getNLP(ocp,system,options);
 
-%% set parameters
-% car
-m    = 1;    % mass [kg]
-A    = 1;    % section area car [m^2]
-cd   = 0.35; % drag coefficient [mini cooper 2008]
-rho  = 1.23; % airdensity [kg/m^3]
-Vmax = 1;    % max velocity [m/s]
-Fmax   = 1;  % [N] 
-
-% road
+% parameters
+m    = 1;         % mass [kg]
+A    = 1;         % section area car [m^2]
+cd   = 0.35;      % drag coefficient [mini cooper 2008]
+rho  = 1.23;      % airdensity [kg/m^3]
+Vmax = 1;         % max velocity [m/s]
+Fmax   = 1;       % [N] 
 road_bound = 0.4; % [m]
 
 nlp.setParameter('m'   , m);
@@ -33,36 +29,33 @@ nlp.setParameter('Vmax', Vmax);
 nlp.setParameter('Fmax', Fmax);
 nlp.setParameter('road_bound', road_bound);
 
-% time
-FINALTIME = 20; % [s]
-nlp.setParameter('time', 0,FINALTIME);       %   T0 <= T <= Tf
+nlp.setParameter('time', 0, FINALTIME);  % T0 <= T <= Tf
 
-%% set boundary conditions
 % Intial conditions
-nlp.setInitialBounds( 'x',   0.0); % x(t=0) = x0
-nlp.setInitialBounds('vx',   0.0); % x(t=0) = x0
-nlp.setInitialBounds( 'y',   0.0); % x(t=0) = x0
-nlp.setInitialBounds('vy',   0.0); % x(t=0) = x0
+nlp.setInitialBounds( 'x',   0.0); 
+nlp.setInitialBounds('vx',   0.0);
+nlp.setInitialBounds( 'y',   0.0);
+nlp.setInitialBounds('vy',   0.0);
 
 % Final conditions
-nlp.setEndBounds( 'x',  2*pi); % x(t=T) = xf
-nlp.setEndBounds('vx',  0.0 ); % x(t=T) = xf
-nlp.setEndBounds( 'y',  0.0 ); % x(t=T) = xf
-nlp.setEndBounds('vy',  0.0 ); % x(t=T) = xf
+nlp.setEndBounds( 'x',  2*pi);
+nlp.setEndBounds('vx',  0.0 );
+nlp.setEndBounds( 'y',  0.0 );
+nlp.setEndBounds('vy',  0.0 );
 
 %% initialize NLP 
-solver          = Solver.getSolver(nlp,options); % Create solver
+solver          = Solver.getSolver(nlp,options);
 initialGuess    = nlp.getInitialGuess;           
 
 % initialize in the middle lane
-N        = length(initialGuess.states.x.value); % get number of collocation points
+N        = length(initialGuess.states.x.value);
 x_road   = linspace(0,2*pi,N);
 y_center = sin(x_road);
 initialGuess.states.x.set(x_road);
 initialGuess.states.y.set(y_center);
 
 %% Solve OCP
-[solution,times] = solver.solve(initialGuess);    % Run solver to obtain solution
+[solution,times] = solver.solve(initialGuess);
 times = times.value;
 
 %% Plot solution

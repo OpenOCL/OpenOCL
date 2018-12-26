@@ -1,5 +1,5 @@
 %% Title: Ball and beam problem
-%  Author: PhD students Jonas Koenneman & Giovanni Licitra
+%  Authors: Jonas Koenneman & Giovanni Licitra
 
 FINALTIME = 5;                % horizon length (seconds)
 

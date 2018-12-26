@@ -15,22 +15,18 @@ classdef BallAndBeamSystem < System
       self.addParameter('g',[1 1]); % gravity
     end
     function setupEquation(self,states,algVars,controls,parameters)
-      
-      % Get access to the system parameters
       I = parameters.I;
       J = parameters.J;
       m = parameters.m;
       R = parameters.R;
       g = parameters.g;
-      
-      % Get access to the system variables
+
       r      = states.r;
       dr     = states.dr;
       theta  = states.theta;
       dtheta = states.dtheta;
       tau    = controls.tau;
-           
-      % Define differential equations
+
       self.setODE('theta' ,dtheta); 
       self.setODE('dtheta',(tau - m*g*r*cos(theta) - 2*m*r*dr*dtheta)/(I + m*r^2));
       self.setODE('r'     ,dr); 

@@ -18,7 +18,6 @@ Ball = plot(Xball,Yball,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r'
 axis([-1.2, 1.2, -0.7, 0.7]);
 xlabel('x [m]');ylabel('y [m]');
 
-%%
 for i = 2:1:length(time)
   xbeam = L*cos(thetaTrajectory(i));
   ybeam = L*sin(thetaTrajectory(i));

@@ -12,7 +12,7 @@ p = simulator.getParameters;
 p.m.set(1);
 p.l.set(1);
 
-% simulate using feedback control (implemented in simulationCallback)
+% simulate without control inputs
 figure;
 [statesVec,algVarsVec,controlsVec] = simulator.simulate(states,times,p);
 
