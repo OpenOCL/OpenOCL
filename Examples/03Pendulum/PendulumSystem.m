@@ -26,9 +26,9 @@ classdef PendulumSystem < System
       self.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
     end
     function initialCondition(self,state,parameters)
-      l = parameters.l;
-      p = state.p;
-      v = state.v;
+      l = parameters.l.value;
+      p = state.p.value;
+      v = state.v.value;
       
       % this constraints the pendulum mass to be at distance l from the center
       % at the beginning of the simulation
