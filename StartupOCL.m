@@ -56,6 +56,6 @@ catch e
   if ~strcmp(e.identifier,'MATLAB:undefinedVarOrClass')
     error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
   else
-    error('Casadi installation not found. Please setup casadi 3.2');
+    error('Casadi installation not found. Please setup casadi 3.2 or higher');
   end
 end
