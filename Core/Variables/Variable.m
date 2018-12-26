@@ -142,17 +142,6 @@ classdef Variable < handle
       end
     end
     
-    function slicedVar = slice(self,varargin)
-      % slicedVar = slice(self,el)
-      % slicedVar = slice(self,row,col)
-      
-      if nargin == 4 && varargin{3} == 1
-        varargin(3) = [];
-      end
-      val = self.value;
-      slicedVar = Variable.createMatrixLike(self,val(varargin{:}));
-    end
-    
     %%% Delegate methods of varStructure
     function l = length(self)
       l = max(size(self));
