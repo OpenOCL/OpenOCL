@@ -99,11 +99,6 @@ classdef (Abstract) System < handle
       ic = self.initialConditions;
     end
     
-    function controls = callIterationCallback(self,states,algVars,parameters)
-      controls =  Variable(self.controlsStruct,0);
-      self.simulationCallback(states,algVars,controls,parameters);
-    end
-    
     function solutionCallback(self,solution)
       sN = solution.get('states').size;
       N = sN(2);
@@ -112,12 +107,10 @@ classdef (Abstract) System < handle
       for k=1:N-1
         states = solution.get('states',k+1);
         algVars = solution.get('integratorVars',k).get('algVars');
-        self.callIterationCallback(states,algVars(end),parameters);
+        controls =  solution.get('controls',k);
+        self.simulationCallback(states,algVars,controls,parameters);
       end
-      
     end
-    
   end
-  
 end
 

@@ -59,13 +59,7 @@ classdef Simulator < handle
       
       algVars = Variable(self.system.algVarsStruct,0);
       simVars = Variable(simVarsStruct,0);
-      
-      if nargin == 4
-        controls = self.system.callIterationCallback(initialStates,algVars,parameters);
-      elseif nargin == 5 || nargin == 6
-        controls = controlsSeries.slice(1);
-      end
-      
+      controls = controlsSeries.slice(1);
       [states,algVars] = self.getConsistentIntitialCondition(initialStates,algVars,controls,parameters);
       
  
@@ -76,16 +70,13 @@ classdef Simulator < handle
         self.system.simulationCallbackSetup;
       end
       
-      for k=1:N
+      for k=1:N-1
         timestep = times(k+1)-times(k);
         
-        if nargin == 4
-          controls = self.system.callIterationCallback(states,algVars,parameters);
-        elseif nargin == 5 || nargin == 6
-          if callback
-            self.system.callIterationCallback(states,algVars,parameters);
-          end
-          controls = controlsSeries.slice(k);
+        controls = controlsSeries.slice(k);
+        
+        if callback
+          self.system.simulationCallback(states,algVars,controls,parameters);
         end
         
         [statesVal,algVarsVal] = self.integrator.evaluate(states,algVars,controls,timestep,parameters);
@@ -100,6 +91,11 @@ classdef Simulator < handle
         states.set(statesVal);
         algVars.set(algVarsVal);
       end  
+      
+      if callback
+        self.system.simulationCallback(states,algVars,controls,parameters);
+      end
+      
       
       statesVec = simVars.get('states');
       algVarsVec = simVars.get('algVars');

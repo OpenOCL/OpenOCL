@@ -10,12 +10,16 @@ nlp = Solver.getNLP(ocp,system,options);
 nlp.setParameter('time',  1, 10);
 
 % state bounds
+
 nlp.setBounds('p',       -[2;2], [3;3]); 
 nlp.setBounds('v',       -[2;2], [3;3]); 
-nlp.setBounds('F',       -20, 20); 
+nlp.setBounds('F',       -30, 30); 
 nlp.setBounds('lambda',  -50, 50); 
 nlp.setBounds('m',       1);
 nlp.setBounds('l',       1);
+
+nlp.setEndBounds('p',     [0,1]);
+nlp.setEndBounds('v',     [-1,-1], [1,1]);
 
 nlp.setInitialBounds('p', [-inf;-1],[inf,-1]);
 nlp.setInitialBounds('v', [0.5;0]);

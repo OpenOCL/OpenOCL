@@ -6,7 +6,7 @@ simulator = Simulator(system,options);
 states = simulator.getStates;
 states.p.set([0,1]);
 states.v.set([0.5,1]);
-times = 0:0.1:10;
+times = 0:0.1:4;
 
 p = simulator.getParameters;
 p.m.set(1);
