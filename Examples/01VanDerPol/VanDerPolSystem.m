@@ -15,7 +15,6 @@ classdef VanDerPolSystem < System
       x = states.x;
       y = states.y;
       u = controls.u;
-      z = algVars.z;
       
       % Define differential equations
       self.setODE('x',(1-y^2)*x - y + u); 
