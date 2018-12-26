@@ -82,7 +82,12 @@ classdef (Abstract) System < handle
     end
 
     function setODE(self,id,equation)
-      self.ode.(id) = equation.value;
+      if isa(equation,'Variable')
+        eq = equation.value;
+        self.ode.(id) = eq(:);
+      else
+        self.ode.(id) = equation(:);
+      end
     end
     
     function setAlgEquation(self,equation)
