@@ -90,6 +90,12 @@ classdef Variable < handle
       end
     end
     
+    %% MATLAB only function
+    function n = properties(self)
+      n = [fieldnames(self);	
+      fieldnames(self.varStructure.getChildPointers)];	
+    end
+    
     %%% Delegate methods of varStructure
     function l = length(self)
       l = max(size(self));
