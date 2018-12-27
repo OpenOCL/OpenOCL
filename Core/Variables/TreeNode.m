@@ -151,7 +151,14 @@ classdef TreeNode < VarStructure
       if strcmp(selector,'end')
         child.positions = child.positions(end);
       else
-        child.positions = child.positions(selector);
+        if isa(child.node,'MatrixStructure')
+          for i=1:length(child.positions)
+            childPos = child.positions{i};
+            child.positions{i} = childPos(selector);
+          end
+        else
+          child.positions = child.positions(selector);
+        end
       end
       
       % get merge all parent and child positions

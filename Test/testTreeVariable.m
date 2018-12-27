@@ -83,7 +83,7 @@ assert(isequal(v(4:12).value,[1,0,0,0,1,0,0,0,1]'))
 
 % slice on selection
 assert(isequal(v.x(1).p.value,[100,0,50]'))
-%assert(isequal(v.x(4:6).p(1).value,[100,100,100]))
+assert(isequal(v.x(4:6).get('p',1).value,[100,0,50]))
 
 
 
