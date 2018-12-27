@@ -21,6 +21,38 @@ classdef VarStructure < handle
     function size(varargin)
       error('Not Implemented.');
     end
+    
+    function getChildPointers(varargin)
+      error('Not Implemented.');
+    end
+    
+    function getWithPositions(varargin)
+      error('Not Implemented.');
+    end
+    
+    function parseGetInputs(varargin)
+      % r = get(self,id)
+      % r = get(self,id,index)
+      % r = get(self,index)
+      % r = get(self,row,col)
+      
+      function t = isAllOperator(in)
+        t = strcmp(in,'all') || strcmp(in,':');
+        if t
+          in = ':';
+        end
+      end
+      
+      if ischar(varargin{1})
+        id = varargin{1};
+      end
+      
+      
+      
+      
+      
+    end
+    
   end
   
 end

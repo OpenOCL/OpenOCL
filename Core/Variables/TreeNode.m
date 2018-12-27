@@ -13,33 +13,30 @@ classdef TreeNode < VarStructure
   end
 
   methods
-    function self = TreeNode(varargin)
+    function self = TreeNode(in,positions)
       % TreeNode(id)
-      % TreeNode(var)
-
-      narginchk(0,2);
-      self.clear
-
-      if isa(varargin{1},'TreeNode')
-        % copy
-        self            = varargin{1};
-
-      elseif ischar(varargin{1}) 
-        % create a new variable from id
-        self.id         = varargin{1};
+      % TreeNode(node,positions)
+      
+      
+      if ischar(in)
+        % id
+        self.id = in;
+        self.thisSize = [0 1];
+        self.childPointers = struct;
+        self.thisLength = 0;
+        self.thisPositions = {};
       else
-        error('Error in the argument list.');
+        self.id = in.id;
+        self.thisSize = in.thisSize;
+        self.childPointers = in.childPointers;
+        self.thisLength = in.thisLength;
+        self.thisPositions = positions;
       end
-    end
-    
-    function clear(self)
-      self.thisSize = [0 1];
-      self.childPointers = struct;
-      self.thisLength = 0;
+
     end
     
     function r = positions(self)
-      r = {1:self.thisLength};
+      r = self.thisPositions;
     end
 
     function add(self,varargin)
@@ -56,7 +53,7 @@ classdef TreeNode < VarStructure
       elseif nargin == 2
         % args:(var)
         structureIn = varargin{1};
-        self.addVar(structureIn)
+        self.addVar(structureIn);
       end
     end % add
     
@@ -90,6 +87,7 @@ classdef TreeNode < VarStructure
       end
       
       self.thisLength = self.thisLength+varLength;
+      self.thisPositions = {1:self.thisLength};
     end
     
     function addMatrix(self,id,size)
@@ -105,6 +103,7 @@ classdef TreeNode < VarStructure
       end
       
       self.thisLength = self.thisLength+varLength;
+      self.thisPositions = {1:self.thisLength};
     end
     
     function s = size(self,varargin)
@@ -122,18 +121,31 @@ classdef TreeNode < VarStructure
       end
     end
     
-    function subVar = get(self,id,varargin)
+    function subVar = get(self,in1,varargin)
       % get(id)
       % get(id,selector)
-      parentPositions = {1:self.thisLength};
-      subVar = self.getWithPositions(id,parentPositions,varargin{:});
+      % get(selector)
+      if ischar(in1) && (~strcmp(in1,'end'))
+        parentPositions = self.positions();
+        subVar = self.getWithPositions(in1,parentPositions,varargin{:});
+      else
+        % get(selector)
+        
+        pos = self.positions();
+        pos = pos{1};
+        if strcmp(in1,'end')
+          in1 = length(pos);
+        end
+        assert(isnumeric(in1) && nargin == 2, 'TreeNode.get: Wrong arguments given.')
+        
+        subVar = MatrixStructure(size(in1), {pos(in1)});
+      end
     end
     
     function subVar = getWithPositions(self,id,parentPositions,selector)
       assert(ischar(id))
-      
       if ~isfield(self.childPointers,id)
-        error('Error: Can not obtain id from this variable.');
+        error('TreeNode.get: Can not obtain id from this variable.');
       end
       
       if nargin < 4
@@ -175,14 +187,20 @@ classdef TreeNode < VarStructure
         end
       end    
       
-      subVar = NodeSelection(child.node,positions);
+      if length(positions) == 1 && isa(child.node,'TreeNode')
+        subVar = TreeNode(child.node,positions);
+      else
+        subVar = NodeSelection(child.node,positions);
+      end
+      
     end % getWithPositions
     
     function tree = getFlat(self)
       
+      parentPositions = self.positions();
       tree = TreeNode(self.id);
       tree.thisLength = self.thisLength;
-      parentPositions = {1:self.thisLength};
+      tree.thisPositions = parentPositions;
       self.iterateLeafs(parentPositions,tree);
       
     end

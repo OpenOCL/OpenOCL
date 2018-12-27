@@ -10,14 +10,14 @@ classdef NodeSelection < VarStructure
   methods
     
     function self = NodeSelection(nodeType,positions)
+      self.nodeType = nodeType;
+      self.thisPositions  = positions;
       
       if length(positions)==1 && isa(nodeType,'MatrixStructure') 
         self = MatrixStructure(nodeType.size,positions);
         return
       end
             
-      self.nodeType = nodeType;
-      self.thisPositions  = positions;
     end
     
     function s = size(self, varargin)
@@ -38,15 +38,24 @@ classdef NodeSelection < VarStructure
       % childSelection = get(self,id,selector)
       % childSelection = get(self,id)
       % childSelection = get(self,selector)
-      if nargin == 2 && ischar(in1)
+      if nargin == 2 && ischar(in1) && ~strcmp(in1,'end')
         % args: id
         childSelection = self.nodeType.getWithPositions(in1,self.positions);
       elseif nargin == 2
         % args: selector
-        positions = self.positions;
-        childSelection = NodeSelection(self.nodeType,positions(in1));
+        positions = self.positions();
+        if strcmp(in1,'end')
+          in1 = length(positions);
+        end
+        assert(isnumeric(in1), 'NodeSelection.get:Argument needs to be an index or char.')
+        if length(in1) == 1 && isa(self.nodeType,'TreeNode')
+          childSelection = TreeNode(self.nodeType,positions(in1));
+        else 
+          childSelection = NodeSelection(self.nodeType,positions(in1));
+        end
       else
         % args: id,selector
+        assert(ischar(in1), 'NodeSelection.get:First argument needs to be an id.')
         childSelection = self.nodeType.getWithPositions(in1,self.positions,in2);
       end
     end

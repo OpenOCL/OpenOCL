@@ -93,28 +93,18 @@ classdef Variable < handle
       % var.value
       
       if numel(s) == 1 && strcmp(s.type,'()')
-        % slice on value
-        [varargout{1}] = self.slice(s.subs{:});
+        % x(1)
+        [varargout{1}] = self.get(s.subs{:});
       elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        % slice and call recursive
-        v = self.slice(s(1).subs{:});
+        % x(1).something().a
+        v = self.get(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
+        
       elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
-        try
-          % try to call class method
-          [varargout{1:nargout}] = builtin('subsref',self,s);
-        catch e
-          % get by id
-          id = s(1).subs;
-          % check if id is a children
-          if ~isfield(self.varStructure.getChildPointers,id)
-            if isOctave()
-              error('Can access field in variable');  %% OCTAVE
-            else
-              throw(e);  %% MATLAB
-            end
-          end
-          
+        % x.something()
+        id = s(1).subs;
+        if isfield(self.varStructure.getChildPointers,id)
+          % x.variable
           if numel(s) > 1
             if strcmp(s(2).type,'()')
               % check for selector
@@ -129,6 +119,9 @@ classdef Variable < handle
             v = self.get(id);
             [varargout{1:nargout}] = v;
           end
+        else
+          % x.aFunction()
+          [varargout{1:nargout}] = builtin('subsref',self,s);
         end
       else
         [varargout{1:nargout}] = self;
@@ -149,6 +142,17 @@ classdef Variable < handle
       end
     end
     
+    function slicedVar = slice(self,varargin)
+      % slicedVar = slice(self,el)
+      % slicedVar = slice(self,row,col)
+      
+      if nargin == 4 && varargin{3} == 1
+        varargin(3) = [];
+      end
+      val = self.value;
+      slicedVar = Variable.createMatrixLike(self,val(varargin{:}));
+    end
+    
     %%% Delegate methods of varStructure
     function l = length(self)
       l = max(size(self));
@@ -161,12 +165,41 @@ classdef Variable < handle
     end
     function r = get(self,in1,in2)
       % r = get(self,id)
-      % r = get(self,id,selector)
-      % r = get(self,selector)
-      if nargin == 2
-        r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
+      % r = get(self,id,index)
+      % r = get(self,index)
+      % r = get(self,row,col)
+      
+      function t = isAllOperator(in)
+        t = strcmp(in,'all') || strcmp(in,':');
+        if t
+          in = ':';
+        end
+      end
+      
+      if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
+        if nargin == 2
+          % get(id)
+          r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
+        else
+          % get(id,selector)
+          r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+        end
       else
-        r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+        if nargin == 2
+          % get(index)
+          if isAllOperator(in1)
+            r = self;
+          else
+            r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
+          end
+        else
+          % get(row,col)
+          if isAllOperator(in1) && isAllOperator(in2)
+            r = self;
+          else
+            r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+          end
+        end
       end
     end
     %%%
@@ -175,6 +208,10 @@ classdef Variable < handle
       
       if isa(valueIn,'Variable')
         valueIn = valueIn.value;
+      end
+      
+      if isempty(valueIn)
+        return
       end
       
       positions = self.positions;
@@ -204,8 +241,8 @@ classdef Variable < handle
     end % set
     
     function v = value(self)
-      
-      positions = self.varStructure.positions;
+      positions = self.varStructure.positions();
+      %assert(length(positions)>= 1, 'varStructure ill defined (positions).')
       if length(positions) == 1
         s = self.size;
         v = reshape(self.thisValue.value(positions{1}),s);
@@ -252,17 +289,6 @@ classdef Variable < handle
         end
       end
       v = Variable.createMatrixLike(obj,vertcat(inValues{:}));
-    end
-    
-    function slicedVar = slice(self,varargin)
-      % slicedVar = slice(self,el)
-      % slicedVar = slice(self,row,col)
-      
-      if nargin == 4 && varargin{3} == 1
-        varargin(3) = [];
-      end
-      val = self.value;
-      slicedVar = Variable.createMatrixLike(self,val(varargin{:}));
     end
     
     function v = uplus(a)

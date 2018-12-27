@@ -135,19 +135,18 @@ classdef Simultaneous < handle
           upper = varargin{2};
           showWarning = varargin{3};
       end
-      
-      lowValNotInf = ~isinf(self.lowerBounds.get(id,slice).value);
-      upValNotInf  = ~isinf(self.upperBounds.get(id,slice).value);
+      lowValNotInf = ~isinf(self.lowerBounds.get(id).get(slice).value);
+      upValNotInf  = ~isinf(self.upperBounds.get(id).get(slice).value);
       if showWarning && (any(lowValNotInf(:)) || any(upValNotInf(:)))
         warning(['Existing bound overwritten. Make sure that setBounds ', ...
                  'is always called before setInitialBounds and setEndBounds']);
       end
       
-      self.lowerBounds.get(id,slice).set(lower);
-      self.upperBounds.get(id,slice).set(upper);
+      self.lowerBounds.get(id).get(slice).set(lower);
+      self.upperBounds.get(id).get(slice).set(upper);
       
-      self.scalingMin.get(id,slice).set(lower);
-      self.scalingMax.get(id,slice).set(upper);
+      self.scalingMin.get(id).get(slice).set(lower);
+      self.scalingMax.get(id).get(slice).set(upper);
     end
     
     function setVariableScaling(self,id,varargin)
