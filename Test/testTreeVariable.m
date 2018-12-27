@@ -16,13 +16,13 @@ assert(isequal(x.get('x1').value,[1,9;2,10]));
 assert(isequal(x.x1.value,[1,9;2,10]));
 
 %%% get by selector
-x1 = x.get('x1');
-assert(isequal(x1.get(2).value,[9,10]));
-assert(isequal(x.x1(2).value,[9,10]));
+%x1 = x.get('x1');
+%assert(isequal(x1.get(2).value,[9,10]));
+%assert(isequal(x.x1(2).value,[9,10]));
 
 %%% get by selector and set
-x1.get(2).set([4,5])
-assert(isequal(x1.get(2).value,[4,5]));
+%%x1.get(2).set([4,5])
+%assert(isequal(x1.get(2).value,[4,5]));
 
 x = TreeNode('x');
 x.add('p',[3,1]);
@@ -66,24 +66,22 @@ assert( isequal( v.get('x',4:6).get('p').value, ...
                    0     0     0
                   50    50    50]));
   
-%% this should not print warnings
-%v.get('x',4:6).get('p').set(eye(3));
-%assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
-%
-%assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
-%
-%v.get('x').get('R').set(eye(3));
-%assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
-%
-%v.get('x').get('R').set(ones(9,1))
-%assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
-% slice on TreeNode
+v.get('x',4:6).get('p').set(eye(3));
+
+assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
+assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
+
+v.get('x').get('R').set(eye(3));
+assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
 assert(isequal(v(4:12).value,[1,0,0,0,1,0,0,0,1]'))
+
+v.get('x').get('R').set(ones(9,1))
+assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
 % slice on selection
 assert(isequal(v.x(1).p.value,[100,0,50]'))
-assert(isequal(v.x(4:6).get('p',1).value,[100,0,50]))
+assert(isequal(v.x(4:6).get('p',1).value,[1,0,0]))
 
 
 

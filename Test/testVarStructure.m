@@ -70,6 +70,3 @@ assert(isequal(x.get('u',1).get('x1',1).get(1).positions,{[4]}))
 assert(isequal(x.get('u',1).get('x3',[2,3;1,2]).get(2).positions,{[20,21;19,20]}))
 
 
-
-
-
