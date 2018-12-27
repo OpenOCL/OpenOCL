@@ -3,13 +3,19 @@ classdef NodeSelection < VarStructure
   %   Usually comes from selecting specific variables in a tree 
   
   properties
-    thisPositions
+    % thisPositions from VarStructure
     nodeType
   end
   
   methods
     
     function self = NodeSelection(nodeType,positions)
+      
+      if length(positions)==1 && isa(nodeType,'MatrixStructure') 
+        self = MatrixStructure(nodeType.size,positions);
+        return
+      end
+            
       self.nodeType = nodeType;
       self.thisPositions  = positions;
     end

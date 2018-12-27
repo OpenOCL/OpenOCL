@@ -3,12 +3,20 @@ classdef MatrixStructure < VarStructure
   %   
   
   properties
+    % thisPositions from VarStructure
+    % thisSize from VarStructure
   end
   
   methods
     
-    function self = MatrixStructure(s)
+    function self = MatrixStructure(s, positions)
+      % MatrixStructure(size, positions)
       self.thisSize = s;
+      if nargin == 1
+        self.thisPositions = {1:prod(self.size)};
+      else
+        self.thisPositions = positions;
+      end
     end
     
     function s = size(self,varargin)
@@ -24,7 +32,15 @@ classdef MatrixStructure < VarStructure
     end
     
     function r = positions(self)
-      r = {1:prod(self.size)};
+      r = self.thisPositions;
+    end
+    
+    function r = get(self,slice)
+      assert(isnumeric(slice))
+      pos = reshape(self.positions{1}, self.size);
+      pos = pos(slice);
+      pos = pos(:)';
+      r = MatrixStructure(size(slice), {pos});
     end
   end
 end

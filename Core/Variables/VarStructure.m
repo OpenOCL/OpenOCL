@@ -3,11 +3,14 @@ classdef VarStructure < handle
   %   Structures can be Trees or Matrizes or a selection of nodes in a tree
   
   properties
+    thisPositions
     thisSize
   end
   
   methods
     function get(varargin)
+      % get(id)
+      % get(id,slice)
       error('Not Implemented.');
     end
     

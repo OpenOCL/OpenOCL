@@ -164,7 +164,6 @@ assert(isequal(full(f(v1)),vTest))
 
 %%% jacobian
 % test against finite diff jacobian
-
 aTest = jacobian(testJacobianFun(a1),a1);
 vTest = finiteDiffJac(@testJacobianFun,v1);
 f = casadi.Function('f',{s1},{aTest.value});

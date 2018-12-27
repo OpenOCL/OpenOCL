@@ -56,80 +56,34 @@ ocpVar.addRepeated({x,u},5);
 ocpVar.add(x);
 
 v = Variable(ocpVar,0);
-state = v.get('x');
-state.get('R').set(eye(3))
-state.get('p').set([100;0;50])
-state.get('v').set([20;0;0])
-state.get('w').set([0;1;0.1])
-
-assert( isequal( state.value,   [
-  100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
-         0         0         0         0         0         0
-   50.0000   50.0000   50.0000   50.0000   50.0000   50.0000
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-   20.0000   20.0000   20.0000   20.0000   20.0000   20.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-    0.1000    0.1000    0.1000    0.1000    0.1000    0.1000] ) );
-
-assert( isequal( state.value,   [
-  100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
-         0         0         0         0         0         0
-   50.0000   50.0000   50.0000   50.0000   50.0000   50.0000
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-   20.0000   20.0000   20.0000   20.0000   20.0000   20.0000
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-         0         0         0         0         0         0
-    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
-    0.1000    0.1000    0.1000    0.1000    0.1000    0.1000] ) );
+v.get('x').get('R').set(eye(3))
+v.get('x').get('p').set([100;0;50])
+v.get('x').get('v').set([20;0;0])
+v.get('x').get('w').set([0;1;0.1])
 
 assert( isequal( v.get('x',4:6).get('p').value, ... 
                  [100   100   100
                    0     0     0
                   50    50    50]));
   
-% this should not print warnings
-v.get('x',4:6).get('p').set(eye(3));
-assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
+%% this should not print warnings
+%v.get('x',4:6).get('p').set(eye(3));
+%assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
+%
+%assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
+%
+%v.get('x').get('R').set(eye(3));
+%assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
+%
+%v.get('x').get('R').set(ones(9,1))
+%assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
-assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
+% slice on TreeNode
+assert(isequal(v(4:12).value,[1,0,0,0,1,0,0,0,1]'))
 
-v.get('x').get('R').set(eye(3));
-assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
-
-v.get('x').get('R').set(ones(9,1))
-assert( isequal(v.get('x').get('R').value, ones(9,6)) );
+% slice on selection
+assert(isequal(v.x(1).p.value,[100,0,50]'))
+assert(isequal(v.x(4:6).p(1).value,[100,100,100]))
 
 
-%assert( isequal(v.get('x').get('R',1,1).value,ones(1,6)) );
 
-% how about v.get(1,'x') to get the first x
-% v.get('x').get(2,'R') to get the second R in x
-% vs v.get('x').get('p',2) to get the second element of the ps: py
-% could do v.get(1,'x').get('R',2)
-
-p1 = v.get('x',1).get('p');
-p2 = v.get('x',2).get('p');
-p3 = p1 + p2;
-p3 = p1 - p2;
-p3 = p1 ./ p2;
-p3 = p1'*p2;

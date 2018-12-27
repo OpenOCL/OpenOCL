@@ -4,6 +4,7 @@ classdef TreeNode < VarStructure
   
   properties (Access = public)
     
+    % thisPositions from VarStructure
     % thisSize inherited from VarStructure
     id
     childPointers
@@ -129,6 +130,7 @@ classdef TreeNode < VarStructure
     end
     
     function subVar = getWithPositions(self,id,parentPositions,selector)
+      assert(ischar(id))
       
       if ~isfield(self.childPointers,id)
         error('Error: Can not obtain id from this variable.');
