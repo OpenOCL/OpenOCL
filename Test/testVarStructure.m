@@ -46,17 +46,18 @@ y.add('x1',[1,2]);
 assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
 
 % get by name in two steps
-uhat = x.get('u');
-assert( isequal( uhat.get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
+
+assert( isequal( x.get('u').get('x1').positions, {[4,5,6],[16,17,18],[28,29,30],[40,41,42]} ));
 
 % get by selector
-assert( isequal( uhat.get(1).get('x1').positions, {[4,5,6],[16,17,18]} ));
+a = x.get('u').get(1);
+assert( isequal( a.get('x1').positions, {[4,5,6],[16,17,18]} ));
 
 % flat operator
 t = x.getFlat();
 assert(isequal ( t.get('x1').positions,{[1,2,3],[4,5,6],[16,17,18],[28,29,30],[40,41,42],[58,59,60]} ));
 
-% slice TreeNoe, MatrixStructure, NodeSelection
+% slice TreeNode, MatrixStructure, NodeSelection
 assert(isequal(x.get('x1',1).positions,{[1],[58]}))
 assert(isequal(x.get('x1',2).positions,{[2],[59]}))
 assert(strcmp(class(x.get('x1',1:2).get(1)), 'MatrixStructure'))
@@ -68,5 +69,3 @@ assert(strcmp(class(x.get('u',1).get('x1',1)), 'NodeSelection'))
 assert(strcmp(class(x.get('u',1).get('x1',1).get(1)), 'MatrixStructure'))
 assert(isequal(x.get('u',1).get('x1',1).get(1).positions,{[4]}))
 assert(isequal(x.get('u',1).get('x3',[2,3;1,2]).get(2).positions,{[20,21;19,20]}))
-
-

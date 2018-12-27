@@ -74,7 +74,7 @@ assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
 
 v.get('x').get('R').set(eye(3));
 assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
-assert(isequal(v(4:12).value,[1,0,0,0,1,0,0,0,1]'))
+assert(isequal(v.x.R.get(1).value,eye(3)))
 
 v.get('x').get('R').set(ones(9,1))
 assert( isequal(v.get('x').get('R').value, ones(9,6)) );
@@ -83,5 +83,16 @@ assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 assert(isequal(v.x(1).p.value,[100,0,50]'))
 assert(isequal(v.x(4:6).get('p',1).value,[1,0,0]))
 
+% :, all, end
+assert(isequal(v('all').value,v.value)) 
+if ~isOctave
+  assert(isequal(v(':').value,v.value))
+end
+v.x.get('end').set(2:19)
 
+assert(isequal(v.x.get('end').get(2).value,3))
+
+assert(isequal(v.x.get('end').get('end').value,19))
+assert(isequal(v.x('end').get(2).value,3))
+assert(isequal(v.x('end').get('end').value,19))
 
