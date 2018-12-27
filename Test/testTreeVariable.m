@@ -1,6 +1,29 @@
-function testVar
+function testTreeVariable
+  
+xStruct = TreeNode('x');
+xStruct.add('x1',[1,2]);
+xStruct.add('x2',[3,2]);
+xStruct.add('x1',[1,2]);
 
-% clear classes
+x = Variable(xStruct,4);
+
+%%% set
+x.set(1:10);
+assert(isequal(x.value,(1:10)'))
+
+%%% get by id
+assert(isequal(x.get('x1').value,[1,9;2,10]));
+assert(isequal(x.x1.value,[1,9;2,10]));
+
+%%% get by selector
+x1 = x.get('x1');
+assert(isequal(x1.get(2).value,[9,10]));
+assert(isequal(x.x1(2).value,[9,10]));
+
+%%% get by selector and set
+x1.get(2).set([4,5])
+assert(isequal(x1.get(2).value,[4,5]));
+
 x = TreeNode('x');
 x.add('p',[3,1]);
 x.add('R',[3,3]);
@@ -26,9 +49,7 @@ assert( isequal( state.get('w').value,   [0;1;0.1] ) )
 state.get('p').set([100;0;50])
 
 assert( isequal( state.get('p').value,   [100;0;50] ) )
-
 assert( isequal( state.size,   [18 1] ) )
-
 
 ocpVar = TreeNode('ocpvar');
 ocpVar.addRepeated({x,u},5);
@@ -61,17 +82,6 @@ assert( isequal( state.value,   [
     1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
     0.1000    0.1000    0.1000    0.1000    0.1000    0.1000] ) );
 
-
-% exThrown = false;
-% try
-%   % these should throw error becauser R is not accessible like that
-%   ocpVar.get('R')
-%   ocpVar.get('R',1)
-% catch
-%   exThrown = true;
-% end
-% assert(exThrown);
-
 assert( isequal( state.value,   [
   100.0000  100.0000  100.0000  100.0000  100.0000  100.0000
          0         0         0         0         0         0
@@ -92,31 +102,16 @@ assert( isequal( state.value,   [
     1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
     0.1000    0.1000    0.1000    0.1000    0.1000    0.1000] ) );
 
-
-
-  
-  
 assert( isequal( v.get('x',4:6).get('p').value, ... 
                  [100   100   100
                    0     0     0
                   50    50    50]));
   
-
-% printString = evalc('ocpVar.get(''x'',1:2).printStructure');
-% indizes = regexp(printString,'x1|x2|v|p');
-% assert(isequal(indizes, [6,17,20,30,43,46,56,65,76,79,89,102,105,115]));
-
-
-%%
-
-
-
 % this should not print warnings
 v.get('x',4:6).get('p').set(eye(3));
 assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
 
-% not sure if size should be supported!?
-% assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
+assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
 
 v.get('x').get('R').set(eye(3));
 assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
@@ -125,13 +120,12 @@ v.get('x').get('R').set(ones(9,1))
 assert( isequal(v.get('x').get('R').value, ones(9,6)) );
 
 
-% assert( isequal(v.get('x').get('R',1,1).value,ones(1,6)) );
+%assert( isequal(v.get('x').get('R',1,1).value,ones(1,6)) );
 
 % how about v.get(1,'x') to get the first x
 % v.get('x').get(2,'R') to get the second R in x
 % vs v.get('x').get('p',2) to get the second element of the ps: py
 % could do v.get(1,'x').get('R',2)
-
 
 p1 = v.get('x',1).get('p');
 p2 = v.get('x',2).get('p');

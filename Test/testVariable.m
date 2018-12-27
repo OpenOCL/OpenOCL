@@ -203,37 +203,12 @@ assert(isequal(full(f(v1)),vTest))
 % keep type
 assert(isa(aTest,'CasadiVariable'));
 
-
-%%% tree Arithemtic
-xStruct = TreeNode('x');
-xStruct.add('x1',[1,2]);
-xStruct.add('x2',[3,2]);
-xStruct.add('x1',[1,2]);
-
-x = Variable(xStruct,4);
-
-%%% set
-x.set(1:10);
-assert(isequal(x.value,(1:10)'))
-
-%%% get by id
-assert(isequal(x.get('x1').value,[1,9;2,10]));
-assert(isequal(x.x1.value,[1,9;2,10]));
-
-%%% get by selector
-x1 = x.get('x1');
-assert(isequal(x1.get(2).value,[9,10]));
-assert(isequal(x.x1(2).value,[9,10]));
-
-%%% get by selector and set
-x1.get(2).set([4,5])
-assert(isequal(x1.get(2).value,[4,5]));
-
 end
 
 function v = testJacobianFun(x)
   v = x*x(1)+cross([x(1);x(3)^2;x(2)],x);
 end
+
 function J = finiteDiffJac(functionHandle,x)
   FDeps = 1e-6;
   fx = functionHandle(x);
@@ -246,3 +221,4 @@ function J = finiteDiffJac(functionHandle,x)
     J(:,k) = (functionHandle(x+dx) - fx) / FDeps;
   end
 end
+

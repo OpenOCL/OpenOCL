@@ -32,7 +32,6 @@ classdef Variable < handle
       else
         error('Variable type not implemented.');
       end
-      
     end
     
     function obj = createFromVariable(structure, variable)
@@ -46,7 +45,6 @@ classdef Variable < handle
         error('Variable not implemented.');
       end
     end
-    
     
     function obj = createMatrixLike(input, value)
       % obj = createMatrixLike(input,value)
@@ -62,14 +60,13 @@ classdef Variable < handle
       else
         error('Variable type not implemented.');
       end
-      
     end
     
     function obj = Matrix(value)
       obj = Variable(MatrixStructure(size(value)),value);
     end
     
-  end
+  end % methods(static)
   
   methods
     
@@ -118,7 +115,6 @@ classdef Variable < handle
     end
     %%%
     
-    
     function set(self,valueIn)
       
       if isa(valueIn,'Variable')
@@ -149,8 +145,7 @@ classdef Variable < handle
       else
         error('Error: Can not assign value to variable, dimensions do not match.');
       end
-      
-    end
+    end % set
     
     function v = value(self)
       
@@ -171,7 +166,6 @@ classdef Variable < handle
       n1 = n-1;
       y = d1 + (0:n1).*(d2 - d1)/n1;
     end
-    
     
     %%% matrix and vector wise operations
     function v = horzcat(varargin)
@@ -249,9 +243,7 @@ classdef Variable < handle
       else
         [varargout{1:nargout}] = self;
       end
-      
-      
-    end
+    end % subsref
     
     function self = subsasgn(self,s,v)
       

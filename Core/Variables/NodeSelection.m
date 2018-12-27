@@ -1,6 +1,6 @@
 classdef NodeSelection < VarStructure
   % NODESELECTION Uniform selection of variables
-  %   Normally comes from selecting specific variables in a tree 
+  %   Usually comes from selecting specific variables in a tree 
   
   properties
     thisPositions
@@ -10,7 +10,6 @@ classdef NodeSelection < VarStructure
   methods
     
     function self = NodeSelection(nodeType,positions)
-      
       self.nodeType = nodeType;
       self.thisPositions  = positions;
     end
@@ -33,7 +32,6 @@ classdef NodeSelection < VarStructure
       % childSelection = get(self,id,selector)
       % childSelection = get(self,id)
       % childSelection = get(self,selector)
-      
       if nargin == 2 && ischar(in1)
         % args: id
         childSelection = self.nodeType.getWithPositions(in1,self.positions);
@@ -45,7 +43,6 @@ classdef NodeSelection < VarStructure
         % args: id,selector
         childSelection = self.nodeType.getWithPositions(in1,self.positions,in2);
       end
-
     end
     
     function r = positions(self)
@@ -56,8 +53,6 @@ classdef NodeSelection < VarStructure
       r = self.nodeType.getChildPointers();
     end
     
-  end
-
-  
-end
+  end % methods
+end % class
 
