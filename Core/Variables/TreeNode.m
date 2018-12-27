@@ -13,22 +13,14 @@ classdef TreeNode < VarStructure
 
   methods
     function self = TreeNode(varargin)
-      % VarStructure(id)
-      % VarStructure(var)
-      % VarStructure()
+      % TreeNode(id)
+      % TreeNode(var)
 
       narginchk(0,2);
       self.clear
-      
-      
-      % if no arguments give, return empty var
-      % should only be used by subclasses
-      if nargin == 0
-        return
-      end
 
       if isa(varargin{1},'TreeNode')
-        % copy recursively from given var
+        % copy
         self            = varargin{1};
 
       elseif ischar(varargin{1}) 
@@ -37,7 +29,7 @@ classdef TreeNode < VarStructure
       else
         error('Error in the argument list.');
       end
-    end % VarStructure constructor
+    end
     
     function clear(self)
       self.thisSize = [0 1];
@@ -52,37 +44,35 @@ classdef TreeNode < VarStructure
     function add(self,varargin)
       % add(id,size)
       %   Add a new variable from id and size
-      % add(var)
+      % add(structure)
       %   Add a copy of the given variable
-      
-      % parse inputs
       narginchk(2,3);
       if nargin == 3
-        % create new VarStructure from id and size
+        % args:(id,size)
         idIn = varargin{1};
         sizeIn = varargin{2};
         self.addMatrix(idIn,sizeIn);
       elseif nargin == 2
-        varIn = varargin{1};
-        self.addVar(varIn)
+        % args:(var)
+        structureIn = varargin{1};
+        self.addVar(structureIn)
       end
-      
     end % add
     
-    function addRepeated(self,varArray,N)
-      % addRepeated(self,varArray,N)
-      %   Adds repeatedly a list of variables
-      %     e.g. ocpVar.addRepeated([stateVar,controlVar],20);
+    function addRepeated(self,structureArray,N)
+      % addRepeated(self,structureArray,N)
+      %   Adds repeatedly a list of structures
+      %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
       for i=1:N
-        for j=1:length(varArray)
-          self.add(varArray{j})
+        for j=1:length(structureArray)
+          self.add(structureArray{j})
         end
       end
-    end % addRepeated
+    end
     
     function addVar(self,varIn)
       % addVar(var)
-      %   Adds a reference of the var
+      %   Adds a reference of the varStructure
       
       if isempty(varIn)
         return
@@ -99,12 +89,10 @@ classdef TreeNode < VarStructure
       end
       
       self.thisLength = self.thisLength+varLength;
-      
     end
     
     function addMatrix(self,id,size)
       % Adds a Matrix as Leave of tree
-      
       varLength = prod(size);
       positions = self.thisLength+1:self.thisLength+varLength;
       
@@ -116,14 +104,12 @@ classdef TreeNode < VarStructure
       end
       
       self.thisLength = self.thisLength+varLength;
-      
     end
     
     function s = size(self,varargin)
       % size
-      %   Returns the size of the variable
-      %   The size is determined by the leave variables
-      
+      %   Returns the size of the structure
+      %   The size is determined by the leave structure
       if isempty(fieldnames(self.childPointers))
         if nargin > 1
           s = self.thisSize(varargin{1});
@@ -133,18 +119,14 @@ classdef TreeNode < VarStructure
       else
         s = [self.thisLength 1];
       end
-      
     end
     
     function subVar = get(self,id,varargin)
       % get(id)
       % get(id,selector)
-      
       parentPositions = {1:self.thisLength};
       subVar = self.getWithPositions(id,parentPositions,varargin{:});
-      
-      
-    end % get    
+    end
     
     function subVar = getWithPositions(self,id,parentPositions,selector)
       
@@ -185,8 +167,7 @@ classdef TreeNode < VarStructure
       end    
       
       subVar = NodeSelection(child.node,positions);
-    end
-    
+    end % getWithPositions
     
     function tree = getFlat(self)
       
@@ -255,14 +236,13 @@ classdef TreeNode < VarStructure
         
       end
       
-    end
+    end % iterateLeafs
     
     function r = getChildPointers(self)
       r = self.childPointers;
     end
     
   end % methods
-  
 end % class
 
 
