@@ -87,10 +87,66 @@ classdef Variable < handle
       end
     end
     
-    %% MATLAB only function
-    function n = properties(self)
-      n = [fieldnames(self);	
-      fieldnames(self.varStructure.getChildPointers)];	
+    function varargout = subsref(self,s)
+      % var(1)
+      % var.x
+      % var.value
+      
+      if numel(s) == 1 && strcmp(s.type,'()')
+        % slice on value
+        [varargout{1}] = self.slice(s.subs{:});
+      elseif numel(s) > 1 && strcmp(s(1).type,'()')
+        % slice and call recursive
+        v = self.slice(s(1).subs{:});
+        [varargout{1:nargout}] = subsref(v,s(2:end));
+      elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
+        try
+          % try to call class method
+          [varargout{1:nargout}] = builtin('subsref',self,s);
+        catch e
+          % get by id
+          id = s(1).subs;
+          % check if id is a children
+          if ~isfield(self.varStructure.getChildPointers,id)
+            if isOctave()
+              error('Can access field in variable');  %% OCTAVE
+            else
+              throw(e);  %% MATLAB
+            end
+          end
+          
+          if numel(s) > 1
+            if strcmp(s(2).type,'()')
+              % check for selector
+              selector = s(2).subs{1};
+              v = self.get(id,selector);
+              [varargout{1:nargout}] = subsref(v,s(3:end));
+            else
+              v = self.get(id);
+              [varargout{1:nargout}] = subsref(v,s(2:end));
+            end
+          else
+            v = self.get(id);
+            [varargout{1:nargout}] = v;
+          end
+        end
+      else
+        [varargout{1:nargout}] = self;
+      end
+    end % subsref
+    
+    function self = subsasgn(self,s,v)
+      
+      if isa(v,'Variable') 
+        v = v.value;
+      end
+      
+      if numel(s)==1 && strcmp(s.type,'()')
+        v = subsasgn(self.value,s,v);
+        self.set(v);
+      else
+        self.set(builtin('subsasgn',self,s,v));
+      end
     end
     
     %%% Delegate methods of varStructure
@@ -196,67 +252,6 @@ classdef Variable < handle
         end
       end
       v = Variable.createMatrixLike(obj,vertcat(inValues{:}));
-    end
-    
-    function varargout = subsref(self,s)
-      
-      if numel(s) == 1 && strcmp(s.type,'()')
-        % slice on value
-        [varargout{1}] = self.slice(s.subs{:});
-      elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        % slice and call recursive
-        v = self.slice(s(1).subs{:});
-        [varargout{1:nargout}] = subsref(v,s(2:end));
-      elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
-        
-        try
-          % try to call class method
-          [varargout{1:nargout}] = builtin('subsref',self,s);
-        catch e
-          % get by id
-          id = s(1).subs;
-          
-          % check if id is a children
-          if ~isfield(self.varStructure.getChildPointers,id)
-            if isOctave()
-              error('Can access field in variable');  %% OCTAVE
-            else
-              throw(e);  %% MATLAB
-            end
-          end
-          
-          if numel(s) > 1
-            if strcmp(s(2).type,'()')
-              % check for selector
-              selector = s(2).subs{1};
-              v = self.get(id,selector);
-              [varargout{1:nargout}] = subsref(v,s(3:end));
-            else
-              v = self.get(id);
-              [varargout{1:nargout}] = subsref(v,s(2:end));
-            end
-          else
-            v = self.get(id);
-            [varargout{1:nargout}] = v;
-          end
-        end
-      else
-        [varargout{1:nargout}] = self;
-      end
-    end % subsref
-    
-    function self = subsasgn(self,s,v)
-      
-      if isa(v,'Variable') 
-        v = v.value;
-      end
-      
-      if numel(s)==1 && strcmp(s.type,'()')
-        v = subsasgn(self.value,s,v);
-        self.set(v);
-      else
-        self.set(builtin('subsasgn',self,s,v));
-      end
     end
     
     function slicedVar = slice(self,varargin)
