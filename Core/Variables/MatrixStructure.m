@@ -1,6 +1,6 @@
 classdef MatrixStructure < VarStructure
   %MATRIXSTRUCTURE Matrix valued variables
-  %   
+  %
   
   properties
     % thisPositions from VarStructure

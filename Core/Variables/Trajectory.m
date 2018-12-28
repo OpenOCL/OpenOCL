@@ -1,5 +1,5 @@
-classdef NodeSelection < VarStructure
-  % NODESELECTION Uniform selection of variables
+classdef Trajectory < VarStructure
+  % TRAJECTORY Represents a trajectory of a variable
   %   Usually comes from selecting specific variables in a tree 
   
   properties
@@ -9,7 +9,7 @@ classdef NodeSelection < VarStructure
   
   methods
     
-    function self = NodeSelection(nodeType,positions)
+    function self = Trajectory(nodeType,positions)
       self.nodeType = nodeType;
       self.thisPositions  = positions;
     end
@@ -41,13 +41,13 @@ classdef NodeSelection < VarStructure
         if strcmp(in1,'end')
           in1 = length(positions);
         end
-        assert(isnumeric(in1), 'NodeSelection.get:Argument needs to be an index or char.')
+        assert(isnumeric(in1), 'Trajectory.get:Argument needs to be an index or char.')
         if length(in1) == 1 && isa(self.nodeType,'TreeNode')
           r = TreeNode(self.nodeType,positions(in1));
         elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
           r = MatrixStructure(nodeType.size,positions);
         else
-          r = NodeSelection(self.nodeType,positions(in1));
+          r = Trajectory(self.nodeType,positions(in1));
         end
       else
         % args: id,selector

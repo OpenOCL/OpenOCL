@@ -188,7 +188,7 @@ classdef TreeNode < VarStructure
       elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
         r = MatrixStructure(nodeType.size,positions);
       else
-        r = NodeSelection(child.node,positions);
+        r = Trajectory(child.node,positions);
       end
     end % getWithPositions
     
