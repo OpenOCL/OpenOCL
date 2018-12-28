@@ -5,7 +5,7 @@ classdef Variable < handle
     % variables e.g. casadi variables, or symbolic variables.
   
   properties
-    varStructure
+    thisStructure
     thisValue
   end
   
@@ -20,7 +20,7 @@ classdef Variable < handle
       %
       % Args:
       %   input (Variable): Inherit variable type of this object.
-      %   structure (VarStructure): Structure of the variable.
+      %   structure (structure): Structure of the variable.
       %   value: Value to asign to the variable (optional).
       
       if isa(input,'CasadiVariable')
@@ -70,18 +70,18 @@ classdef Variable < handle
   
   methods
     
-    function self = Variable(varStructure,value)
-      self.varStructure = varStructure;
+    function self = Variable(structure,value)
+      self.thisStructure = structure;
       
       if nargin == 1
-        self.thisValue = Value(zeros(prod(varStructure.size),1));
+        self.thisValue = Value(zeros(prod(structure.size),1));
       end
       
       if nargin ==2 
         if isa(value,'Value')
           self.thisValue = value;
         else
-          self.thisValue = Value(zeros(prod(varStructure.size),1));
+          self.thisValue = Value(zeros(prod(structure.size),1));
           self.set(value);
         end
       end
@@ -103,7 +103,7 @@ classdef Variable < handle
       elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
         % x.something()
         id = s(1).subs;
-        if isfield(self.varStructure.getChildPointers,id)
+        if isfield(self.thisStructure.getChildPointers,id)
           % x.variable
           if numel(s) > 1
             if strcmp(s(2).type,'()')
@@ -142,15 +142,15 @@ classdef Variable < handle
       end
     end
     
-    %%% Delegate methods of varStructure
+    %%% Delegate methods of OclStructure
     function l = length(self)
       l = max(size(self));
     end
     function s = size(self,varargin)
-      s = self.varStructure.size(varargin{:});
+      s = self.thisStructure.size(varargin{:});
     end
     function r = positions(self)
-      r = self.varStructure.positions;
+      r = self.thisStructure.positions;
     end
     function r = get(self,in1,in2)
       % r = get(self,id)
@@ -168,10 +168,10 @@ classdef Variable < handle
       if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
         if nargin == 2
           % get(id)
-          r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
+          r = Variable.createLike(self,self.thisStructure.get(in1),self.thisValue);
         else
           % get(id,selector)
-          r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+          r = Variable.createLike(self,self.thisStructure.get(in1,in2),self.thisValue);
         end
       else
         if nargin == 2
@@ -179,14 +179,14 @@ classdef Variable < handle
           if isAllOperator(in1)
             r = self;
           else
-            r = Variable.createLike(self,self.varStructure.get(in1),self.thisValue);
+            r = Variable.createLike(self,self.thisStructure.get(in1),self.thisValue);
           end
         else
           % get(row,col)
           if isAllOperator(in1) && isAllOperator(in2)
             r = self;
           else
-            r = Variable.createLike(self,self.varStructure.get(in1,in2),self.thisValue);
+            r = Variable.createLike(self,self.thisStructure.get(in1,in2),self.thisValue);
           end
         end
       end
@@ -230,7 +230,7 @@ classdef Variable < handle
     end % set
     
     function v = value(self)
-      positions = self.varStructure.positions();
+      positions = self.thisStructure.positions();
       %assert(length(positions)>= 1, 'varStructure ill defined (positions).')
       if length(positions) == 1
         s = self.size;
@@ -605,7 +605,7 @@ classdef Variable < handle
       %
       % Tab completion in Matlab for custom variables
       n = [fieldnames(self);	
-      fieldnames(self.varStructure.getChildPointers)];	
+      fieldnames(self.thisStructure.getChildPointers)];	
     end
   end
 end

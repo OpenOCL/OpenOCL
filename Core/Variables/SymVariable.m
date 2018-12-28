@@ -8,23 +8,23 @@ classdef SymVariable < Variable
   methods (Static)
     
     function obj = Matrix(sizeIn)
-      obj = SymVariable(MatrixStructure(sizeIn));
+      obj = SymVariable(OclMatrix(sizeIn));
     end
     
   end
   
   methods
     
-    function self = SymVariable(varStructure,value)
+    function self = SymVariable(structure,value)
       
-      self = self@Variable(varStructure);
+      self = self@Variable(structure);
       
-      if prod(varStructure.size) == 0
+      if prod(structure.size) == 0
         return
       end
 
       if nargin == 1
-        value = sym(varStructure.id,[prod(varStructure.size),1]);
+        value = sym(structure.id,[prod(structure.size),1]);
         assume(value,'real');
       end
       

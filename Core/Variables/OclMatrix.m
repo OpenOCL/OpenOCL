@@ -1,5 +1,5 @@
-classdef MatrixStructure < VarStructure
-  %MATRIXSTRUCTURE Matrix valued variables
+classdef OclMatrix < VarStructure
+  %OCLMATRIX Matrix valued structure for variables
   %
   
   properties
@@ -8,8 +8,8 @@ classdef MatrixStructure < VarStructure
   
   methods
     
-    function self = MatrixStructure(s, positions)
-      % MatrixStructure(size, positions)
+    function self = OclMatrix(s, positions)
+      % OclMatrix(size, positions)
       
       self.thisSize = s;
       if nargin == 1
@@ -46,18 +46,11 @@ classdef MatrixStructure < VarStructure
       end
       s = size(pos);
       pos = pos(:)';
-      r = MatrixStructure(s, {pos});
+      r = OclMatrix(s, {pos});
     end
     
     function r = getChildPointers(varargin)
       r = struct;
-    end
-
-    function subVar = getWithPositions(self,id,parentPositions,selector)
-      parentPositions
-      self.size
-      id
-      subVar = struct;
     end
   end
 end

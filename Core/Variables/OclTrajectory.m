@@ -1,5 +1,5 @@
-classdef Trajectory < VarStructure
-  % TRAJECTORY Represents a trajectory of a variable
+classdef OclTrajectory < VarStructure
+  % OCLTRAJECTORY Represents a trajectory of a variable
   %   Usually comes from selecting specific variables in a tree 
   
   properties
@@ -9,7 +9,7 @@ classdef Trajectory < VarStructure
   
   methods
     
-    function self = Trajectory(nodeType,positions)
+    function self = OclTrajectory(nodeType,positions)
       self.nodeType = nodeType;
       self.thisPositions  = positions;
     end
@@ -43,11 +43,11 @@ classdef Trajectory < VarStructure
         end
         assert(isnumeric(in1), 'Trajectory.get:Argument needs to be an index or char.')
         if length(in1) == 1 && isa(self.nodeType,'TreeNode')
-          r = TreeNode(self.nodeType,positions(in1));
+          r = OclTree(self.nodeType,positions(in1));
         elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
-          r = MatrixStructure(nodeType.size,positions);
+          r = OclMatrix(nodeType.size,positions);
         else
-          r = Trajectory(self.nodeType,positions(in1));
+          r = OclTrajectory(self.nodeType,positions(in1));
         end
       else
         % args: id,selector
