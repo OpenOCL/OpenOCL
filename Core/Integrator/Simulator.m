@@ -59,7 +59,7 @@ classdef Simulator < handle
       
       algVars = Variable(self.system.algVarsStruct,0);
       simVars = Variable(simVarsStruct,0);
-      controls = controlsSeries.slice(1);
+      controls = controlsSeries.get(1);
       [states,algVars] = self.getConsistentIntitialCondition(initialStates,algVars,controls,parameters);
       
  
@@ -73,7 +73,7 @@ classdef Simulator < handle
       for k=1:N-1
         timestep = times(k+1)-times(k);
         
-        controls = controlsSeries.slice(k);
+        controls = controlsSeries.get(k);
         
         if callback
           self.system.simulationCallback(states,algVars,controls,parameters);
@@ -86,7 +86,7 @@ classdef Simulator < handle
         if ~isempty(algVarsVal)
           simVars.get('algVars',k).set(algVarsVal);
         end
-        controlsSeries.slice(k).set(controls);
+        controlsSeries.get(k).set(controls);
         
         states.set(statesVal);
         algVars.set(algVarsVal);
