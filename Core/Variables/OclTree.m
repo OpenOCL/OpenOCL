@@ -1,197 +1,86 @@
 classdef OclTree < OclStructure
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
-  
-  properties (Access = public)
-    
-    % thisPositions from OclStructure
-    % thisSize inherited from OclStructure
-    id
-    childPointers
-    thisLength
-    
+  properties
+    % positions (OclStructure)
+    children
+    len
   end
 
   methods
-    function self = OclTree(in,positions)
-      % OclTree(id)
-      % OclTree(node,positions)
-      
-      if ischar(in)
-        % id
-        self.id = in;
-        self.thisSize = [0 1];
-        self.childPointers = struct;
-        self.thisLength = 0;
-        self.thisPositions = {};
-      else
-        self.id = in.id;
-        self.thisSize = in.thisSize;
-        self.childPointers = in.childPointers;
-        self.thisLength = in.thisLength;
-        self.thisPositions = positions;
-      end
+    function self = OclTree()
+      % OclTree()
+      self.children = struct;
+      self.positions = struct;
+      self.len = 0;
     end
     
-    function r = positions(self)
-      r = self.thisPositions;
+    function r,p = get(self,id,p)
+      % get(id)
+      % get(id)
+      r = self.children.(id);
+      p = OclTree.merge(p,self.positions.(id))
     end
 
-    function add(self,varargin)
+    function add(self,id,in2)
       % add(id,size)
       %   Add a new variable from id and size
-      % add(structure)
+      % add(id,obj)
       %   Add a copy of the given variable
       narginchk(2,3);
-      if nargin == 3
+      if isnumeric(in2)
         % args:(id,size)
-        idIn = varargin{1};
-        sizeIn = varargin{2};
-        self.addMatrix(idIn,sizeIn);
-      elseif nargin == 2
-        % args:(var)
-        structureIn = varargin{1};
-        self.addVar(structureIn);
+        self.addObject(id,OclMatrix(in2));
+      else
+        % args:(id,obj)
+        self.addObject(id,in2);
       end
-    end % add
+    end
     
-    function addRepeated(self,structureArray,N)
-      % addRepeated(self,structureArray,N)
-      %   Adds repeatedly a list of structures
+    function addRepeated(self,arr,N)
+      % addRepeated(self,arr,N)
+      %   Adds repeatedly a list of structure objects
       %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
       for i=1:N
-        for j=1:length(structureArray)
-          self.add(structureArray{j})
+        for j=1:length(arr)
+          self.add(arr{j})
         end
       end
     end
     
-    function addVar(self,varIn)
-      % addVar(var)
-      %   Adds a reference of the oclStructure
+    function addObject(self,id,obj)
+      % addVar(id, obj)
+      %   Adds a structure object (by reference)
       
-      if isempty(varIn)
-        return
+      if isempty(obj)
+        warning('OclTree')
       end
-            
-      varLength = prod(varIn.size);
-      positions = self.thisLength+1:self.thisLength+varLength;
       
-      if isfield(self.childPointers,varIn.id)
-        self.childPointers.(varIn.id).positions = [self.childPointers.(varIn.id).positions,{positions}]; 
+      objLength = prod(obj.size);
+      newLength = self.len+objLength;
+
+      if isfield(self.children, id)
+        self.children.(id){end+1} = obj;
+        self.positions.(id){end+1} = 1:newLength;
       else
-        self.childPointers.(varIn.id).node = varIn; 
-        self.childPointers.(varIn.id).positions = {positions};
+        self.children.(id) = {obj};
+        self.positions.(id) = {1:newLength};
       end
-      
-      self.thisLength = self.thisLength+varLength;
-      self.thisPositions = {1:self.thisLength};
+      self.len = newLength;
     end
     
-    function addMatrix(self,id,size)
-      % Adds a Matrix as Leave of tree
-      varLength = prod(size);
-      positions = self.thisLength+1:self.thisLength+varLength;
-      
-      if isfield(self.childPointers,id)
-        self.childPointers.(id).positions = [self.childPointers.(id).positions,{positions}]; 
-      else
-        self.childPointers.(id).node = OclMatrix(size); 
-        self.childPointers.(id).positions = {positions};
-      end
-      
-      self.thisLength = self.thisLength+varLength;
-      self.thisPositions = {1:self.thisLength};
-    end
-    
-    function s = size(self,varargin)
-      % size
+    function s = size(self)
+      % s= size()
       %   Returns the size of the structure
       %   The size is determined by the leave structure
-      if isempty(fieldnames(self.childPointers))
-        if nargin > 1
-          s = self.thisSize(varargin{1});
-        else
-          s = self.thisSize;
-        end
-      else
-        s = [self.thisLength 1];
+      ids = fieldnames(self.children);
+      s = [0,1];
+      for i=1:length(ids)
+        thisId = ids{i}
+        s(1) = s(1) + prod(self.children.(thisId).size())
       end
     end
-    
-    function r = get(self,in1,varargin)
-      % get(id)
-      % get(id,selector)
-      % get(selector)
-      if ischar(in1) && (~strcmp(in1,'end'))
-        parentPositions = self.positions();
-        r = self.getWithPositions(in1,parentPositions,varargin{:});
-      else
-        % get(selector)
-        pos = self.positions();
-        pos = pos{1};
-        if strcmp(in1,'end')
-          in1 = length(pos);
-        end
-        assert(isnumeric(in1) && nargin == 2, 'OclTree.get: Wrong arguments given.')
-        r = OclMatrix(size(in1), {pos(in1)});
-      end
-    end
-    
-    function r = getWithPositions(self,id,parentPositions,selector)
-      assert(ischar(id))
-      if ~isfield(self.childPointers,id)
-        error('OclTree.get: Can not obtain id from this variable.');
-      end
-      
-      if nargin < 4
-        selector = ':';
-      end
-      
-      if strcmp(selector,'all')
-        selector = ':';
-      end
-      
-      % get children
-      child = self.childPointers.(id);
-      
-      % access children by index
-      if strcmp(selector,'end')
-        child.positions = child.positions(end);
-      else
-        if isa(child.node,'OclMatrix')
-          for i=1:length(child.positions)
-            childPos = child.positions{i};
-            child.positions{i} = childPos(selector);
-          end
-        else
-          child.positions = child.positions(selector);
-        end
-      end
-      
-      % get merge all parent and child positions
-      Nchilds = length(child.positions);
-      
-      positions = cell(1,Nchilds*length(parentPositions));
-      i = 1;
-      for l=1:length(parentPositions)
-        thisParentPos = parentPositions{l};
-        for k=1:Nchilds
-          pos = child.positions{k};
-          positions{i} = thisParentPos(pos);
-          i = i+1;
-        end
-      end    
-      
-      if length(positions) == 1 && isa(child.node,'OclTree')
-        r = OclTree(child.node,positions);
-      elseif length(positions)==1 && isa(child.node,'OclMatrix') 
-        r = OclMatrix(child.node.size,positions);
-      else
-        r = OclTrajectory(child.node,positions);
-      end
-    end % getWithPositions
-    
+
     function tree = getFlat(self)
       parentPositions = self.positions();
       tree = OclTree(self.id);
@@ -257,10 +146,6 @@ classdef OclTree < OclStructure
         end
       end
     end % iterateLeafs
-    
-    function r = getChildPointers(self)
-      r = self.childPointers;
-    end
   end % methods
 end % class
 

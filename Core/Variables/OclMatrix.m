@@ -1,56 +1,48 @@
 classdef OclMatrix < OclStructure
   %OCLMATRIX Matrix valued structure for variables
   %
-  
   properties
-    % thisPositions from OclStructure
+    % positions (OclStructure)
   end
   
   methods
     
-    function self = OclMatrix(s, positions)
-      % OclMatrix(size, positions)
+    function self = OclMatrix(in)
+      % OclMatrix(size)
+      % OclMatrix(positions)
       
-      self.thisSize = s;
-      if nargin == 1
-        self.thisPositions = {1:prod(self.size)};
+      if isnumeric(in)
+        % in=size
+        self.positions = reshape(1:prod(in),in);
       else
-        self.thisPositions = positions;
+        % in=positions
+        self.positions = in;
       end
     end
     
-    function s = size(self,varargin)
+    function s = size(self,dim)
       % s = size()
       % s = size(dim)
+      s = size(self.positions);
       if nargin == 2
-        if varargin{1} > 2
-          s = 1;
+        if dim <= 2
+          s = s(dim)
         else
-          s = self.thisSize(varargin{1});
+          s = 1;
         end
-      else
-        s = self.thisSize;
       end
-    end
-    
-    function r = positions(self)
-      r = self.thisPositions;
     end
     
     function r = get(self,dim1,dim2)
-      pos = reshape(self.positions{1}, self.size);
+      % get(dim1)
+      % get(dim1,dim2)
+      pos = self.positions;
       if nargin == 2
         pos = pos(dim1);
       else
         pos = pos(dim1,dim2);
       end
-      s = size(pos);
-      pos = pos(:)';
-      r = OclMatrix(s, {pos});
-    end
-    
-    function r = getChildPointers(varargin)
-      r = struct;
+      r = OclMatrix(size(pos), pos);
     end
   end
 end

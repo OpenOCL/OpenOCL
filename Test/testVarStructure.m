@@ -1,6 +1,9 @@
 function testVarStructure
   
-x = OclTree('x');
+a = OclMatrix([2,2]);
+assertEqual(a.size(),[2 2]);
+  
+x = OclTree();
 assert(isequal(x.size,[0 1]));
 
 x.add('x1',[1,2]);
