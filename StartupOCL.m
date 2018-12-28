@@ -7,14 +7,14 @@ function StartupOCL(workingDirLocation)
 %   workingDirLocation - path to location where the working directory 
 %                        should be created.
 
-startupDir  = fileparts(which('StartupOCL'));
+oclPath  = fileparts(which('StartupOCL'));
 
-if isempty(startupDir)
+if isempty(oclPath)
   error('Can not find OpenOCL. Add root directory of OpenOCL to the path.')
 end
 
 if nargin == 0
-  workingDirLocation = fullfile(startupDir,'..');
+  workingDirLocation = fullfile(oclPath,'..');
 end
 
 % add current directory to path
@@ -27,35 +27,64 @@ exportDir   = fullfile(workingDirLocation,'OpenOCL_WorkingDir','export');
 [~,~] = mkdir(exportDir);
 
 % set environment variables for directories
+setenv('OPENOCL_PATH', oclPath)
 setenv('OPENOCL_TEST', testDir)
 setenv('OPENOCL_EXPORT', exportDir)
 
 % setup directories
-addpath(startupDir)
+addpath(oclPath)
 addpath(exportDir)
-addpath(fullfile(startupDir,'CasadiLibrary'))
+addpath(fullfile(oclPath,'CasadiLibrary'))
 
-addpath(fullfile(startupDir,'Core'))
-addpath(fullfile(startupDir,'Core','Integrator'))
-addpath(fullfile(startupDir,'Core','Variables'))
-addpath(fullfile(startupDir,'Core','utils'))
+addpath(fullfile(oclPath,'Core'))
+addpath(fullfile(oclPath,'Core','Integrator'))
+addpath(fullfile(oclPath,'Core','Variables'))
+addpath(fullfile(oclPath,'Core','utils'))
 
-% addpath('Interfaces')
-addpath(fullfile(startupDir,'Examples'))
-addpath(fullfile(startupDir,'Examples','01VanDerPol'))
-addpath(fullfile(startupDir,'Examples','02BallAndBeam'))
-addpath(fullfile(startupDir,'Examples','03Pendulum'))
-addpath(fullfile(startupDir,'Examples','04RaceCar'))
-addpath(fullfile(startupDir,'Test'))
+addpath(fullfile(oclPath,'Examples'))
+addpath(fullfile(oclPath,'Examples','01VanDerPol'))
+addpath(fullfile(oclPath,'Examples','02BallAndBeam'))
+addpath(fullfile(oclPath,'Examples','03Pendulum'))
+addpath(fullfile(oclPath,'Examples','04RaceCar'))
+addpath(fullfile(oclPath,'Test'))
 
 
 % check if casadi is working
 try
   casadi.SX.sym('x');
 catch e
-  if ~strcmp(e.identifier,'MATLAB:undefinedVarOrClass')
-    error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
+  if strcmp(e.identifier,'MATLAB:undefinedVarOrClass') || strcmp(e.identifier,'Octave:undefined-function')
+    error('Casadi installation not found. Please setup casadi 3.3 or higher');
   else
-    error('Casadi installation not found. Please setup casadi 3.2 or higher');
+    error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
   end
+end
+
+% remove properties function in Variable.m for Octave which gives a
+% parse error
+if isOctave()
+  variableDir = fullfile(oclPath,'Core','Variables');
+  rmpath(variableDir);
+  
+  vFilePath = fullfile(exportDir, 'Variables','Variable.m');
+  if ~exist(vFilePath)
+    status = copyfile(variableDir,exportDir);
+    assert(status, 'Could not copy Variables folder');
+  end
+    
+  vFileText = fileread(vFilePath);
+  searchPattern = 'function n = properties(self)';
+  replacePattern = 'function n = ppp(self)';
+  pIndex = strfind(vFileText,searchPattern);
+  
+  if ~isempty(pIndex)
+    assert(length(pIndex)==1, ['Found multiple occurences of properties ',...
+                               'function in Variable.m; Please reinstall ',...
+                               'OpenOCL.'])
+    newText = strrep(vFileText,searchPattern,replacePattern);
+    fid=fopen(vFilePath,'w');
+    fwrite(fid, newText);
+    fclose(fid);
+  end
+  addpath(fullfile(exportDir,'Variables'));
 end

@@ -598,7 +598,15 @@ classdef Variable < handle
       v = Variable.createMatrixLike(self,log(self.value));
     end
     
+    function n = properties(self)
+      % DO NOT CHANGE THIS FUNCTION!
+      % It is automatically renamed for Octave as properties is not 
+      % allowed as a function name.
+      %
+      % Tab completion in Matlab for custom variables
+      n = [fieldnames(self);	
+      fieldnames(self.varStructure.getChildPointers)];	
+    end
   end
-  
 end
 
