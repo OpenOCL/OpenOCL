@@ -69,3 +69,24 @@ assert(strcmp(class(x.get('u',1).get('x1',1)), 'NodeSelection'))
 assert(strcmp(class(x.get('u',1).get('x1',1).get(1)), 'MatrixStructure'))
 assert(isequal(x.get('u',1).get('x1',1).get(1).positions,{[4]}))
 assert(isequal(x.get('u',1).get('x3',[2,3;1,2]).get(2).positions,{[20,21;19,20]}))
+
+
+
+%% MatrixStructure
+% size
+m = MatrixStructure([2,3]);
+assertEqual(m.size,[2,3])
+assertEqual(m.size(1),2)
+assertEqual(m.size(2),3)
+assertException('m.size(-1)')
+% get
+assertEqual(m.get(1,1).positions,{[1]})
+assertEqual(m.get(1,2:3).positions,{[3,5]})
+assertEqual(m.get(3:5).positions,{[3,4,5]})
+assertException('m.get(-1)')
+assertException('m.get(1,-1)')
+
+
+
+
+

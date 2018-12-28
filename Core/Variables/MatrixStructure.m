@@ -4,7 +4,6 @@ classdef MatrixStructure < VarStructure
   
   properties
     % thisPositions from VarStructure
-    % thisSize from VarStructure
   end
   
   methods
@@ -21,6 +20,8 @@ classdef MatrixStructure < VarStructure
     end
     
     function s = size(self,varargin)
+      % s = size()
+      % s = size(dim)
       if nargin == 2
         if varargin{1} > 2
           s = 1;
