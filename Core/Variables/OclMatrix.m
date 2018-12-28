@@ -1,9 +1,9 @@
-classdef OclMatrix < VarStructure
+classdef OclMatrix < OclStructure
   %OCLMATRIX Matrix valued structure for variables
   %
   
   properties
-    % thisPositions from VarStructure
+    % thisPositions from OclStructure
   end
   
   methods

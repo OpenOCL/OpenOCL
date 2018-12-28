@@ -28,8 +28,8 @@ classdef OCPHandler < handle
       controls = self.system.controlsStruct;
       algVars = self.system.algVarsStruct;
       params = self.system.parametersStruct;
-      time = MatrixStructure([1,1]);
-      endTime = MatrixStructure([1,1]);
+      time = OclMatrix([1,1]);
+      endTime = OclMatrix([1,1]);
 
       self.pathCostsFun = Function(ocp,@(ocp,varargin) ocp.getPathCosts(varargin{:}),...
                                    {states,algVars,controls,time,endTime,params},1);

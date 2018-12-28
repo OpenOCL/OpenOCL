@@ -1,9 +1,9 @@
-classdef OclTrajectory < VarStructure
+classdef OclTrajectory < OclStructure
   % OCLTRAJECTORY Represents a trajectory of a variable
   %   Usually comes from selecting specific variables in a tree 
   
   properties
-    % thisPositions from VarStructure
+    % thisPositions from OclStructure
     nodeType
   end
   
@@ -42,16 +42,16 @@ classdef OclTrajectory < VarStructure
           in1 = length(positions);
         end
         assert(isnumeric(in1), 'Trajectory.get:Argument needs to be an index or char.')
-        if length(in1) == 1 && isa(self.nodeType,'TreeNode')
+        if length(in1) == 1 && isa(self.nodeType,'OclTree')
           r = OclTree(self.nodeType,positions(in1));
-        elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
-          r = OclMatrix(nodeType.size,positions);
+        elseif length(positions)==1 && isa(nodeType,'OclMatrix') 
+          r = OclMatrix(self.nodeType.size,positions);
         else
           r = OclTrajectory(self.nodeType,positions(in1));
         end
       else
         % args: id,selector
-        assert(ischar(in1), 'NodeSelection.get:First argument needs to be an id.')
+        assert(ischar(in1), 'OclTrajectory.get:First argument needs to be an id.')
         r = self.nodeType.getWithPositions(in1,self.positions,in2);
       end
     end

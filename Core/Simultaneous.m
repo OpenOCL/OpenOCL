@@ -30,7 +30,7 @@ classdef Simultaneous < handle
       self.system = system;
       
       integratorVarsStruct = integrator.integratorVarsStruct;
-      self.nlpVarsStruct = TreeNode('nlpVars');
+      self.nlpVarsStruct = OclTree('nlpVars');
       self.nlpVarsStruct.addRepeated({system.statesStruct,...
                                       integratorVarsStruct,...
                                       system.controlsStruct},self.N);

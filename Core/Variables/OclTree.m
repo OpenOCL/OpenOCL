@@ -1,11 +1,11 @@
-classdef OclTree < VarStructure
+classdef OclTree < OclStructure
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
   
   properties (Access = public)
     
-    % thisPositions from VarStructure
-    % thisSize inherited from VarStructure
+    % thisPositions from OclStructure
+    % thisSize inherited from OclStructure
     id
     childPointers
     thisLength
@@ -68,7 +68,7 @@ classdef OclTree < VarStructure
     
     function addVar(self,varIn)
       % addVar(var)
-      %   Adds a reference of the varStructure
+      %   Adds a reference of the oclStructure
       
       if isempty(varIn)
         return
@@ -96,7 +96,7 @@ classdef OclTree < VarStructure
       if isfield(self.childPointers,id)
         self.childPointers.(id).positions = [self.childPointers.(id).positions,{positions}]; 
       else
-        self.childPointers.(id).node = MatrixStructure(size); 
+        self.childPointers.(id).node = OclMatrix(size); 
         self.childPointers.(id).positions = {positions};
       end
       
@@ -134,7 +134,7 @@ classdef OclTree < VarStructure
           in1 = length(pos);
         end
         assert(isnumeric(in1) && nargin == 2, 'OclTree.get: Wrong arguments given.')
-        r = MatrixStructure(size(in1), {pos(in1)});
+        r = OclMatrix(size(in1), {pos(in1)});
       end
     end
     
@@ -184,17 +184,17 @@ classdef OclTree < VarStructure
       end    
       
       if length(positions) == 1 && isa(child.node,'OclTree')
-        r = TreeNode(child.node,positions);
-      elseif length(positions)==1 && isa(nodeType,'OclMatrix') 
-        r = MatrixStructure(nodeType.size,positions);
+        r = OclTree(child.node,positions);
+      elseif length(positions)==1 && isa(child.node,'OclMatrix') 
+        r = OclMatrix(child.node.size,positions);
       else
-        r = Trajectory(child.node,positions);
+        r = OclTrajectory(child.node,positions);
       end
     end % getWithPositions
     
     function tree = getFlat(self)
       parentPositions = self.positions();
-      tree = TreeNode(self.id);
+      tree = OclTree(self.id);
       tree.thisLength = self.thisLength;
       tree.thisPositions = parentPositions;
       self.iterateLeafs(parentPositions,tree);

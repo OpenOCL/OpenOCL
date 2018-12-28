@@ -15,7 +15,7 @@ classdef CasadiIntegrator < handle
       states = CasadiVariable(system.statesStruct);
       algVars = CasadiVariable(system.algVarsStruct);
       controls = CasadiVariable(system.controlsStruct);
-      h = CasadiVariable(MatrixStructure([1,1]));
+      h = CasadiVariable(OclMatrix([1,1]));
       parameters = CasadiVariable(system.parametersStruct);
       
       [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
@@ -50,8 +50,8 @@ classdef CasadiIntegrator < handle
                                              'p', [dt;u;p], ...
                                              'z0', z);
                                            
-      statesNext = Variable(states.varStructure,full(integrationStep.xf));
-      algVars = Variable(algVarsGuess.varStructure,full(integrationStep.zf));
+      statesNext = Variable(states,full(integrationStep.xf));
+      algVars = Variable(algVarsGuess,full(integrationStep.zf));
       
     end
     

@@ -1,6 +1,6 @@
 function testTreeVariable
   
-xStruct = TreeNode('x');
+xStruct = OclTree('x');
 xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);
@@ -24,13 +24,13 @@ assert(isequal(x.x1.value,[1,9;2,10]));
 %%x1.get(2).set([4,5])
 %assert(isequal(x1.get(2).value,[4,5]));
 
-x = TreeNode('x');
+x = OclTree('x');
 x.add('p',[3,1]);
 x.add('R',[3,3]);
 x.add('v',[3,1]);
 x.add('w',[3,1]);
 
-u = TreeNode('u');
+u = OclTree('u');
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 
@@ -51,7 +51,7 @@ state.get('p').set([100;0;50])
 assert( isequal( state.get('p').value,   [100;0;50] ) )
 assert( isequal( state.size,   [18 1] ) )
 
-ocpVar = TreeNode('ocpvar');
+ocpVar = OclTree('ocpvar');
 ocpVar.addRepeated({x,u},5);
 ocpVar.add(x);
 

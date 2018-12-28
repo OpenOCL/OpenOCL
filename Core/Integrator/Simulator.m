@@ -25,7 +25,7 @@ classdef Simulator < handle
     end
     
     function controls = getControlsSeries(self,N)
-        controlsSeriesStruct  = TreeNode('controls');
+        controlsSeriesStruct  = OclTree('controls');
         controlsSeriesStruct.addRepeated({self.system.controlsStruct},N);
         controls = Variable(controlsSeriesStruct,0);
         controls = controls.get('controls');
@@ -53,7 +53,7 @@ classdef Simulator < handle
         callback        = varargin{3};
       end
       
-      simVarsStruct = TreeNode('simVars');
+      simVarsStruct = OclTree('simVars');
       simVarsStruct.addRepeated({self.system.statesStruct},N+1);
       simVarsStruct.addRepeated({self.system.algVarsStruct},N);
       
@@ -108,9 +108,9 @@ classdef Simulator < handle
     
     function [statesOut,algVarsOut] = getConsistentIntitialCondition(self,states,algVars,controls,parameters)
       
-      varsOutStruct = TreeNode('varsOut');
-      varsOutStruct.add(states.varStructure);
-      varsOutStruct.add(algVars.varStructure);
+      varsOutStruct = OclTree('varsOut');
+      varsOutStruct.add(states.thisStructure);
+      varsOutStruct.add(algVars.thisStructure);
       
       varsOut = Variable(varsOutStruct,0);
             
@@ -124,8 +124,8 @@ classdef Simulator < handle
       
 %       if ~all(constraints.value==0)
         warning('Initial state is not consistent, trying to find a consistent initial condition...');
-        stateSym  = CasadiVariable(states.varStructure);
-        algVarsSym  = CasadiVariable(algVars.varStructure);
+        stateSym  = CasadiVariable(states.thisStructure);
+        algVarsSym  = CasadiVariable(algVars.thisStructure);
         
         constraints = self.system.getInitialCondition(stateSym,parameters);
         [ode,alg] = self.system.systemFun.evaluate(stateSym,algVarsSym,controls,parameters);

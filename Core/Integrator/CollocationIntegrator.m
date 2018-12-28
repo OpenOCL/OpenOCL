@@ -30,12 +30,12 @@ classdef CollocationIntegrator < handle
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
-      self.integratorVarsStruct = TreeNode('integratorVars');
+      self.integratorVarsStruct = OclTree('integratorVars');
       self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
       
-      time0 = MatrixStructure([1,1]);
-      timeF = MatrixStructure([1,1]);
-      endTime = MatrixStructure([1,1]);
+      time0 = OclMatrix([1,1]);
+      timeF = OclMatrix([1,1]);
+      endTime = OclMatrix([1,1]);
       
       self.integratorFun = Function(self,@(self,varargin)self.getIntegrator(varargin{:}),...
                                                     {system.statesStruct,...

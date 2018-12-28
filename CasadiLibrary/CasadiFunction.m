@@ -54,7 +54,7 @@ classdef CasadiFunction < handle
       [outputs{:}] = inputFunction.functionHandle(inputFunction.obj,inputs{:});
       
       for k=1:nOutputs
-        self.outputStructs{k} = outputs{k}.varStructure;
+        self.outputStructs{k} = outputs{k}.thisStructure;
       end
       
       for k=1:nInputs

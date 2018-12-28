@@ -20,10 +20,10 @@ classdef (Abstract) System < handle
   methods
     
     function self = System()
-      self.statesStruct     = TreeNode('states');
-      self.algVarsStruct    = TreeNode('algVars');
-      self.controlsStruct   = TreeNode('controls');
-      self.parametersStruct = TreeNode('parameters');
+      self.statesStruct     = OclTree('states');
+      self.algVarsStruct    = OclTree('algVars');
+      self.controlsStruct   = OclTree('controls');
+      self.parametersStruct = OclTree('parameters');
       
       self.initialConditions = Variable.Matrix([]);
       
@@ -57,14 +57,14 @@ classdef (Abstract) System < handle
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned variables
       
-      self.alg = Variable.createLike(statesIn,MatrixStructure([0,1]));
-      self.ode = statesIn.varStructure.childPointers;
+      self.alg = Variable.createLike(statesIn,OclMatrix([0,1]));
+      self.ode = statesIn.thisStructure.childPointers;
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
       
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});
-      ode = CasadiVariable.createLike(statesIn,MatrixStructure(size(ode)),ode);
+      ode = CasadiVariable.createLike(statesIn,OclMatrix(size(ode)),ode);
       alg = self.alg;
     end
     
@@ -99,7 +99,7 @@ classdef (Abstract) System < handle
     end
     
     function  ic = getInitialCondition(self,statesIn,parametersIn)
-      self.initialConditions = Variable.createLike(statesIn,MatrixStructure([0,1]));
+      self.initialConditions = Variable.createLike(statesIn,OclMatrix([0,1]));
       self.initialCondition(statesIn,parametersIn)
       ic = self.initialConditions;
     end

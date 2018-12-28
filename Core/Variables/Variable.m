@@ -52,18 +52,18 @@ classdef Variable < handle
       % input.
       
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable(MatrixStructure(size(value)),input.mx,value);
+        obj = CasadiVariable(OclMatrix(size(value)),input.mx,value);
       elseif isa(input,'SymVariable')
-        obj = SymVariable(MatrixStructure(size(value)),value);
+        obj = SymVariable(OclMatrix(size(value)),value);
       elseif isa(input,'Variable')
-        obj = Variable(MatrixStructure(size(value)),value);
+        obj = Variable(OclMatrix(size(value)),value);
       else
         error('Variable type not implemented.');
       end
     end
     
     function obj = Matrix(value)
-      obj = Variable(MatrixStructure(size(value)),value);
+      obj = Variable(OclMatrix(size(value)),value);
     end
     
   end % methods(static)
@@ -71,6 +71,11 @@ classdef Variable < handle
   methods
     
     function self = Variable(structure,value)
+      
+      if isa(structure,'Variable')
+        structure = structure.thisStructure;
+      end
+      
       self.thisStructure = structure;
       
       if nargin == 1
@@ -231,7 +236,7 @@ classdef Variable < handle
     
     function v = value(self)
       positions = self.thisStructure.positions();
-      %assert(length(positions)>= 1, 'varStructure ill defined (positions).')
+      %assert(length(positions)>= 1, 'structure ill defined (positions).')
       if length(positions) == 1
         s = self.size;
         v = reshape(self.thisValue.value(positions{1}),s);

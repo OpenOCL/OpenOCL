@@ -7,20 +7,20 @@ classdef CasadiVariable < Variable
   methods (Static)
     
     function obj = Matrix(sizeIn)
-      obj = CasadiVariable(MatrixStructure(sizeIn));
+      obj = CasadiVariable(OclMatrix(sizeIn));
     end
     
   end
   
   methods
     
-    function self = CasadiVariable(varStructure,varargin)
-      % CasadiVariable(varStructure)
-      % CasadiVariable(varStructure,value)
-      % CasadiVariable(varStructure,mx)
-      % CasadiVariable(varStructure,mx,value)
+    function self = CasadiVariable(structure,varargin)
+      % CasadiVariable(structure)
+      % CasadiVariable(structure,value)
+      % CasadiVariable(structure,mx)
+      % CasadiVariable(structure,mx,value)
       
-      self = self@Variable(varStructure);
+      self = self@Variable(structure);
       
       setvalue = false;
       if nargin==1 || (nargin==2 && islogical(varargin{1}))
@@ -38,17 +38,17 @@ classdef CasadiVariable < Variable
         value = varargin{1};
       end
 
-      if setvalue && isa(varStructure,'MatrixStructure')
+      if setvalue && isa(structure,'OclStructure')
         if self.mx
-          value = casadi.MX.sym('v',prod(varStructure.size),1);
+          value = casadi.MX.sym('v',prod(structure.size),1);
         else
-          value = casadi.SX.sym('v',prod(varStructure.size),1);
+          value = casadi.SX.sym('v',prod(structure.size),1);
         end
       elseif setvalue
         if self.mx
-          value = casadi.MX.sym(varStructure.id,prod(varStructure.size),1);
+          value = casadi.MX.sym(structure.id,prod(structure.size),1);
         else
-          value = casadi.SX.sym(varStructure.id,prod(varStructure.size),1);
+          value = casadi.SX.sym(structure.id,prod(structure.size),1);
         end
       end
       

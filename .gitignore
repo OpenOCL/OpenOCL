@@ -1,5 +1,4 @@
 .DS_STORE
-
 jit_tmp.c
 *.asv
 *.m~
