@@ -24,7 +24,7 @@ classdef OclStructure < handle
       % p2 are relative to p1
       % Returns: absolute p2
       np2 = length(p2);
-      pOut = cell(1,p2*length(p1));
+      pOut = cell(1,np2*length(p1));
       i = 1;
       for l=1:length(p1)
         thisP1 = p1{l};

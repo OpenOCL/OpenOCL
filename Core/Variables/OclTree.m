@@ -8,18 +8,21 @@ classdef OclTree < OclStructure
   end
 
   methods
-    function self = OclTree()
+    function self = OclTree(positions)
       % OclTree()
-      self.children = struct;
-      self.positions = struct;
-      self.len = 0;
-    end
-    
-    function r,p = get(self,id,p)
-      % get(id)
-      % get(id)
-      r = self.children.(id);
-      p = OclTree.merge(p,self.positions.(id))
+      if nargin ==0
+        self.children = struct;
+        self.positions = struct;
+        self.len = 0;
+      else
+        for i=1:length(positions)
+          
+        end
+        
+        self.children = struct;
+        self.positions = positions;
+        self.len = 0;
+      end
     end
 
     function add(self,id,in2)
@@ -60,11 +63,12 @@ classdef OclTree < OclStructure
       newLength = self.len+objLength;
 
       if isfield(self.children, id)
-        self.children.(id){end+1} = obj;
-        self.positions.(id){end+1} = 1:newLength;
+        assertEqual(self.children.(id).size,obj.size)
+        assertEqual(class(self.children.(id)),class(obj))
+        self.positions.(id){end+1} = self.len+1:newLength;
       else
-        self.children.(id) = {obj};
-        self.positions.(id) = {1:newLength};
+        self.children.(id) = obj;
+        self.positions.(id) = {self.len+1:newLength};
       end
       self.len = newLength;
     end
@@ -76,8 +80,25 @@ classdef OclTree < OclStructure
       ids = fieldnames(self.children);
       s = [0,1];
       for i=1:length(ids)
-        thisId = ids{i}
-        s(1) = s(1) + prod(self.children.(thisId).size())
+        thisId = ids{i};
+        tr = OclTrajectory(self.children.(thisId),self.positions.(thisId));
+        s(1) = s(1) + prod(tr.size);
+      end
+    end
+    
+    function r = get(self,id,p)
+      % get(id)
+      % get(id)
+      if nargin==2
+        p = {1:self.len};  
+      end
+      c = self.children.(id);
+      p = OclTree.merge(p,self.positions.(id));
+      
+      if length(p) == 1
+          r = OclMatrix('p',p{1});
+        else
+          r = OclTrajectory(c,p);
       end
     end
 

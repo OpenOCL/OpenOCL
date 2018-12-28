@@ -14,24 +14,27 @@ classdef OclTrajectory < OclStructure
     
     function s = size(self)
       l = length(self.positions);
-      s = [prod(self.nodeType.size),l];
+      s = [prod(self.type.size),l];
     end
     
-    function r = get(self,idx)
-      % r = get(self,idx)
-
-      positions = self.positions();
-      if strcmp(idx,'end')
-        idx = length(positions);
-      end
-      assert(isnumeric(idx), 'Trajectory.get:Argument needs to be an index or char.')
+    function r = get(self,in)
+      % r = get(selector)
+      % r = get(id)
       
-      if length(idx) == 1 && isa(self.nodeType,'OclTree')
-        r = OclTree(self.nodeType,positions(idx));
-      elseif length(idx)==1 && isa(nodeType,'OclMatrix') 
-        r = OclMatrix(self.nodeType.size,positions);
+      positions = self.positions();
+      if ischar(in)
+        % in=id
+        p = OclStructure.merge(positions,self.type.get(in).positions);
+        r = OclTrajectory(self.type.get(in).type,p);
       else
-        r = OclTrajectory(self.nodeType,positions(idx));
+        %in=selector
+        if length(in) == 1 && isa(self.type,'OclTree')
+          r = OclTree(positions(in));
+        elseif length(in)==1 && isa(type,'OclMatrix') 
+          r = OclMatrix(positions(in);
+        else
+          r = OclTrajectory(self.type,positions(in));
+        end
       end
     end   
   end % methods

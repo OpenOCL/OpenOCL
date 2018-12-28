@@ -4,42 +4,44 @@ a = OclMatrix([2,2]);
 assertEqual(a.size(),[2 2]);
   
 x = OclTree();
-assert(isequal(x.size,[0 1]));
+assertEqual(x.size,[0 1]);
 
 x.add('x1',[1,2]);
 x.add('x2',[3,2]);
+assertEqual(x.positions.x1,{[1,2]})
+assertEqual(x.positions.x2,{[3:8]})
 
-assert(isequal(x.get('x1').positions,{[1,2]}))
-assert(isequal(x.get('x2').positions,{[3:8]}))
-assert(isequal(x.size,[8 1]));
+assertEqual(x.get('x1').positions,[1,2])
+assertEqual(x.get('x2').positions,[3:8])
+assertEqual(x.size,[8 1])
 
-x = OclTree('x');
+x = OclTree();
 x.add('x1',[8,1]);
 
-assert(isequal(x.size,[8 1]));
+assertEqual(x.size,[8 1])
 
-x = OclTree('x');
+x = OclTree();
 x.add('x1',[1,3]);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
 
-assert(isequal(x.get('x1').positions,{[1,2,3],[10,11,12]}))
-assert(isequal(x.get('x2').positions,{[4:9]}))
+assertEqual(x.get('x1').positions,{[1,2,3],[10,11,12]})
+assertEqual(x.get('x2').positions,[4:9])
 
-u = OclTree('u');
+u = OclTree();
 u.add('x1',[1,3]);
 u.add('x3',[3,3]);
 u.add('x1',[1,3]);
 u.add('x3',[3,3]);
 
-x = OclTree('x');
+x = OclTree();
 x.add('x1',[1,3]);
-x.add(u);
-x.add(u);
+x.add('u',u);
+x.add('u',u);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
 
-y = OclTree('y');
+y = OclTree();
 y.add('x1',[1,2]);
 y.add('x1',[1,2]);
 y.add('x1',[1,2]);
