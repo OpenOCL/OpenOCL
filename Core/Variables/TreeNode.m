@@ -17,7 +17,6 @@ classdef TreeNode < VarStructure
       % TreeNode(id)
       % TreeNode(node,positions)
       
-      
       if ischar(in)
         % id
         self.id = in;
@@ -32,7 +31,6 @@ classdef TreeNode < VarStructure
         self.thisLength = in.thisLength;
         self.thisPositions = positions;
       end
-
     end
     
     function r = positions(self)
@@ -121,28 +119,26 @@ classdef TreeNode < VarStructure
       end
     end
     
-    function subVar = get(self,in1,varargin)
+    function r = get(self,in1,varargin)
       % get(id)
       % get(id,selector)
       % get(selector)
       if ischar(in1) && (~strcmp(in1,'end'))
         parentPositions = self.positions();
-        subVar = self.getWithPositions(in1,parentPositions,varargin{:});
+        r = self.getWithPositions(in1,parentPositions,varargin{:});
       else
         % get(selector)
-        
         pos = self.positions();
         pos = pos{1};
         if strcmp(in1,'end')
           in1 = length(pos);
         end
         assert(isnumeric(in1) && nargin == 2, 'TreeNode.get: Wrong arguments given.')
-        
-        subVar = MatrixStructure(size(in1), {pos(in1)});
+        r = MatrixStructure(size(in1), {pos(in1)});
       end
     end
     
-    function subVar = getWithPositions(self,id,parentPositions,selector)
+    function r = getWithPositions(self,id,parentPositions,selector)
       assert(ischar(id))
       if ~isfield(self.childPointers,id)
         error('TreeNode.get: Can not obtain id from this variable.');
@@ -188,21 +184,20 @@ classdef TreeNode < VarStructure
       end    
       
       if length(positions) == 1 && isa(child.node,'TreeNode')
-        subVar = TreeNode(child.node,positions);
+        r = TreeNode(child.node,positions);
+      elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
+        r = MatrixStructure(nodeType.size,positions);
       else
-        subVar = NodeSelection(child.node,positions);
+        r = NodeSelection(child.node,positions);
       end
-      
     end % getWithPositions
     
     function tree = getFlat(self)
-      
       parentPositions = self.positions();
       tree = TreeNode(self.id);
       tree.thisLength = self.thisLength;
       tree.thisPositions = parentPositions;
       self.iterateLeafs(parentPositions,tree);
-      
     end
     
     function iterateLeafs(self,parentPositions,treeOut)
@@ -260,15 +255,12 @@ classdef TreeNode < VarStructure
         else
           child.node.iterateLeafs(positions,treeOut);
         end
-        
       end
-      
     end % iterateLeafs
     
     function r = getChildPointers(self)
       r = self.childPointers;
     end
-    
   end % methods
 end % class
 

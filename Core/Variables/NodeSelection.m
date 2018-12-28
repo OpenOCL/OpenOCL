@@ -12,12 +12,6 @@ classdef NodeSelection < VarStructure
     function self = NodeSelection(nodeType,positions)
       self.nodeType = nodeType;
       self.thisPositions  = positions;
-      
-      if length(positions)==1 && isa(nodeType,'MatrixStructure') 
-        self = MatrixStructure(nodeType.size,positions);
-        return
-      end
-            
     end
     
     function s = size(self, varargin)
@@ -34,13 +28,13 @@ classdef NodeSelection < VarStructure
       end
     end
     
-    function childSelection = get(self,in1,in2)
-      % childSelection = get(self,id,selector)
-      % childSelection = get(self,id)
-      % childSelection = get(self,selector)
+    function r = get(self,in1,in2)
+      % r = get(self,id,selector)
+      % r = get(self,id)
+      % r = get(self,selector)
       if nargin == 2 && ischar(in1) && ~strcmp(in1,'end')
         % args: id
-        childSelection = self.nodeType.getWithPositions(in1,self.positions);
+        r = self.nodeType.getWithPositions(in1,self.positions);
       elseif nargin == 2
         % args: selector
         positions = self.positions();
@@ -49,14 +43,16 @@ classdef NodeSelection < VarStructure
         end
         assert(isnumeric(in1), 'NodeSelection.get:Argument needs to be an index or char.')
         if length(in1) == 1 && isa(self.nodeType,'TreeNode')
-          childSelection = TreeNode(self.nodeType,positions(in1));
-        else 
-          childSelection = NodeSelection(self.nodeType,positions(in1));
+          r = TreeNode(self.nodeType,positions(in1));
+        elseif length(positions)==1 && isa(nodeType,'MatrixStructure') 
+          r = MatrixStructure(nodeType.size,positions);
+        else
+          r = NodeSelection(self.nodeType,positions(in1));
         end
       else
         % args: id,selector
         assert(ischar(in1), 'NodeSelection.get:First argument needs to be an id.')
-        childSelection = self.nodeType.getWithPositions(in1,self.positions,in2);
+        r = self.nodeType.getWithPositions(in1,self.positions,in2);
       end
     end
     
