@@ -131,15 +131,19 @@ classdef Variable < handle
     end % subsref
     
     function self = subsasgn(self,s,v)
+      % v = 1
+      % v(1) = 1
+      % v.get(1) = 1
+      % v.value(1) = 1
       
       if isa(v,'Variable') 
-        v = v.value;
+        v = v.val;
       end
       
       if numel(s)==1 && strcmp(s.type,'()')
-        v = subsasgn(self.val,s,v);
-        self.set(v);
+        self.get(s.subs{:}).set(v);
       else
+        v = subsasgn(self.get(s.subs),s(2:end),v);
         self.set(builtin('subsasgn',self,s,v));
       end
     end
@@ -170,10 +174,10 @@ classdef Variable < handle
       if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
         if nargin == 2
           % get(id)
-          r = Variable.createLike(self,self.type.get(in1),self.value);
+          r = Variable.createLike(self,self.type.get(in1),self.val);
         else
           % get(id,selector)
-          r = Variable.createLike(self,self.type.get(in1,in2),self.value);
+          r = Variable.createLike(self,self.type.get(in1).get(in2),self.val);
         end
       else
         if nargin == 2
@@ -181,40 +185,64 @@ classdef Variable < handle
           if isAllOperator(in1)
             r = self;
           else
-            r = Variable.createLike(self,self.type.get(in1),self.value);
+            r = Variable.createLike(self,self.type.get(in1),self.val);
           end
         else
           % get(row,col)
           if isAllOperator(in1) && isAllOperator(in2)
             r = self;
           else
-            r = Variable.createLike(self,self.type.get(in1,in2),self.value);
+            r = Variable.createLike(self,self.type.get(in1,in2),self.val);
           end
         end
       end
     end
     %%%
-    function set(self,valueIn,varargin)
+    function set(self,val,varargin)
       % set(val)
+      % set(scalar)
+      % set(matrix)
+      % set(tensor)
       % set(val,slice1,slice2,slice3)
       [pos,N,M,K] = self.type.getPositions();
-      val = valueIn(pos);
-      if nargin > 2
-        val = reshape(val,N,M,K);
-        val = val(varargin{:})
-        val = reshape(val,l*l*m,1);
+      pout = cell(1,K);
+      for k=1:K
+        p = reshape(pos{k},[N,M]);
+        if nargin==3
+         p = p(slice1)
+        elseif nargin==4
+          p = p(slice1,slice2);  
+        end
+        pout(k) = p;
       end
-      self.val.set(val)
+      if nargin==5
+        pout = pout(slice3);
+      end
+      pout = cell2mat(pout);
+      self.val.set(val,pout);
     end % set
     
-    function v = value(self,varargin)
+    function vout = value(self,slice1,slice2,slice3)
       % value()
       % value(slice1,slice2,slice3)
-      v = self.val.get();
+      val = self.val.get();
       [pos,N,M,K] = self.type.getPositions();
-      
-      v = reshape(v(pos),N,M,K);
-      v = v(varargin{:});
+      vout = cell(1,K);
+      for k=1:K
+        v = reshape(val(pos{k}),[N,M]);
+        if nargin==2
+          v = v(slice1)
+        elseif nargin==3
+          v = v(slice1,slice2);  
+        end
+        vout(k) = v;
+      end
+      if nargin==4
+        vout = vout(slice3);
+      end
+      if length(vout)==1
+        vout = vout{1};
+      end
     end
     
     function y = linspace(d1,d2,n)
@@ -571,7 +599,7 @@ classdef Variable < handle
       v = Variable.createMatrixLike(self,log(self.value));
     end
     
-    function n = properties(self)
+    function n = ppp(self)
       % DO NOT CHANGE THIS FUNCTION!
       % It is automatically renamed for Octave as properties is not 
       % allowed as a function name.

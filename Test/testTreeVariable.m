@@ -13,7 +13,7 @@ assert(isequal(x.value,(1:10)'))
 
 %%% get by id
 assert(isequal(x.get('x1').value,[1,9;2,10]));
-assert(isequal(x.x1.value,[1,9;2,10]));
+%assert(isequal(x.x1.value,[1,9;2,10]));
 
 %%% get by selector
 %x1 = x.get('x1');
@@ -24,13 +24,13 @@ assert(isequal(x.x1.value,[1,9;2,10]));
 %%x1.get(2).set([4,5])
 %assert(isequal(x1.get(2).value,[4,5]));
 
-x = OclTree('x');
+x = OclTree();
 x.add('p',[3,1]);
 x.add('R',[3,3]);
 x.add('v',[3,1]);
 x.add('w',[3,1]);
 
-u = OclTree('u');
+u = OclTree();
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 

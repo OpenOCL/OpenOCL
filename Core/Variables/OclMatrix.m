@@ -11,7 +11,7 @@ classdef OclMatrix < OclStructure
       % OclMatrix(size)
       % OclMatrix(positions)
       
-      if isnumeric(in1)
+      if isnumeric(in1) && nargin==1
         % in1=size
         assert(length(in1)<=2)
         self.positions = reshape(1:prod(in1),in1);
@@ -19,12 +19,12 @@ classdef OclMatrix < OclStructure
         % in2=positions
         self.positions = in2;
       else
-        error('OclMatrix invlaid arguments.')
+        error('OclMatrix invalid arguments.')
       end
     end
     
     function [p,N,M,K] = getPositions(self)
-      p = self.positions;
+      p = {self.positions};
       s = self.size();
       N = s(1);
       M = s(2);
@@ -53,7 +53,7 @@ classdef OclMatrix < OclStructure
       else
         pos = pos(dim1,dim2);
       end
-      r = OclMatrix(size(pos), pos);
+      r = OclMatrix('p',pos);
     end
   end
 end

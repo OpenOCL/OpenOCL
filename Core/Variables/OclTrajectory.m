@@ -17,8 +17,17 @@ classdef OclTrajectory < OclStructure
     
     function [p,N,M,K] = getPositions(self)
       p = cell2mat(self.positionArray);
-      [N,M] = self.type.size();
+      s = self.type.size();
+      N = s(1);
+      M = s(2);
       K = length(self.positionArray);
+      
+      % squeeze dimensions of length 1
+      p = reshape(p,[N,M,K]);
+      p = squeeze(p);
+      [N,M,K] = size(p);
+      p = reshape(p,[N*M,K])';
+      p = mat2cell(p,ones(K),N*M);
     end
     
     function s = size(self)
