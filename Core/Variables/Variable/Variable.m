@@ -167,7 +167,7 @@ classdef Variable < handle
       function t = isAllOperator(in)
         t = strcmp(in,'all') || strcmp(in,':');
         if t
-          in = ':';
+          t = ':';
         end
       end
       
@@ -209,11 +209,11 @@ classdef Variable < handle
       for k=1:K
         p = reshape(pos{k},[N,M]);
         if nargin==3
-         p = p(slice1)
+         p = p(slice1);
         elseif nargin==4
           p = p(slice1,slice2);  
         end
-        pout(k) = p;
+        pout{k} = p;
       end
       if nargin==5
         pout = pout(slice3);
@@ -225,17 +225,17 @@ classdef Variable < handle
     function vout = value(self,slice1,slice2,slice3)
       % value()
       % value(slice1,slice2,slice3)
-      val = self.val.get();
+      value = self.val.get();
       [pos,N,M,K] = self.type.getPositions();
       vout = cell(1,K);
       for k=1:K
-        v = reshape(val(pos{k}),[N,M]);
+        v = reshape(value(pos{k}),[N,M]);
         if nargin==2
-          v = v(slice1)
+          v = v(slice1);
         elseif nargin==3
           v = v(slice1,slice2);  
         end
-        vout(k) = v;
+        vout{k} = v;
       end
       if nargin==4
         vout = vout(slice3);
@@ -255,12 +255,12 @@ classdef Variable < handle
       N = numel(varargin);
       inValues = cell(1,N);
       for k=1:numel(varargin)
-        val = varargin{k};
-        if isa(val,'Variable')
-          inValues{k} = val.value;
-          obj = val;
+        vv = varargin{k};
+        if isa(vv,'Variable')
+          inValues{k} = vv.value;
+          obj = vv;
         else
-          inValues{k} = val;
+          inValues{k} = vv;
         end
       end    
       v = Variable.createMatrixLike(obj,horzcat(inValues{:}));
@@ -270,12 +270,12 @@ classdef Variable < handle
       N = numel(varargin);
       inValues = cell(1,N);
       for k=1:numel(varargin)
-        val = varargin{k};
-        if isa(val,'Variable')
-          inValues{k} = val.value;
-          obj = val;
+        vv = varargin{k};
+        if isa(vv,'Variable')
+          inValues{k} = vv.value;
+          obj = vv;
         else
-          inValues{k} = val;
+          inValues{k} = vv;
         end
       end
       v = Variable.createMatrixLike(obj,vertcat(inValues{:}));

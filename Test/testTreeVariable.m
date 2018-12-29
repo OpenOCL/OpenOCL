@@ -49,11 +49,11 @@ assert( isequal( state.get('w').value,   [0;1;0.1] ) )
 state.get('p').set([100;0;50])
 
 assert( isequal( state.get('p').value,   [100;0;50] ) )
-assert( isequal( state.size,   [18 1] ) )
+assert( isequal( state.size,   [1 18] ) )
 
-ocpVar = OclTree('ocpvar');
-ocpVar.addRepeated({x,u},5);
-ocpVar.add(x);
+ocpVar = OclTree();
+ocpVar.addRepeated({'x','u'},{x,u},5);
+ocpVar.add('x',x);
 
 v = Variable(ocpVar,0);
 v.get('x').get('R').set(eye(3))

@@ -7,15 +7,11 @@ classdef OclTree < OclStructure
   end
 
   methods
-    function self = OclTree(structure,p)
+    function self = OclTree()
       % OclTree()
-      if nargin == 0
-        self.children = struct;
-        self.positions = zeros(1,0);
-      else
-        self.children = struct;
-        self.positions = p;
-      end
+      narginchk(0,0);
+      self.children = struct;
+      self.positions = zeros(1,0);
     end
     
     function [p,N,M,K] = getPositions(self)
@@ -38,13 +34,13 @@ classdef OclTree < OclStructure
       end
     end
     
-    function addRepeated(self,arr,N)
+    function addRepeated(self,names,arr,N)
       % addRepeated(self,arr,N)
       %   Adds repeatedly a list of structure objects
       %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
       for i=1:N
         for j=1:length(arr)
-          self.add(arr{j})
+          self.add(names{j},arr{j})
         end
       end
     end
@@ -92,7 +88,7 @@ classdef OclTree < OclStructure
       c = self.children.(id);
       pArray = OclTree.merge(self.positions,c.positionArray);
       if length(pArray) == 1
-        r = OclMatrix('p',pArray{1});
+        r = OclMatrix(c.type.size,pArray{1});
       else
         r = OclTrajectory(c,pArray);
       end
@@ -125,7 +121,7 @@ classdef OclTree < OclStructure
             elseif isa(child.type(),'OclTree')
               childType.iterateLeafs(pos,treeOut);
             else
-              oclError("Children of a trajectory can not be a trajectory");
+              oclError('Children of a trajectory can not be a trajectory');
             end
           end
         end

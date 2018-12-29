@@ -5,7 +5,7 @@ classdef OclStructure < handle
   end
   
   methods
-    function r = get(varargin)
+    function get(varargin)
       % r = get(id)
       % r = get(id,slice)
       error('Not Implemented.');

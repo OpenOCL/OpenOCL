@@ -23,7 +23,7 @@ function StartupOCL(in)
   elseif nargin == 1 && ischar(in)
     workingDirLocation = in;
   elseif nargin == 1
-    oclError("Invalid argument.")
+    oclError('Invalid argument.')
   end
 
   % add current directory to path
@@ -48,6 +48,7 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Core'))
   addpath(fullfile(oclPath,'Core','Integrator'))
   addpath(fullfile(oclPath,'Core','Variables'))
+  addpath(fullfile(oclPath,'Core','Variables','Variable'))
   addpath(fullfile(oclPath,'Core','utils'))
 
   addpath(fullfile(oclPath,'Examples'))
@@ -76,7 +77,7 @@ function StartupOCL(in)
     %rmpath(variableDir);
     
     vFilePath = fullfile(exportDir, 'Variable','Variable.m');
-    if ~exist(vFilePath) || octaveClear
+    if ~exist(vFilePath,'file') || octaveClear
       delete(fullfile(exportDir, 'Variable','V*.m'))
       status = copyfile(variableDir,exportDir);
       assert(status, 'Could not copy Variables folder');
