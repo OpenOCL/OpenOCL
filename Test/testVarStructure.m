@@ -64,7 +64,7 @@ t = x.getFlat();
 assertSetEqual( t.get('x1').positionArray,{[1,2,3],[4,5,6],[16,17,18],[28,29,30],[40,41,42],[58,59,60]} );
 
 % slice OclTree, OclMatrix, OclTrajectory
-assert(isequal(x.get('x1',1).positionArray,{[1],[58]}))
+assert(isequal(x.get('x1').get(1).positionArray,{[1],[58]}))
 assert(isequal(x.get('x1',2).positionArray,{[2],[59]}))
 assert(isequal(x.get('u',1).get('x1').positionArray,{[4,5,6],[16,17,18]}))
 assert(isequal(x.get('u',1).get('x1',1).positionArray,{[4],[16]}))

@@ -17,6 +17,13 @@ classdef OclTree < OclStructure
         self.positions = p;
       end
     end
+    
+    function [p,N,M,K] = getPositions(self)
+      p = self.positions;
+      N = length(p);
+      M = 1;
+      K = 1;
+    end
 
     function add(self,id,in2,varargin)
       % add(id,size)

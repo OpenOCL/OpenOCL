@@ -23,6 +23,14 @@ classdef OclMatrix < OclStructure
       end
     end
     
+    function [p,N,M,K] = getPositions(self)
+      p = self.positions;
+      s = self.size();
+      N = s(1);
+      M = s(2);
+      K = 1;
+    end
+    
     function s = size(self,dim)
       % s = size()
       % s = size(dim)
@@ -39,7 +47,7 @@ classdef OclMatrix < OclStructure
     function r = get(self,dim1,dim2)
       % get(dim1)
       % get(dim1,dim2)
-      pos = self.positions1;
+      pos = self.positions;
       if nargin == 2
         pos = pos(dim1);
       else

@@ -14,6 +14,11 @@ classdef OclStructure < handle
     function size(varargin)
       error('Not Implemented.');
     end
+    
+    function getPositions(varargin)
+      error('Not Implemented.');
+    end
+    
   end % methods
   
   methods (Static)

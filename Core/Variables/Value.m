@@ -1,32 +1,24 @@
 classdef Value < handle
-  % VALUE Class for storing values in expressions or structures
-  
+  % VALUE Class for storing values
   properties
-    thisValue
+    val
   end
-  
   methods
-
     function self = Value(v)
-      if nargin == 1
-        assert(iscolumn(v))
-        self.set(v);
-      end
+      self.val = v;
     end
-    
-    function set(self,val,ind)
-      if nargin==3
-        self.thisValue(ind) = val;
-      else
-        self.thisValue = val;
-      end
-    end
-    
-    function v = value(self,ind)
+    function set(self,val,varargin)
       if nargin == 2
-        v = self.thisValue(ind);
+        self.val = val;
       else
-        v = self.thisValue;
+        self.val(varargin{:}) = val;
+      end
+    end
+    function v = get(self,varargin)
+      if nargin == 1
+        v = self.val;
+      else
+        v = self.val(varargin{:});
       end
     end
   end

@@ -5,122 +5,119 @@ classdef Variable < handle
     % variables e.g. casadi variables, or symbolic variables.
   
   properties
-    thisStructure
-    thisValue
+    type
+    val
   end
   
   methods (Static)
     
-    function obj = createLike(input,structure,varargin)
-      % obj = createLike(input,structure)
-      % obj = createLike(input,structure,value)
+    function obj = createLike(input,type,varargin)
+      % obj = createLike(input,type)
+      % obj = createLike(input,type,val)
       %
       % Factory method to create Variables with the same type as
       % given input.
       %
       % Args:
       %   input (Variable): Inherit variable type of this object.
-      %   structure (structure): Structure of the variable.
-      %   value: Value to asign to the variable (optional).
+      %   type (type): type of the variable.
+      %   val: Value to asign to the variable (optional).
       
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable(structure,input.mx,varargin{:});
+        obj = CasadiVariable(type,input.mx,varargin{:});
       elseif isa(input,'SymVariable')
-        obj = SymVariable(structure,varargin{:});
+        obj = SymVariable(type,varargin{:});
       elseif isa(input,'Variable')
-        obj = Variable(structure,varargin{:});
+        obj = Variable(type,varargin{:});
       else
         error('Variable type not implemented.');
       end
     end
     
-    function obj = createFromVariable(structure, variable)
+    function obj = createFromVariable(type, variable)
       if isa(variable,'CasadiVariable')
-        obj = CasadiVariable(structure,variable.mx,variable.value);
+        obj = CasadiVariable(type,variable.mx,variable.value);
       elseif isa(variable,'SymVariable')
-        obj = SymVariable(structure,variable.value);
+        obj = SymVariable(type,variable.value);
       elseif isa(variable,'Variable')
-        obj = Variable(structure,variable.value);
+        obj = Variable(type,variable.value);
       else
         error('Variable not implemented.');
       end
     end
     
-    function obj = createMatrixLike(input, value)
-      % obj = createMatrixLike(input,value)
+    function obj = createMatrixLike(input, val)
+      % obj = createMatrixLike(input,val)
       % Factory method to create Matrix valued variables with the type of
       % input.
       
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable(OclMatrix(size(value)),input.mx,value);
+        obj = CasadiVariable(OclMatrix(size(val)),input.mx,val);
       elseif isa(input,'SymVariable')
-        obj = SymVariable(OclMatrix(size(value)),value);
+        obj = SymVariable(OclMatrix(size(val)),val);
       elseif isa(input,'Variable')
-        obj = Variable(OclMatrix(size(value)),value);
+        obj = Variable(OclMatrix(size(val)),val);
       else
         error('Variable type not implemented.');
       end
     end
     
-    function obj = Matrix(value)
-      obj = Variable(OclMatrix(size(value)),value);
+    function obj = Matrix(val)
+      obj = Variable(OclMatrix(size(val)),val);
     end
     
   end % methods(static)
   
   methods
     
-    function self = Variable(structure,value)
+    function self = Variable(type,val)
       
-      if isa(structure,'Variable')
-        structure = structure.thisStructure;
+      if isa(type,'Variable')
+        type = type.type;
       end
       
-      self.thisStructure = structure;
+      self.type = type;
       
       if nargin == 1
-        self.thisValue = Value(zeros(prod(structure.size),1));
+        self.val = Value(zeros(prod(type.size),1));
       end
       
       if nargin ==2 
-        if isa(value,'Value')
-          self.thisValue = value;
+        if isa(val,'Value')
+          self.val = val;
         else
-          self.thisValue = Value(zeros(prod(structure.size),1));
-          self.set(value);
+          self.val = Value(zeros(prod(type.size),1));
+          self.set(val);
         end
       end
     end
     
     function varargout = subsref(self,s)
-      % var(1)
-      % var.x
-      % var.value
+      % v(1)
+      % v.x
+      % v.value
+      % v.set(4)
+      % v.dot(w)
+      % ...
       
       if numel(s) == 1 && strcmp(s.type,'()')
-        % x(1)
+        % v(1)
         [varargout{1}] = self.get(s.subs{:});
       elseif numel(s) > 1 && strcmp(s(1).type,'()')
-        % x(1).something().a
+        % v(1).something().a
         v = self.get(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
-        
       elseif ~numel(s) == 0 && strcmp(s(1).type,'.')
-        % x.something()
+        % v.something or v.something()
         id = s(1).subs;
-        if isfield(self.thisStructure.getChildPointers,id)
-          % x.variable
+        if isa(self.type,'OclTree') && isfield(self.type.children,id)
+          % v.x or v.x(1)
           if numel(s) > 1
-            if strcmp(s(2).type,'()')
-              % check for selector
-              selector = s(2).subs{1};
-              v = self.get(id,selector);
-              [varargout{1:nargout}] = subsref(v,s(3:end));
-            else
-              v = self.get(id);
-              [varargout{1:nargout}] = subsref(v,s(2:end));
-            end
+            selector = s(2).subs{1};
+            v = self.get(id).get(selector);
+            [varargout{1:nargout}] = subsref(v,s(3:end));
           else
+            % v.x
             v = self.get(id);
             [varargout{1:nargout}] = v;
           end
@@ -129,7 +126,7 @@ classdef Variable < handle
           [varargout{1:nargout}] = builtin('subsref',self,s);
         end
       else
-        [varargout{1:nargout}] = self;
+        oclError('Not supported.');
       end
     end % subsref
     
@@ -140,22 +137,22 @@ classdef Variable < handle
       end
       
       if numel(s)==1 && strcmp(s.type,'()')
-        v = subsasgn(self.value,s,v);
+        v = subsasgn(self.val,s,v);
         self.set(v);
       else
         self.set(builtin('subsasgn',self,s,v));
       end
     end
     
-    %%% Delegate methods of OclStructure
+    %%% Delegate methods of Ocltype
     function l = length(self)
       l = max(size(self));
     end
     function s = size(self,varargin)
-      s = self.thisStructure.size(varargin{:});
+      s = self.type.size(varargin{:});
     end
     function r = positions(self)
-      r = self.thisStructure.positions;
+      r = self.type.positions;
     end
     function r = get(self,in1,in2)
       % r = get(self,id)
@@ -173,10 +170,10 @@ classdef Variable < handle
       if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
         if nargin == 2
           % get(id)
-          r = Variable.createLike(self,self.thisStructure.get(in1),self.thisValue);
+          r = Variable.createLike(self,self.type.get(in1),self.value);
         else
           % get(id,selector)
-          r = Variable.createLike(self,self.thisStructure.get(in1,in2),self.thisValue);
+          r = Variable.createLike(self,self.type.get(in1,in2),self.value);
         end
       else
         if nargin == 2
@@ -184,69 +181,40 @@ classdef Variable < handle
           if isAllOperator(in1)
             r = self;
           else
-            r = Variable.createLike(self,self.thisStructure.get(in1),self.thisValue);
+            r = Variable.createLike(self,self.type.get(in1),self.value);
           end
         else
           % get(row,col)
           if isAllOperator(in1) && isAllOperator(in2)
             r = self;
           else
-            r = Variable.createLike(self,self.thisStructure.get(in1,in2),self.thisValue);
+            r = Variable.createLike(self,self.type.get(in1,in2),self.value);
           end
         end
       end
     end
     %%%
-    
-    function set(self,valueIn)
-      
-      if isa(valueIn,'Variable')
-        valueIn = valueIn.value;
+    function set(self,valueIn,varargin)
+      % set(val)
+      % set(val,slice1,slice2,slice3)
+      [pos,N,M,K] = self.type.getPositions();
+      val = valueIn(pos);
+      if nargin > 2
+        val = reshape(val,N,M,K);
+        val = val(varargin{:})
+        val = reshape(val,l*l*m,1);
       end
-      
-      if isempty(valueIn)
-        return
-      end
-      
-      positions = self.positions;
-      
-      if isscalar(valueIn)
-        % assign scalar
-        for k=1:length(positions)
-          s = numel(positions{k});
-          val = valueIn * ones(s,1);
-          self.thisValue.set(val,positions{k});
-        end
-      elseif numel(positions{1}) == numel(valueIn)
-        % assign same value repeatetly to each position
-        for k=1:length(positions)
-          p = positions{k};
-          val = reshape(valueIn,size(p));
-          self.thisValue.set(val,p);
-        end
-      elseif ismatrix(valueIn) && length(positions) == size(valueIn,2)
-        % assign each column of value to each position
-        for k=1:length(positions)
-          self.thisValue.set(valueIn(:,k),positions{k});
-        end
-      else
-        error('Error: Can not assign value to variable, dimensions do not match.');
-      end
+      self.val.set(val)
     end % set
     
-    function v = value(self)
-      positions = self.thisStructure.positions();
-      %assert(length(positions)>= 1, 'structure ill defined (positions).')
-      if length(positions) == 1
-        s = self.size;
-        v = reshape(self.thisValue.value(positions{1}),s);
-      else
-        % stack vectors
-        v = [];
-        for k=1:length(positions)
-          v = [v,self.thisValue.value(positions{k})];
-        end
-      end        
+    function v = value(self,varargin)
+      % value()
+      % value(slice1,slice2,slice3)
+      v = self.val.get();
+      [pos,N,M,K] = self.type.getPositions();
+      
+      v = reshape(v(pos),N,M,K);
+      v = v(varargin{:});
     end
     
     function y = linspace(d1,d2,n)
@@ -610,7 +578,7 @@ classdef Variable < handle
       %
       % Tab completion in Matlab for custom variables
       n = [fieldnames(self);	
-      fieldnames(self.thisStructure.getChildPointers)];	
+      fieldnames(self.type.getChildPointers)];	
     end
   end
 end

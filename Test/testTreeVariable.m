@@ -1,6 +1,6 @@
 function testTreeVariable
   
-xStruct = OclTree('x');
+xStruct = OclTree();
 xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);

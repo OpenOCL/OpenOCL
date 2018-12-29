@@ -15,6 +15,12 @@ classdef OclTrajectory < OclStructure
       self.positionArray = positionArray;
     end
     
+    function [p,N,M,K] = getPositions(self)
+      p = cell2mat(self.positionArray);
+      [N,M] = self.type.size();
+      K = length(self.positionArray);
+    end
+    
     function s = size(self)
       l = length(self.positionArray);
       s = [prod(self.type.size),l];

@@ -14,13 +14,13 @@ classdef CasadiVariable < Variable
   
   methods
     
-    function self = CasadiVariable(structure,varargin)
-      % CasadiVariable(structure)
-      % CasadiVariable(structure,value)
-      % CasadiVariable(structure,mx)
-      % CasadiVariable(structure,mx,value)
+    function self = CasadiVariable(type,varargin)
+      % CasadiVariable(type)
+      % CasadiVariable(type,value)
+      % CasadiVariable(type,mx)
+      % CasadiVariable(type,mx,value)
       
-      self = self@Variable(structure);
+      self = self@Variable(type);
       
       setvalue = false;
       if nargin==1 || (nargin==2 && islogical(varargin{1}))
@@ -38,32 +38,25 @@ classdef CasadiVariable < Variable
         value = varargin{1};
       end
 
-      if setvalue && isa(structure,'OclStructure')
+      if setvalue && isa(type,'OclStructure')
         if self.mx
-          value = casadi.MX.sym('v',prod(structure.size),1);
+          value = casadi.MX.sym('v',prod(type.size),1);
         else
-          value = casadi.SX.sym('v',prod(structure.size),1);
+          value = casadi.SX.sym('v',prod(type.size),1);
         end
       elseif setvalue
         if self.mx
-          value = casadi.MX.sym(structure.id,prod(structure.size),1);
+          value = casadi.MX.sym(type.id,prod(type.size),1);
         else
-          value = casadi.SX.sym(structure.id,prod(structure.size),1);
+          value = casadi.SX.sym(type.id,prod(type.size),1);
         end
       end
       
       if isa(value,'Value')
-        self.thisValue = value;
+        self.val = value;
       else
-        self.thisValue.set(value);
+        self.val.set(value);
       end
-      
     end
-    
-    
   end
-  
-
-  
 end
-
