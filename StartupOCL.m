@@ -72,12 +72,12 @@ function StartupOCL(in)
   % remove properties function in Variable.m for Octave which gives a
   % parse error
   if isOctave()
-    variableDir = fullfile(oclPath,'Core','Variables');
-    rmpath(variableDir);
+    variableDir = fullfile(oclPath,'Core','Variables','Variable');
+    %rmpath(variableDir);
     
-    vFilePath = fullfile(exportDir, 'Variables','Variable.m');
+    vFilePath = fullfile(exportDir, 'Variable','Variable.m');
     if ~exist(vFilePath) || octaveClear
-      delete(fullfile(exportDir, 'Variables','*.m'))
+      delete(fullfile(exportDir, 'Variable','V*.m'))
       status = copyfile(variableDir,exportDir);
       assert(status, 'Could not copy Variables folder');
     end
@@ -96,5 +96,5 @@ function StartupOCL(in)
       fwrite(fid, newText);
       fclose(fid);
     end
-    addpath(fullfile(exportDir,'Variables'));
+    addpath(fullfile(exportDir,'Variable'));
   end

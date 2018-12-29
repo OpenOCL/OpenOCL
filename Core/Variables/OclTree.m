@@ -2,41 +2,32 @@ classdef OclTree < OclStructure
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
   properties
-    % positions (OclStructure)
     children
-    len
+    positions
   end
 
   methods
-    function self = OclTree(positions)
+    function self = OclTree(structure,p)
       % OclTree()
-      if nargin ==0
+      if nargin == 0
         self.children = struct;
-        self.positions = struct;
-        self.len = 0;
+        self.positions = zeros(1,0);
       else
-        for i=1:length(positions)
-          
-        end
-        
         self.children = struct;
-        self.positions = positions;
-        self.len = 0;
+        self.positions = p;
       end
     end
 
-    function add(self,id,in2)
+    function add(self,id,in2,varargin)
       % add(id,size)
-      %   Add a new variable from id and size
       % add(id,obj)
-      %   Add a copy of the given variable
-      narginchk(2,3);
+      % add(id,obj,positions)
       if isnumeric(in2)
         % args:(id,size)
-        self.addObject(id,OclMatrix(in2));
+        self.addObject(id,OclMatrix(in2),varargin{:});
       else
         % args:(id,obj)
-        self.addObject(id,in2);
+        self.addObject(id,in2,varargin{:});
       end
     end
     
@@ -51,119 +42,85 @@ classdef OclTree < OclStructure
       end
     end
     
-    function addObject(self,id,obj)
+    function addObject(self,id,obj,positions)
       % addVar(id, obj)
-      %   Adds a structure object (by reference)
+      %   Adds a structure object
       
-      if isempty(obj)
-        warning('OclTree')
+      if nargin ==4
+        self.positions=sort([self.positions,positions]);
+        if isfield(self.children,id)
+          self.children.(id).add(positions);
+        else  
+          self.children.(id) = OclTrajectory(obj,{positions});
+        end
+        return
       end
-      
-      objLength = prod(obj.size);
-      newLength = self.len+objLength;
 
+      objLength = prod(obj.size);
       if isfield(self.children, id)
-        assertEqual(self.children.(id).size,obj.size)
-        assertEqual(class(self.children.(id)),class(obj))
-        self.positions.(id){end+1} = self.len+1:newLength;
+        pos = self.positions(end)+1:self.positions(end)+objLength;
+        self.positions = [self.positions,pos];
+        self.children.(id).add(pos);
+      elseif isempty(fieldnames(self.children)) && isempty(self.positions)
+        pos = 1:objLength;
+        self.children.(id) = OclTrajectory(obj,{pos});
+        self.positions = pos;
       else
-        self.children.(id) = obj;
-        self.positions.(id) = {self.len+1:newLength};
+        pos = self.positions(end)+1:self.positions(end)+objLength;
+        self.positions = [self.positions,pos];
+        self.children.(id) = OclTrajectory(obj,{pos});
       end
-      self.len = newLength;
     end
     
     function s = size(self)
       % s= size()
       %   Returns the size of the structure
       %   The size is determined by the leave structure
-      ids = fieldnames(self.children);
-      s = [0,1];
-      for i=1:length(ids)
-        thisId = ids{i};
-        tr = OclTrajectory(self.children.(thisId),self.positions.(thisId));
-        s(1) = s(1) + prod(tr.size);
-      end
+      s = size(self.positions);
     end
     
-    function r = get(self,id,p)
+    function r = get(self,id)
       % get(id)
-      % get(id)
-      if nargin==2
-        p = {1:self.len};  
-      end
+
       c = self.children.(id);
-      p = OclTree.merge(p,self.positions.(id));
-      
-      if length(p) == 1
-          r = OclMatrix('p',p{1});
-        else
-          r = OclTrajectory(c,p);
+      pArray = OclTree.merge(self.positions,c.positionArray);
+      if length(pArray) == 1
+        r = OclMatrix('p',pArray{1});
+      else
+        r = OclTrajectory(c,pArray);
       end
     end
 
     function tree = getFlat(self)
-      parentPositions = self.positions();
-      tree = OclTree(self.id);
-      tree.thisLength = self.thisLength;
-      tree.thisPositions = parentPositions;
-      self.iterateLeafs(parentPositions,tree);
+      tree = OclTree();
+      self.iterateLeafs(self.positions(),tree);
     end
     
-    function iterateLeafs(self,parentPositions,treeOut)
-      
-      childsFields = fieldnames(self.childPointers);
-
-      for m=1:length(childsFields)
+    function iterateLeafs(self,positions,treeOut)
+      childrenIds = fieldnames(self.children);
+      for m=1:length(childrenIds)
         % get children
-        child = self.childPointers.(childsFields{m});
-
-        % access children by index
-        child.positions = child.positions;
-
-        % get merge all parent and child positions
-        Nchilds = length(child.positions);
-
-        positions = cell(1,Nchilds*length(parentPositions));
-        i = 1;
-        for l=1:length(parentPositions)
-          thisParentPos = parentPositions{l};
-          for k=1:Nchilds
-            pos = child.positions{k};
-            positions{i} = thisParentPos(pos);
-            i = i+1;
-          end
-        end  
-        
-        if isa(child.node,'OclMatrix')
-          
-          this = child.node;
-          thisID = childsFields{m};
-        
-          if isfield(treeOut.childPointers,thisID)
-
-            % combine, sort positions
-            oldPositions = treeOut.childPointers.(thisID).positions;
-            newPositions = sort([oldPositions{:},positions{:}]);
-
-            % split positions to cell
-            cellLength = prod(this.size);
-            cellN      = length(newPositions)/cellLength;         
-
-            pCell = cell(1,cellN);
-            for k=1:cellN
-              pCell{k} = newPositions(cellLength*(k-1)+1:cellLength*k);
+        id = childrenIds{m};
+        child = self.children.(id);
+        if isa(child,'OclMatrix')
+          pos = OclStructure.merge(positions,child.positions);
+          treeOut.add(id,child,pos);
+        elseif isa(child,'OclTree')
+          pos = OclStructure.merge(positions,child.positions);
+          child.iterateLeafs(id,pos,treeOut);
+        elseif isa(child,'OclTrajectory')
+          for i=1:length(child.positionArray)
+            childType = child.type();
+            childPositions = child.positionArray{i};
+            pos = OclStructure.merge(positions,childPositions);
+            if isa(child.type(),'OclMatrix')
+              treeOut.add(id,child,pos);
+            elseif isa(child.type(),'OclTree')
+              childType.iterateLeafs(pos,treeOut);
+            else
+              oclError("Children of a trajectory can not be a trajectory");
             end
-            treeOut.childPointers.(thisID).positions = pCell;
-
-          else
-            treeOut.childPointers.(thisID) = struct;
-            treeOut.childPointers.(thisID).node = this;
-            treeOut.childPointers.(thisID).positions = positions;
           end
-        
-        else
-          child.node.iterateLeafs(positions,treeOut);
         end
       end
     end % iterateLeafs
