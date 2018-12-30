@@ -5,11 +5,11 @@ xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);
 
-x = Variable(xStruct,4);
+x = Variable.create(xStruct,4);
 
 %%% set
 x.set(1:10);
-assert(isequal(x.value,(1:10)'))
+assert(isequal(x.value,1:10))
 
 %%% get by id
 assert(isequal(x.get('x1').value,[1,9;2,10]));
