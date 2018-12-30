@@ -7,56 +7,32 @@ classdef CasadiVariable < Variable
   methods (Static)
     
     function obj = Matrix(sizeIn)
-      obj = CasadiVariable(OclMatrix(sizeIn));
+      obj = CasadiVariable(OclMatrix(sizeIn),1:prod(sizeIn),false);
     end
     
   end
   
   methods
     
-    function self = CasadiVariable(type,varargin)
-      % CasadiVariable(type)
-      % CasadiVariable(type,value)
-      % CasadiVariable(type,mx)
-      % CasadiVariable(type,mx,value)
+    function self = CasadiVariable(type,pos,mx,val)
+      % CasadiVariable(type,pos,mx)
+      narginchk(3,4);
       
-      self = self@Variable(type);
-      
-      setvalue = false;
-      if nargin==1 || (nargin==2 && islogical(varargin{1}))
-        setvalue = true;
-        if nargin==1
-          self.mx=false;
-        else
-          self.mx=varargin{1};
-        end
-      elseif nargin==3
-        self.mx = varargin{1};
-        value = varargin{2};
+      if isa(type,'OclTree')
+        id = [fieldnames(type.children){:}];
       else
-        self.mx = false;
-        value = varargin{1};
-      end
-
-      if setvalue && isa(type,'OclStructure')
-        if self.mx
-          value = casadi.MX.sym('v',prod(type.size),1);
-        else
-          value = casadi.SX.sym('v',prod(type.size),1);
-        end
-      elseif setvalue
-        if self.mx
-          value = casadi.MX.sym(type.id,prod(type.size),1);
-        else
-          value = casadi.SX.sym(type.id,prod(type.size),1);
-        end
+        id = class(type);
       end
       
-      if isa(value,'Value')
-        self.val = value;
-      else
-        self.val.set(value);
+      if nargin == 3 && mx
+        val = Value(casadi.MX.sym(id,1,prod(type.size)));
+      elseif nargin == 3
+        val = Value(casadi.SX.sym(id,1,prod(type.size)));
       end
+      
+      
+      self = self@Variable(type,pos,val);
+      self.mx = mx;
     end
   end
 end

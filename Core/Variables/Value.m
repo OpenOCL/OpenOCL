@@ -5,6 +5,7 @@ classdef Value < handle
   end
   methods
     function self = Value(v)
+      narginchk(1,1);
       self.val = v;
     end
     function set(self,val,varargin)

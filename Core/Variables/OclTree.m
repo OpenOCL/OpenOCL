@@ -15,6 +15,10 @@ classdef OclTree < OclStructure
       self.positions = struct;
       self.len = 0;
     end
+    
+    function s = size()
+      s = [1,self.len];
+    end
 
     function add(self,id,in2)
       % add(id,size)
@@ -70,6 +74,12 @@ classdef OclTree < OclStructure
       t = self.children.(id);
       p = self.positions.(id);
       p = OclTree.merge(pos,p);
+    end
+    
+    function [pos,N,M,K] = getPositions(self,pos)
+      N = length(self.positions);
+      M = 1;
+      K = 1;
     end
 
     function tree = getFlat(self)

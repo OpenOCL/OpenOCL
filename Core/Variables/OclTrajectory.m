@@ -16,21 +16,6 @@ classdef OclTrajectory < OclStructure
       self.positionArray = {};
     end
     
-%     function [p,N,M,K] = getPositions(self)
-%       p = cell2mat(self.positionArray);
-%       s = self.type.size();
-%       N = s(1);
-%       M = s(2);
-%       K = length(self.positionArray);
-%       
-%       % squeeze dimensions of length 1
-%       p = reshape(p,[N,M,K]);
-%       p = squeeze(p);
-%       [N,M,K] = size(p);
-%       p = reshape(p,[N*M,K])';
-%       p = squeeze(num2cell(p,[1,2]));
-%     end
-    
     function s = size(self)
       s = [prod(self.type.size),length(positions)];
     end
@@ -67,6 +52,22 @@ classdef OclTrajectory < OclStructure
       pout = OclStructure.merge(pos,childPositions); 
       tout = tree.children.(id);
     end
+    
+    function [p,N,M,K] = getPositions(self,pos)
+       p = cell2mat(pos);
+       s = self.type.size();
+       N = s(1);
+       M = s(2);
+       K = length(pos);
+       
+       % squeeze dimensions of length 1
+       p = reshape(p,[N,M,K]);
+       p = squeeze(p);
+       [N,M,K] = size(p);
+       p = reshape(p,[N*M,K])';
+       p = squeeze(num2cell(p,[1,2]));
+     end
+     
   end % methods
 end % class
 
