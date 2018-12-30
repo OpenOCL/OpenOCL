@@ -16,7 +16,7 @@ classdef OclTree < OclStructure
       self.len = 0;
     end
     
-    function s = size()
+    function s = size(self)
       s = [1,self.len];
     end
 
@@ -62,11 +62,6 @@ classdef OclTree < OclStructure
       end
       self.children.(id).add(N);
       self.len = self.len+objLength*N;
-    end
-    
-    function s = size(self)
-      % s= size()
-      s = [1,self.len];
     end
     
     function [t,p] = get(self,pos,id)

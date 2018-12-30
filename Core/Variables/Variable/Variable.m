@@ -69,6 +69,8 @@ classdef Variable < handle
       obj = Variable(OclMatrix(size(val)),1:prod(size(val)),Value(val));
     end
     
+
+    
   end % methods(static)
   
   methods
@@ -80,7 +82,6 @@ classdef Variable < handle
       
       self.type = type;
       self.positions = positions;
-     
       self.val = val;
     end
     

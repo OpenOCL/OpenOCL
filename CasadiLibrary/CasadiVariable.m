@@ -19,7 +19,8 @@ classdef CasadiVariable < Variable
       narginchk(3,4);
       
       if isa(type,'OclTree')
-        id = [fieldnames(type.children){:}];
+        names = fieldnames(type.children);
+        id = [names{:}];
       else
         id = class(type);
       end

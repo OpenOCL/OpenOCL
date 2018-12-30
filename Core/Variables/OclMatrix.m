@@ -25,7 +25,7 @@ classdef OclMatrix < OclStructure
       else
         pos = pos(dim1,dim2);
       end
-      r = OclMatrix(pos);
+      r = OclMatrix(size(pos));
       p = pos;
     end
     
