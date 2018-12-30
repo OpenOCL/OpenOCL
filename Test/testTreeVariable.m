@@ -8,8 +8,8 @@ xStruct.add('x1',[1,2]);
 x = Variable.create(xStruct,4);
 
 %%% set
-x.set(1:10);
-assert(isequal(x.value,1:10))
+x.set((1:10).');
+assert(isequal(x.value,(1:10)'))
 
 %%% get by id
 assert(isequal(x.get('x1').value,[1,9;2,10]));
@@ -34,7 +34,7 @@ u = OclTree();
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 
-state = Variable(x,0);
+state = Variable.create(x,0);
 
 state.get('R').set(eye(3))
 state.get('p').set([100;0;-50])
@@ -55,33 +55,28 @@ ocpVar = OclTree();
 ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
-v = Variable(ocpVar,0);
+v = Variable.create(ocpVar,0);
 v.get('x').get('R').set(eye(3))
 v.get('x').get('p').set([100;0;50])
 v.get('x').get('v').set([20;0;0])
 v.get('x').get('w').set([0;1;0.1])
 
-assert( isequal( v.get('x',4:6).get('p').value, ... 
+assert( isequal( v.get('x').get(4:6).get('p').value, ... 
                  [100   100   100
                    0     0     0
                   50    50    50]));
   
 
-v.get('x',4:6).get('p').set(eye(3));
-
-assert( isequal(v.get('x',4:6).get('p').value, eye(3)) );
-assert( isequal(v.get('x',4:6).get('p').size, [3 3]) );
-
 v.get('x').get('R').set(eye(3));
-assert( isequal(v.get('x').get('R').value, repmat([1,0,0,0,1,0,0,0,1]',1,6)) );
+assert( isequal(v.get('x').get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
 assert(isequal(v.x.R.get(1).value,eye(3)))
 
-v.get('x').get('R').set(ones(9,1))
-assert( isequal(v.get('x').get('R').value, ones(9,6)) );
+v.get('x').get('R').set(ones(3,3))
+assert( isequal(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1)    ));
 
 % slice on selection
 assert(isequal(v.x(1).p.value,[100,0,50]'))
-assert(isequal(v.x(4:6).get('p',1).value,[1,0,0]))
+assert(isequal(v.x(4:6).p(1).value,[1,0,0]))
 
 % :, all, end
 assert(isequal(v('all').value,v.value)) 

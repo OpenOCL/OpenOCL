@@ -1,82 +1,46 @@
 classdef Value < handle
   % VALUE Class for storing values
   properties
-    type
-    positions
     val
   end
   methods
-    function self = Value(type,positions,v)
-      narginchk(3,3);
-      self.type = type;
-      self.positions = positions;
+    function self = Value(v)
+      narginchk(1,1); 
       self.val = v;
     end
     
     function r = numel(self)
-      r = numel(self.positions);
+      r = numel(self.val);
     end
     
-    function r = get(self,in1,in2)
-      % r = get(self,id)
-      % r = get(self,id,index)
-      % r = get(self,index)
-      % r = get(self,row,col)
+    function set(self,type,positions,value,varargin)
+      % set(type,positions,value)
+      % set(type,positions,value,slice1,slice2,slice3)      
+      [pos,N,M,K] = type.getPositions(positions);
+      pos = reshape(pos,[N,M,K]);
       
-      function t = isAllOperator(in)
-        t = strcmp(in,'all') || strcmp(in,':');
-        if t
-          t = ':';
-        end
+      assert(length(size(value)) <= 2, 'Only matrix values supported.');
+      
+      dims = [varargin{:}];
+      if isempty(dims)
+        dims = {1:N,1:M,1:K};
       end
       
-      if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
-        if nargin == 2
-          % get(id)
-          [t,p] = self.type.get(self.positions,in1);
-          r = Value(t,p,self.val);
-        else
-          % get(id,selector)
-          [t,p] = self.type.get(self.positions,in1);
-          [t,p] = t.get(p,in2);
-          r = Value(t,p,self.val);
-        end
-      else
-        if nargin == 2
-          % get(index)
-          if isAllOperator(in1)
-            r = self;
-          else
-            [t,p] = self.type.get(self.positions,in1);
-            r = Value(t,p,self.val);
-          end
-        else
-          % get(row,col)
-          if isAllOperator(in1) && isAllOperator(in2)
-            r = self;
-          else
-            [t,p] = self.type.get(self.positions,in1,in2);
-            r = Value(t,p,self.val);
-          end
-        end
-      end
-    end
-    
-    function set(self,value,varargin)
-      % set(value)
-      % set(val,slice1,slice2,slice3)
-      if nargin == 2
-        self.val = value;
-      else
-        p = self.slice(varargin{:});
-        self.val(p) = value;
-      end
+      N = length(dims{1});
+      M = length(dims{2});
+
+      Nv = size(value,1);
+      Mv = size(value,2);
+      for k=dims{3}
+        p = pos(:,:,k);
+        self.val(p(dims{1},dims{2})) = repmat(value,N/Nv,M/Mv);
+      end      
     end % set
     
-    function vout = value(self,varargin)
-      % value()
-      % value(slice1,slice2,slice3)
-      p = self.slice(varargin{:});
+    function vout = value(self,type,positions,varargin)
+      % v = value(type,positions)
+      % v = value(type,positions,slice1,slice2,slice3)
+      p = self.slice(type,positions,varargin{:});
       vout = cell(1,length(p));
       for k=1:length(p)
         vout{k} = reshape(self.val(p{k}),size(p{k}));
@@ -86,25 +50,31 @@ classdef Value < handle
       end
     end
     
-    function [pout,N,M,K] = slice(self,dim1,dim2,dim3)
-      [pos,N,M,K] = self.type.getPositions(self.positions);
-      
-      if isnumeric(pos)
-        pos = {pos};
-      end
-      assert(K==length(pos))
+    function [p,N,M,K] = squeeze(self,p,N,M,K)
+       % squeeze dimensions of length 1
+       p = reshape(p,[N,M,K]);
+       p = squeeze(p);
+       [N,M,K] = size(p);
+       p = reshape(p,[N,M,K]);
+       p = shiftdim(num2cell(p,[1,2]),1);
+       assert(K==length(p))
+    end
+    
+    function [pout,N,M,K] = slice(self,type,positions,dim1,dim2,dim3)
+      [pos,N,M,K] = type.getPositions(positions);
+      [pos,N,M,K] = self.squeeze(pos,N,M,K);
       
       pout = cell(1,K);
       for k=1:K
         p = reshape(pos{k},[N,M]);
-        if nargin==2
+        if nargin==4
           p = p(dim1);
-        elseif nargin==3
+        elseif nargin==5
           p = p(dim1,dim2);  
         end
         pout{k} = p;
       end
-      if nargin==4
+      if nargin==6
         pout = p(dim3);
       end
     end

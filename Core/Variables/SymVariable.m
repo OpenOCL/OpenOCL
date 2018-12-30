@@ -7,33 +7,26 @@ classdef SymVariable < Variable
   
   methods (Static)
     
-    function obj = Matrix(sizeIn)
-      obj = SymVariable(OclMatrix(sizeIn));
+    function var = create(t,value)
+      vv = sym('v',t.size());
+      vv = vv(:).';
+      v = Value(vv);
+      var = Variable(type,1:length(vv),v);
+      if nargin == 2
+        var.set(value);
+      end
+    end
+    
+    function var = Matrix(sizeIn)
+      var = SymVariable.create(OclMatrix(sizeIn));
     end
     
   end
   
   methods
     
-    function self = SymVariable(structure,value)
-      
-      self = self@Variable(structure);
-      
-      if prod(structure.size) == 0
-        return
-      end
-
-      if nargin == 1
-        value = sym(structure.id,[prod(structure.size),1]);
-        assume(value,'real');
-      end
-      
-      if isa(value,'Value')
-        self.thisValue = value;
-      else
-        self.thisValue.set(value);
-      end
-      
+    function self = SymVariable(type,positions,val)
+      self = self@Variable(type,positions,val);
     end
     
     function v = polyval(p,a)

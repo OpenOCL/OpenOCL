@@ -17,7 +17,7 @@ classdef OclTrajectory < OclStructure
     end
     
     function s = size(self)
-      s = [prod(self.type.size),length(positions)];
+      s = [prod(self.type.size),length(self.positionArray)];
     end
     
     function add(self,N)
@@ -59,15 +59,7 @@ classdef OclTrajectory < OclStructure
        N = s(1);
        M = s(2);
        K = length(pos);
-       
-       % squeeze dimensions of length 1
-       p = reshape(p,[N,M,K]);
-       p = squeeze(p);
-       [N,M,K] = size(p);
-       p = reshape(p,[N*M,K])';
-       p = squeeze(num2cell(p,[1,2]));
-     end
-     
+    end
   end % methods
 end % class
 
