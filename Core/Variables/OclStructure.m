@@ -31,7 +31,7 @@ classdef OclStructure < handle
       if isnumeric(p1) && isnumeric(p2)
         pout = p1(p2);
       else
-        if(isnumeric(p1)) p1={p1};end
+        if(isnumeric(p1));p1={p1};end
         pout = cell(1,length(p2)*length(p1));
         i = 1;
         for l=1:length(p1)

@@ -4,63 +4,69 @@ classdef OclTrajectory < OclStructure
   properties
     positionArray
     type
+    len
   end
   
   methods
-    function self = OclTrajectory(type,positionArray)
-      if isa(type,'OclTrajectory')
-        type = type.type;
-      end
+    function self = OclTrajectory(type)
+      
+      narginchk(1,1)
       self.type = type;
-      self.positionArray = positionArray;
+      self.len = 0;
+      self.positionArray = {};
     end
     
-    function [p,N,M,K] = getPositions(self)
-      p = cell2mat(self.positionArray);
-      s = self.type.size();
-      N = s(1);
-      M = s(2);
-      K = length(self.positionArray);
-      
-      % squeeze dimensions of length 1
-      p = reshape(p,[N,M,K]);
-      p = squeeze(p);
-      [N,M,K] = size(p);
-      p = reshape(p,[N*M,K])';
-      p = mat2cell(p,ones(K),N*M);
-    end
+%     function [p,N,M,K] = getPositions(self)
+%       p = cell2mat(self.positionArray);
+%       s = self.type.size();
+%       N = s(1);
+%       M = s(2);
+%       K = length(self.positionArray);
+%       
+%       % squeeze dimensions of length 1
+%       p = reshape(p,[N,M,K]);
+%       p = squeeze(p);
+%       [N,M,K] = size(p);
+%       p = reshape(p,[N*M,K])';
+%       p = squeeze(num2cell(p,[1,2]));
+%     end
     
     function s = size(self)
-      l = length(self.positionArray);
-      s = [prod(self.type.size),l];
+      s = [prod(self.type.size),length(positions)];
     end
     
-    function add(self,positions)
-      self.positionArray{end+1} = positions;
+    function add(self,N)
+      narginchk(2,2);
+      nEl = prod(self.type.size);
+      for k=1:N
+        self.positionArray{end+1} = self.len+1:self.len+nEl;
+        self.len = self.len+nEl;
+      end
     end
     
-    function r = get(self,in, p)
-      % r = get(selector)
-      % r = get(id)
-      positions = self.positionArray();
+    function [tout,pout] = get(self,pos,in)
+      % [r,p] = get(selector)
+      % [r,p] = get(id)
       if ischar(in)
-        % in=id
-        p = OclStructure.merge(positions,self.type.get(in).positionArray);
-        if length(p) == 1 && isa(self.type,'OclTree')
-          r = OclTree();
-          obj = self.type.get(in);
-          obj.positions = p{1};
-          r.add(in,obj);
-        elseif length(in)==1 && isa(self.type,'OclMatrix') 
-          r = OclMatrix(p{1});
-        else
-          r = OclTrajectory(self.type.get(in).type,p);
-        end
+        [tout,pout] = getById(self,pos,in);
       else
-        %in=selector
-        r = OclTrajectory(self.type,positions(in));
+        [tout,pout] = getByIndex(self,pos,in);
       end
     end   
+    
+    function [tout,pout] = getByIndex(self,pos,index)
+      tout = OclTrajectory(self.type);
+      pout = pos(index);
+    end
+    
+    function [tout,pout] = getById(self,pos,id)
+      tree = self.type;
+      assert(isa(tree,'OclTree'));
+      
+      childPositions = tree.positions.(id);
+      pout = OclStructure.merge(pos,childPositions); 
+      tout = tree.children.(id);
+    end
   end % methods
 end % class
 
