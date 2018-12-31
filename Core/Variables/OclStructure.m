@@ -25,22 +25,16 @@ classdef OclStructure < handle
   
     function pout = merge(p1,p2)
       % merge(p1,p2)
-      % Merge arrays of positions
+      % Combine arrays of positions on the third dimension
       % p2 are relative to p1
       % Returns: absolute p2
-      if isnumeric(p1) && isnumeric(p2)
-        pout = p1(p2);
-      else
-        if(isnumeric(p1));p1={p1};end
-        pout = cell(1,length(p2)*length(p1));
-        i = 1;
-        for l=1:length(p1)
-          ap1 = p1{l};
-          for k=1:length(p2)
-            pout{i} = ap1(p2{k});
-            i = i+1;
-          end
-        end    
+      [~,~,K1] = size(p1);
+      [N2,M2,K2] = size(p2);
+      
+      pout = zeros(N2,M2,K1*K2);
+      for k=1:K1
+       ap1 =  p1(:,:,k);
+       pout(:,:,(k-1)*K2+1:k*K2) = ap1(p2);
       end
     end % merge
     

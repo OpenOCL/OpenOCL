@@ -14,10 +14,10 @@ classdef Variable < handle
     
     %%% factory methods
     function var = create(type,value)
-      vv = zeros(type.size());
-      vv = vv(:).';
-      v = Value(vv);
-      var = Variable(type,1:length(vv),v);
+      [N,M,K] = type.size();
+      v = Value(zeros(1,N,M,K));
+      p = reshape(1:N*M*K,N,M,K);
+      var = Variable(type,p,v);
       var.set(value);
     end
     
@@ -69,6 +69,8 @@ classdef Variable < handle
 methods
     function self = Variable(type,positions,val)
       narginchk(3,3);
+      assert(isa(type,'OclStructure'));
+      assert(isnumeric(positions));
       assert(isa(val,'Value'));
       self.type = type;
       self.positions = positions;
@@ -104,7 +106,7 @@ methods
           % v.x.y
           [varargout{1}] = self.get(s.subs);
         elseif isa(self.type,'OclTrajectory') && isa(self.type.type,'OclTree') && isfield(self.type.type.children,id)
-          % v.x.y
+          % v.x(1)
           v = self.get(s(1).subs);
           [varargout{1:nargout}] = subsref(v,s(2:end));
         else
@@ -134,9 +136,9 @@ methods
       end
     end
     
-    %%% delegate methods to Variable
+    %%% delegate methods to OclStructure
     function s = size(self)
-      s = [1,self.val.numel()];      
+      s = size(self.positions);      
     end
 
     function set(self,val,varargin)
@@ -161,19 +163,19 @@ methods
       end
     end
 
-    function r = get(self,in1,in2)
+    function r = get(self,varargin)
       % r = get(self,id)
       % r = get(self,id,index)
       % r = get(self,index)
-      % r = get(self,row,col)
+      % r = get(self,dim1,dim2,dim3)
       function t = isAllOperator(in)
         t = strcmp(in,'all') || strcmp(in,':');
         if t
           t = ':';
         end
       end
-
-      if ischar(in1) && ~(isAllOperator(in1) || strcmp(in1,'end'))
+      in1 = varargin{1};
+      if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
         if nargin == 2
           % get(id)
           [t,p] = self.type.get(self.positions,in1);
@@ -181,31 +183,15 @@ methods
           r = v.convertTo(self);
         else
           % get(id,selector)
-          [t,p] = self.type.get(self.type,in1);
-          [t,p] = t.get(p,in2);
+          [t,p] = self.type.get(self.positions,in1,varargin{2});
           v = Variable(t,p,self.val);
           r = v.convertTo(self);
         end
       else
-        if nargin == 2
-          % get(index)
-          if isAllOperator(in1)
-            r = self;
-          else
-            [t,p] = self.type.get(self.positions,in1);
-            v = Variable(t,p,self.val);
-            r = v.convertTo(self);
-          end
-        else
-          % get(row,col)
-          if isAllOperator(in1) && isAllOperator(in2)
-            r = self;
-          else
-            [t,p] = self.type.get(self.positions,in1,in2);
-            v = Variable(t,p,self.val);
-            r = v.convertTo(self);
-          end
-        end
+        % slice
+        [t,p] = self.type.get(self.positions,varargin{:});
+        v = Variable(t,p,self.val);
+        r = v.convertTo(self);
       end
     end
     
