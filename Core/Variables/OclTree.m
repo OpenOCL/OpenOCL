@@ -38,57 +38,70 @@ classdef OclTree < OclStructure
       end
     end
     
-    function addObject(self,id,obj)
+    function addObject(self,id,obj,pos)
       % addVar(id, obj)
       %   Adds a structure object
-      
-      [N,M,K] = obj.size;
-      pos = self.len+1:self.len+N*M*K;
-      pos = reshape(pos,N,M,K);
-      self.len = self.len+N*M*K;
+      if nargin==3
+        [N,M,K] = obj.size;
+        pos = self.len+1:self.len+N*M*K;
+        pos = reshape(pos,N,M,K);
+        self.len = self.len+N*M*K;
+      else
+        [N,M,K] = size(pos);
+        self.len = self.len+N*M*K;
+      end
       
       if ~isfield(self.children, id)
         self.children.(id) = OclTrajectory(obj);
         self.children.(id).positionArray = pos;
       else
-        self.children.(id).positionArray(:,:,end+1) = pos;
+        self.children.(id).positionArray(:,:,end+1:end+K) = pos;
       end
     end
     
-    function [t,p] = get(self,pos,in3,in4)
+    function [t,p] = get(self,pos,varargin)
       % get(pos,id)
       % get(pos,index)
       % get(pos,id,index)
+      % get(pos,slice1,slice2,slice3)
+      % get(pos,id,slice1,slice2,slice3)
       
-      if nargin==3 && ischar(in3)
-        t = self.children.(in3).type;
-        p = self.children.(in3).positionArray;
+      if ischar(varargin{1})
+        id = varargin{1};
+        t = self.children.(id).type;
+        p = self.children.(id).positionArray;
         p = OclTree.merge(pos,p);
-      elseif nargin == 3 && isnumeric(in3)
-        t = self;
-        p = pos(:,:,in3);
+        varargin(1) = [];
       else
-        t = self.children.(in3).type;
-        p = self.children.(in3).positionArray;
-        p = p(:,:,in4);
-        p = OclTree.merge(pos,p);
+        t = self;
+        p = pos;
       end
       
+      if length(varargin)==1 && size(p,3)==1
+        % index
+        p = p(varargin{1});
+      elseif length(varargin)==1
+        % slice trajectory
+        p = p(:,:,varargin{1});
+      elseif length(varargin)==3
+        % slice all dimensions
+        p = p(varargin{:});
+      end
     end
     
     function [N,M,K] = size(self)
-      if nargout==1
-        N = [self.len,1,1];
-      else
+      if nargout>1
         N = self.len;
         M = 1;
         K = 1;
+      else
+        N = [self.len,1,1];
       end
     end
 
     function tree = getFlat(self)
       tree = OclTree();
-      self.iterateLeafs(1:self.len,tree);
+      self.iterateLeafs((1:self.len).',tree);
     end
     
     function iterateLeafs(self,positions,treeOut)
@@ -99,7 +112,7 @@ classdef OclTree < OclStructure
         if isa(child,'OclMatrix')
           treeOut.addObject(id,child,pos);
         elseif isa(child,'OclTree')
-          child.iterateLeafs(id,pos,treeOut);
+          child.iterateLeafs(pos,treeOut);
         end
       end % for
     end % iterateLeafs

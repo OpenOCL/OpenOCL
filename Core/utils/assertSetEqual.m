@@ -1,7 +1,7 @@
 function assertSetEqual(A,B)
-  A = cell2mat(A);
-  B = cell2mat(B);
-  assert(length(A)==length(B))
-  assert(length(intersect(A,B))==length(A))
+  if iscell(A);A=cell2mat(A);end
+  if iscell(B);B=cell2mat(B);end
+  assertEqual(numel(A), numel(B))
+  assertEqual(numel(intersect(A,B)), numel(A))
   
   

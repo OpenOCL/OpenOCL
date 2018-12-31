@@ -102,13 +102,6 @@ methods
           % v.x.get(3).set(2).value || v.x.y.get(1)
           v = self.get(s(1).subs);
           [varargout{1:nargout}] = subsref(v,s(2:end));
-        elseif isa(self.type,'OclTrajectory') && isa(self.type.type,'OclTree') && isfield(self.type.type.children,id) && numel(s) == 1
-          % v.x.y
-          [varargout{1}] = self.get(s.subs);
-        elseif isa(self.type,'OclTrajectory') && isa(self.type.type,'OclTree') && isfield(self.type.type.children,id)
-          % v.x(1)
-          v = self.get(s(1).subs);
-          [varargout{1:nargout}] = subsref(v,s(2:end));
         else
           % v.value || v.set(1) || v.get(4).set(3).x.value
           [varargout{1:nargout}] = builtin('subsref',self,s);
@@ -170,9 +163,6 @@ methods
       % r = get(self,dim1,dim2,dim3)
       function t = isAllOperator(in)
         t = strcmp(in,'all') || strcmp(in,':');
-        if t
-          t = ':';
-        end
       end
       in1 = varargin{1};
       if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
@@ -189,6 +179,13 @@ methods
         end
       else
         % slice
+        for k=1:length(varargin)
+          if isAllOperator(varargin{k})
+            varargin{k} = (1:size(self.positions,k)).';
+          elseif strcmp(varargin{k},'end')
+            varargin{k} = size(self.positions,k);
+          end
+        end
         [t,p] = self.type.get(self.positions,varargin{:});
         v = Variable(t,p,self.val);
         r = v.convertTo(self);

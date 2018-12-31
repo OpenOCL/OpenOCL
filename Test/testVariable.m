@@ -156,9 +156,9 @@ vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
-ab.set([2,5,4]);
+ab.set([2,5,4]');
 aTest = polyval(ab,a1);
-vTest = polyval([2,5,4],v1);
+vTest = polyval([2,5,4]',v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 

@@ -19,27 +19,18 @@ classdef Value < handle
       [N,M,K] = size(pos);
       
       assert(length(size(value)) <= 2, 'Only matrix values supported.');
-      
-      dims = [varargin{:}];
-      if isempty(dims)
-        dims = {1:N,1:M,1:K};
-      end
-      
-      N = length(dims{1});
-      M = length(dims{2});
 
       Nv = size(value,1);
       Mv = size(value,2);
-      for k=dims{3}
+      for k=1:K
         p = pos(:,:,k);
-        self.val(p(dims{1},dims{2})) = repmat(value,N/Nv,M/Mv);
+        self.val(p) = repmat(value,N/Nv,M/Mv);
       end      
     end % set
     
     function vout = value(self,type,positions,varargin)
       % v = value(type,positions)
-      % v = value(type,positions,slice1,slice2,slice3)
-      p = positions(varargin{:});
+      p = positions();
 
       vout = cell(1,size(p,3));
       for k=1:size(p,3)

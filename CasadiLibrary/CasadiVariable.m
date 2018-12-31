@@ -14,14 +14,16 @@ classdef CasadiVariable < Variable
         id = class(type);
       end
       
-      N  = prod(type.size);
+      [N,M,K] = type.size();
+      assert(K==1,'Not supported.');
       if mx == true
-        vv = casadi.MX.sym(id,1,N);
+        vv = casadi.MX.sym(id,N,M);
       else
-        vv = casadi.SX.sym(id,1,N);
+        vv = casadi.SX.sym(id,N,M);
       end
       val = Value(vv);
-      var = CasadiVariable(type,1:N,mx,val);
+      p = reshape(1:N*M*K,N,M,K);
+      var = CasadiVariable(type,p,mx,val);
       if nargin==3
         var.set(value);
       end
