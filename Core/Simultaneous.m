@@ -151,11 +151,11 @@ classdef Simultaneous < handle
                  'is always called before setInitialBounds and setEndBounds']);
       end
       
-      self.lowerBounds.get(id).get(slice).set(lower);
-      self.upperBounds.get(id).get(slice).set(upper);
+      self.lowerBounds.get(id).get(:,:,slice).set(lower);
+      self.upperBounds.get(id).get(:,:,slice).set(upper);
       
-      self.scalingMin.get(id).get(slice).set(lower);
-      self.scalingMax.get(id).get(slice).set(upper);
+      self.scalingMin.get(id).get(:,:,slice).set(lower);
+      self.scalingMax.get(id).get(:,:,slice).set(upper);
     end
     
     function setVariableScaling(self,id,varargin)
