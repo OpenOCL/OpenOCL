@@ -1,7 +1,4 @@
 classdef CasadiFunction < handle
-  %FUNCTION Summary of this class goes here
-  %   Detailed explanation goes here
-  
   properties (Access = private)
     fun
     casadiFun
@@ -9,7 +6,6 @@ classdef CasadiFunction < handle
     numericOutputValues
     
     compiled
-    name = 'test'
     
     mx
     
@@ -39,12 +35,13 @@ classdef CasadiFunction < handle
         self.mx = mx;
       end
       
-      nInputs = length(inputFunction.inputs);
+      nInputs = inputFunction.ninputs;
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
         inputs{k} = CasadiVariable.create(varStruct, self.mx);
       end
+      
       
       nOutputs = inputFunction.nOutputs;
       
@@ -100,23 +97,7 @@ classdef CasadiFunction < handle
         end
       end
       
-    end
-    
-    function compile(self)
-      global exportDir
-      currentDir = pwd;
-      cd(exportDir)
-      opts = struct;
-      opts.mex = true;
-      cFilePath = fullfile(exportDir,[self.name '.c']);
-      self.fun.generate([self.name '.c'],opts)
-      cd(currentDir)
-      
-      % compile generated code as mex file
-      mex(cFilePath,'-largeArrayDims')
-      self.compiled = true;
-    end
-    
+    end   
   end
 end
 
