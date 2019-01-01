@@ -1,9 +1,7 @@
 classdef VanDerPolOCP < OCP
   % An OCP is defined by inheriting from the OCP class.
+  
   methods
-    function self = VanDerPolOCP(system)
-      self = self@OCP(system);
-    end
     function pathCosts(self,states,algVars,controls,time,endTime,parameters)
       % Define lagrange (intermediate) cost terms.
       self.addPathCost( states.x^2 );
