@@ -27,6 +27,7 @@ classdef Simultaneous < handle
       self.nx = system.nx;
       self.ni = integrator.nvars;
       self.nu = system.nu;
+      self.np = system.np;
       
       self.ocpHandler = ocpHandler;
       
@@ -69,11 +70,18 @@ classdef Simultaneous < handle
         s.controls{k} = [self.nu,1];
       end
       s.states{N+1} = [self.nx,1];
+      s.parameters = [self.np,1];
+      s.time = [1,1];
     end
     
     function [lb,ub] = getBounds(self)
       lb = self.lowerBounds.value;
       ub = self.upperBounds.value;
+    end
+    
+    function [scalingMin,scalingMax] = getScaling(self)
+      scalingMin = self.scalingMin;
+      scalingMax = self.scalingMax;
     end
     
     function initialGuess = getInitialGuess(self)
@@ -108,7 +116,7 @@ classdef Simultaneous < handle
     function setParameter(self,id,varargin)
       % setParameter(id,lower,upper)
       % setParameter(id,value)     
-      self.setBound(id,1,varargin{:},false)
+      self.setBound(id,'all',varargin{:},false)
     end
     
     function setInitialBounds(self,id,varargin)
@@ -169,7 +177,7 @@ classdef Simultaneous < handle
     function setVariableScaling(self,id,varargin)
       % setVariableScaling(id,lower,upper)
       % setVariableScaling(id,value)     
-      self.setScaling(id,':',varargin{:})
+      self.setScaling(id,'all',varargin{:})
     end
     
     function setScaling(self,id,slice,valMin,valMax)
@@ -179,7 +187,6 @@ classdef Simultaneous < handle
       end
       self.scalingMin.get(id,slice).set(valMin);
       self.scalingMax.get(id,slice).set(valMax);     
-      
     end
     
     function checkScaling(self)
