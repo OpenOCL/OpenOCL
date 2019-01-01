@@ -1,4 +1,4 @@
-classdef VanDerPolOCP < OCP
+classdef VanDerPolOCP < OclOCP
   % An OCP is defined by inheriting from the OCP class.
   
   methods

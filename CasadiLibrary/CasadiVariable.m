@@ -14,7 +14,7 @@ classdef CasadiVariable < Variable
         id = class(type);
       end
       
-      [N,M,K] = type.size();
+      [N,M,K] = size(type);
       assert(K==1,'Not supported.');
       if N*M*K==0
         vv = [];
@@ -31,8 +31,11 @@ classdef CasadiVariable < Variable
       end
     end
     
-    function obj = Matrix(size)
-      obj = CasadiVariable.create(OclMatrix(size),false);
+    function obj = Matrix(size,mx)
+      if nargin==1
+        mx = false;
+      end
+      obj = CasadiVariable.create(OclMatrix(size),mx);
     end
     
     function obj = createLike(input,mx)

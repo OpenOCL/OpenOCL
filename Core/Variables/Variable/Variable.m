@@ -14,11 +14,32 @@ classdef Variable < handle
     
     %%% factory methods
     function var = create(type,value)
-      [N,M,K] = type.size();
-      v = Value(zeros(1,N,M,K));
-      p = reshape(1:N*M*K,N,M,K);
-      var = Variable(type,p,v);
-      var.set(value);
+      
+      if isnumeric(value)
+        [N,M,K] = type.size();
+        v = Value(zeros(1,N,M,K));
+        p = reshape(1:N*M*K,N,M,K);
+        var = Variable(type,p,v);
+        var.set(value);
+      elseif isa(value,'casadi.MX')
+        var = CasadiVariable.create(type,true,value);
+      elseif isa(value,'casadi.SX')
+        var = CasadiVariable.create(type,false,value);
+      else
+        oclError('Not implemented for this type of variable.')
+      end
+    end
+    
+    function var = createMatrix(value)
+      if isnumeric(value)
+        var = Variable.Matrix(value);
+      elseif isa(value,'casadi.MX')
+        var = CasadiVariable.Matrix(value,true);
+      elseif isa(value,'casadi.SX')
+        var = CasadiVariable.Matrix(value,false);
+      else
+        oclError('Not implemented for this type of variable.')
+      end
     end
     
     function var = Matrix(value)

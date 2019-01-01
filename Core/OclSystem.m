@@ -11,6 +11,7 @@ classdef (Abstract) OclSystem < handle
     
     initialConditions
     systemFun
+    icFun
   end
   
   properties (Access = private)
@@ -36,7 +37,7 @@ classdef (Abstract) OclSystem < handle
       self.systemFun = OclFunction(self, fh, {sx,sz,su,sp},2);
       
       fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
-      self.systemFun = OclFunction(self, fhIC, {sx,sp},1);
+      self.icFun = OclFunction(self, fhIC, {sx,sp},1);
     end
     
     function setupVariables(varargin)
@@ -58,10 +59,6 @@ classdef (Abstract) OclSystem < handle
       % simulationCallback(states,algVars,controls,parameters)
     end
     
-    function [ode,alg] = evaluate(self,states,algVars,controls,parameters)
-      [ode,alg] = self.systemFun.evaluate(states,algVars,controls,parameters);
-    end
-    
     function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned variables
       
@@ -75,7 +72,7 @@ classdef (Abstract) OclSystem < handle
 
       self.setupEquation(x,z,u,p);
      
-      ode = self.ode;
+      ode = struct2array(self.ode).';
       alg = self.alg;
     end
     
@@ -101,24 +98,15 @@ classdef (Abstract) OclSystem < handle
     end
 
     function setODE(self,id,eq)
-      if isa(eq,'Variable')
-        eq = eq.value;
-      end
-      self.ode.(id) = eq(:);
+      self.ode.(id) = oclValue(eq(:));
     end
     
     function setAlgEquation(self,eq)
-      if isa(eq,'Variable')
-        eq = eq.value;
-      end
-      self.alg = [self.alg;eq];
+      self.alg = [self.alg;oclValue(eq)];
     end
     
     function setInitialCondition(self,eq)
-      if isa(eq,'Variable')
-        eq = eq.value;
-      end
-      self.initialConditions = [self.initialConditions; eq];      
+      self.initialConditions = [self.initialConditions; oclValue(eq)];      
     end
     
     function solutionCallback(self,solution)

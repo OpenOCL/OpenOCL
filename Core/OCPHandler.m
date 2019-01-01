@@ -18,6 +18,7 @@ classdef OCPHandler < handle
     function self = OCPHandler(ocp,system,nlpVarsStruct)
       self.ocp = ocp;
       self.system = system;
+      self.nlpVarsStruct = nlpVarsStruct;
       
       % variable sizes
       sx = system.statesStruct.size();
@@ -28,19 +29,19 @@ classdef OCPHandler < handle
       sv = nlpVarsStruct.size;
 
       fhPC = @(self,varargin) self.getPathCosts(varargin{:});
-      self.pathCostsFun = OclFunction(self, fhPC, {sx,sz,su,scalar,st,sp}, 1);
+      self.pathCostsFun = OclFunction(self, fhPC, {sx,sz,su,st,st,sp}, 1);
       
       fhAC = @(self,varargin) self.getArrivalCosts(varargin{:});
       self.arrivalCostsFun = OclFunction(self, fhAC, {sx,st,sp}, 1);
       
-      fhBC = @(self,varargin)ocp.getBoundaryConditions(varargin{:});
+      fhBC = @(self,varargin)self.getBoundaryConditions(varargin{:});
       self.boundaryConditionsFun = OclFunction(self, fhBC, {sx,sx,sp}, 3);
       
-      fhPConst = @(ocp,varargin)ocp.getPathConstraints(varargin{:});
-      self.pathConstraintsFun = OclFunction(ocp, fhPConst, {sx,sz,su,st,sp}, 3);
+      fhPConst = @(self,varargin)self.getPathConstraints(varargin{:});
+      self.pathConstraintsFun = OclFunction(self, fhPConst, {sx,sz,su,st,sp}, 3);
       
-      fhDC = @(ocp,varargin)ocp.discreteCosts(varargin{:});
-      self.discreteCostsFun = OclFunction(ocp, fhDC, {sv}, 3);
+      fhDC = @(self,varargin)self.getDiscreteCosts(varargin{:});
+      self.discreteCostsFun = OclFunction(self, fhDC, {sv}, 1);
       
     end
     
@@ -49,40 +50,36 @@ classdef OCPHandler < handle
       x = Variable.create(self.system.statesStruct,states);
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
-      t = Variable.createMatrix(time);
-      tF = Variable.createMatrix(endTime);
       p = Variable.create(self.system.parametersStruct,parameters);
       
-      self.ocp.pathCosts(x,z,u,t,tF,p);
+      self.ocp.pathCosts(x,z,u,time,endTime,p);
       r = self.ocp.thisPathCosts;
     end
     
     function r = getArrivalCosts(self,states,endTime,parameters)
       self.ocp.thisArrivalCosts = 0;
       x = Variable.create(self.system.statesStruct,states);
-      tF = Variable.createMatrix(endTime);
       p = Variable.create(self.system.parametersStruct,parameters);
       
-      self.ocp.arrivalCosts(x,tF,p);
+      self.ocp.arrivalCosts(x,endTime,p);
       r = self.ocp.thisArrivalCosts;
     end
     
     function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
-      self.ocp.thisPathConstraints = OclConstraint(states);
+      self.ocp.thisPathConstraints = OclConstraint();
       x = Variable.create(self.system.statesStruct,states);
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
-      t = Variable.createMatrix(time);
       p = Variable.create(self.system.parametersStruct,parameters);
       
-      self.ocp.pathConstraints(x,z,u,t,p);
+      self.ocp.pathConstraints(x,z,u,time,p);
       val = self.ocp.thisPathConstraints.values;
       lb = self.ocp.thisPathConstraints.lowerBounds;
       ub = self.ocp.thisPathConstraints.upperBounds;
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
-      self.ocp.thisBoundaryConditions = OclConstraint(initialStates);
+      self.ocp.thisBoundaryConditions = OclConstraint();
       x0 = Variable.create(self.system.statesStruct,initialStates);
       xF = Variable.create(self.system.statesStruct,finalStates);
       p = Variable.create(self.system.parametersStruct,parameters);
@@ -93,12 +90,11 @@ classdef OCPHandler < handle
       ub = self.ocp.thisBoundaryConditions.upperBounds;
     end
     
-    function r = getDiscreteCosts(self,vars)
-      self.ocp.discreteCosts = 0;
-      v = Variable.create(self.nlpVarsStruct,vars);
-      
+    function r = getDiscreteCosts(self,varsValue)
+      self.ocp.thisDiscreteCosts = 0;
+      v = Variable.create(self.nlpVarsStruct,varsValue);
       self.ocp.discreteCosts(v);
-      r = self.ocp.discreteCosts;
+      r = self.ocp.thisDiscreteCosts;
     end
 
     function callbackFunction(self,nlpVars,variableValues)

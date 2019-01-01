@@ -2,20 +2,13 @@ classdef OclOCP < handle
   %OCLOCP Optimal Control Problem formulation
   %   Derive from this class to formulate an optimal control problem by
   %   implementing the abstract methods.
-  
-  properties(Access = protected)
-  end
-  
-  properties(Access = private)
+
+  properties (Access = public)
     thisPathCosts
     thisArrivalCosts
     thisPathConstraints
     thisBoundaryConditions
     thisDiscreteCosts
-  end
-  
-  properties (Access = public)
-    
   end
   
   methods(Access = public)
@@ -44,23 +37,23 @@ classdef OclOCP < handle
   methods(Access = protected)
     
     function addPathConstraint(self,lhs, op, rhs)
-      self.thisPathConstraints.add(lhs,op,rhs);
+      self.thisPathConstraints.add(oclValue(lhs),op,oclValue(rhs));
     end
     
     function addBoundaryCondition(self,lhs, op, rhs)
-      self.thisBoundaryConditions.add(lhs,op,rhs);
+      self.thisBoundaryConditions.add(oclValue(lhs),op,oclValue(rhs));
     end
     
     function addArrivalCost(self,expr)
-      self.thisArrivalCosts = self.thisArrivalCosts + expr;
+      self.thisArrivalCosts = self.thisArrivalCosts + oclValue(expr);
     end
     
     function addPathCost(self,expr)
-      self.thisPathCosts = self.thisPathCosts + expr;
+      self.thisPathCosts = self.thisPathCosts + oclValue(expr);
     end
     
     function addDiscreteCost(self,expr)
-      self.discreteCosts = self.discreteCosts + expr;
+      self.discreteCosts = self.discreteCosts + oclValue(expr);
     end
     
   end

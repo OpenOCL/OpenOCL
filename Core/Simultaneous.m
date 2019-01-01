@@ -5,6 +5,9 @@ classdef Simultaneous < handle
   properties
     nlpFun
     varsStruct
+    ocpHandler
+    integratorFun
+    nv
   end
   
   properties(Access = private)
@@ -12,25 +15,22 @@ classdef Simultaneous < handle
     upperBounds
     scalingMin
     scalingMax
-    integratorFun
-    ocpHandler
     N
     nx
     ni
     nu
     np
-    nv
   end
   
   methods
     function self = Simultaneous(system,integrator,N)
       
       self.N = N;
-      self.nx = system.nx;
-      self.ni = integrator.nvars;
-      self.nu = system.nu;
-      self.np = system.np;
-      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu;
+      self.nx = prod(system.statesStruct.size());
+      self.ni = prod(integrator.varsStruct.size());
+      self.nu = prod(system.controlsStruct.size());
+      self.np = prod(system.parametersStruct.size());
+      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu+self.np+1;
       
       self.integratorFun = integrator.integratorFun;
       
@@ -202,17 +202,18 @@ classdef Simultaneous < handle
       constraints_UB = cell(nc,1);
       
       costs = 0;
-      thisStates = nlpVars(1:self.nx);
-      k_vars = self.nx+1;
+      initialStates = nlpVars(1:self.nx);
+      thisStates = initialStates;
+      k_vars = self.nx;
       for k=1:self.N
         k_integratorEquations = 3*(k-1)+1;
         k_pathConstraints = 3*(k-1)+2;
         k_continuity = 3*(k-1)+2;
         
-        thisIntegratorVars = nlpVars(k_vars:k_vars+self.ni);
-        k_vars = k_vars+self.ni+1;
-        thisControls = nlpVars.controls(k_vars:k_vars+self.nu);
-        k_vars = k_vars+self.nu+1;
+        thisIntegratorVars = nlpVars(k_vars+1:k_vars+self.ni);
+        k_vars = k_vars+self.ni;
+        thisControls = nlpVars(k_vars+1:k_vars+self.nu);
+        k_vars = k_vars+self.nu;
         
         % add integrator equations
         [endStates, endAlgVars, integrationCosts, integratorEquations] = ...
@@ -229,8 +230,8 @@ classdef Simultaneous < handle
         costs = costs + integrationCosts;
         
         % go to next time gridpoint
-        thisStates = nlpVars.states(k_vars:k_vars+self.nx+1);
-        k_vars = k_vars+self.nx+1;
+        thisStates = nlpVars(k_vars+1:k_vars+self.nx);
+        k_vars = k_vars+self.nx;
         
         % add path constraints
         [pathConstraint,lb,ub] = ...
@@ -260,7 +261,7 @@ classdef Simultaneous < handle
       constraints_LB{nc} = lb;
       constraints_UB{nc} = ub;
       
-      costs = costs + self.ocpHandler.discreteCostsFun(nlpVars);    
+      costs = costs + self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
       
       constraints = [constraints{:}];
       constraints_LB = [constraints_LB{:}];

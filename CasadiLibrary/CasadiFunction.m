@@ -27,13 +27,16 @@ classdef CasadiFunction < OclFunction
         self.mx = mx;
       end
       
-      inputs = cell(1,length(self.inputSizes));
+      nInputs = length(self.inputSizes);
+      inputs = cell(1,nInputs);
       for k=1:nInputs
-        inputs{k} = casadi.SX.sym('v',self.inputSizes);
+        s = self.inputSizes{k};
+        assert(length(s)==2 || s(3)==1)
+        inputs{k} = casadi.SX.sym('v',s(1:2));
       end
       
       outputs = cell(1,self.nOutputs);
-      [outputs{:}] = fun.evaluate(self.obj,inputs{:});
+      [outputs{:}] = fun.evaluate(inputs{:});
       
       % check for numeric/constant outputs
       self.numericOutputIndizes = logical(cellfun(@isnumeric,outputs));

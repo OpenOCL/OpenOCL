@@ -2,10 +2,10 @@ function testVarStructure
 
   
 a = OclMatrix([2,2]);
-assertEqual(a.size(),[2 2 1]);
+assertEqual(a.size(),[2 2]);
   
 x = OclTree();
-assertEqual(x.size,[0 1 1]);
+assertEqual(x.size,[0 1]);
 x.add('x1',[1,2]);
 x.add('x2',[3,2]);
 
@@ -13,11 +13,11 @@ x.add('x2',[3,2]);
 assertEqual(p,[1,2])
 [~,p]=x.get(1:prod(x.size),'x2');
 assertEqual(p,[3,4,5;6,7,8]')
-assertEqual(x.size,[8 1 1])
+assertEqual(x.size,[8 1])
 
 x = OclTree();
 x.add('x1',[1,8]);
-assertEqual(x.size,[8 1 1])
+assertEqual(x.size,[8 1])
 
 x = OclTree();
 x.add('x1',[1,3]);

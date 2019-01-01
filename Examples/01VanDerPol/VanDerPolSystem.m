@@ -1,4 +1,4 @@
-classdef VanDerPolSystem < System
+classdef VanDerPolSystem < OclSystem
   % The system is defined by inheriting from the System class
 
   methods

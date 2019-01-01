@@ -16,6 +16,7 @@ classdef OclFunction < handle
     end
     
     function varargout = evaluate(self,varargin)
+      varargout = cell(self.nOutputs,1);
       [varargout{:}] = self.functionHandle(self.obj,varargin{:});
     end
   end

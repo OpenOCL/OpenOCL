@@ -15,6 +15,7 @@ classdef CollocationIntegrator < handle
   properties
     system
     integratorFun
+    ocpHandler
     varsStruct
     nx
     nz
@@ -24,21 +25,21 @@ classdef CollocationIntegrator < handle
     d
     B
     C
-    D
-    pathCostsFun    
+    D  
+    tau_root
   end
   
   
   methods
     
-    function self = CollocationIntegrator(system,pathCostsFun,d)
+    function self = CollocationIntegrator(system,d)
       
       self.system = system;
-      self.pathCostsFun = pathCostsFun;
       self.d = d;
-      self.nx = system.nx;
-      self.nz = system.nz;
+      self.nx = prod(system.statesStruct.size());
+      self.nz = prod(system.algVarsStruct.size());
       
+      self.tau_root = collocationPoints(d);
       [self.C,self.D,self.B] = self.getCoefficients(d);
       
       self.varsStruct = OclTree();
@@ -68,32 +69,32 @@ classdef CollocationIntegrator < handle
       statesEnd = self.D(1)*statesBegin;
       for k=1:self.d
         
-        k_vars = (k-1)*(self.nx+self.nz)*self.d+1;
-        i_states = k_vars:k_vars+self.nx;
-        i_algVars = k_vars+self.nx+1:k_vars+self.nx+1+self.nz;
+        k_vars = (k-1)*(self.nx+self.nz);
+        i_states = k_vars+1:k_vars+self.nx;
+        i_algVars = k_vars+self.nx+1:k_vars+self.nx+self.nz;
 
-        xp = self.C(1,k+1)*states;
+        xp = self.C(1,k+1)*statesBegin;
         for r=1:self.d
-           xp = xp + self.C(r+1,k+1)*integratorStates(i_states);
+           xp = xp + self.C(r+1,k+1)*integratorVars(i_states);
         end
 
-        time = startTime + tau_root(k+1) * h;
+        time = startTime + self.tau_root(k+1) * h;
 
         % Append collocation equations
-        [ode,alg] = self.system.evaluate(integratorVars(i_states), ...
-                                         integratorVars(i_algVars), ...
-                                         controls,parameters);
+        [ode,alg] = self.system.systemFun.evaluate(integratorVars(i_states), ...
+                                                   integratorVars(i_algVars), ...
+                                                   controls,parameters);
         equations{k} = [h*ode-xp; alg];
 
         % Add contribution to the end state
         statesEnd = statesEnd + self.D(k+1)*integratorVars(i_states);
 
         % Add contribution to quadrature function
-        qj = self.pathCostsFun.evaluate(integratorVars(i_states),integratorVars(i_algVars),controls,time,endTime,parameters);
+        qj = self.ocpHandler.pathCostsFun.evaluate(integratorVars(i_states),integratorVars(i_algVars),controls,time,endTime,parameters);
         J = J + self.B(k+1)*qj*h;
       end
 
-      AlgVarsEnd = integratorAlgVars(i_algVars);
+      AlgVarsEnd = integratorVars(i_algVars);
       costs = J;
       equations = [equations{:}];
     end
@@ -101,9 +102,7 @@ classdef CollocationIntegrator < handle
 
   methods (Access = private)
 
-    function [C,D,B] = getCoefficients(~, d)
-      
-      tau_root = collocationPoints(self.d);
+    function [C,D,B] = getCoefficients(self, d)
       
       % Coefficients of the collocation equation
       C = zeros(d+1,d+1);
@@ -120,8 +119,8 @@ classdef CollocationIntegrator < handle
         coeff = 1;
         for r=1:d+1
           if r ~= j
-            coeff = conv(coeff, [1, -tau_root(r)]);
-            coeff = coeff / (tau_root(j)-tau_root(r));
+            coeff = conv(coeff, [1, -self.tau_root(r)]);
+            coeff = coeff / (self.tau_root(j)-self.tau_root(r));
           end
         end
         % Evaluate the polynomial at the final time to get the coefficients of the continuity equation
@@ -130,7 +129,7 @@ classdef CollocationIntegrator < handle
         % Evaluate the time derivative of the polynomial at all collocation points to get the coefficients of the continuity equation
         pder = polyder(coeff);
         for r=1:d+1
-          C(j,r) = polyval(pder, tau_root(r));
+          C(j,r) = polyval(pder, self.tau_root(r));
         end
 
         % Evaluate the integral of the polynomial to get the coefficients of the quadrature function

@@ -1,4 +1,4 @@
-classdef CasadiNLPSolver < Solver
+classdef CasadiNLPSolver < handle
   
   properties (Access = private)
     timeMeasures
@@ -22,12 +22,7 @@ classdef CasadiNLPSolver < Solver
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      sizes = nlp.varsStruct.getSizes();
-      vars = cell(length(sizes),1);
-      for k=1:length(sizes);
-        vars = casadi.MX.sym('v',sizes{k});
-      end
-      vars = vertcat(vars{:});
+      vars = casadi.MX.sym('v',[nlp.nv,1]);
       
       % apply scaling to variables
       if options.nlp.scaling
@@ -59,8 +54,8 @@ classdef CasadiNLPSolver < Solver
       
       opts = options.nlp.casadi;
       
-      if isfield(options.nlp,self.options.nlp.solver)
-        opts.(options.nlp.solver) = options.nlp.(self.options.nlp.solver);
+      if isfield(options.nlp,options.nlp.solver)
+        opts.(options.nlp.solver) = options.nlp.(options.nlp.solver);
       end
       
       if options.iterationCallback

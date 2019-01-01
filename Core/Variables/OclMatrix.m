@@ -33,7 +33,7 @@ classdef OclMatrix < OclStructure
         M = s(2);
         K = 1;
       else
-        N = [s,1];
+        N = s;
       end
     end
     

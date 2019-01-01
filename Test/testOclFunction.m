@@ -11,14 +11,13 @@ function testOclFunction
   assertEqual(r2,ones(6,1)*y*2)
   
   
-  cfun = CasadiFunction(fh);
-  [r1,r2] = fun.evaluate(x,y,z);
+  cfun = CasadiFunction(fun);
+  [r1,r2] = cfun.evaluate(x,y,z);
   assertEqual(r1,z*x)
   assertEqual(r2,ones(6,1)*y*2)
   
   
 end
-
 
 function [r1,r2] = OclFunction_F1(x,y,z)
   
@@ -28,9 +27,9 @@ function [r1,r2] = OclFunction_F1(x,y,z)
   ys.add('x2',xs);
   zs = OclMatrix([3,3]);
   
-  xv = Variable(xs,x);
-  yv = Variable(ys,y);
-  zv = Variable(zs,z);
+  xv = Variable.create(xs,x);
+  yv = Variable.create(ys,y);
+  zv = Variable.create(zs,z);
   
   r1 = zv*xv;
   r2 = yv * 2;
