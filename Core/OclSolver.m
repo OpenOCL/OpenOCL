@@ -1,9 +1,11 @@
 function solver = OclSolver(system, ocp, options)
   N = options.nlp.controlIntervals;
-  ocpHandler = OCPHandler(ocp,system);
-  integrator = CollocationIntegrator(system,ocpHandler.pathCostsFun,options.nlp.collocationOrder);
-  nlp = Simultaneous(system,integrator,ocpHandler,N);
-  ocpHandler.nlpVarsStruct = nlp.nlpVarsStruct;
+  integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
+  nlp = Simultaneous(system,integrator,N);
+  
+  ocpHandler = OCPHandler(ocp,system,nlp.nlpVarsStruct);
+  integrator.ocpHandler = ocpHandler;
+  nlp.ocpHandler = ocpHandler;
   
   ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
   system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);

@@ -11,11 +11,8 @@ classdef CasadiNLPSolver < Solver
     
     function self = CasadiNLPSolver(nlp,options)
       
-      timeMeasures = struct;
+      [self.nlpData,self.timeMeasures] = self.construct(nlp,options);
       
-      [nlpData,timeMeasures] = self.construct(nlp,options);
-      
-      self.nlpData = nlpData;
       self.nlp = nlp;
       self.options = options;
     end
@@ -24,10 +21,8 @@ classdef CasadiNLPSolver < Solver
       
       constructTotalTic = tic;
       
-      nlpFun = nlp.nlpFun;
-      
       % create variables as casadi symbolics
-      varsStruct = nlp.getStructure();
+      varsStruct = nlp.varsStruct;
       vars = cell(length(varsStruct),1);
       for k=1:length(varsStruct);
         vars = casadi.MX.sym('v',varsStruct{k}.size); % TODO
@@ -44,7 +39,7 @@ classdef CasadiNLPSolver < Solver
         nlp.checkScaling();
         
         % do not scale parameters and variables zero range scaling
-        zeroRange = [find((scalingMax-scalingMin)==0)];
+        zeroRange = find((scalingMax-scalingMin)==0);
         scalingMin(zeroRange) = 0;
         scalingMax(zeroRange) = 1;
         
@@ -90,7 +85,7 @@ classdef CasadiNLPSolver < Solver
       
       % detect variables as parameters if they are constant (lb==ub)
       nv = nlpFun.inputSizes{1};
-      [lbv,ubv] = self.nlp.getBounds(self)
+      [lbv,ubv] = self.nlp.getBounds(self);
       paramIndizes = [];
       params = [];
       varIndizes = 1:nv;
@@ -114,10 +109,10 @@ classdef CasadiNLPSolver < Solver
       if self.options.nlp.scaling
         [scalingMin,scalingMax] = self.nlp.getScaling();
         
-        scalingMinVars = self.scalingMin(self.indizes.vars);
-        scalingMaxVars = self.scalingMax(self.indizes.vars);
-        scalingMinParams = self.scalingMin(self.indizes.param);
-        scalingMaxParams = self.scalingMax(self.indizes.param);
+        scalingMinVars = scalingMin(self.indizes.vars);
+        scalingMaxVars = scalingMax(self.indizes.vars);
+        scalingMinParams = scalingMin(self.indizes.param);
+        scalingMaxParams = scalingMax(self.indizes.param);
         
         v0 = self.scale(v0,scalingMinVars,scalingMaxVars);
         lbv = self.scale(lbv,scalingMinVars,scalingMaxVars);

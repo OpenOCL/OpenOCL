@@ -10,7 +10,7 @@ classdef OclFunction < handle
     
     function self = OclFunction(obj,functionHandle,inputSizes,nOutputs)
       self.obj = obj;
-      self.fh = functionHandle;
+      self.functionHandle = functionHandle;
       self.inputSizes = inputSizes;
       self.nOutputs = nOutputs;
     end

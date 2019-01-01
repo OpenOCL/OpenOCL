@@ -9,7 +9,7 @@ options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
-ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options)
+ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options);
 
 % state and control bounds
 ocl.setBounds('x',    -0.25, inf);   % -0.25 <= x <= inf

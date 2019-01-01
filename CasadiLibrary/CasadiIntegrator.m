@@ -3,7 +3,7 @@ classdef CasadiIntegrator < handle
   %   
   
   properties
-    systemIntegrator
+    casadiIntegrator
     system
   end
   
@@ -30,12 +30,7 @@ classdef CasadiIntegrator < handle
       dae.alg = alg.value;
       
       integratorOptions = struct;
-%       integratorOptions.calc_ic	= false;
-%       integratorOptions.abstol = 1e-3;
-%       integratorOptions.reltol = 1e-3;
-%       integratorOptions.rootfinder = 'kinsol';
-%       integratorOptions.number_of_finite_elements = 10;
-      self.systemIntegrator = casadi.integrator('integrator','idas',dae,integratorOptions);
+      self.casadiIntegrator = casadi.integrator('integrator','idas',dae,integratorOptions);
     end
     
     function [statesNext,algVars] = evaluate(self,states,algVarsGuess,controls,timestep,parameters)

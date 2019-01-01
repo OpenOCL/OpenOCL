@@ -34,6 +34,9 @@ classdef (Abstract) OclSystem < handle
       
       fh = @(self,varargin)self.getEquations(varargin{:});
       self.systemFun = OclFunction(self, fh, {sx,sz,su,sp},2);
+      
+      fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
+      self.systemFun = OclFunction(self, fhIC, {sx,sp},1);
     end
     
     function setupVariables(varargin)
@@ -44,33 +47,44 @@ classdef (Abstract) OclSystem < handle
     end
     
     function initialCondition(~,~,~)
+      % initialCondition(states,parameters)
     end
     
-    function simulationCallbackSetup(self)
+    function simulationCallbackSetup(~)
+      % simulationCallbackSetup()
     end
     
-    function simulationCallback(self,states,algVars,controls,parameters)
+    function simulationCallback(~,~,~,~,~)
+      % simulationCallback(states,algVars,controls,parameters)
     end
     
     function [ode,alg] = evaluate(self,states,algVars,controls,parameters)
       [ode,alg] = self.systemFun.evaluate(states,algVars,controls,parameters);
     end
     
-    function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
+    function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned variables
       
-      self.alg = []
+      self.alg = [];
       self.ode = struct;
       
-      x = Variable.create(self.statesStruct,statesIn);
-      z = Variable.create(self.algVarsStruct,algVarsIn);
-      u = Variable.create(self.controlsStruct,controlsIn);
-      p = Variable.create(self.parametersStruct,parametersIn);
+      x = Variable.create(self.statesStruct,states);
+      z = Variable.create(self.algVarsStruct,algVars);
+      u = Variable.create(self.controlsStruct,controls);
+      p = Variable.create(self.parametersStruct,parameters);
 
       self.setupEquation(x,z,u,p);
      
       ode = self.ode;
       alg = self.alg;
+    end
+    
+    function ic = getInitialConditions(self,states,parameters)
+      self.initialConditions = [];
+      x = Variable.create(self.statesStruct,states);
+      p = Variable.create(self.parametersStruct,parameters);
+      self.initialCondition(x,p)
+      ic = self.initialConditions;
     end
     
     function addState(self,id,size)
@@ -100,17 +114,11 @@ classdef (Abstract) OclSystem < handle
       self.alg = [self.alg;eq];
     end
     
-    function setInitialCondition(self,value)
-      if isa(value,'Variable')
-        value = value.value;
+    function setInitialCondition(self,eq)
+      if isa(eq,'Variable')
+        eq = eq.value;
       end
-      self.initialConditions = [self.initialConditions; value];      
-    end
-    
-    function  ic = getInitialCondition(self,statesIn,parametersIn)
-      self.initialConditions = [];
-      self.initialCondition(statesIn,parametersIn)
-      ic = Variable.createLike(statesIn,self.initialConditions);
+      self.initialConditions = [self.initialConditions; eq];      
     end
     
     function solutionCallback(self,solution)

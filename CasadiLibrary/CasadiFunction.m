@@ -29,7 +29,7 @@ classdef CasadiFunction < OclFunction
       
       inputs = cell(1,length(self.inputSizes));
       for k=1:nInputs
-        input{k} = casadi.SX.sym('v',self.inputSizes);
+        inputs{k} = casadi.SX.sym('v',self.inputSizes);
       end
       
       outputs = cell(1,self.nOutputs);

@@ -11,7 +11,7 @@ classdef OclOCP < handle
     thisArrivalCosts
     thisPathConstraints
     thisBoundaryConditions
-    discreteCosts
+    thisDiscreteCosts
   end
   
   properties (Access = public)
