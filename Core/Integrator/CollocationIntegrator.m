@@ -15,12 +15,11 @@ classdef CollocationIntegrator < handle
   properties
     system
     integratorFun
-    integratorVarsStruct
+    varsStruct
   end
   
   properties(Access = private)
     d
-    tau_root
     B
     C
     D
@@ -34,14 +33,14 @@ classdef CollocationIntegrator < handle
       
       self.system = system;
       self.pathCostsFun = pathCostsFun;
-      self.d            = d;
+      self.d = d;
       
-
-      self.tau_root = collocationPoints(d);
-      [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
+      [self.C,self.D,self.B] = self.getCoefficients();
       
-      self.integratorVarsStruct = OclTree();
-      self.integratorVarsStruct.addRepeated({'states','algVars'},{self.system.statesStruct,self.system.algVarsStruct},self.d);
+      self.varsStruct = OclTree();
+      self.varsStruct.addRepeated({'states','algVars'},...
+                                  {self.system.statesStruct,self.system.algVarsStruct},...
+                                  self.d);
       
       time0 = OclMatrix([1,1]);
       timeF = OclMatrix([1,1]);
@@ -49,22 +48,27 @@ classdef CollocationIntegrator < handle
       
 
       fh = @(self,varargin)self.getIntegrator(varargin{:});
-      self.integratorFun = Function(self, fh, {size(system.statesStruct),...
-                                               size(self.integratorVarsStruct),...
-                                               size(system.controlsStruct),...
-                                               [1,1],[1,1],[1,1],...
-                                               size(system.parametersStruct)},...
-                                               4);
+      self.integratorFun = OclFunction(self, fh, {size(system.statesStruct),...
+                                                  size(self.integratorVarsStruct),...
+                                                  size(system.controlsStruct),...
+                                                  [1,1],[1,1],[1,1],...
+                                                  size(system.parametersStruct)},...
+                                                  4);
                                                   
     end
 
-    function [statesEnd, AlgVarsEnd, costs, equations] = getIntegrator(self,statesBegin,integratorStates,integratorAlgVars,...
+    function [statesEnd, AlgVarsEnd, costs, equations] = getIntegrator(self,statesBegin,integratorVars,...
                                                                          controls,startTime,finalTime,endTime,parameters)
                                                                          
       h = finalTime-startTime;
+      
+      tau_root = collocationPoints(d);
 
       equations = [];
       J = 0;
+      
+      integratorStates = integratorVars.states;
+      integratorAlgVars = integratorVars.algVars;
       
       nx = size(self.system.statesStruct);
       nz = size(self.system.algVarsStruct)
@@ -81,7 +85,7 @@ classdef CollocationIntegrator < handle
              xp = xp + self.C(r+1,j+1)*integratorStates{r};
          end
 
-         time = startTime + self.tau_root(j+1) * h;
+         time = startTime + tau_root(j+1) * h;
 
          % Append collocation equations
          [ode,alg] = self.system.evaluate(integratorStates{j}, ...

@@ -4,19 +4,19 @@ classdef Simultaneous < handle
   
   properties
     nlpFun
-    nlpVarsStruct
-    integratorFun
-    system
-    
+  end
+  
+  properties(Access = private)
     lowerBounds
     upperBounds
     scalingMin
     scalingMax
-  end
-  
-  properties(Access = private)
+    integratorFun
     ocpHandler
     N
+    nx
+    ni
+    nu
   end
   
   methods
@@ -24,69 +24,85 @@ classdef Simultaneous < handle
     function self = Simultaneous(system,integrator,ocpHandler,N)
       
       self.N = N;
+      self.nx = system.nx;
+      self.ni = integrator.nvars;
+      self.nu = system.nu;
+      
       self.ocpHandler = ocpHandler;
       
       self.integratorFun = integrator.integratorFun;
-      self.system = system;
       
-      integratorVarsStruct = integrator.integratorVarsStruct;
       self.nlpVarsStruct = OclTree();
       self.nlpVarsStruct.addRepeated({'states','integratorVars','controls'},...
                                       {system.statesStruct,...
-                                      integratorVarsStruct,...
+                                      integrator.varsStruct,...
                                       system.controlsStruct},self.N);
       self.nlpVarsStruct.add('states',system.statesStruct);
       
       self.nlpVarsStruct.add('parameters',self.system.parametersStruct);
       self.nlpVarsStruct.add('time',[1 1]);
       
-      
       % initialize bounds      
       nlpVarsFlatFlat = self.nlpVarsStruct.getFlat;
       
       self.lowerBounds = Variable.create(nlpVarsFlatFlat,-inf);
       self.upperBounds = Variable.create(nlpVarsFlatFlat,inf);
-      self.lowerBounds.get('time').set(0);
+      self.lowerBounds.time.set(0);
       
       self.scalingMin = Variable.create(nlpVarsFlatFlat,0);
       self.scalingMax = Variable.create(nlpVarsFlatFlat,1);
       
-      self.nlpFun = Function(self,@(self,varargin)self.getNLPFun(varargin{:}),{self.nlpVarsStruct},5);
-
+      nvars = (N+1)*self.nx + N*self.ni + N*self.nu;
+      fh = @(self,varargin)self.getNLPFun(varargin{:});
+      self.nlpFun = OclFunction(self,fh,{[nvars,1]},5);
     end    
+  
+    % public methods
+    function s = getStructure(self)
+      s = struct;
+      s.states = cell(self.N+1,1);
+      s.integratorVars = cell(self.N,1);
+      s.controls = cell(self.N,1);
+      for k:1:self.N
+        s.states{k} = [self.nx,1];
+        s.integratorVars{k} = [self.ni,1];
+        s.controls{k} = [self.nu,1];
+      end
+      s.states{N+1} = [self.nx,1];
+    end
+    
+    function [lb,ub] = getBounds(self)
+      lb = self.lowerBounds.value;
+      ub = self.upperBounds.value;
+    end
     
     function initialGuess = getInitialGuess(self)
-      
       initialGuess = Variable.create(self.nlpVarsStruct,0);
       
-      lowVal  = self.lowerBounds.value;
-      upVal   = self.upperBounds.value;
+      [lb,ub] = getBounds(self)
       
-      guessValues = (lowVal + upVal) / 2;
+      guessValues = (lb + ub) / 2;
       
       % set to lowerBounds if upperBounds are inf
-      indizes = isinf(upVal);
-      guessValues(indizes) = lowVal(indizes);
+      indizes = isinf(ub);
+      guessValues(indizes) = lb(indizes);
       
-      % set to upperBounds of lowerBoudns are inf
-      indizes = isinf(lowVal);
-      guessValues(indizes) = upVal(indizes);
+      % set to upperBounds of lowerBounds are inf
+      indizes = isinf(lb);
+      guessValues(indizes) = ub(indizes);
       
       % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lowVal) & isinf(upVal);
+      indizes = isinf(lb) & isinf(ub);
       guessValues(indizes) = 0;
 
       initialGuess.set(guessValues);
-      
     end
     
     function interpolateGuess(self,guess)
-      
       for i=1:self.N
-        state = guess.get('states',i).value;
-        guess.get('integratorVars',i).get('states').set(state);
+        state = guess.states(i).value;
+        guess.integratorVars(i).states.set(state);
       end
-      
     end
     
     function setParameter(self,id,varargin)
@@ -174,67 +190,89 @@ classdef Simultaneous < handle
       
     end
     
-    function parameters = getParameters(self)
-      parameters = Var(self.system.parametersStruct,0);
-    end
-    
     function getCallback(self,var,values)
       self.ocpHandler.callbackFunction(var,values);
     end
 
     function [costs,constraints_Val,constraints_LB,constraints_UB,timeGrid] = getNLPFun(self,nlpVars)
       
-      T = nlpVars.get('time');                 % end time
-      parameters = nlpVars.get('parameters');  % parameters
+      N = self.N;
+      T = nlpVars.endTime;
+      parameters = nlpVars.parameters;
 
       timeGrid = linspace(0,T,self.N+1);
       
-      constraints = Constraint(nlpVars);
-      costs = Variable.Matrix(0);
+      % N integrator equations
+      % N path constraints
+      % N continuity constraints
+      % 1 boundary condition
+      constraints = cell(3*N+1,1);
+      constraints_LB = cell(3*N+1,1);
+      constraints_UB = cell(3*N+1,1);
       
-      initialStates = nlpVars.get('states',1);
-      thisStates = initialStates;
+      costs = 0;
+      thisStates = nlpVars.states{1};
       
-      for k=1:self.N
+      for k=1:N
+        k_integratorEquations = 3*(k-1)+1
+        k_pathConstraints = 3*(k-1)+2
+        k_continuity = 3*(k-1)+2
         
-        thisIntegratorVars = nlpVars.get('integratorVars',k);
-        thisControls = nlpVars.get('controls',k);
+        thisIntegratorVars = nlpVars.integratorVars{k};
+        thisControls = nlpVars.controls{k};
         
-        % add integrator equation of direction collocation
-        [finalStates, finalAlgVars, integrationCosts, integratorEquations] = self.integratorFun.evaluate(thisStates,thisIntegratorVars,thisControls,timeGrid(k),timeGrid(k+1),T,parameters);
-
-        constraints.add(integratorEquations,'==',0);
+        % add integrator equations
+        [endStates, endAlgVars, integrationCosts, integratorEquations] = ...
+              self.integratorFun.evaluate(thisStates,...
+                                          thisIntegratorVars,...
+                                          thisControls,...
+                                          timeGrid(k),...
+                                          timeGrid(k+1),...
+                                          T,parameters);
+        constraints{k_integratorEquations} = integratorEquations;
+        constraints_LB{k_integratorEquations} = zeros*size(integratorEquations);
+        constraints_UB{k_integratorEquations} = zeros*size(integratorEquations);
         
         costs = costs + integrationCosts;
         
         % go to next time gridpoint
-        thisStates = nlpVars.get('states',k+1);
+        thisStates = nlpVars.states{k+1};
         
-        % path constraints
-        [pathConstraint,lb,ub] = self.ocpHandler.pathConstraintsFun.evaluate(thisStates, finalAlgVars, thisControls,timeGrid(k+1),parameters);
-        constraints.add(lb,pathConstraint,ub);
+        % add path constraints
+        [pathConstraint,lb,ub] = ...
+              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,... 
+                                                          finalAlgVars,...
+                                                          thisControls,...
+                                                          timeGrid(k+1),...
+                                                          parameters);                                   
+        constraints{k_pathConstraints} = pathConstraint;
+        constraints_LB{k_pathConstraints} = lb;
+        constraints_UB{k_pathConstraints} = ub;
         
         % continuity equation
-        constraints.add(thisStates - finalStates, '==',0);
-        
+        continuity_constraint = thisStates - finalStates;
+        constraints{k_continuity} = continuity_constraint;
+        constraints_LB{k_continuity} = zeros*size(continuity_constraint);
+        constraints_UB{k_continuity} = zeros*size(continuity_constraint);
       end
       
       % add terminal cost
       terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,T,parameters);
       costs = costs + terminalCosts;
 
-      % add terminal constraints
+      % add boundary constraints
       [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialStates,thisStates,parameters);
-      constraints.add(lb,boundaryConditions,ub);
+      ineqConstraints{N+1} = boundaryConditions;
+      ineqConstraints_LB{N+1} = lb;
+      ineqConstraints{N+1} = ub;
       
-      costs = costs + self.ocpHandler.getDiscreteCost(nlpVars);
+      costs = costs + self.ocpHandler.getDiscreteCost(nlpVars);    
       
-      constraints_Val = constraints.values;
-      constraints_LB  = constraints.lowerBounds;
-      constraints_UB  = constraints.upperBounds;
-      
-    end
-  end
-  
-end
+      constraints_Val = [eqConstraints{:}];
+      constraints_LB = [constraints_LB{:}];
+      constraints_UB = [constraints_UB{:}];
+    
+    end % getNLPFun
+  end % methods
+end % classdef
 
