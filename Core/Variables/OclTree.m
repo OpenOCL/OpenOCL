@@ -114,8 +114,28 @@ classdef OclTree < OclStructure
         elseif isa(child,'OclTree')
           child.iterateLeafs(pos,treeOut);
         end
-      end % for
-    end % iterateLeafs
+      end
+    end 
+    
+    function getMatrixSizes(self)
+      sizes = {};
+      pos = (1:self.len).';
+      self.iterateSizes(self,pos,sizes);
+    end
+    
+    function iterateSizes(self,positions,sizesOut)
+      childrenIds = fieldnames(self.children);
+      for k=1:length(childrenIds)
+        id = childrenIds{k};
+        [child,pos] = self.get(positions,id);
+        if isa(child,'OclMatrix')
+          sizesOut{end+1} = size(pos);
+        elseif isa(child,'OclTree')
+          child.iterateLeafs(pos,sizesOut);
+        end
+      end
+    end 
+    
   end % methods
 end % class
 
