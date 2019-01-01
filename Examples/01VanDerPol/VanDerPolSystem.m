@@ -1,6 +1,6 @@
 classdef VanDerPolSystem < System
   % The system is defined by inheriting from the System class
-  % and implementing its abstract methods
+
   methods
     function setupVariables(self)    
       % Define two scalar state variables
