@@ -72,7 +72,8 @@ classdef (Abstract) OclSystem < handle
 
       self.setupEquation(x,z,u,p);
      
-      ode = struct2array(self.ode).';
+      ode = struct2cell(self.ode);
+      ode = vertcat(ode{:});
       alg = self.alg;
     end
     

@@ -2,14 +2,14 @@ FINALTIME = 10;             % horizon length (seconds)
 CONTROL_INTERVALS = 30;     % control discretization
 
 % Get and set solver options
-options = OclOptions();
+options = OCL.Options();
 options.iterationCallback = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
-ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options);
+ocl = OCL.Solver(VanDerPolSystem,VanDerPolOCP,options);
 
 % state and control bounds
 ocl.setBounds('x',    -0.25, inf);   % -0.25 <= x <= inf
@@ -31,8 +31,8 @@ initialGuess.states.x.set(-0.2);
 % plot solution
 figure
 hold on 
-plot(times,solution.states.x.value,'-.','LineWidth',2)
-plot(times,solution.states.y.value,'--k','LineWidth',2)
-stairs(times(1:end-1),solution.controls.u.value,'r','LineWidth',2)
+plot(times,cell2mat(solution.states.x.value),'-.','LineWidth',2)
+plot(times,cell2mat(solution.states.y.value),'--k','LineWidth',2)
+stairs(times(1:end-1),cell2mat(solution.controls.u.value),'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})

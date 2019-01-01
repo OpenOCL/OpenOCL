@@ -96,7 +96,7 @@ classdef CollocationIntegrator < handle
 
       AlgVarsEnd = integratorVars(i_algVars);
       costs = J;
-      equations = [equations{:}];
+      equations = vertcat(equations{:});
     end
   end
 

@@ -1,9 +1,8 @@
-classdef CasadiNLPSolver < handle
+classdef CasadiNLPSolver < NLPSolver
   
   properties (Access = private)
     timeMeasures
     nlpData
-    nlp
     options
   end
   
@@ -52,8 +51,6 @@ classdef CasadiNLPSolver < handle
       casadiNLP.g = constraints;
       casadiNLP.p = casadi.MX.sym('p',[0,1]);
       
-      opts = options.nlp.casadi;
-      
       if isfield(options.nlp,options.nlp.solver)
         opts.(options.nlp.solver) = options.nlp.(options.nlp.solver);
       end
@@ -79,8 +76,8 @@ classdef CasadiNLPSolver < handle
       solveTotalTic = tic;
       
       % detect variables as parameters if they are constant (lb==ub)
-      nv = nlpFun.inputSizes{1};
-      [lbv,ubv] = self.nlp.getBounds(self);
+      nv = self.nlp.nlpFun.inputSizes{1};
+      [lbv,ubv] = self.nlp.getBounds();
       paramIndizes = [];
       params = [];
       varIndizes = 1:nv;
@@ -116,8 +113,8 @@ classdef CasadiNLPSolver < handle
       end
       
       constructSolverTic = tic;
-      self.casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
-                                        self.nlpData.casadiNLP, opts);
+      casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
+                                   self.nlpData.casadiNLP, self.options.nlp.casadi);
       constructSolverTime = toc(constructSolverTic);
       
       args = struct;
@@ -130,10 +127,10 @@ classdef CasadiNLPSolver < handle
       
       % execute solver
       solveCasadiTic = tic;
-      sol = self.casadiSolver.call(args);
+      sol = casadiSolver.call(args);
       solveCasadiTime = toc(solveCasadiTic);
       
-      if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
+      if strcmp(self.options.nlp.solver,'ipopt') && strcmp(casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
         error('Solver was interrupted by user.');
       end
       
@@ -144,15 +141,16 @@ classdef CasadiNLPSolver < handle
         solution = self.unscale(solution,scalingMinVars,scalingMaxVars);
       end
       
-      initialGuess(varIndizes) = solution;
-      initialGuess(paramIndizes) = params;
+      solution(varIndizes) = solution;
+      solution(paramIndizes) = params;
       
       nlpFunEvalTic = tic;
       if nargout > 1
-        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(initialGuess);
+        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(solution);
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
 
+      initialGuess.set(solution);
       outVars = initialGuess;
       
       self.timeMeasures.solveTotal      = toc(solveTotalTic);

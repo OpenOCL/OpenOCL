@@ -224,8 +224,8 @@ classdef Simultaneous < handle
                                           timeGrid(k+1),...
                                           T,parameters);
         constraints{k_integratorEquations} = integratorEquations;
-        constraints_LB{k_integratorEquations} = zeros*size(integratorEquations);
-        constraints_UB{k_integratorEquations} = zeros*size(integratorEquations);
+        constraints_LB{k_integratorEquations} = zeros(size(integratorEquations));
+        constraints_UB{k_integratorEquations} = zeros(size(integratorEquations));
         
         costs = costs + integrationCosts;
         
@@ -247,8 +247,8 @@ classdef Simultaneous < handle
         % continuity equation
         continuity_constraint = endStates - thisStates;
         constraints{k_continuity} = continuity_constraint;
-        constraints_LB{k_continuity} = zeros*size(continuity_constraint);
-        constraints_UB{k_continuity} = zeros*size(continuity_constraint);
+        constraints_LB{k_continuity} = zeros(size(continuity_constraint));
+        constraints_UB{k_continuity} = zeros(size(continuity_constraint));
       end
       
       % add terminal cost
@@ -263,9 +263,9 @@ classdef Simultaneous < handle
       
       costs = costs + self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
       
-      constraints = [constraints{:}];
-      constraints_LB = [constraints_LB{:}];
-      constraints_UB = [constraints_UB{:}];
+      constraints = vertcat(constraints{:});
+      constraints_LB = vertcat(constraints_LB{:});
+      constraints_UB = vertcat(constraints_UB{:});
     end % getNLPFun
   end % methods
 end % classdef
