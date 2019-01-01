@@ -22,10 +22,10 @@ classdef CasadiNLPSolver < Solver
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      varsStruct = nlp.varsStruct;
-      vars = cell(length(varsStruct),1);
-      for k=1:length(varsStruct);
-        vars = casadi.MX.sym('v',varsStruct{k}.size); % TODO
+      sizes = nlp.varsStruct.getSizes();
+      vars = cell(length(sizes),1);
+      for k=1:length(sizes);
+        vars = casadi.MX.sym('v',sizes{k});
       end
       vars = vertcat(vars{:});
       
