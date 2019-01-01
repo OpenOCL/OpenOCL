@@ -66,7 +66,7 @@ classdef CasadiNLPSolver < Solver
       
       
       % create variables and parameter symbolics
-      vars = CasadiVariable(initialGuess.thisStructure,true);
+      vars = CasadiVariable.createLike(initialGuess,true);
       
       x0 = x0(varIndizes);
       lbx = lbx(varIndizes);

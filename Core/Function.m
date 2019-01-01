@@ -23,7 +23,7 @@ classdef Function < handle
       
       ins = cell(1,length(self.inputs));
       for k=1:length(ins)
-        ins{k} = Variable.createFromVariable(self.inputs{k},varargin{k});
+        ins{k} = Variable.createLike(varargin{k});
       end
       
       varargout = cell(1,self.nOutputs);

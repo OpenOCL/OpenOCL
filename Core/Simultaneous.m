@@ -30,25 +30,26 @@ classdef Simultaneous < handle
       self.system = system;
       
       integratorVarsStruct = integrator.integratorVarsStruct;
-      self.nlpVarsStruct = OclTree('nlpVars');
-      self.nlpVarsStruct.addRepeated({system.statesStruct,...
+      self.nlpVarsStruct = OclTree();
+      self.nlpVarsStruct.addRepeated({'states','integratorVars','controls'},...
+                                      {system.statesStruct,...
                                       integratorVarsStruct,...
                                       system.controlsStruct},self.N);
-      self.nlpVarsStruct.add(system.statesStruct);
+      self.nlpVarsStruct.add('states',system.statesStruct);
       
-      self.nlpVarsStruct.add(self.system.parametersStruct);
+      self.nlpVarsStruct.add('parameters',self.system.parametersStruct);
       self.nlpVarsStruct.add('time',[1 1]);
       
       
       % initialize bounds      
       nlpVarsFlatFlat = self.nlpVarsStruct.getFlat;
       
-      self.lowerBounds = Variable(nlpVarsFlatFlat,-inf);
-      self.upperBounds = Variable(nlpVarsFlatFlat,inf);
+      self.lowerBounds = Variable.create(nlpVarsFlatFlat,-inf);
+      self.upperBounds = Variable.create(nlpVarsFlatFlat,inf);
       self.lowerBounds.get('time').set(0);
       
-      self.scalingMin = Variable(nlpVarsFlatFlat,0);
-      self.scalingMax = Variable(nlpVarsFlatFlat,1);
+      self.scalingMin = Variable.create(nlpVarsFlatFlat,0);
+      self.scalingMax = Variable.create(nlpVarsFlatFlat,1);
       
       self.nlpFun = Function(self,@(self,varargin)self.getNLPFun(varargin{:}),{self.nlpVarsStruct},5);
 
@@ -56,7 +57,7 @@ classdef Simultaneous < handle
     
     function initialGuess = getInitialGuess(self)
       
-      initialGuess = Variable(self.nlpVarsStruct,0);
+      initialGuess = Variable.create(self.nlpVarsStruct,0);
       
       lowVal  = self.lowerBounds.value;
       upVal   = self.upperBounds.value;

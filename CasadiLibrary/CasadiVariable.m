@@ -16,7 +16,9 @@ classdef CasadiVariable < Variable
       
       [N,M,K] = type.size();
       assert(K==1,'Not supported.');
-      if mx == true
+      if N*M*K==0
+        vv = [];
+      elseif mx == true
         vv = casadi.MX.sym(id,N,M);
       else
         vv = casadi.SX.sym(id,N,M);
@@ -31,6 +33,15 @@ classdef CasadiVariable < Variable
     
     function obj = Matrix(size)
       obj = CasadiVariable.create(OclMatrix(size),false);
+    end
+    
+    function obj = createLike(input,mx)
+      obj = CasadiVariable.create(input.type,mx);
+    end
+    
+    function obj = createLikeSameType(input,val)
+      ismx = isa(val,'casadi.MX');
+      obj = CasadiVariable.create(input,ismx,val);
     end
     
   end

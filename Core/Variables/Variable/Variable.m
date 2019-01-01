@@ -26,9 +26,8 @@ classdef Variable < handle
       var = Variable.create(OclMatrix(size(value)),value);
     end
     
-    function obj = createLike(input,val)
+    function obj = createLike(input)
       % obj = createLike(input)
-      % obj = createLike(input,value)
       %
       % Factory method to create Variables with the same type as
       % given input.
@@ -37,13 +36,13 @@ classdef Variable < handle
       %   input (Variable): Inherit variable type of this object.
       %   type (type): type of the variable.
       %   val: Value to asign to the variable (optional).
-      narginchk(2,2);
+      narginchk(1,1);
       if isa(input,'CasadiVariable')
-        obj = CasadiVariable.create(input.type,input.mx,val);
+        obj = CasadiVariable.create(input.type,input.mx);
       elseif isa(input,'SymVariable')
-        obj = SymVariable(input.type,val);
+        obj = SymVariable(input.type);
       elseif isa(input,'Variable')
-        obj = Variable(input.type,val);
+        obj = Variable(input.type);
       else
         error('Variable type not implemented.');
       end

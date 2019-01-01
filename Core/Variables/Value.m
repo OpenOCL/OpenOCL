@@ -19,6 +19,10 @@ classdef Value < handle
       [N,M,K] = size(pos);
       
       assert(length(size(value)) <= 2, 'Only matrix values supported.');
+      
+      if isempty(value) || N*M*K==0
+        return
+      end
 
       Nv = size(value,1);
       Mv = size(value,2);

@@ -43,7 +43,7 @@ classdef CasadiFunction < handle
       inputs = cell(1,nInputs);
       for k=1:nInputs
         varStruct = inputFunction.inputs{k};
-        inputs{k} = CasadiVariable(varStruct, self.mx);
+        inputs{k} = CasadiVariable.create(varStruct, self.mx);
       end
       
       nOutputs = inputFunction.nOutputs;
@@ -54,7 +54,7 @@ classdef CasadiFunction < handle
       [outputs{:}] = inputFunction.functionHandle(inputFunction.obj,inputs{:});
       
       for k=1:nOutputs
-        self.outputStructs{k} = outputs{k}.thisStructure;
+        self.outputStructs{k} = outputs{k}.type;
       end
       
       for k=1:nInputs
@@ -94,9 +94,9 @@ classdef CasadiFunction < handle
       
       for k=1:length(varargout)
         if isa(varargout{k},'casadi.DM')
-          varargout{k} = Variable(self.outputStructs{k},full(varargout{k}));
+          varargout{k} = Variable.create(self.outputStructs{k},full(varargout{k}));
         else
-          varargout{k} = CasadiVariable(self.outputStructs{k},self.mx,varargout{k});
+          varargout{k} = CasadiVariable.createLikeSameType(self.outputStructs{k},varargout{k});
         end
       end
       

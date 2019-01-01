@@ -30,8 +30,8 @@ classdef CollocationIntegrator < handle
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
       
-      self.integratorVarsStruct = OclTree('integratorVars');
-      self.integratorVarsStruct.addRepeated({self.system.statesStruct,self.system.algVarsStruct},self.d);
+      self.integratorVarsStruct = OclTree();
+      self.integratorVarsStruct.addRepeated({'states','algVars'},{self.system.statesStruct,self.system.algVarsStruct},self.d);
       
       time0 = OclMatrix([1,1]);
       timeF = OclMatrix([1,1]);
@@ -50,7 +50,7 @@ classdef CollocationIntegrator < handle
       
       h = finalTime-startTime;
 
-      equations = Variable.createMatrixLike(states,[]);
+      equations = [];
       J = Variable.createMatrixLike(states,0);
       
       % Loop over collocation points

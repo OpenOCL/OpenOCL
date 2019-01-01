@@ -20,12 +20,10 @@ classdef (Abstract) System < handle
   methods
     
     function self = System()
-      self.statesStruct     = OclTree('states');
-      self.algVarsStruct    = OclTree('algVars');
-      self.controlsStruct   = OclTree('controls');
-      self.parametersStruct = OclTree('parameters');
-      
-      self.initialConditions = Variable.Matrix([]);
+      self.statesStruct     = OclTree();
+      self.algVarsStruct    = OclTree();
+      self.controlsStruct   = OclTree();
+      self.parametersStruct = OclTree();
       
       self.setupVariables;
       
@@ -57,14 +55,12 @@ classdef (Abstract) System < handle
     function [ode,alg] = getEquations(self,statesIn,algVarsIn,controlsIn,parametersIn)
       % evaluate the system equations for the assigned variables
       
-      self.alg = Variable.createLike(statesIn,OclMatrix([0,1]));
-      self.ode = statesIn.thisStructure.childPointers;
+      self.alg = Variable.createMatrixLike(statesIn,zeros(0,1,1));
+      self.ode = Variable.createLike(statesIn);
 
       self.setupEquation(statesIn,algVarsIn,controlsIn,parametersIn);
-      
-      ode = struct2cell(self.ode);
-      ode = vertcat(ode{:});
-      ode = CasadiVariable.createLike(statesIn,OclMatrix(size(ode)),ode);
+     
+      ode = self.ode;
       alg = self.alg;
     end
     
@@ -81,13 +77,11 @@ classdef (Abstract) System < handle
       self.parametersStruct.add(id,size);
     end
 
-    function setODE(self,id,equation)
-      if isa(equation,'Variable')
-        eq = equation.value;
-        self.ode.(id) = eq(:);
-      else
-        self.ode.(id) = equation(:);
+    function setODE(self,id,eq)
+      if isa(eq,'Variable')
+        eq = eq.value;
       end
+      self.ode.(id).set(eq(:));
     end
     
     function setAlgEquation(self,equation)
