@@ -4,6 +4,7 @@ classdef Simultaneous < handle
   
   properties
     nlpFun
+    nlpVarsStruct
   end
   
   properties(Access = private)
@@ -83,7 +84,7 @@ classdef Simultaneous < handle
       scalingMin = self.scalingMin;
       scalingMax = self.scalingMax;
     end
-    
+
     function initialGuess = getInitialGuess(self)
       initialGuess = Variable.create(self.nlpVarsStruct,0);
       

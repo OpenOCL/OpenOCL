@@ -14,7 +14,7 @@ classdef OCPHandler < handle
 
   methods
     
-    function self = OCPHandler(ocp,system,nlpVarsStruct)
+    function self = OCPHandler(ocp,system)
       self.ocp = ocp;
       self.system = system;
       self.nlpVarsStruct = nlpVarsStruct;
