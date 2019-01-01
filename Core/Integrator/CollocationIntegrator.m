@@ -1,3 +1,15 @@
+% This class is derived from:
+%
+% An implementation of direct collocation
+% Joel Andersson, 2016
+% https://github.com/casadi/casadi/blob/master/docs/examples/matlab/direct_collocation.m
+%
+% CasADi -- A symbolic framework for dynamic optimization.
+% Copyright (C) 2010-2014 Joel Andersson, Joris Gillis, Moritz Diehl,
+%                         K.U. Leuven. All rights reserved.
+% Copyright (C) 2011-2014 Greg Horn
+% Under GNU Lesser General Public License
+
 classdef CollocationIntegrator < handle
   
   properties
@@ -8,7 +20,6 @@ classdef CollocationIntegrator < handle
   
   properties(Access = private)
     d
-
     tau_root
     B
     C
@@ -29,7 +40,6 @@ classdef CollocationIntegrator < handle
       self.tau_root = collocationPoints(d);
       [self.C,self.D,self.B] = self.getCoefficients(self.tau_root);
       
-      
       self.integratorVarsStruct = OclTree();
       self.integratorVarsStruct.addRepeated({'states','algVars'},{self.system.statesStruct,self.system.algVarsStruct},self.d);
       
@@ -37,53 +47,59 @@ classdef CollocationIntegrator < handle
       timeF = OclMatrix([1,1]);
       endTime = OclMatrix([1,1]);
       
-      self.integratorFun = Function(self,@(self,varargin)self.getIntegrator(varargin{:}),...
-                                                    {system.statesStruct,...
-                                                    self.integratorVarsStruct,...
-                                                    system.controlsStruct,...
-                                                    time0,timeF,endTime,...
-                                                    system.parametersStruct},4);
+
+      fh = @(self,varargin)self.getIntegrator(varargin{:});
+      self.integratorFun = Function(self, fh, {size(system.statesStruct),...
+                                               size(self.integratorVarsStruct),...
+                                               size(system.controlsStruct),...
+                                               [1,1],[1,1],[1,1],...
+                                               size(system.parametersStruct)},...
+                                               4);
                                                   
     end
 
-    function [finalStates, finalAlgVars, costs, equations] = getIntegrator(self,states,integratorVars,controls,startTime,finalTime,endTime,parameters)
-      
+    function [statesEnd, AlgVarsEnd, costs, equations] = getIntegrator(self,statesBegin,integratorStates,integratorAlgVars,...
+                                                                         controls,startTime,finalTime,endTime,parameters)
+                                                                         
       h = finalTime-startTime;
 
       equations = [];
-      J = Variable.createMatrixLike(states,0);
+      J = 0;
+      
+      nx = size(self.system.statesStruct);
+      nz = size(self.system.algVarsStruct)
+      
+      % alVars,states,algVars,states
+      integratorVars()
       
       % Loop over collocation points
-      finalStates = self.D(1)*states;
+      statesEnd = self.D(1)*statesBegin;
       for j=1:self.d
-         % Expression for the state derivative at the collocation point
+
          xp = self.C(1,j+1)*states;
          for r=1:self.d
-             xp = xp + self.C(r+1,j+1)*integratorVars.get('states',r);
+             xp = xp + self.C(r+1,j+1)*integratorStates{r};
          end
 
          time = startTime + self.tau_root(j+1) * h;
 
          % Append collocation equations
-         [ode,alg] = self.system.evaluate(integratorVars.get('states',j), ...
-                                         integratorVars.get('algVars',j), ...
-                                         controls,parameters);
+         [ode,alg] = self.system.evaluate(integratorStates{j}, ...
+                                          integratorAlgVars{j}, ...
+                                          controls,parameters);
          equations = [equations; h*ode-xp; alg];
 
          % Add contribution to the end state
-         finalStates = finalStates + self.D(j+1)*integratorVars.get('states',j);
+         statesEnd = statesEnd + self.D(j+1)*integratorStates{j};
 
          % Add contribution to quadrature function
-         qj = self.pathCostsFun.evaluate(integratorVars.get('states',j),integratorVars.get('algVars',j),controls,time,endTime,parameters);
+         qj = self.pathCostsFun.evaluate(integratorStates{j},integratorAlgVars{j},controls,time,endTime,parameters);
          J = J + self.B(j+1)*qj*h;
       end
 
-      finalAlgVars = integratorVars.get('algVars',self.d);
-      finalAlgVars = Variable.createMatrixLike(finalAlgVars,finalAlgVars.value);
+      AlgVarsEnd = integratorAlgVars{self.d};
       costs = J;
-
     end
-
   end
 
   methods (Access = private)
