@@ -38,39 +38,6 @@ classdef OclOCP < handle
     function discreteCosts(~,~)
       % c = discreteCost(self,vars)
     end
-        
-    function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
-      self.thisPathConstraints = OclConstraint(states);
-      self.pathConstraints(states,algVars,controls,time,parameters);
-      val = self.thisPathConstraints.values;
-      lb = self.thisPathConstraints.lowerBounds;
-      ub = self.thisPathConstraints.upperBounds;
-    end
-    
-    function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
-      self.thisBoundaryConditions = OclConstraint(initialStates);
-      self.boundaryConditions(initialStates,finalStates,parameters);
-      val = self.thisBoundaryConditions.values;
-      lb = self.thisBoundaryConditions.lowerBounds;
-      ub = self.thisBoundaryConditions.upperBounds;
-    end
-
-    function r = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
-      self.thisPathCosts = 0;
-      self.pathCosts(states,algVars,controls,time,endTime,parameters);
-      r = self.thisPathCosts;
-    end
-    
-    function r = getArrivalCosts(self,states,endTime,parameters)
-      self.thisArrivalCosts = 0;
-      self.arrivalCosts(states,endTime,parameters);
-      r = self.thisArrivalCosts;
-    end
-    function r = getDiscreteCosts(self,vars)
-      self.thisArrivalCosts = 0;
-      self.arrivalCosts(vars);
-      r = self.thisArrivalCosts;
-    end
     
   end
 
@@ -93,7 +60,7 @@ classdef OclOCP < handle
     end
     
     function addDiscreteCost(self,expr)
-      self.thisPathCosts = self.discreteCosts + expr;
+      self.discreteCosts = self.discreteCosts + expr;
     end
     
   end

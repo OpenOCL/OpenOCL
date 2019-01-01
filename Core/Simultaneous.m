@@ -273,7 +273,7 @@ classdef Simultaneous < handle
       ineqConstraints_LB{N+1} = lb;
       ineqConstraints{N+1} = ub;
       
-      costs = costs + self.ocpHandler.getDiscreteCosts(nlpVars);    
+      costs = costs + self.ocpHandler.discreteCostsFun(nlpVars);    
       
       constraints_Val = [eqConstraints{:}];
       constraints_LB = [constraints_LB{:}];
