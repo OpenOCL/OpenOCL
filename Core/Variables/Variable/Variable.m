@@ -1,4 +1,4 @@
-classdef Variable < handle
+classdef Variable < handle & matlab.mixin.CustomDisplay
     % VARIABLE Default implementation of arithemtic operations for
     % variables
     % This class can be derived from to implement new arithemtics for 
@@ -86,6 +86,13 @@ classdef Variable < handle
     
   end % methods(static)
   
+methods (Access = protected)
+  function r = getFooter(self)
+    r = sprintf(['Value: ', self.value.str(), '\n',...
+                 'Type: ', class(self.type)]);
+  end
+end
+  
 methods
     function self = Variable(type,positions,val)
       narginchk(3,3);
@@ -96,6 +103,8 @@ methods
       self.positions = positions;
       self.val = val;
     end
+    
+
     
     function varargout = subsref(self,s)
       % v(1)
