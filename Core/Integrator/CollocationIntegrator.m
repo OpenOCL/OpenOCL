@@ -59,9 +59,9 @@ classdef CollocationIntegrator < handle
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                         controls,startTime,finalTime,endTime,parameters)
+                                                                         controls,startTime,endTime,ocpEndTime,parameters)
                                                                          
-      h = finalTime-startTime;
+      h = endTime-startTime;
       equations = cell(self.d,1);
       J = 0;
       
@@ -75,7 +75,9 @@ classdef CollocationIntegrator < handle
 
         xp = self.C(1,k+1)*statesBegin;
         for r=1:self.d
-           xp = xp + self.C(r+1,k+1)*integratorVars(i_states);
+          r_vars = (r-1)*(self.nx+self.nz);
+          r_states = r_vars+1:r_vars+self.nx;
+          xp = xp + self.C(r+1,k+1)*integratorVars(r_states);
         end
 
         time = startTime + self.tau_root(k+1) * h;
@@ -90,7 +92,7 @@ classdef CollocationIntegrator < handle
         statesEnd = statesEnd + self.D(k+1)*integratorVars(i_states);
 
         % Add contribution to quadrature function
-        qj = self.ocpHandler.pathCostsFun.evaluate(integratorVars(i_states),integratorVars(i_algVars),controls,time,endTime,parameters);
+        qj = self.ocpHandler.pathCostsFun.evaluate(integratorVars(i_states),integratorVars(i_algVars),controls,time,ocpEndTime,parameters);
         J = J + self.B(k+1)*qj*h;
       end
 

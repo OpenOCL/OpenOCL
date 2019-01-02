@@ -2,14 +2,14 @@ FINALTIME = 10;             % horizon length (seconds)
 CONTROL_INTERVALS = 30;     % control discretization
 
 % Get and set solver options
-options = OCL.Options();
+options = OclOptions();
 options.iterationCallback = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
-ocl = OCL.Solver(VanDerPolSystem,VanDerPolOCP,options);
+ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options);
 
 % state and control bounds
 ocl.setBounds('x',    -0.25, inf);   % -0.25 <= x <= inf
