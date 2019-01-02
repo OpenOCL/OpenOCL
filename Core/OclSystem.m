@@ -99,7 +99,7 @@ classdef (Abstract) OclSystem < handle
     end
 
     function setODE(self,id,eq)
-      self.ode.(id) = oclValue(eq(:));
+      self.ode.(id) = oclValue(eq);
     end
     
     function setAlgEquation(self,eq)
