@@ -36,28 +36,28 @@ assert(all(abs(solution.get('controls').value - ...
 
 
 % test pendulum swing up problem
-% mainPendulum
-% assert(all(abs(solution.controls.value - ...
-%   [0.76305
-%     1.36860
-%     0.72473
-%    -0.71346
-%    -0.76754
-%    -1.06393
-%     1.37674
-%    -0.97183
-%     0.16493
-%     0.29360
-%     0.98930
-%     0.63437
-%   -11.10204
-%   -20.60125
-%    18.43779
-%    13.47314
-%     6.53953
-%     2.96950
-%     1.20322
-%     0.31378]) < 1e-3 ), 'PendulumSolve Test failed.');
+mainPendulum
+assert(all(abs(solution.controls.value - ...
+  [0.76305
+    1.36860
+    0.72473
+   -0.71346
+   -0.76754
+   -1.06393
+    1.37674
+   -0.97183
+    0.16493
+    0.29360
+    0.98930
+    0.63437
+  -11.10204
+  -20.60125
+   18.43779
+   13.47314
+    6.53953
+    2.96950
+    1.20322
+    0.31378]) < 1e-3 ), 'PendulumSolve Test failed.');
 
 
 % test ball and beam example problem

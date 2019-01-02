@@ -24,4 +24,4 @@ vars.controls.F.set(-10);
 solution = ocl.solve(vars);
 
 figure
-system.solutionCallback(solution);
+ocl.solutionCallback(solution);
