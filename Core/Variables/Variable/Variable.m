@@ -88,7 +88,7 @@ classdef Variable < handle & matlab.mixin.CustomDisplay
   
 methods (Access = protected)
   function r = getFooter(self)
-    r = sprintf(['Value: ', self.value, '\n',...
+    r = sprintf(['Value: ', num2str(reshape(self.value,1,[])), '\n',...
                  'Type: ', class(self.type)]);
   end
 end
