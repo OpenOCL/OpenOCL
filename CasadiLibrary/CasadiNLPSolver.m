@@ -94,8 +94,8 @@ classdef CasadiNLPSolver < NLPSolver
         lbv = lbv(varIndizes);
         ubv = ubv(varIndizes);
       end
-      self.nlpData.casadiNLP.p = casadi.MX.sym('p',size(params));
-      self.nlpData.parameters = self.nlpData.casadiNLP.x(paramIndizes);
+      %self.nlpData.casadiNLP.p = casadi.MX.sym('p',size(params));
+      %self.nlpData.parameters = self.nlpData.casadiNLP.x(paramIndizes);
       
       v0 = initialGuess.value;
       

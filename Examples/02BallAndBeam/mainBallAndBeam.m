@@ -1,7 +1,7 @@
 % Title: Ball and beam problem
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
-ENDTIME = 5;                % horizon length (seconds)
+END_TIME = 5; % horizon length (seconds)
 
 options = OclOptions();
 options.nlp.controlIntervals = 50;
@@ -14,7 +14,7 @@ ocl.setParameter('J', 25*10^(-3));
 ocl.setParameter('m', 2);
 ocl.setParameter('R', 0.05);
 ocl.setParameter('g', 9.81);
-ocl.setParameter('time'  ,  1, ENDTIME);  %   T0 <= T <= Tf
+ocl.setParameter('time'  ,  1, END_TIME);  %   T0 <= T <= Tf
 
 % set bounds    
 r_b      = 1;           % beam length [m]
@@ -22,7 +22,7 @@ theta_b  = deg2rad(30); % max angle [deg]
 dtheta_b = deg2rad(50); % max angular speed [deg/s]
 tau_b    = 20;          % bound torque [Nm]
 
-ocl.setBounds('r'     ,  -r_b      , r_b);   
+ocl.setBounds('r'     ,  -r_b      , r_b);  
 ocl.setBounds('theta' ,  -theta_b  , theta_b);
 ocl.setBounds('dtheta',  -dtheta_b , dtheta_b); 
 ocl.setBounds('tau'   ,  -tau_b    , tau_b);
