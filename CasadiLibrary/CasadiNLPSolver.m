@@ -75,7 +75,7 @@ classdef CasadiNLPSolver < NLPSolver
       solveTotalTic = tic;
       
       % interpolate initial guess
-      %self.nlp.interpolateGuess(initialGuess);
+      self.nlp.interpolateGuess(initialGuess);
       
       % detect variables as parameters if they are constant (lb==ub)
       nv = self.nlp.nlpFun.inputSizes{1};
@@ -93,9 +93,10 @@ classdef CasadiNLPSolver < NLPSolver
         % bounds after removing parameters
         lbv = lbv(varIndizes);
         ubv = ubv(varIndizes);
+        
+        self.nlpData.casadiNLP.p = casadi.MX.sym('p',size(params));
+        self.nlpData.parameters = self.nlpData.casadiNLP.x(paramIndizes);
       end
-      %self.nlpData.casadiNLP.p = casadi.MX.sym('p',size(params));
-      %self.nlpData.parameters = self.nlpData.casadiNLP.x(paramIndizes);
       
       v0 = initialGuess.value;
       
@@ -114,9 +115,14 @@ classdef CasadiNLPSolver < NLPSolver
         params = self.scale(params,scalingMinParams,scalingMaxParams);
       end
       
+      opts = self.options.nlp.casadi;
+      if isfield(self.options.nlp,self.options.nlp.solver)
+        opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
+      end
+      
       constructSolverTic = tic;
       casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
-                                   self.nlpData.casadiNLP, self.options.nlp.casadi);
+                                   self.nlpData.casadiNLP, opts);
       constructSolverTime = toc(constructSolverTic);
       
       args = struct;
