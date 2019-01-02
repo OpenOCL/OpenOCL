@@ -111,14 +111,14 @@ classdef (Abstract) OclSystem < handle
     end
     
     function solutionCallback(self,solution)
-      sN = solution.get('states').size;
-      N = sN(2);
-      parameters = solution.get('parameters');
+      sN = size(solution.states);
+      N = sN(3);
+      parameters = solution.parameters;
       
       for k=1:N-1
-        states = solution.get('states',k+1);
-        algVars = solution.get('integratorVars',k).get('algVars');
-        controls =  solution.get('controls',k);
+        states = solution.states(k+1);
+        algVars = solution.integratorVars(k).algVars;
+        controls =  solution.controls(k);
         self.simulationCallback(states,algVars,controls,parameters);
       end
     end

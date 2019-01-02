@@ -8,6 +8,7 @@ classdef Simultaneous < handle
     ocpHandler
     integratorFun
     nv
+    system
   end
   
   properties(Access = private)
@@ -25,6 +26,7 @@ classdef Simultaneous < handle
   methods
     function self = Simultaneous(system,integrator,N)
       
+      self.system = system;
       self.N = N;
       self.nx = prod(system.statesStruct.size());
       self.ni = prod(integrator.varsStruct.size());
@@ -208,7 +210,7 @@ classdef Simultaneous < handle
       for k=1:self.N
         k_integratorEquations = 3*(k-1)+1;
         k_pathConstraints = 3*(k-1)+2;
-        k_continuity = 3*(k-1)+2;
+        k_continuity = 3*(k-1)+3;
         
         thisIntegratorVars = nlpVars(k_vars+1:k_vars+self.ni);
         k_vars = k_vars+self.ni;
