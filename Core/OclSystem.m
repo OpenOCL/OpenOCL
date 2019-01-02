@@ -26,6 +26,7 @@ classdef (Abstract) OclSystem < handle
       self.controlsStruct   = OclTree();
       self.parametersStruct = OclTree();
       
+      self.ode = struct;
       self.setupVariables;
       
       sx = self.statesStruct.size();
@@ -63,7 +64,6 @@ classdef (Abstract) OclSystem < handle
       % evaluate the system equations for the assigned variables
       
       self.alg = [];
-      self.ode = struct;
       
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
@@ -86,6 +86,7 @@ classdef (Abstract) OclSystem < handle
     end
     
     function addState(self,id,size)
+      self.ode.(id) = [];
       self.statesStruct.add(id,size);
     end
     function addAlgVar(self,id,size)
