@@ -1,57 +1,48 @@
-%% Title: Ball and beam problem
+% Title: Ball and beam problem
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
-FINALTIME = 5;                % horizon length (seconds)
+ENDTIME = 5;                % horizon length (seconds)
 
-%% Create system and OCP
-system = BallAndBeamSystem();
-ocp    = BallAndBeamOCP(system);
-
-%% STEP1: Get and set solver options
-options = Solver.getOptions;
+options = OclOptions();
 options.nlp.controlIntervals = 50;
-nlp = Solver.getNLP(ocp,system,options);
 
-%% STEP2: assign values to system parameters
-nlp.setParameter('I', 0.5);
-nlp.setParameter('J', 25*10^(-3));
-nlp.setParameter('m', 2);
-nlp.setParameter('R', 0.05);
-nlp.setParameter('g', 9.81);
-nlp.setParameter('time'  ,  1, FINALTIME);  %   T0 <= T <= Tf
+ocl = OclSolver(BallAndBeamSystem,BallAndBeamOCP,options);
 
-%% STEP3: set bounds    
+% assign values to system parameters
+ocl.setParameter('I', 0.5);
+ocl.setParameter('J', 25*10^(-3));
+ocl.setParameter('m', 2);
+ocl.setParameter('R', 0.05);
+ocl.setParameter('g', 9.81);
+ocl.setParameter('time'  ,  1, ENDTIME);  %   T0 <= T <= Tf
+
+% set bounds    
 r_b      = 1;           % beam length [m]
 theta_b  = deg2rad(30); % max angle [deg]
 dtheta_b = deg2rad(50); % max angular speed [deg/s]
 tau_b    = 20;          % bound torque [Nm]
 
+ocl.setBounds('r'     ,  -r_b      , r_b);   
+ocl.setBounds('theta' ,  -theta_b  , theta_b);
+ocl.setBounds('dtheta',  -dtheta_b , dtheta_b); 
+ocl.setBounds('tau'   ,  -tau_b    , tau_b);
 
-nlp.setBounds('r'     ,  -r_b      , r_b);   
-nlp.setBounds('theta' ,  -theta_b  , theta_b);
-nlp.setBounds('dtheta',  -dtheta_b , dtheta_b); 
-nlp.setBounds('tau'   ,  -tau_b    , tau_b);
+% set bounds for initial and endtime
+ocl.setInitialBounds('r'      , -0.8);
+ocl.setInitialBounds('dr'     , 0.3);
+ocl.setInitialBounds('theta'  , deg2rad(5));
+ocl.setInitialBounds('dtheta' , 0.0);
 
-%% STEP4: set bounds for initial and end time
-% Intial conditions
-nlp.setInitialBounds('r'      , -0.8);
-nlp.setInitialBounds('dr'     , 0.3);
-nlp.setInitialBounds('theta'  , deg2rad(5));
-nlp.setInitialBounds('dtheta' , 0.0);
+ocl.setEndBounds('r'      , 0);
+ocl.setEndBounds('dr'     , 0);
+ocl.setEndBounds('theta'  , 0);
+ocl.setEndBounds('dtheta' , 0);
 
-% Final conditions
-nlp.setEndBounds('r'      , 0);
-nlp.setEndBounds('dr'     , 0);
-nlp.setEndBounds('theta'  , 0);
-nlp.setEndBounds('dtheta' , 0);
+% Solve OCP
+vars = ocl.getInitialGuess();
+[vars,times] = ocl.solve(vars);
 
-%% Solve OCP
-solver   = Solver.getSolver(nlp,options);   % Create solver
-vars     = nlp.getInitialGuess();           % Get and set initial guess
-[vars,times] = solver.solve(vars);          % Run solver to obtain solution
-times = times.value;
-
-%% Plot solution
+% Plot solution
 figure;
 subplot(3,1,1);hold on;grid on; 
 plot(times,vars.states.r.value     ,'Color','b','LineWidth',1.5)
@@ -76,5 +67,5 @@ plot(times,-tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','
 legend({'\tau [Nm]'})
 xlabel('time');
 
-%% Show Animation
+% Show Animation
 animateBallAndBeam(times,vars.states.r.value,vars.states.theta.value);

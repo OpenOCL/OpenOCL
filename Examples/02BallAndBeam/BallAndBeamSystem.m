@@ -1,4 +1,4 @@
-classdef BallAndBeamSystem < System
+classdef BallAndBeamSystem < OclSystem
   methods
     function setupVariables(self)
       self.addState('r'     ,[1,1]);

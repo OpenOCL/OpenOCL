@@ -34,7 +34,9 @@ classdef Value < handle
     
     function vout = value(self,type,positions,varargin)
       % v = value(type,positions)
-      p = positions();
+
+      % remove dimensions of length 1	
+      p = squeeze(positions);      
 
       vout = cell(1,size(p,3));
       for k=1:size(p,3)
@@ -45,31 +47,12 @@ classdef Value < handle
       end
     end
     
-    function [p,N,M,K] = squeeze(self,p,N,M,K)
+    function [p,N,M,K] = squeeze23(self,p,N,M,K)
        % squeeze dimensions of length 1
        p = reshape(p,[N,M,K]);
        p = squeeze(p);
        [N,M,K] = size(p);
        p = reshape(p,[N*M*K,1]);
-    end
-    
-    function [pout,N,M,K] = slice(self,type,pos,dim1,dim2,dim3)
-      [N,M,K] = type.size();
-      [pos,N,M,K] = self.squeeze(pos,N,M,K);
-      
-      pout = zeros(N,M,K);
-      for k=1:K
-        p = pos(:,:,k);
-        if nargin==4
-          p = p(dim1);
-        elseif nargin==5
-          p = p(dim1,dim2);  
-        end
-        pout(:,:,k) = p;
-      end
-      if nargin==6
-        pout = p(:,:,dim3);
-      end
     end
   end
 end

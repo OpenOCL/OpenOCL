@@ -31,8 +31,8 @@ initialGuess.states.x.set(-0.2);
 % plot solution
 figure
 hold on 
-plot(times,cell2mat(solution.states.x.value),'-.','LineWidth',2)
-plot(times,cell2mat(solution.states.y.value),'--k','LineWidth',2)
-stairs(times(1:end-1),cell2mat(solution.controls.u.value),'r','LineWidth',2)
+plot(times,solution.states.x.value,'-.','LineWidth',2)
+plot(times,solution.states.y.value,'--k','LineWidth',2)
+stairs(times(1:end-1),solution.controls.u.value,'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})
