@@ -26,23 +26,25 @@ classdef CollocationIntegrator < handle
     C
     D  
     tau_root
+    order
   end
   
   
   methods
     
-    function self = CollocationIntegrator(system,d)
+    function self = CollocationIntegrator(system,order)
       
       self.system = system;
       self.nx = prod(system.statesStruct.size());
       self.nz = prod(system.algVarsStruct.size());
       
-      self.tau_root = collocationPoints(d);
-      [self.C,self.D,self.B] = self.getCoefficients(d);
+      self.order = order;
+      self.tau_root = collocationPoints(order);
+      [self.C,self.D,self.B] = self.getCoefficients(order);
       
       self.varsStruct = OclTree();
       self.varsStruct.addRepeated({'states','algVars'},...
-                                  {self.system.statesStruct,self.system.algVarsStruct}, d);
+                                  {self.system.statesStruct,self.system.algVarsStruct}, order);
       
       sx = system.statesStruct.size();
       si = self.varsStruct.size();
@@ -59,19 +61,19 @@ classdef CollocationIntegrator < handle
                                                                          controls,startTime,endTime,ocpEndTime,parameters)
                                                                          
       h = endTime-startTime;
-      equations = cell(self.d,1);
+      equations = cell(self.order,1);
       J = 0;
       
       % Loop over collocation points
       statesEnd = self.D(1)*statesBegin;
-      for j=1:self.d
+      for j=1:self.order
         
         j_vars = (j-1)*(self.nx+self.nz);
         j_states = j_vars+1:j_vars+self.nx;
         j_algVars = j_vars+self.nx+1:j_vars+self.nx+self.nz;
 
         xp = self.C(1,j+1)*statesBegin;
-        for r=1:self.d
+        for r=1:self.order
           r_vars = (r-1)*(self.nx+self.nz);
           r_states = r_vars+1:r_vars+self.nx;
           xp = xp + self.C(r+1,j+1)*integratorVars(r_states);
