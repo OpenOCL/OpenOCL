@@ -32,7 +32,7 @@ assert(all(abs(solution.get('controls').value - ...
   -0.0037
   -0.0017
   -0.0005
-  -0.0000]') < 1e-3 ), 'Control vector of solution is wrong in Example.');
+  -0.0000]) < 1e-3 ), 'Control vector of solution is wrong in Example.');
 
 
 % test pendulum swing up problem
@@ -57,7 +57,7 @@ assert(all(abs(solution.controls.value - ...
     6.53953
     2.96950
     1.20322
-    0.31378]') < 1e-3 ), 'PendulumSolve Test failed.');
+    0.31378]) < 1e-3 ), 'PendulumSolve Test failed.');
 
 
 % test ball and beam example problem

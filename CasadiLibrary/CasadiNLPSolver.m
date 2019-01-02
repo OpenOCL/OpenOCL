@@ -1,7 +1,10 @@
 classdef CasadiNLPSolver < NLPSolver
   
-  properties (Access = private)
+  properties
     timeMeasures
+  end
+  
+  properties (Access = private)
     nlpData
     options
   end
@@ -51,16 +54,12 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.g = constraints;
       casadiNLP.p = casadi.MX.sym('p',[0,1]);
       
-      if isfield(options.nlp,options.nlp.solver)
-        opts.(options.nlp.solver) = options.nlp.(options.nlp.solver);
-      end
-      
       if options.iterationCallback
         callbackFun = IterationCallback('itCbFun', ...
           numel(vars), numel(constraints), numel(psym), ...
           @(values)self.callBackHandle(values,initialGuess,varIndizes,paramIndizes,params,...
                                        scalingMin,scalingMax) );
-        opts.iteration_callback = callbackFun;
+        self.options.iteration_callback = callbackFun;
       end
 
       nlpData = struct;
@@ -74,6 +73,9 @@ classdef CasadiNLPSolver < NLPSolver
       % solve(initialGuess)
       
       solveTotalTic = tic;
+      
+      % interpolate initial guess
+      self.nlp.interpolateGuess(initialGuess);
       
       % detect variables as parameters if they are constant (lb==ub)
       nv = self.nlp.nlpFun.inputSizes{1};

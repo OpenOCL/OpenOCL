@@ -15,4 +15,5 @@ function options = OclOptions()
   options.nlp.ipopt = struct;
   options.nlp.ipopt.linear_solver = 'mumps';
   options.nlp.ipopt.hessian_approximation = 'exact';
+  options.debug = false;
 end

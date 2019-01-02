@@ -2,10 +2,10 @@
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
 CONTROL_INTERVALS = 50;     % control discretization
-ENDTIME = 20;             % [s]
+MAX_TIME = 20;             % [s]
 
 options = OclOptions();
-options.iterationCallback = false;
+options.debug = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 
 ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);
@@ -26,7 +26,7 @@ ocl.setParameter('rho' , rho);
 ocl.setParameter('Vmax', Vmax);
 ocl.setParameter('Fmax', Fmax);
 ocl.setParameter('road_bound', road_bound);
-ocl.setParameter('time', 0, ENDTIME);  
+ocl.setParameter('time', 0, MAX_TIME);  
 
 ocl.setInitialBounds( 'x',   0.0); 
 ocl.setInitialBounds('vx',   0.0);
@@ -40,7 +40,7 @@ ocl.setEndBounds('vy',  0.0 );
 
 initialGuess    = ocl.getInitialGuess();           
 
-% initialize in the middle lane
+% Initialize the middle lane
 N        = length(initialGuess.states.x.value);
 x_road   = linspace(0,2*pi,N);
 y_center = sin(x_road);

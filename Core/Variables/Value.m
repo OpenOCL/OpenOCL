@@ -15,15 +15,31 @@ classdef Value < handle
     
     function set(self,type,pos,value)
       % set(type,positions,value)
-      % set(type,positions,value)      
+      % set(type,positions,value) 
+      
+      % squeeze pos and value
       pos = squeeze(pos);
       value = squeeze(value);
+      if size(pos,1) == 1
+        s = size(pos);
+        pos = reshape(pos,[s(2:end) 1]);
+      end
+      if size(value,1) == 1
+        s = size(value);
+        value = reshape(value,[s(2:end) 1]);
+      end
+      
       [Np,Mp,Kp] = size(pos);
       [Nv,Mv] = size(value);
       
       if isempty(value) || Nv*Mv==0
         return
       end
+      
+      if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0
+        oclError('Can not set values to variable. Dimensions do not match.')
+      end
+      
 
       Nv = size(value,1);
       Mv = size(value,2);
