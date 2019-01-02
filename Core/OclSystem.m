@@ -111,7 +111,7 @@ classdef (Abstract) OclSystem < handle
       self.initialConditions = [self.initialConditions; oclValue(eq)];      
     end
     
-    function solutionCallback(self,solution)
+    function solutionCallback(self,times,solution)
       sN = size(solution.states);
       N = sN(3);
       parameters = solution.parameters;
@@ -120,7 +120,7 @@ classdef (Abstract) OclSystem < handle
         states = solution.states(k+1);
         algVars = solution.integratorVars(k).algVars;
         controls =  solution.controls(k);
-        self.simulationCallback(states,algVars,controls,parameters);
+        self.simulationCallback(states,algVars,controls,times(k),times(k+1),parameters);
       end
     end
   end

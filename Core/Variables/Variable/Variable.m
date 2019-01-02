@@ -34,9 +34,9 @@ classdef Variable < handle & matlab.mixin.CustomDisplay
       if isnumeric(value)
         var = Variable.Matrix(value);
       elseif isa(value,'casadi.MX')
-        var = CasadiVariable.Matrix(value,true);
+        var = CasadiVariable.create(OclMatrix(size(value)),true,value);
       elseif isa(value,'casadi.SX')
-        var = CasadiVariable.Matrix(value,false);
+        var = CasadiVariable.create(OclMatrix(size(value)),false,value);
       else
         oclError('Not implemented for this type of variable.')
       end
@@ -88,7 +88,7 @@ classdef Variable < handle & matlab.mixin.CustomDisplay
   
 methods (Access = protected)
   function r = getFooter(self)
-    r = sprintf(['Value: ', self.value.str(), '\n',...
+    r = sprintf(['Value: ', self.value, '\n',...
                  'Type: ', class(self.type)]);
   end
 end

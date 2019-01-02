@@ -51,18 +51,20 @@ classdef OCPHandler < handle
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
       p = Variable.create(self.system.parametersStruct,parameters);
+      t = Variable.createMatrix(endTime);
       
-      self.ocp.pathCosts(x,z,u,time,endTime,p);
-      r = self.ocp.thisPathCosts;
+      self.ocp.pathCosts(x,z,u,time,t,p);
+      r = oclValue(self.ocp.thisPathCosts);
     end
     
     function r = getArrivalCosts(self,states,endTime,parameters)
       self.ocp.thisArrivalCosts = 0;
       x = Variable.create(self.system.statesStruct,states);
       p = Variable.create(self.system.parametersStruct,parameters);
+      t = Variable.createMatrix(endTime);
       
-      self.ocp.arrivalCosts(x,endTime,p);
-      r = self.ocp.thisArrivalCosts;
+      self.ocp.arrivalCosts(x,t,p);
+      r = oclValue(self.ocp.thisArrivalCosts);
     end
     
     function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
@@ -71,11 +73,12 @@ classdef OCPHandler < handle
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
       p = Variable.create(self.system.parametersStruct,parameters);
+      t = Variable.createMatrix(time);
       
-      self.ocp.pathConstraints(x,z,u,time,p);
-      val = self.ocp.thisPathConstraints.values;
-      lb = self.ocp.thisPathConstraints.lowerBounds;
-      ub = self.ocp.thisPathConstraints.upperBounds;
+      self.ocp.pathConstraints(x,z,u,t,p);
+      val = oclValue(self.ocp.thisPathConstraints.values);
+      lb = oclValue(self.ocp.thisPathConstraints.lowerBounds);
+      ub = oclValue(self.ocp.thisPathConstraints.upperBounds);
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
@@ -85,9 +88,9 @@ classdef OCPHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       
       self.ocp.boundaryConditions(x0,xF,p);
-      val = self.ocp.thisBoundaryConditions.values;
-      lb = self.ocp.thisBoundaryConditions.lowerBounds;
-      ub = self.ocp.thisBoundaryConditions.upperBounds;
+      val = oclValue(self.ocp.thisBoundaryConditions.values);
+      lb = oclValue(self.ocp.thisBoundaryConditions.lowerBounds);
+      ub = oclValue(self.ocp.thisBoundaryConditions.upperBounds);
     end
     
     function r = getDiscreteCosts(self,varsValue)

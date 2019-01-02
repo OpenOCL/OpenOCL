@@ -9,8 +9,8 @@ classdef NLPSolver < handle
     function self = NLPSolver()
     end
     
-    function solutionCallback(self,solution)
-      self.nlp.system.solutionCallback(solution);
+    function solutionCallback(self,times,solution)
+      self.nlp.system.solutionCallback(times,solution);
     end
     
     function r = getInitialGuess(self,varargin)

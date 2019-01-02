@@ -1,11 +1,12 @@
 
 options = OclOptions;
+options.nlp.controlIntervals = 50;
 ocl = OclSolver(PendulumSystem, PendulumOCP, options);
 
 ocl.setParameter('time',  1, 10);
-ocl.setBounds('p',       -[2;2], [3;3]); 
-ocl.setBounds('v',       -[2;2], [3;3]); 
-ocl.setBounds('F',       -30, 30); 
+ocl.setBounds('p',       -[3;3], [3;3]); 
+ocl.setBounds('v',       -[3;3], [3;3]); 
+ocl.setBounds('F',       -25, 25); 
 ocl.setBounds('lambda',  -50, 50); 
 ocl.setBounds('m',       1);
 ocl.setBounds('l',       1);
@@ -21,7 +22,7 @@ vars.states.p.set([0;-1]);
 vars.states.v.set([0.1;0]);
 vars.controls.F.set(-10);
 
-solution = ocl.solve(vars);
+[solution,times] = ocl.solve(vars);
 
 figure
-ocl.solutionCallback(solution);
+ocl.solutionCallback(times,solution);
