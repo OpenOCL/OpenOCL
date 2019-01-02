@@ -1,8 +1,5 @@
-classdef PendulumOCP < OCP
+classdef PendulumOCP < OclOCP
   methods
-    function self = PendulumOCP(system)
-      self = self@OCP(system);
-    end
     function pathCosts(self,states,algVars,controls,time,endTime,parameters)
       F  = controls.F;
       self.addPathCost( 1e-3 * F^2 );

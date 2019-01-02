@@ -11,15 +11,11 @@ classdef OclConstraint < handle
   methods
     
     function self = OclConstraint()
-      self.clear();
-    end
-
-    function clear(self)
       self.values = [];
       self.lowerBounds = [];
       self.upperBounds = [];
     end
-    
+
     function c = copy(self)
       c = Constraint();
       c.values = self.values.copy;
@@ -33,9 +29,9 @@ classdef OclConstraint < handle
       % add(self,constraint)
       if nargin==4
         if ischar(varargin{2})
-          self.addWithBounds(varargin{1},varargin{2},varargin{3})
-        else
           self.addWithOperator(varargin{1},varargin{2},varargin{3})
+        else
+          self.addWithBounds(varargin{1},varargin{2},varargin{3})
         end
         
       elseif nargin==2

@@ -13,22 +13,23 @@ classdef Value < handle
       r = numel(self.val);
     end
     
-    function set(self,type,pos,value,varargin)
+    function set(self,type,pos,value)
       % set(type,positions,value)
-      % set(type,positions,value,slice1,slice2,slice3)      
-      [N,M,K] = size(pos);
+      % set(type,positions,value)      
+      pos = squeeze(pos);
+      value = squeeze(value);
+      [Np,Mp,Kp] = size(pos);
+      [Nv,Mv] = size(value);
       
-      assert(length(size(value)) <= 2, 'Only matrix values supported.');
-      
-      if isempty(value) || N*M*K==0
+      if isempty(value) || Nv*Mv==0
         return
       end
 
       Nv = size(value,1);
       Mv = size(value,2);
-      for k=1:K
+      for k=1:Kp
         p = pos(:,:,k);
-        self.val(p) = repmat(value,N/Nv,M/Mv);
+        self.val(p) = repmat(value,Np/Nv,Mp/Mv);
       end      
     end % set
     

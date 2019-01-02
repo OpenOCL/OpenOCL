@@ -1,4 +1,4 @@
-classdef PendulumSystem < System
+classdef PendulumSystem < OclSystem
   methods
     function setupVariables(self)
       self.addState('p',[2,1]);

@@ -1,4 +1,4 @@
-classdef RaceCarSystem < System
+classdef RaceCarSystem < OclSystem
   methods
     function setupVariables(self)
       self.addState('x' ,[1,1]); % position x[m]

@@ -12,11 +12,11 @@ x.set((1:10).');
 assert(isequal(x.value,(1:10)'))
 
 %%% get by id
-assert(isequal(x.get('x1').value,{[1,2],[9,10]}));
-assert(isequal(x.x1.value,{[1,2],[9,10]}));
+assert(isequal(x.get('x1').value,[1,9;2,10]));
+assert(isequal(x.x1.value,[1,9;2,10]));
 
 %%% slice
-assert(isequal(x.x1(1,1,:).value,{1,9}));
+assert(isequal(x.x1(1,1,:).value,[1;9]));
 
 x = OclTree();
 x.add('p',[3,1]);
@@ -55,7 +55,7 @@ v.get('x').get('p').set([100;0;50])
 v.get('x').get('v').set([20;0;0])
 v.get('x').get('w').set([0;1;0.1])
 
-assert( isequal( v.x(4:6).p(1,:,:).value, {100,100,100}));
+assert( isequal( v.x(4:6).p(1,:,:).value, [100;100;100]));
   
 
 v.get('x').get('R').set(eye(3));
@@ -66,7 +66,7 @@ v.get('x').get('R').set(ones(3,3))
 assert( isequal(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1)    ));
 
 % slice on selection
-assert(isequal(v.x(1).p.value,[100,0,50]'))
+assert(isequal(v.x(1).p.value,[100;0;50]))
 
 % :, all, end
 assert(isequal(v('all').value,v.value)) 

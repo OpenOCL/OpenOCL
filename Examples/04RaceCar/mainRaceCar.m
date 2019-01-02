@@ -1,16 +1,14 @@
-%% Title: Race Car Problem Example
+% Title: Race Car Problem Example
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
 CONTROL_INTERVALS = 50;     % control discretization
-FINALTIME = 20;             % [s]
+ENDTIME = 20;             % [s]
 
-system = RaceCarSystem();
-ocp    = RaceCarOCP(system);
-
-options = Solver.getOptions;
+options = OclOptions();
 options.iterationCallback = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
-nlp = Solver.getNLP(ocp,system,options);
+
+ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);
 
 % parameters
 m    = 1;         % mass [kg]
@@ -21,31 +19,26 @@ Vmax = 1;         % max velocity [m/s]
 Fmax   = 1;       % [N] 
 road_bound = 0.4; % [m]
 
-nlp.setParameter('m'   , m);
-nlp.setParameter('A'   , A);
-nlp.setParameter('cd'  , cd);
-nlp.setParameter('rho' , rho);
-nlp.setParameter('Vmax', Vmax);
-nlp.setParameter('Fmax', Fmax);
-nlp.setParameter('road_bound', road_bound);
+ocl.setParameter('m'   , m);
+ocl.setParameter('A'   , A);
+ocl.setParameter('cd'  , cd);
+ocl.setParameter('rho' , rho);
+ocl.setParameter('Vmax', Vmax);
+ocl.setParameter('Fmax', Fmax);
+ocl.setParameter('road_bound', road_bound);
+ocl.setParameter('time', 0, ENDTIME);  
 
-nlp.setParameter('time', 0, FINALTIME);  % T0 <= T <= Tf
+ocl.setInitialBounds( 'x',   0.0); 
+ocl.setInitialBounds('vx',   0.0);
+ocl.setInitialBounds( 'y',   0.0);
+ocl.setInitialBounds('vy',   0.0);
 
-% Intial conditions
-nlp.setInitialBounds( 'x',   0.0); 
-nlp.setInitialBounds('vx',   0.0);
-nlp.setInitialBounds( 'y',   0.0);
-nlp.setInitialBounds('vy',   0.0);
+ocl.setEndBounds( 'x',  2*pi);
+ocl.setEndBounds('vx',  0.0 );
+ocl.setEndBounds( 'y',  0.0 );
+ocl.setEndBounds('vy',  0.0 );
 
-% Final conditions
-nlp.setEndBounds( 'x',  2*pi);
-nlp.setEndBounds('vx',  0.0 );
-nlp.setEndBounds( 'y',  0.0 );
-nlp.setEndBounds('vy',  0.0 );
-
-%% initialize NLP 
-solver          = Solver.getSolver(nlp,options);
-initialGuess    = nlp.getInitialGuess;           
+initialGuess    = ocl.getInitialGuess();           
 
 % initialize in the middle lane
 N        = length(initialGuess.states.x.value);
@@ -54,11 +47,10 @@ y_center = sin(x_road);
 initialGuess.states.x.set(x_road);
 initialGuess.states.y.set(y_center);
 
-%% Solve OCP
-[solution,times] = solver.solve(initialGuess);
-times = times.value;
+% Solve OCP
+[solution,times] = ocl.solve(initialGuess);
 
-%% Plot solution
+% Plot solution
 figure('units','normalized','outerposition',[0 0 1 1])
 subplot(3,2,1);hold on;grid on; 
 plot(times,solution.states.x.value,'Color','b','LineWidth',1.5);
@@ -100,5 +92,5 @@ plot(solution.states.x.value,...
      solution.states.y.value,'Color','b','LineWidth',1.5);
 axis equal;xlabel('x[m]');ylabel('y[m]');
 
-%% Show Animation
+% Show Animation
 animateRaceCar(times,solution,x_road,y_center,y_min,y_max)

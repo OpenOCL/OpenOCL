@@ -1,8 +1,5 @@
-classdef RaceCarOCP < OCP
+classdef RaceCarOCP < OclOCP
   methods
-    function self = RaceCarOCP(system)
-      self = self@OCP(system);
-    end
     function arrivalCosts(self,state,time,parameters)
       self.addArrivalCost(time);
     end
