@@ -5,8 +5,16 @@ classdef CasadiVariable < Variable
   end
   
   methods (Static)
+  
+  
+    function var = createFromValue(type,value)
+      oclValue = OclValue(value);
+      [N,M,K] = size(type);
+      p = reshape(1:N*M*K,N,M,K);
+      var = CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
+    end
     
-    function var = create(type,mx,value)
+    function var = create(type,mx)
       if isa(type,'OclTree')
         names = fieldnames(type.children);
         id = [names{:}];
@@ -26,9 +34,6 @@ classdef CasadiVariable < Variable
       val = OclValue(vv);
       p = reshape(1:N*M*K,N,M,K);
       var = CasadiVariable(type,p,mx,val);
-      if nargin==3
-        var.set(value);
-      end
     end
     
     function obj = Matrix(size,mx)
@@ -49,7 +54,7 @@ classdef CasadiVariable < Variable
     end
     
     function r = disp(self)
-      disp(self.str(self.value));
+      disp(self.str(self.value.str()));
     end
   end
 end
