@@ -52,9 +52,20 @@ classdef Variable < handle
     end
     
     function v = createFromHandleTwo(fh, a, b, varargin)
-      v = Variable.Matrix( fh(Variable.getValue(a), Variable.getValue(b), varargin{:}) );
+      a = Variable.getValue(a);
+      b = Variable.getValue(b);
+      if isnumeric(a) && (isa(b,'casadi.SX')||isa(b,'casadi.MX'))
+        a = casadi.DM(a);  
+      end
+      v = Variable.Matrix(fh(a,b,varargin{:}));
     end
     %%% end factory methods
+    
+    function varargout = unifyValues(varargin)
+      for i =1:length(varargin)
+        
+      end
+    end
     
     function value = getValue(value)
       if isa(value,'Variable')
@@ -217,10 +228,10 @@ classdef Variable < handle
     %%% operators
     % single argument
     function v = uplus(self)
-      v = Variable.createFromHandleOne(@(self)uplus(self),self);
+      v = Variable.createFromHandleOne(@(self)self.uplus(),self);
     end
     function v = uminus(self)
-      v = Variable.createFromHandleOne(@(self)uminus(self),self);
+      v = Variable.createFromHandleOne(@(self)self.uminus(),self);
     end
    
     function v = ctranspose(self)
@@ -229,23 +240,23 @@ classdef Variable < handle
       v = self.transpose();
     end
     function v = transpose(self)
-      v = Variable.createFromHandleOne(@(self)transpose(self),self);
+      v = Variable.createFromHandleOne(@(self)self.transpose(),self);
     end
     
     function v = reshape(self,varargin)
-      v = Variable.createFromHandleOne(@(self,varargin)reshape(self,varargin{:}),self,varargin{:});
+      v = Variable.createFromHandleOne(@(self,varargin)self.reshape(varargin{:}),self,varargin{:});
     end
     
     function v = triu(self)
-      v = Variable.createFromHandleOne(@(self)self.triu,self);
+      v = Variable.createFromHandleOne(@(self)self.triu(),self);
     end
     
     function v = repmat(self,varargin)
-      v = Variable.createFromHandleOne(@(self,varargin)repmat(self,varargin{:}),self,varargin{:});
+      v = Variable.createFromHandleOne(@(self,varargin)self.repmat(varargin{:}),self,varargin{:});
     end
     
     function v = sum(self)
-      v = Variable.createFromHandleOne(@(self)self.sum,self);
+      v = Variable.createFromHandleOne(@(self)self.sum(),self);
     end
     
     function v = norm(self,varargin)
@@ -253,15 +264,15 @@ classdef Variable < handle
     end
     
     function v = inv(self)
-      v = Variable.createFromHandleOne(@(self)self.inv,self);
+      v = Variable.createFromHandleOne(@(self)self.inv(),self);
     end
     
     function v = det(self)
-      v = Variable.createFromHandleOne(@(self)self.det,self);
+      v = Variable.createFromHandleOne(@(self)self.det(),self);
     end
     
     function v = trace(self)
-      v = Variable.createFromHandleOne(@(self)trace(self),self);
+      v = Variable.createFromHandleOne(@(self)self.trace(),self);
     end
     
     function v = diag(self)
@@ -334,11 +345,11 @@ classdef Variable < handle
     
     % two arguments
     function v = mtimes(a,b)
-      v = Variable.createFromHandleTwo(@(a,b)mtimes(a,b),a,b);
+      v = Variable.createFromHandleTwo(@(a,b)a.mtimes(b),a,b);
     end
     
     function v = mpower(a,b)
-      v = Variable.createFromHandleTwo(@(a,b)mpower(a,b),a,b);
+      v = Variable.createFromHandleTwo(@(a,b)a.mpower(b),a,b);
     end
     
     function v = mldivide(a,b)
