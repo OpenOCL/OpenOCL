@@ -12,22 +12,20 @@ classdef CasadiIntegrator < handle
       
       self.system = system;
       
-      states = CasadiVariable(system.statesStruct);
-      algVars = CasadiVariable(system.algVarsStruct);
-      controls = CasadiVariable(system.controlsStruct);
-      h = CasadiVariable(OclMatrix([1,1]));
-      parameters = CasadiVariable(system.parametersStruct);
+      states = casadi.SX.sym('x',system.nx,1);
+      algVars = casadi.SX.sym('y',system.ny,1);
+      controls = casadi.SX.sym('u',system.nu,1);
+      h = casadi.SX.sym('h',1,1);
+      parameters = casadi.SX.sym('p',system.np,1);
       
       [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
-      
-      
-      
+
       dae = struct;
-      dae.x = states.value;
-      dae.z = algVars.value;
-      dae.p = [h.value;controls.value;parameters.value];
-      dae.ode = h.value*ode.value;
-      dae.alg = alg.value;
+      dae.x = states;
+      dae.z = algVars;
+      dae.p = [h;controls;parameters];
+      dae.ode = h*ode;
+      dae.alg = alg;
       
       integratorOptions = struct;
       self.casadiIntegrator = casadi.integrator('integrator','idas',dae,integratorOptions);
@@ -35,18 +33,12 @@ classdef CasadiIntegrator < handle
     
     function [statesNext,algVars] = evaluate(self,states,algVarsGuess,controls,timestep,parameters)
       
-      x = states.value;
-      u = controls.value;
-      z = algVarsGuess.value;
-      p = parameters.value;
-      dt = timestep.value;
-      
-      integrationStep = self.systemIntegrator('x0', x, ...
-                                             'p', [dt;u;p], ...
-                                             'z0', z);
+      integrationStep = self.casadiIntegrator('x0', states, ...
+                                             'p', [timestep;controls;parameters], ...
+                                             'z0', algVarsGuess);
                                            
-      statesNext = Variable(states,full(integrationStep.xf));
-      algVars = Variable(algVarsGuess,full(integrationStep.zf));
+      statesNext = full(integrationStep.xf);
+      algVars = full(integrationStep.zf);
       
     end
     

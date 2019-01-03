@@ -51,7 +51,7 @@ classdef OCPHandler < handle
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
       p = Variable.create(self.system.parametersStruct,parameters);
-      t = Variable.createMatrix(endTime);
+      t = Variable.Matrix(endTime);
       
       self.ocp.pathCosts(x,z,u,time,t,p);
       r = Variable.getValue(self.ocp.thisPathCosts);
@@ -61,7 +61,7 @@ classdef OCPHandler < handle
       self.ocp.thisArrivalCosts = 0;
       x = Variable.create(self.system.statesStruct,states);
       p = Variable.create(self.system.parametersStruct,parameters);
-      t = Variable.createMatrix(endTime);
+      t = Variable.Matrix(endTime);
       
       self.ocp.arrivalCosts(x,t,p);
       r = Variable.getValue(self.ocp.thisArrivalCosts);
@@ -73,7 +73,7 @@ classdef OCPHandler < handle
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);
       p = Variable.create(self.system.parametersStruct,parameters);
-      t = Variable.createMatrix(time);
+      t = Variable.Matrix(time);
       
       self.ocp.pathConstraints(x,z,u,t,p);
       val = Variable.getValue(self.ocp.thisPathConstraints.values);

@@ -79,7 +79,7 @@ classdef (Abstract) OclSystem < handle
       self.setupEquation(x,z,u,p);
      
       ode = struct2cell(self.ode);
-      ode = vertcat(Variable.getValue(ode{:}));
+      ode = Variable.getValue(vertcat(ode{:}));
       alg = Variable.getValue(self.alg);
     end
     
