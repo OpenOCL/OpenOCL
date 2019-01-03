@@ -1,12 +1,20 @@
-classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
+classdef CasadiVariable < Variable
   
   properties
     mx
   end
   
   methods (Static)
+  
+  
+    function var = createFromValue(type,value)
+      oclValue = OclValue(value);
+      [N,M,K] = size(type);
+      p = reshape(1:N*M*K,N,M,K);
+      var = CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
+    end
     
-    function var = create(type,mx,value)
+    function var = create(type,mx)
       if isa(type,'OclTree')
         names = fieldnames(type.children);
         id = [names{:}];
@@ -23,12 +31,9 @@ classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
       else
         vv = casadi.SX.sym(id,N,M);
       end
-      val = Value(vv);
+      val = OclValue(vv);
       p = reshape(1:N*M*K,N,M,K);
       var = CasadiVariable(type,p,mx,val);
-      if nargin==3
-        var.set(value);
-      end
     end
     
     function obj = Matrix(size,mx)
@@ -37,16 +42,6 @@ classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
       end
       obj = CasadiVariable.create(OclMatrix(size),mx);
     end
-    
-    function obj = createLike(input,mx)
-      obj = CasadiVariable.create(input.type,mx);
-    end
-    
-    function obj = createLikeSameType(input,val)
-      ismx = isa(val,'casadi.MX');
-      obj = CasadiVariable.create(input,ismx,val);
-    end
-    
   end
   
   methods
@@ -57,12 +52,9 @@ classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
       self = self@Variable(type,positions,val);
       self.mx = mx;      
     end
-  end
     
-  methods (Access = protected)
-    function r = getFooter(self)
-      r = sprintf(['Value: ', self.value.str(), '\n',...
-                   'Type: ', class(self.type)]);
+    function r = disp(self)
+      disp(self.str(self.value.str()));
     end
   end
 end

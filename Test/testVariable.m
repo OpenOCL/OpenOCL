@@ -59,10 +59,6 @@ f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
 %%% transpose
-aTest = aTest';
-vTest = vTest';
-f = casadi.Function('f',{s1,s2},{aTest.value});
-assert(isequal(full(f(v1,v2)),vTest))
 aTest = aTest.';
 vTest = vTest.';
 f = casadi.Function('f',{s1,s2},{aTest.value});

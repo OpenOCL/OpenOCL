@@ -12,7 +12,10 @@ classdef OclOCP < handle
   end
   
   methods(Access = public)
-    function self = OclOCP()
+    function self = OclOCP(~)
+      if nargin==1
+        oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
+      end
     end
     
     %%% overridable methods
@@ -31,29 +34,28 @@ classdef OclOCP < handle
     function discreteCosts(~,~)
       % c = discreteCost(self,vars)
     end
-    
   end
 
   methods(Access = protected)
     
     function addPathConstraint(self,lhs, op, rhs)
-      self.thisPathConstraints.add(oclValue(lhs),op,oclValue(rhs));
+      self.thisPathConstraints.add(lhs,op,rhs);
     end
     
     function addBoundaryCondition(self,lhs, op, rhs)
-      self.thisBoundaryConditions.add(oclValue(lhs),op,oclValue(rhs));
+      self.thisBoundaryConditions.add(lhs,op,rhs);
     end
     
     function addArrivalCost(self,expr)
-      self.thisArrivalCosts = self.thisArrivalCosts + oclValue(expr);
+      self.thisArrivalCosts = self.thisArrivalCosts + expr;
     end
     
     function addPathCost(self,expr)
-      self.thisPathCosts = self.thisPathCosts + oclValue(expr);
+      self.thisPathCosts = self.thisPathCosts + expr;
     end
     
     function addDiscreteCost(self,expr)
-      self.discreteCosts = self.discreteCosts + oclValue(expr);
+      self.discreteCosts = self.discreteCosts + expr;
     end
     
   end
