@@ -82,10 +82,7 @@ classdef Variable < handle
     
     function r = str(self,valueStr)
       if nargin==1
-        valueStr = self.value;
-        if isnumeric(valueStr);
-          valueStr = mat2str(valueStr);
-        end
+        valueStr = mat2str(self.value);
       end
       childrenString = '';
       if isa(self.type, 'OclTree')
