@@ -13,7 +13,7 @@ classdef Variable < handle
   methods (Static)
     
     %%% factory methods
-    function var = createFromValue(type,value)
+    function var = create(type,value)
       if isnumeric(value)
         var = Variable.createNumeric(type,value);
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
@@ -35,8 +35,8 @@ classdef Variable < handle
 
     function obj = Matrix(value)
       % obj = createMatrixLike(input,value)
-      type = OclMatrix(size(value));
-      obj = Variable.createFromValue(type,value);
+      t = OclMatrix(size(value));
+      obj = Variable.create(t,value);
     end
     
     function var = createNumeric(type,value)
@@ -63,9 +63,9 @@ classdef Variable < handle
       end
     end
     
-    function val = getValueAsColumn(val)
-      val = Variable.getValue();
-      val = val(:);
+    function v = getValueAsColumn(v)
+      v = Variable.getValue();
+      v = v(:);
     end
   end % methods(static)
   
@@ -86,12 +86,12 @@ classdef Variable < handle
       end
       childrenString = '';
       if isa(self.type, 'OclTree')
-        childrenString = '  Children: ';
+        cArray = cell(1, length(fieldnames(self.type.childrens)));
         names = fieldnames(self.type.childrens);
         for i=length(names)
-          childrenString = [childrenString, names{i}, ' '];
+          cArray{i} = [names{i}, ' '];
         end
-        childrenString = [childrenString, '\n'];
+        childrenString = ['  Children: ', cArray{:}, '\n'];
       end
       
       r = sprintf([ ...
@@ -265,67 +265,67 @@ classdef Variable < handle
     end
     
     function v = abs(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@abs, self);
     end
 
     function v = sqrt(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@sqrt, self);
     end
     
     function v = sin(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@sin, self);
     end
     
     function v = cos(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@cos, self);
     end
     
     function v = tan(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@tan, self);
     end
     
     function v = atan(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@atan, self);
     end
     
     function v = asin(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@asin, self);
     end
     
     function v = acos(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@acos, self);
     end
     
     function v = tanh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@tanh, self);
     end
     
     function v = cosh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@cosh, self);
     end
     
     function v = sinh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@sinh, self);
     end
     
     function v = atanh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@atanh, self);
     end
     
     function v = asinh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@asinh, self);
     end
     
     function v = acosh(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@acosh, self);
     end
     
     function v = exp(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@exp, self);
     end
     
     function v = log(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@log, self);
     end
     
     % two arguments
@@ -339,7 +339,7 @@ classdef Variable < handle
     
     function v = mldivide(a,b)
       a = Variable.getValue(a);
-      b = Variable.getValue(b)
+      b = Variable.getValue(b);
       if (numel(a) > 1) && (numel(b) > 1)
         v = Variable.Matrix(solve(a,b));
       else

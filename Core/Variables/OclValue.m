@@ -58,7 +58,7 @@ classdef OclValue < handle
     
     function vout = value(self,~,positions,varargin)
       % v = value(type,positions)
-      p = OclValue.squeeze(positions);      
+      p = squeeze(positions);      
       vout = cell(1,size(p,3));
       for k=1:size(p,3)
         vout{k} = reshape(self.val(p(:,:,k)),size(p(:,:,k)));

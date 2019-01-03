@@ -111,14 +111,14 @@ f = casadi.Function('f',{sA,sb},{aTest.value});
 assert(all( abs(full(f(A,b))-vTest) <= eps))
 
 %%% cross
-aTest = cross(a1,a2(2,:)');
-vTest = cross(v1,v2(2,:)');
+aTest = cross(a1,a2(2,:).');
+vTest = cross(v1,v2(2,:).');
 f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
 %%% dot
-aTest = dot(a1,a2(2,:)');
-vTest = dot(v1,v2(2,:)');
+aTest = dot(a1,a2(2,:).');
+vTest = dot(v1,v2(2,:).');
 f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
@@ -152,9 +152,9 @@ vTest = polyval([2,5,4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
-ab.set([2,5,4]');
+ab.set([2,5,4].');
 aTest = polyval(ab,a1);
-vTest = polyval([2,5,4]',v1);
+vTest = polyval([2,5,4].',v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
