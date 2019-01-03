@@ -37,16 +37,6 @@ classdef CasadiVariable < Variable
       end
       obj = CasadiVariable.create(OclMatrix(size),mx);
     end
-    
-    function obj = createLike(input,mx)
-      obj = CasadiVariable.create(input.type,mx);
-    end
-    
-    function obj = createLikeSameType(input,val)
-      ismx = isa(val,'casadi.MX');
-      obj = CasadiVariable.create(input,ismx,val);
-    end
-    
   end
   
   methods

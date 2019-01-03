@@ -13,14 +13,9 @@ classdef Variable < handle
   methods (Static)
     
     %%% factory methods
-    function var = create(type,value)
-      
+    function var = createFromValue(type,value)
       if isnumeric(value)
-        [N,M,K] = type.size();
-        v = OclValue(zeros(1,N,M,K));
-        p = reshape(1:N*M*K,N,M,K);
-        var = Variable(type,p,v);
-        var.set(value);
+        var = Variable.createNumeric(type,value);
       elseif isa(value,'casadi.MX')
         var = CasadiVariable.create(type,true,value);
       elseif isa(value,'casadi.SX')
@@ -31,56 +26,29 @@ classdef Variable < handle
     end
     
     function var = createMatrix(value)
-      if isnumeric(value)
-        var = Variable.Matrix(value);
-      elseif isa(value,'casadi.MX')
-        var = CasadiVariable.create(OclMatrix(size(value)),true,value);
-      elseif isa(value,'casadi.SX')
-        var = CasadiVariable.create(OclMatrix(size(value)),false,value);
-      else
-        oclError('Not implemented for this type of variable.')
-      end
+      type = OclMatrix(size(value));
+      obj = createFromValue(type,value);
+    end
+
+    function obj = createMatrixLike(~,value)
+      % obj = createMatrixLike(input,value)
+      type = OclMatrix(size(value));
+      obj = createFromValue(type,value);
+    end
+    
+    function var = createNumeric(type,value)
+        [N,M,K] = type.size();
+        v = OclValue(zeros(1,N,M,K));
+        p = reshape(1:N*M*K,N,M,K);
+        var = Variable(type,p,v);
+        var.set(value);
     end
     
     function var = Matrix(value)
+      % create numeric matrix
+      assert(isnumeric(value));
       Variable.create(OclMatrix(size(value)),value)
       var = Variable.create(OclMatrix(size(value)),value);
-    end
-    
-    function obj = createLike(input)
-      % obj = createLike(input)
-      %
-      % Factory method to create Variables with the same type as
-      % given input.
-      %
-      % Args:
-      %   input (Variable): Inherit variable type of this object.
-      %   type (type): type of the variable.
-      %   val: Value to asign to the variable (optional).
-      narginchk(1,1);
-      if isa(input,'CasadiVariable')
-        obj = CasadiVariable.create(input.type,input.mx);
-      elseif isa(input,'SymVariable')
-        obj = SymVariable(input.type);
-      elseif isa(input,'Variable')
-        obj = Variable(input.type);
-      else
-        error('Variable type not implemented.');
-      end
-    end
-
-    function obj = createMatrixLike(input, value)
-      % obj = createMatrixLike(input,value)
-      t = OclMatrix(size(value));
-      if isa(input,'CasadiVariable')
-        obj = CasadiVariable.create(t,input.mx,value);
-      elseif isa(input,'SymVariable')
-        obj = SymVariable.create(t,value);
-      elseif isa(input,'Variable')
-        obj = Variable.create(t,value);
-      else
-        error('Variable type not implemented.');
-      end
     end
     %%% end factory methods
     
@@ -88,6 +56,10 @@ classdef Variable < handle
       if isa(val,'Variable')
         val = val.value;
       end
+    end
+    
+    function val = getValueAsColumn(val)
+      val = Variable.getValue();
       val = val(:);
     end
     
