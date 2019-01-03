@@ -9,7 +9,7 @@ classdef (Abstract) OclSystem < handle
     ode
     alg
     
-    initialConditions
+    thisInitialConditions
     systemFun
     icFun
   end
@@ -82,12 +82,12 @@ classdef (Abstract) OclSystem < handle
     end
     
     function ic = getInitialConditions(self,states,parameters)
-      self.initialConditions = [];
+      self.thisInitialConditions = [];
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
       self.initialCondition(x,p)
       self.initialConditions(x,p)
-      ic = Variable.getValue(self.initialConditions);
+      ic = Variable.getValue(self.thisInitialConditions);
     end
     
     function addState(self,id,size)
@@ -113,7 +113,7 @@ classdef (Abstract) OclSystem < handle
     end
     
     function setInitialCondition(self,eq)
-      self.initialConditions = [self.initialConditions; eq];      
+      self.thisInitialConditions = [self.thisInitialConditions; eq];      
     end
     
     function solutionCallback(self,times,solution)
