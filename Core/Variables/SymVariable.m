@@ -47,14 +47,8 @@ classdef SymVariable < Variable
       for i=2:nc
         y = a .* y + p(i);
       end
-    
       v = Variable.createMatrixLike(self,y);
     end
-    
-    
   end
-  
-
-  
 end
 

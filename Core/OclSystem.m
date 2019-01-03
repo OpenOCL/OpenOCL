@@ -53,7 +53,7 @@ classdef (Abstract) OclSystem < handle
     end
     
     function initialConditions(~,~,~)
-      % initialCondition(states,parameters)
+      % initialConditions(states,parameters)
     end
     
     function simulationCallbackSetup(~)

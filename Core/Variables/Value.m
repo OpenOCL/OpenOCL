@@ -1,10 +1,22 @@
-classdef Value < handle
-  % VALUE Class for storing values
+classdef OclValue < handle
+  % OCLVALUE Class for storing values (numeric or symbolic)
   properties
     val
   end
+  
+  methods (Static)
+    function r = squeeze(matrix)
+       % totally! squeeze dimensions of length 1
+        r = squeeze(matrix);
+        if size(r,1) == 1
+          s = size(r);
+          r = reshape(r,[s(2:end) 1]);
+        end
+    end
+  end
+  
   methods
-    function self = Value(v)
+    function self = OclValue(v)
       narginchk(1,1); 
       self.val = v;
     end
@@ -15,22 +27,10 @@ classdef Value < handle
     
     function set(self,type,pos,value)
       % set(type,positions,value)
-      % set(type,positions,value) 
-      
       if ~iscell(value)
-        % values is numeric or casadi
-        % squeeze pos and value
-        pos = squeeze(pos);
-        value = squeeze(value);
-        if size(pos,1) == 1
-          s = size(pos);
-          pos = reshape(pos,[s(2:end) 1]);
-        end
-        if size(value,1) == 1
-          s = size(value);
-          value = reshape(value,[s(2:end) 1]);
-        end
-        
+        % value is numeric or casadi
+        pos = OclValue.squeeze(pos)
+        value = OclValue.squeeze(value)
         [Np,Mp,Kp] = size(pos);
         [Nv,Mv] = size(value);
         if isempty(value) || Nv*Mv==0
@@ -54,15 +54,11 @@ classdef Value < handle
           self.val(p) = value{k};
         end
       end
-   
     end % set
     
     function vout = value(self,~,positions,varargin)
       % v = value(type,positions)
-
-      % remove dimensions of length 1	
-      p = squeeze(positions);      
-
+      p = OclValue.squeeze(positions);      
       vout = cell(1,size(p,3));
       for k=1:size(p,3)
         vout{k} = reshape(self.val(p(:,:,k)),size(p(:,:,k)));
@@ -70,14 +66,6 @@ classdef Value < handle
       if length(vout)==1
         vout = vout{1};
       end
-    end
-    
-    function [p,N,M,K] = squeeze23(self,p,N,M,K)
-       % squeeze dimensions of length 1
-       p = reshape(p,[N,M,K]);
-       p = squeeze(p);
-       [N,M,K] = size(p);
-       p = reshape(p,[N*M*K,1]);
     end
   end
 end
