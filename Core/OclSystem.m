@@ -89,8 +89,8 @@ classdef (Abstract) OclSystem < handle
       self.setupEquation(x,z,u,p);
      
       ode = struct2cell(self.ode);
-      ode = Variable.getValue(vertcat(ode{:}));
-      alg = Variable.getValue(self.alg);
+      ode = vertcat(ode{:});
+      alg = self.alg;
     end
     
     function ic = getInitialConditions(self,states,parameters)
@@ -99,7 +99,7 @@ classdef (Abstract) OclSystem < handle
       p = Variable.create(self.parametersStruct,parameters);
       self.initialCondition(x,p)
       self.initialConditions(x,p)
-      ic = Variable.getValue(self.thisInitialConditions);
+      ic = self.thisInitialConditions;
     end
     
     function addState(self,id,size)
@@ -117,15 +117,15 @@ classdef (Abstract) OclSystem < handle
     end
 
     function setODE(self,id,eq)
-      self.ode.(id) = eq;
+      self.ode.(id) = Variable.getValueAsColumn(eq);
     end
     
     function setAlgEquation(self,eq)
-      self.alg = [self.alg;eq];
+      self.alg = [self.alg;Variable.getValueAsColumn(eq)];
     end
     
     function setInitialCondition(self,eq)
-      self.thisInitialConditions = [self.thisInitialConditions; eq];      
+      self.thisInitialConditions = [self.thisInitialConditions; Variable.getValueAsColumn(eq)];      
     end
     
     function solutionCallback(self,times,solution)

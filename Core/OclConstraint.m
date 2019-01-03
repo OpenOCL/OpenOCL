@@ -27,6 +27,7 @@ classdef OclConstraint < handle
       % add(self,lhs,op,rhs)
       % add(self,lb,expr,ub)
       % add(self,constraint)
+      
       if nargin==4
         if ischar(varargin{2})
           self.addWithOperator(varargin{1},varargin{2},varargin{3})
@@ -43,12 +44,20 @@ classdef OclConstraint < handle
     end
     
     function addWithBounds(self,lb,expr,ub)
+      
+      lb = Variable.getValueAsColumn(lb);
+      expr = Variable.getValueAsColumn(expr);
+      ub = Variable.getValueAsColumn(ub);
+      
       self.lowerBounds  = [self.lowerBounds;lb];
       self.values       = [self.values;expr];
       self.upperBounds  = [self.upperBounds;ub];
     end
     
     function addWithOperator(self, lhs, op, rhs)
+      
+      lhs = Variable.getValueAsColumn(lhs);
+      rhs = Variable.getValueAsColumn(rhs);
       
       % Create new constraint entry
       if strcmp(op,'==')

@@ -1,3 +1,4 @@
+
 classdef OCPHandler < handle
   properties (Access = public)
     pathCostsFun
@@ -54,7 +55,7 @@ classdef OCPHandler < handle
       t = Variable.Matrix(endTime);
       
       self.ocp.pathCosts(x,z,u,time,t,p);
-      r = Variable.getValue(self.ocp.thisPathCosts);
+      r = self.ocp.thisPathCosts;
     end
     
     function r = getArrivalCosts(self,states,endTime,parameters)
@@ -64,7 +65,7 @@ classdef OCPHandler < handle
       t = Variable.Matrix(endTime);
       
       self.ocp.arrivalCosts(x,t,p);
-      r = Variable.getValue(self.ocp.thisArrivalCosts);
+      r = self.ocp.thisArrivalCosts;
     end
     
     function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
@@ -76,9 +77,9 @@ classdef OCPHandler < handle
       t = Variable.Matrix(time);
       
       self.ocp.pathConstraints(x,z,u,t,p);
-      val = Variable.getValue(self.ocp.thisPathConstraints.values);
-      lb = Variable.getValue(self.ocp.thisPathConstraints.lowerBounds);
-      ub = Variable.getValue(self.ocp.thisPathConstraints.upperBounds);
+      val = self.ocp.thisPathConstraints.values;
+      lb = self.ocp.thisPathConstraints.lowerBounds;
+      ub = self.ocp.thisPathConstraints.upperBounds;
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
@@ -97,7 +98,7 @@ classdef OCPHandler < handle
       self.ocp.thisDiscreteCosts = 0;
       v = Variable.create(self.nlpVarsStruct,varsValue);
       self.ocp.discreteCosts(v);
-      r = Variable.getValue(self.ocp.thisDiscreteCosts);
+      r = self.ocp.thisDiscreteCosts;
     end
 
     function callbackFunction(self,nlpVars,variableValues)

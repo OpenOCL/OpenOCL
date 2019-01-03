@@ -47,15 +47,15 @@ classdef OclOCP < handle
     end
     
     function addArrivalCost(self,expr)
-      self.thisArrivalCosts = self.thisArrivalCosts + expr;
+      self.thisArrivalCosts = self.thisArrivalCosts + Variable.getValueAsColumn(expr);
     end
     
     function addPathCost(self,expr)
-      self.thisPathCosts = self.thisPathCosts + expr;
+      self.thisPathCosts = self.thisPathCosts + Variable.getValueAsColumn(expr);
     end
     
     function addDiscreteCost(self,expr)
-      self.discreteCosts = self.discreteCosts + expr;
+      self.discreteCosts = self.discreteCosts + Variable.getValueAsColumn(expr);
     end
     
   end
