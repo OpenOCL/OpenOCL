@@ -48,12 +48,14 @@ classdef (Abstract) OclSystem < handle
       error('Not Implemented.');
     end
     
-    function initialCondition(~,~,~)
-      % initialCondition(states,parameters)
-    end
-    
     function initialConditions(~,~,~)
       % initialConditions(states,parameters)
+    end
+    
+    function initialCondition(~,~,~)
+      % initialCondition(states,parameters)
+      % This methods is deprecated in favor of initialConditions
+      % It will be removed in future versions.
     end
     
     function simulationCallbackSetup(~)
