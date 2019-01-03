@@ -10,7 +10,7 @@ classdef SymVariable < Variable
     function var = create(t,value)
       vv = sym('v',t.size());
       vv = vv(:).';
-      v = Value(vv);
+      v = OclValue(vv);
       var = Variable(type,1:length(vv),v);
       if nargin == 2
         var.set(value);
@@ -20,11 +20,9 @@ classdef SymVariable < Variable
     function var = Matrix(sizeIn)
       var = SymVariable.create(OclMatrix(sizeIn));
     end
-    
   end
   
   methods
-    
     function self = SymVariable(type,positions,val)
       self = self@Variable(type,positions,val);
     end
@@ -38,7 +36,6 @@ classdef SymVariable < Variable
         self = a;
         a = a.value;
       end
-      
       % Use Horner's method for general case where X is an array.
       nc = length(p);
       siz_a = size(a);

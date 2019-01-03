@@ -17,7 +17,7 @@ classdef Variable < handle
       
       if isnumeric(value)
         [N,M,K] = type.size();
-        v = Value(zeros(1,N,M,K));
+        v = OclValue(zeros(1,N,M,K));
         p = reshape(1:N*M*K,N,M,K);
         var = Variable(type,p,v);
         var.set(value);

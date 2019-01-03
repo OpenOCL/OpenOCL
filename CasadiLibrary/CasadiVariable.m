@@ -23,7 +23,7 @@ classdef CasadiVariable < Variable
       else
         vv = casadi.SX.sym(id,N,M);
       end
-      val = Value(vv);
+      val = OclValue(vv);
       p = reshape(1:N*M*K,N,M,K);
       var = CasadiVariable(type,p,mx,val);
       if nargin==3
