@@ -34,9 +34,9 @@ classdef Variable < handle
     end
 
     function obj = Matrix(value)
-      % obj = Matrix(value)
-      t = OclMatrix(size(value));
-      obj = Variable.create(t,value);
+      % obj = createMatrixLike(input,value)
+      type = OclMatrix(size(value));
+      obj = Variable.create(type,value);
     end
     
     function var = createNumeric(type,value)
@@ -54,18 +54,17 @@ classdef Variable < handle
     function v = createFromHandleTwo(fh, a, b, varargin)
       v = Variable.Matrix( fh(Variable.getValue(a), Variable.getValue(b), varargin{:}) );
     end
-    
     %%% end factory methods
     
-    function val = getValue(val)
-      if isa(val,'Variable')
-        val = val.value;
+    function value = getValue(value)
+      if isa(value,'Variable')
+        value = value.value;
       end
     end
     
-    function v = getValueAsColumn(v)
-      v = Variable.getValue(v);
-      v = v(:);
+    function value = getValueAsColumn(value)
+      value = Variable.getValue(value);
+      value = value(:);
     end
   end % methods(static)
   
@@ -82,17 +81,21 @@ classdef Variable < handle
     
     function r = str(self,valueStr)
       if nargin==1
-        valueStr = mat2str(self.value);
+        value = self.value;
+        if isnumeric(value);
+          valueStr = mat2str(value);
+        else
+          valueStr = value.char();
+        end
       end
       childrenString = '';
       if isa(self.type, 'OclTree')
-        cArray = cell(1, length(fieldnames(self.type.children)));
-        names = fieldnames(self.type.children);
-        for i=1:length(names)-1
-          cArray{i} = [names{i}, ', '];
+        childrenString = '  Children: ';
+        names = fieldnames(self.type.childrens);
+        for i=length(names)
+          childrenString = [childrenString, names{i}, ' '];
         end
-        cArray{end} = names{end};
-        childrenString = ['  Children: ', cArray{:}, '\n'];
+        childrenString = [childrenString, '\n'];
       end
       
       r = sprintf([ ...
@@ -214,10 +217,10 @@ classdef Variable < handle
     %%% operators
     % single argument
     function v = uplus(self)
-      v = Variable.createFromHandleOne(@uplus, self);
+      v = Variable.createFromHandleOne(@(self)uplus(self),self);
     end
     function v = uminus(self)
-      v = Variable.createFromHandleOne(@uminus, self);
+      v = Variable.createFromHandleOne(@(self)uminus(self),self);
     end
    
     function v = ctranspose(self)
@@ -226,116 +229,116 @@ classdef Variable < handle
       v = self.transpose();
     end
     function v = transpose(self)
-      v = Variable.createFromHandleOne(@transpose, self);
+      v = Variable.createFromHandleOne(@(self)transpose(self),self);
     end
     
     function v = reshape(self,varargin)
-      v = Variable.createFromHandleOne(@reshape, self, varargin{:});
+      v = Variable.createFromHandleOne(@(self,varargin)reshape(self,varargin{:}),self,varargin{:});
     end
     
     function v = triu(self)
-      v = Variable.createFromHandleOne(@triu, self);
+      v = Variable.createFromHandleOne(@(self)self.triu,self);
     end
     
     function v = repmat(self,varargin)
-      v = Variable.createFromHandleOne(@repmat, self, varargin{:});
+      v = Variable.createFromHandleOne(@(self,varargin)repmat(self,varargin{:}),self,varargin{:});
     end
     
     function v = sum(self)
-      v = Variable.createFromHandleOne(@sum, self);
+      v = Variable.createFromHandleOne(@(self)self.sum,self);
     end
     
     function v = norm(self,varargin)
-      v = Variable.createFromHandleOne(@norm, self, varargin{:});
+      v = Variable.createFromHandleOne(@(self,varargin)norm(self,varargin{:}),self,varargin{:});
     end
     
     function v = inv(self)
-      v = Variable.createFromHandleOne(@inv, self);
+      v = Variable.createFromHandleOne(@(self)self.inv,self);
     end
     
     function v = det(self)
-      v = Variable.createFromHandleOne(@det, self);
+      v = Variable.createFromHandleOne(@(self)self.det,self);
     end
     
     function v = trace(self)
-      v = Variable.createFromHandleOne(@trace, self);
+      v = Variable.createFromHandleOne(@(self)trace(self),self);
     end
     
     function v = diag(self)
-      v = Variable.createFromHandleOne(@diag, self);
+      v = Variable.createFromHandleOne(@(self)self.diag(),self);
     end
     
     function v = abs(self)
-      v = Variable.createFromHandleOne(@abs, self);
+      v = Variable.createFromHandleOne(@(self)self.abs(),self);
     end
 
     function v = sqrt(self)
-      v = Variable.createFromHandleOne(@sqrt, self);
+      v = Variable.createFromHandleOne(@(self)self.sqrt(),self);
     end
     
     function v = sin(self)
-      v = Variable.createFromHandleOne(@sin, self);
+      v = Variable.createFromHandleOne(@(self)self.sin(),self);
     end
     
     function v = cos(self)
-      v = Variable.createFromHandleOne(@cos, self);
+      v = Variable.createFromHandleOne(@(self)self.cos(),self);
     end
     
     function v = tan(self)
-      v = Variable.createFromHandleOne(@tan, self);
+      v = Variable.createFromHandleOne(@(self)self.tan(),self);
     end
     
     function v = atan(self)
-      v = Variable.createFromHandleOne(@atan, self);
+      v = Variable.createFromHandleOne(@(self)self.atan(),self);
     end
     
     function v = asin(self)
-      v = Variable.createFromHandleOne(@asin, self);
+      v = Variable.createFromHandleOne(@(self)self.asin(),self);
     end
     
     function v = acos(self)
-      v = Variable.createFromHandleOne(@acos, self);
+      v = Variable.createFromHandleOne(@(self)self.acos(),self);
     end
     
     function v = tanh(self)
-      v = Variable.createFromHandleOne(@tanh, self);
+      v = Variable.createFromHandleOne(@(self)self.tanh(),self);
     end
     
     function v = cosh(self)
-      v = Variable.createFromHandleOne(@cosh, self);
+      v = Variable.createFromHandleOne(@(self)self.cosh(),self);
     end
     
     function v = sinh(self)
-      v = Variable.createFromHandleOne(@sinh, self);
+      v = Variable.createFromHandleOne(@(self)self.sinh(),self);
     end
     
     function v = atanh(self)
-      v = Variable.createFromHandleOne(@atanh, self);
+      v = Variable.createFromHandleOne(@(self)self.atanh(),self);
     end
     
     function v = asinh(self)
-      v = Variable.createFromHandleOne(@asinh, self);
+      v = Variable.createFromHandleOne(@(self)self.asinh(),self);
     end
     
     function v = acosh(self)
-      v = Variable.createFromHandleOne(@acosh, self);
+      v = Variable.createFromHandleOne(@(self)self.acosh(),self);
     end
     
     function v = exp(self)
-      v = Variable.createFromHandleOne(@exp, self);
+      v = Variable.createFromHandleOne(@(self)self.exp(),self);
     end
     
     function v = log(self)
-      v = Variable.createFromHandleOne(@log, self);
+      v = Variable.createFromHandleOne(@(self)self.log(),self);
     end
     
     % two arguments
     function v = mtimes(a,b)
-      v = Variable.createFromHandleTwo(@mtimes, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)mtimes(a,b),a,b);
     end
     
     function v = mpower(a,b)
-      v = Variable.createFromHandleTwo(@mpower, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)mpower(a,b),a,b);
     end
     
     function v = mldivide(a,b)
@@ -349,51 +352,51 @@ classdef Variable < handle
     end
     
     function v = mrdivide(a,b)
-      v = Variable.createFromHandleTwo(@mrdivide, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)mrdivide(a,b),a,b);
     end
     
     function v = cross(a,b)
-      v = Variable.createFromHandleTwo(@cross, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)a.cross(b),a,b);
     end
     
     function v = dot(a,b)
-      v = Variable.createFromHandleTwo(@dot, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)a.dot(b),a,b);
     end
     
     function v = polyval(p,a)
-      v = Variable.createFromHandleTwo(@polyval, p, a);
+      v = Variable.createFromHandleTwo(@(p,a)polyval(p,a),p,a);
     end
     
     function v = jacobian(ex,arg)
-      v = Variable.createFromHandleTwo(@jacobian, ex, arg);
+      v = Variable.createFromHandleTwo(@(ex,arg)jacobian(ex,arg),ex,arg);
     end
     
     function v = plus(a,b)
-      v = Variable.createFromHandleTwo(@plus, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)plus(a,b),a,b);
     end
     
     function v = minus(a,b)
-      v = Variable.createFromHandleTwo(@minus, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)minus(a,b),a,b);
     end
     
     function v = times(a,b)
-      v = Variable.createFromHandleTwo(@times, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)times(a,b),a,b);
     end
     
     function v = power(a,b)
-      v = Variable.createFromHandleTwo(@power, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)power(a,b),a,b);
     end
     
     function v = rdivide(a,b)
-      v = Variable.createFromHandleTwo(@rdivide, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)rdivide(a,b),a,b);
     end
     
     function v = ldivide(a,b)
-      v = Variable.createFromHandleTwo(@ldivide, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)ldivide(a,b),a,b);
     end
     
     function v = atan2(a,b)
-      v = Variable.createFromHandleTwo(@atan2, a, b);
+      v = Variable.createFromHandleTwo(@(a,b)a.atan2(b),a,b);
     end
     
     % three arguments
@@ -424,7 +427,7 @@ classdef Variable < handle
     end
     
     %%% element wise operations
-    function n = properties(self)
+    function n = ppp(self)
       % DO NOT CHANGE THIS FUNCTION!
       % It is automatically renamed for Octave as properties is not 
       % allowed as a function name.
