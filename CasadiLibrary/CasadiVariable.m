@@ -1,4 +1,4 @@
-classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
+classdef CasadiVariable < Variable
   
   properties
     mx
@@ -60,7 +60,7 @@ classdef CasadiVariable < Variable & matlab.mixin.CustomDisplay
   end
     
   methods (Access = protected)
-    function r = getFooter(self)
+    function r = disp(self)
       r = sprintf(['Value: ', self.value.str(), '\n',...
                    'Type: ', class(self.type)]);
     end

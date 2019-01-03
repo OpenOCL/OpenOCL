@@ -37,23 +37,23 @@ classdef OclOCP < handle
   methods(Access = protected)
     
     function addPathConstraint(self,lhs, op, rhs)
-      self.thisPathConstraints.add(oclValue(lhs),op,oclValue(rhs));
+      self.thisPathConstraints.add(lhs,op,rhs);
     end
     
     function addBoundaryCondition(self,lhs, op, rhs)
-      self.thisBoundaryConditions.add(oclValue(lhs),op,oclValue(rhs));
+      self.thisBoundaryConditions.add(lhs,op,rhs);
     end
     
     function addArrivalCost(self,expr)
-      self.thisArrivalCosts = self.thisArrivalCosts + oclValue(expr);
+      self.thisArrivalCosts = self.thisArrivalCosts + expr;
     end
     
     function addPathCost(self,expr)
-      self.thisPathCosts = self.thisPathCosts + oclValue(expr);
+      self.thisPathCosts = self.thisPathCosts + expr;
     end
     
     function addDiscreteCost(self,expr)
-      self.discreteCosts = self.discreteCosts + oclValue(expr);
+      self.discreteCosts = self.discreteCosts + expr;
     end
     
   end

@@ -54,7 +54,7 @@ classdef OCPHandler < handle
       t = Variable.createMatrix(endTime);
       
       self.ocp.pathCosts(x,z,u,time,t,p);
-      r = oclValue(self.ocp.thisPathCosts);
+      r = Variable.getValue(self.ocp.thisPathCosts);
     end
     
     function r = getArrivalCosts(self,states,endTime,parameters)
@@ -64,7 +64,7 @@ classdef OCPHandler < handle
       t = Variable.createMatrix(endTime);
       
       self.ocp.arrivalCosts(x,t,p);
-      r = oclValue(self.ocp.thisArrivalCosts);
+      r = Variable.getValue(self.ocp.thisArrivalCosts);
     end
     
     function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
@@ -76,9 +76,9 @@ classdef OCPHandler < handle
       t = Variable.createMatrix(time);
       
       self.ocp.pathConstraints(x,z,u,t,p);
-      val = oclValue(self.ocp.thisPathConstraints.values);
-      lb = oclValue(self.ocp.thisPathConstraints.lowerBounds);
-      ub = oclValue(self.ocp.thisPathConstraints.upperBounds);
+      val = Variable.getValue(self.ocp.thisPathConstraints.values);
+      lb = Variable.getValue(self.ocp.thisPathConstraints.lowerBounds);
+      ub = Variable.getValue(self.ocp.thisPathConstraints.upperBounds);
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
@@ -88,16 +88,16 @@ classdef OCPHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       
       self.ocp.boundaryConditions(x0,xF,p);
-      val = oclValue(self.ocp.thisBoundaryConditions.values);
-      lb = oclValue(self.ocp.thisBoundaryConditions.lowerBounds);
-      ub = oclValue(self.ocp.thisBoundaryConditions.upperBounds);
+      val = Variable.getValue(self.ocp.thisBoundaryConditions.values);
+      lb = Variable.getValue(self.ocp.thisBoundaryConditions.lowerBounds);
+      ub = Variable.getValue(self.ocp.thisBoundaryConditions.upperBounds);
     end
     
     function r = getDiscreteCosts(self,varsValue)
       self.ocp.thisDiscreteCosts = 0;
       v = Variable.create(self.nlpVarsStruct,varsValue);
       self.ocp.discreteCosts(v);
-      r = self.ocp.thisDiscreteCosts;
+      r = Variable.getValue(self.ocp.thisDiscreteCosts);
     end
 
     function callbackFunction(self,nlpVars,variableValues)

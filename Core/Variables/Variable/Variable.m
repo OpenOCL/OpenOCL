@@ -1,4 +1,4 @@
-classdef Variable < handle & matlab.mixin.CustomDisplay
+classdef Variable < handle
     % VARIABLE Default implementation of arithemtic operations for
     % variables
     % This class can be derived from to implement new arithemtics for 
@@ -70,7 +70,7 @@ classdef Variable < handle & matlab.mixin.CustomDisplay
     end
 
     function obj = createMatrixLike(input, value)
-      % obj = createMatrixLike(input,val)
+      % obj = createMatrixLike(input,value)
       t = OclMatrix(size(value));
       if isa(input,'CasadiVariable')
         obj = CasadiVariable.create(t,input.mx,value);
@@ -84,10 +84,17 @@ classdef Variable < handle & matlab.mixin.CustomDisplay
     end
     %%% end factory methods
     
+    function val = getValue(val)
+      if isa(val,'Variable')
+        val = val.value;
+      end
+      val = val(:);
+    end
+    
   end % methods(static)
   
 methods (Access = protected)
-  function r = getFooter(self)
+  function r = disp(self)
     r = sprintf(['Value: ', self.value, '\n',...
                  'Type: ', class(self.type)]);
   end
