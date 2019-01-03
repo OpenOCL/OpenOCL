@@ -64,15 +64,7 @@ classdef Variable < handle
     end
     
   end % methods(static)
-  
-methods (Access = protected)
-  function r = disp(self)
-    r = sprintf(['Value: ', self.value, '\n',...
-                 'Type: ', class(self.type)]);
-  end
-end
-  
-methods
+  methods
     function self = Variable(type,positions,val)
       narginchk(3,3);
       assert(isa(type,'OclStructure'));
@@ -83,8 +75,37 @@ methods
       self.val = val;
     end
     
-
+    function s = str(self,value)
+      
+      if nargin==1
+        value = self.value;
+        if isnumeric(value);
+          value = mat2str(value);
+        end
+      end
+      
+      childrenString = '';
+      if isa(self.type, 'OclTree')
+        childrenString = 'Children: ';
+        names = fieldnames(self.type.childrens);
+        for i=length(names)
+          childrenString = [childrenString, names{i}. ' '];
+        end
+        childrenString = [childrenString, '\n'];
+      end
+      
+      r = sprintf([ ...
+                   'Size: ', self.size(), '\n' ....
+                   'Type: ', class(self.type), '\n' ...
+                   childrenString, ...
+                   'Value: ', value, '\n' ...
+                   ]);
+    end
     
+    function disp(self)
+      disp(self.str());
+    end
+
     function varargout = subsref(self,s)
       % v(1)
       % v.x
@@ -124,10 +145,9 @@ methods
       % v(1) = 1
       % v.get(1) = 1
       % v.value(1) = 1
+      % v* = Variable
       
-      if isa(v,'Variable') 
-        v = v.val;
-      end
+      v = Variable.getValue(v);
       
       if numel(s)==1 && strcmp(s.type,'()')
         self.get(s.subs{:}).set(v);
@@ -137,31 +157,19 @@ methods
       end
     end
     
-    %%% delegate methods to OclStructure
-    function s = size(self)
-      s = size(self.positions);      
-    end
-
+    %%% delegate methods to OclValue
     function set(self,val,varargin)
       % set(value)
-      % set(val,slice1,slice2,slice3)
+      % set(value,slice1,slice2,slice3)
       self.val.set(self.type,self.positions,val,varargin{:})
     end
-    function v = value(self,varargin)
-      v = self.val.value(self.type,self.positions,varargin{:});
+    function v = value(self)
+      v = self.val.value(self.type,self.positions);
     end
-    %%%
+    %%%    
     
-    function obj = convertTo(self,target)
-      if isa(target,'CasadiVariable')
-        obj = CasadiVariable(self.type,self.positions,target.mx,self.val);
-      elseif isa(target,'SymVariable')
-        obj = SymVariable(self.type,self.positions,self.val);
-      elseif isa(target,'Variable')
-        obj = Variable(self.type,self.positions,self.val);
-      else
-        error('Variable type not implemented.');
-      end
+    function s = size(self)
+      s = size(self.positions);      
     end
 
     function r = get(self,varargin)

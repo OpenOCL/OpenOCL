@@ -47,12 +47,9 @@ classdef CasadiVariable < Variable
       self = self@Variable(type,positions,val);
       self.mx = mx;      
     end
-  end
     
-  methods (Access = protected)
     function r = disp(self)
-      r = sprintf(['Value: ', self.value.str(), '\n',...
-                   'Type: ', class(self.type)]);
+      disp(self.str(self.value));
     end
   end
 end
