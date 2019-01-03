@@ -37,7 +37,7 @@ classdef PendulumSystem < OclSystem
     end
     
     function simulationCallbackSetup(~)
-      figure(1);
+      figure;
     end
     
     function simulationCallback(self,states,algVars,controls,t0,t1,parameters)

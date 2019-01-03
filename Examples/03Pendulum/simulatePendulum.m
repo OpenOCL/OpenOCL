@@ -1,16 +1,16 @@
 % Create system and simulator
 system = PendulumSystem;
-options = Simulator.getOptions;
-simulator = Simulator(system,options);
+simulator = Simulator(system);
 
-states = simulator.getStates;
+states = simulator.getStates();
 states.p.set([0,1]);
 states.v.set([-0.5,-1]);
-times = 0:0.1:4;
 
-p = simulator.getParameters;
+p = simulator.getParameters();
 p.m.set(1);
 p.l.set(1);
+
+times = 0:0.1:4;
 
 % simulate without control inputs
 simulator.simulate(states,times,p);

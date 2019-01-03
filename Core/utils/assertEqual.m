@@ -1,9 +1,3 @@
-function assertEqual(a,b,msg)
-
-if nargin == 2
-  assert(isequal(a,b))
-else
-  assert(isequal(a,b),msg)
-end
-  
+function assertEqual(a,b,varargin)
+  assert(isequal(a,b),varargin{:})
 end
