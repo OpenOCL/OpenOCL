@@ -13,7 +13,7 @@ classdef CasadiIntegrator < handle
       self.system = system;
       
       states = casadi.SX.sym('x',system.nx,1);
-      algVars = casadi.SX.sym('y',system.ny,1);
+      algVars = casadi.SX.sym('z',system.nz,1);
       controls = casadi.SX.sym('u',system.nu,1);
       h = casadi.SX.sym('h',1,1);
       parameters = casadi.SX.sym('p',system.np,1);

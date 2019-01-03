@@ -35,7 +35,12 @@ classdef PendulumSystem < OclSystem
       self.setInitialCondition(p(1)^2+p(2)^2-l^2);
       self.setInitialCondition(dot(p,v));
     end
-    function simulationCallback(self,states,algVars,controls,t0, t1,parameters)
+    
+    function simulationCallbackSetup(~)
+      figure(1);
+    end
+    
+    function simulationCallback(self,states,algVars,controls,t0,t1,parameters)
       p = states.p.value;
       l = parameters.l.value;
       dt = t1-t0;
@@ -47,7 +52,7 @@ classdef PendulumSystem < OclSystem
       xlim([-l,l])
       ylim([-l,l])
       
-      pause(dt);
+      pause(dt.value);
       hold off
     end
   end

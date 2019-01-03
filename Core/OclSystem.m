@@ -6,6 +6,11 @@ classdef (Abstract) OclSystem < handle
     controlsStruct
     parametersStruct
     
+    nx
+    nz
+    nu
+    np
+    
     ode
     alg
     
@@ -33,6 +38,11 @@ classdef (Abstract) OclSystem < handle
       sz = self.algVarsStruct.size();
       su = self.controlsStruct.size();
       sp = self.parametersStruct.size();
+      
+      self.nx = prod(sx);
+      self.nz = prod(sz);
+      self.nu = prod(su);
+      self.np = prod(sp);
       
       fh = @(self,varargin)self.getEquations(varargin{:});
       self.systemFun = OclFunction(self, fh, {sx,sz,su,sp},2);
@@ -62,8 +72,8 @@ classdef (Abstract) OclSystem < handle
       % simulationCallbackSetup()
     end
     
-    function simulationCallback(~,~,~,~,~)
-      % simulationCallback(states,algVars,controls,parameters)
+    function simulationCallback(varargin)
+      % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
     end
     
     function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
@@ -130,6 +140,20 @@ classdef (Abstract) OclSystem < handle
         self.simulationCallback(states,algVars,controls,times(k),times(k+1),parameters);
       end
     end
+    
+    function callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)
+      x = Variable.create(self.statesStruct,states);
+      z = Variable.create(self.algVarsStruct,algVars);
+      u = Variable.create(self.controlsStruct,controls);
+      p = Variable.create(self.parametersStruct,parameters);
+      
+      t0 = Variable.Matrix(timesBegin);
+      t1 = Variable.Matrix(timesEnd);
+      
+      self.simulationCallback(x,z,u,t0,t1,p);
+      
+    end
+    
   end
 end
 

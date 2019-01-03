@@ -34,7 +34,7 @@ classdef Variable < handle
     end
 
     function obj = Matrix(value)
-      % obj = createMatrixLike(input,value)
+      % obj = Matrix(value)
       t = OclMatrix(size(value));
       obj = Variable.create(t,value);
     end
@@ -64,7 +64,7 @@ classdef Variable < handle
     end
     
     function v = getValueAsColumn(v)
-      v = Variable.getValue();
+      v = Variable.getValue(v);
       v = v(:);
     end
   end % methods(static)
@@ -86,11 +86,12 @@ classdef Variable < handle
       end
       childrenString = '';
       if isa(self.type, 'OclTree')
-        cArray = cell(1, length(fieldnames(self.type.childrens)));
-        names = fieldnames(self.type.childrens);
-        for i=length(names)
-          cArray{i} = [names{i}, ' '];
+        cArray = cell(1, length(fieldnames(self.type.children)));
+        names = fieldnames(self.type.children);
+        for i=1:length(names)-1
+          cArray{i} = [names{i}, ', '];
         end
+        cArray{end} = names{end};
         childrenString = ['  Children: ', cArray{:}, '\n'];
       end
       
