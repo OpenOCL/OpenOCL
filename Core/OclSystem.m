@@ -52,6 +52,10 @@ classdef (Abstract) OclSystem < handle
       % initialCondition(states,parameters)
     end
     
+    function initialConditions(~,~,~)
+      % initialCondition(states,parameters)
+    end
+    
     function simulationCallbackSetup(~)
       % simulationCallbackSetup()
     end
@@ -82,6 +86,7 @@ classdef (Abstract) OclSystem < handle
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
       self.initialCondition(x,p)
+      self.initialConditions(x,p)
       ic = Variable.getValue(self.initialConditions);
     end
     
