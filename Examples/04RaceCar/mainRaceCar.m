@@ -5,7 +5,6 @@ CONTROL_INTERVALS = 50;     % control discretization
 MAX_TIME = 20;             % [s]
 
 options = OclOptions();
-options.debug = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 
 ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);

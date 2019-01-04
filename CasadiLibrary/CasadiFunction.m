@@ -32,7 +32,11 @@ classdef CasadiFunction < OclFunction
       for k=1:nInputs
         s = self.inputSizes{k};
         assert(length(s)==2 || s(3)==1)
-        inputs{k} = casadi.SX.sym('v',s(1:2));
+        if self.mx
+          inputs{k} = casadi.MX.sym('v',s(1:2));
+        else
+          inputs{k} = casadi.SX.sym('v',s(1:2));
+        end
       end
       
       outputs = cell(1,self.nOutputs);
