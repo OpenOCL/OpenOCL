@@ -60,14 +60,7 @@ classdef Variable < handle
       end
       v = Variable.Matrix(fh(a,b,varargin{:}));
     end
-    %%% end factory methods
-    
-    function varargout = unifyValues(varargin)
-      for i =1:length(varargin)
-        
-      end
-    end
-    
+    %%% end factory methods   
     function value = getValue(value)
       if isa(value,'Variable')
         value = value.value;
@@ -93,21 +86,17 @@ classdef Variable < handle
     
     function r = str(self,valueStr)
       if nargin==1
-        value = self.value;
-        if isnumeric(value);
-          valueStr = mat2str(value);
-        else
-          valueStr = value.char();
-        end
+        valueStr = mat2str(self.value);
       end
       childrenString = '';
       if isa(self.type, 'OclTree')
-        childrenString = '  Children: ';
-        names = fieldnames(self.type.childrens);
-        for i=length(names)
-          childrenString = [childrenString, names{i}, ' '];
+        cArray = cell(1, length(fieldnames(self.type.children)));
+        names = fieldnames(self.type.children);
+        for i=1:length(names)-1
+          cArray{i} = [names{i}, ', '];
         end
-        childrenString = [childrenString, '\n'];
+        cArray{end} = names{end};
+        childrenString = ['  Children: ', cArray{:}, '\n'];
       end
       
       r = sprintf([ ...
