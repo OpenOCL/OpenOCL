@@ -103,7 +103,7 @@ classdef (Abstract) OclSystem < handle
     end
     
     function addState(self,id,size)
-      self.ode.(id) = [];
+      self.ode.(id) = size;
       self.statesStruct.add(id,size);
     end
     function addAlgVar(self,id,size)

@@ -86,9 +86,17 @@ classdef Variable < handle
     
     function r = str(self,valueStr)
       if nargin==1
-        valueStr = mat2str(self.value);
+        value = self.value;
+        if isnumeric(value)
+          valueStr = mat2str(self.value);
+        else
+          % cell array
+          cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
+          str_joined = strjoin(cell2str);
+          valueStr = ['{', str_joined(1:end-1), '}'];
+        end
       end
-      childrenString = '';
+      childrenString = '  Children: None\n';
       if isa(self.type, 'OclTree')
         cArray = cell(1, length(fieldnames(self.type.children)));
         names = fieldnames(self.type.children);

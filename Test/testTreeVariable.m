@@ -81,3 +81,8 @@ assert(isequal(v.x(:,:,'end').get('end').value,19))
 assert(isequal(v.x(:,:,'end').get(2).value,3))
 assert(isequal(v.x(:,:,'end').get('end').value,19))
 
+% str
+v.str();
+v.x.str();
+v.x.R.str();
+
