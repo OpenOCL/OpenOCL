@@ -97,7 +97,7 @@ classdef Variable < handle
         end
       end
       childrenString = '  Children: None\n';
-      if isa(self.type, 'OclTree')
+      if isa(self.type, 'OclTree') && ~isempty(fieldnames(self.type.children))
         cArray = cell(1, length(fieldnames(self.type.children)));
         names = fieldnames(self.type.children);
         for i=1:length(names)-1
@@ -194,7 +194,7 @@ classdef Variable < handle
       in1 = varargin{1};
       if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
         % get(id)
-        [t,p] = self.type.get(self.positions,in1);
+        [t,p] = self.type.get(in1,self.positions);
         r = Variable.createFromVar(t,p,self);
       else
         % get(dim1,dim2,dim3)
@@ -205,11 +205,10 @@ classdef Variable < handle
             varargin{k} = size(self.positions,k);
           end
         end
-        t = self.type;
         p = self.positions;
         % slice
         p = p(varargin{:});
-        r = Variable.createFromVar(t,p,self);
+        r = Variable.createFromVar(self.type,p,self);
       end
     end
     

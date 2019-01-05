@@ -3,6 +3,7 @@ classdef OclTree < OclStructure
   %
   properties
     children
+    types
     len
   end
 
@@ -11,16 +12,16 @@ classdef OclTree < OclStructure
       % OclTree()
       narginchk(0,0);
       self.children = struct;
+      self.types = struct;
       self.len = 0;
     end
 
     function add(self,id,in2)
       % add(id,size)
       % add(id,obj)
-      % add(id,obj,positions)
       if isnumeric(in2)
         % args:(id,size)
-        self.addObject(id,OclMatrix(in2));
+        self.addMatrix(id,in2);
       else
         % args:(id,obj)
         self.addObject(id,in2);
@@ -38,9 +39,28 @@ classdef OclTree < OclStructure
       end
     end
     
+    function addMatrix(self,id,s)
+      N = s(1);
+      M = s(2);
+      pos = self.len+1:self.len+N*M;
+      pos = reshape(pos,N,M);
+      self.addWithPositions(id,pos);
+    end
+    
+    function addWithPositions(self,id,pos)
+      [N,M,K] = size(pos);
+      self.len = self.len+N*M*K;
+      if ~isfield(self.children, id)
+        self.children.(id) = OclTrajectory();
+        self.types.(id) = OclTree();
+      end
+      self.children.(id).add(pos);
+    end
+    
     function addObject(self,id,obj,pos)
       % addVar(id, obj)
       %   Adds a structure object
+      
       if nargin==3
         [N,M,K] = obj.size;
         pos = self.len+1:self.len+N*M*K;
@@ -51,39 +71,22 @@ classdef OclTree < OclStructure
         self.len = self.len+N*M*K;
       end
       if ~isfield(self.children, id)
-        self.children.(id) = OclTrajectory(obj);
+        self.children.(id) = OclTrajectory();
+        self.types.(id) = obj;
       end
       self.children.(id).add(pos);
     end
     
-    function [t,p] = get(self,pos,varargin)
+    function [t,p] = get(self,id,pos)
       % get(pos,id)
-      % get(pos,index)
-      % get(pos,id,index)
-      % get(pos,slice1,slice2,slice3)
-      % get(pos,id,slice1,slice2,slice3)
       
-      if ischar(varargin{1})
-        id = varargin{1};
-        t = self.children.(id).type;
-        p = self.children.(id).positionArray;
-        p = OclTree.merge(pos,p);
-        varargin(1) = [];
-      else
-        t = self;
-        p = pos;
+      if nargin==2
+        pos = (1:self.len).';
       end
       
-      if length(varargin)==1 && size(p,3)==1
-        % index
-        p = p(varargin{1});
-      elseif length(varargin)==1
-        % slice trajectory
-        p = p(:,:,varargin{1});
-      elseif length(varargin)==3
-        % slice all dimensions
-        p = p(varargin{:});
-      end
+      t = self.types.(id);
+      p = self.children.(id).positionArray;
+      p = OclTree.merge(pos,p);
     end
     
     function [N,M,K] = size(self)
