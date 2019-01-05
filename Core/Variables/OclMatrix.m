@@ -12,20 +12,6 @@ classdef OclMatrix < OclStructure
       self.msize = size;
     end
     
-    function [r,p] = get(self,pos,varargin)
-      % get(pos,dim1)
-      % get(pos,dim1,dim2)
-      % get(pos,dim1,dim2,dim3)
-      [N,M,K] = size(pos);
-      dims = varargin;
-      if isempty(dims)
-        dims = {1:N,1:M,1:K};
-      end
-      
-      p = pos(dims{:});
-      r = OclMatrix(size(p));
-    end
-    
     function [N,M,K] = size(self)
       s = self.msize();
       if nargout>1

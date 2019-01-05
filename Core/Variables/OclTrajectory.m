@@ -3,22 +3,12 @@ classdef OclTrajectory < OclStructure
   %   Usually comes from selecting specific variables in a tree 
   properties
     positionArray
-    type
   end
   
   methods
-    function self = OclTrajectory(type)
-      
-      narginchk(1,1)
-      self.type = type;
+    function self = OclTrajectory()
       self.positionArray = [];
     end
-    
-    function [tout,pout] = get(self,pos,index)
-      % [r,p] = get(selector)
-      tout = OclTrajectory(self.type);
-      pout = pos(index);
-    end   
     
     function add(self,pos)
       
@@ -26,8 +16,7 @@ classdef OclTrajectory < OclStructure
         p = self.positionArray(:,:,end);
         pos = p+numel(p);
       elseif nargin==1
-        nel = prod(self.type.size());
-        pos = reshape(1:nel,self.type.size);
+        pos = reshape(1:numel(pos),size(pos));
       end
       
       if isempty(self.positionArray)
@@ -41,14 +30,20 @@ classdef OclTrajectory < OclStructure
       end
     end
     
-    function [N,M,K] = size(self)
-      K = length(self.positionArray);
-      s = self.type.size();
-      if nargout==1
-        N = [s,K];
+    function [r1,r2,r3] = size(self)
+      if isempty(self.positionArray)
+        s = [0,0];
+        K = 0;
       else
-         N = s(1);
-         M = s(2);
+        s = size(self.positionArray(:,:,1));
+        K = size(self.positionArray,3);
+      end
+      if nargout==1
+        r1 = [s,K];
+      else
+         r1 = s(1);
+         r2 = s(2);
+         r3 = K;
       end
     end
   end % methods
