@@ -50,13 +50,10 @@ classdef OclTree < OclStructure
         [N,M,K] = size(pos);
         self.len = self.len+N*M*K;
       end
-      
       if ~isfield(self.children, id)
         self.children.(id) = OclTrajectory(obj);
-        self.children.(id).positionArray = pos;
-      else
-        self.children.(id).positionArray(:,:,end+1:end+K) = pos;
       end
+      self.children.(id).add(pos);
     end
     
     function [t,p] = get(self,pos,varargin)

@@ -35,8 +35,8 @@ classdef Variable < handle
 
     function obj = Matrix(value)
       % obj = createMatrixLike(input,value)
-      type = OclMatrix(size(value));
-      obj = Variable.create(type,value);
+      t = OclMatrix(size(value));
+      obj = Variable.create(t,value);
     end
     
     function var = createNumeric(type,value)
@@ -187,25 +187,17 @@ classdef Variable < handle
 
     function r = get(self,varargin)
       % r = get(self,id)
-      % r = get(self,id,index)
-      % r = get(self,index)
       % r = get(self,dim1,dim2,dim3)
       function t = isAllOperator(in)
         t = strcmp(in,'all') || strcmp(in,':');
       end
       in1 = varargin{1};
       if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
-        if nargin == 2
-          % get(id)
-          [t,p] = self.type.get(self.positions,in1);
-          r = Variable.createFromVar(t,p,self);
-        else
-          % get(id,selector)
-          [t,p] = self.type.get(self.positions,in1,varargin{2});
-          r = Variable.createFromVar(t,p,self);
-        end
+        % get(id)
+        [t,p] = self.type.get(self.positions,in1);
+        r = Variable.createFromVar(t,p,self);
       else
-        % slice
+        % get(dim1,dim2,dim3)
         for k=1:length(varargin)
           if isAllOperator(varargin{k})
             varargin{k} = (1:size(self.positions,k)).';
@@ -213,7 +205,10 @@ classdef Variable < handle
             varargin{k} = size(self.positions,k);
           end
         end
-        [t,p] = self.type.get(self.positions,varargin{:});
+        t = self.type;
+        p = self.positions;
+        % slice
+        p = p(varargin{:});
         r = Variable.createFromVar(t,p,self);
       end
     end
@@ -436,7 +431,7 @@ classdef Variable < handle
     end
     
     %%% element wise operations
-    function n = ppp(self)
+    function n = properties(self)
       % DO NOT CHANGE THIS FUNCTION!
       % It is automatically renamed for Octave as properties is not 
       % allowed as a function name.

@@ -4,7 +4,6 @@ classdef OclTrajectory < OclStructure
   properties
     positionArray
     type
-    len
   end
   
   methods
@@ -12,7 +11,6 @@ classdef OclTrajectory < OclStructure
       
       narginchk(1,1)
       self.type = type;
-      self.len = 0;
       self.positionArray = [];
     end
     
@@ -21,6 +19,27 @@ classdef OclTrajectory < OclStructure
       tout = OclTrajectory(self.type);
       pout = pos(index);
     end   
+    
+    function add(self,pos)
+      
+      if nargin==1 && ~isempty(self.positionArray)
+        p = self.positionArray(:,:,end);
+        pos = p+numel(p);
+      elseif nargin==1
+        nel = prod(self.type.size());
+        pos = reshape(1:nel,self.type.size);
+      end
+      
+      if isempty(self.positionArray)
+        self.positionArray = pos;
+      else
+        [~,~,K] = size(pos);
+        self.positionArray(:,:,end+1:end+K) = pos;
+        if K >1
+          keyboard
+        end
+      end
+    end
     
     function [N,M,K] = size(self)
       K = length(self.positionArray);
