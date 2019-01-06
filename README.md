@@ -6,8 +6,7 @@ The Open Optimal Control Library is a toolbox for Matlab/Octave that facilitates
 
 ## Quick start
 
-Visit the wiki page for a guide, and have a look the examples:    
-https://github.com/JonasKoenemann/optimal-control/wiki
+Visit the main website [openocl.org](https://openocl.org) to find the [documentation](https://openocl.org/documentation), [API-docs](https://openocl.org/api-docs/) page for a guide, and have a look the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples):    
 
 ## Models
 
