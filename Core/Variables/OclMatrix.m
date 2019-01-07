@@ -3,6 +3,7 @@ classdef OclMatrix < OclStructure
   %
   properties
     msize
+    children
   end
   
   methods
@@ -10,6 +11,7 @@ classdef OclMatrix < OclStructure
     function self = OclMatrix(size)
       % OclMatrix(size)
       self.msize = size;
+      self.children = struct;
     end
     
     function [N,M,K] = size(self)

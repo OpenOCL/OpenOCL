@@ -34,7 +34,9 @@ classdef OclStructure < handle
       pout = zeros(N2,M2,K1*K2);
       for k=1:K1
        ap1 =  p1(:,:,k);
-       pout(:,:,(k-1)*K2+1:k*K2) = ap1(p2);
+       for l=1:K2
+         pout(:,:,l+(k-1)*K2) = ap1(p2(:,:,l));
+       end
       end
     end % merge
     
