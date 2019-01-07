@@ -55,7 +55,7 @@ classdef Variable < handle
     function v = createFromHandleTwo(fh, a, b, varargin)
       a = Variable.getValue(a);
       b = Variable.getValue(b);
-      if isnumeric(a) && (isa(b,'casadi.SX')||isa(b,'casadi.MX'))
+      if isnumeric(a) && ((isa(b,'casadi.SX')||isa(b,'casadi.MX')))
         a = casadi.DM(a);  
       end
       v = Variable.Matrix(fh(a,b,varargin{:}));
@@ -97,7 +97,7 @@ classdef Variable < handle
         end
       end
       childrenString = '  Children: None\n';
-      if isa(self.type, 'OclTree') && ~isempty(fieldnames(self.type.children))
+      if ~isempty(fieldnames(self.type.children))
         cArray = cell(1, length(fieldnames(self.type.children)));
         names = fieldnames(self.type.children);
         for i=1:length(names)-1
@@ -138,10 +138,10 @@ classdef Variable < handle
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
-        if isa(self.type,'OclTree') && isfield(self.type.children,id) && numel(s) == 1
+        if isfield(self.type.children,id) && numel(s) == 1
           % v.x
           [varargout{1}] = self.get(s.subs);
-        elseif isa(self.type,'OclTree') && isfield(self.type.children,id)
+        elseif isfield(self.type.children,id)
           % v.x.get(3).set(2).value || v.x.y.get(1)
           v = self.get(s(1).subs);
           [varargout{1:nargout}] = subsref(v,s(2:end));

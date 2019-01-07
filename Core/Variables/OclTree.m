@@ -71,7 +71,7 @@ classdef OclTree < OclStructure
         self.len = self.len+N*M*K;
       end
       if ~isfield(self.children, id)
-        self.children.(id) = OclTrajectory();
+        self.children.(id) = OclTrajectory(obj);
         self.types.(id) = obj;
       end
       self.children.(id).add(pos);
@@ -83,10 +83,8 @@ classdef OclTree < OclStructure
       if nargin==2
         pos = (1:self.len).';
       end
-      
-      t = self.types.(id);
-      p = self.children.(id).positionArray;
-      p = OclTree.merge(pos,p);
+      p = self.children.(id).getPositions(pos);
+      t = self.children.(id);
     end
     
     function [N,M,K] = size(self)

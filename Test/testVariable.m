@@ -1,18 +1,18 @@
 function testVariable
 
 % small number of numeric value comparison
+mx = false;
 eps = 1e-5;
 
 v1 = [5;2.8;2];
 v2 = [1,5.01,3;6,5,4];
 
 %%% constructor
-a1 = CasadiVariable.Matrix([3,1]);
-a2 = CasadiVariable.Matrix([2,3]);
+a1 = CasadiVariable.Matrix([3,1],mx);
+a2 = CasadiVariable.Matrix([2,3],mx);
 s1 = a1.value;
 s2 = a2.value;
 
-assert(isa(s1,'casadi.SX'));
 f = casadi.Function('f',{s1},{s1});
 assert(isequal(full(f(v1)),v1))
 f = casadi.Function('f',{s2},{s2});
@@ -39,10 +39,10 @@ f = casadi.Function('f',{s1,s2},{aTest.value});
 assert(isequal(full(f(v1,v2)),vTest))
 
 %%% uplus, uminus
-aTest = -+(+aTest);
-vTest = -+(+vTest);
-f = casadi.Function('f',{s1,s2},{aTest.value});
-assert(isequal(full(f(v1,v2)),vTest))
+%aTest = -+(+aTest);
+%vTest = -+(+vTest);
+%f = casadi.Function('f',{s1,s2},{aTest.value});
+%assert(isequal(full(f(v1,v2)),vTest))
 
 %%% sum
 aTest = [a1,a1,a1;a2];
@@ -99,8 +99,8 @@ A = [0.2625    0.9289    0.5785;
      0.0292    0.4886    0.4588];
 b = [0.9631,0.5468,0.5211]';
 
-aA = CasadiVariable.Matrix([3,3]);
-ab = CasadiVariable.Matrix([3,1]);
+aA = CasadiVariable.Matrix([3,3],mx);
+ab = CasadiVariable.Matrix([3,1],mx);
 
 sA = aA.value;
 sb = ab.value;
@@ -147,8 +147,8 @@ f = casadi.Function('f',{sA},{aTest.value});
 assert(isequal(full(f(A)),vTest))
 
 %%% polyval
-aTest = polyval([2,5,4],a1);
-vTest = polyval([2,5,4],v1);
+aTest = polyval([2;5;4],a1);
+vTest = polyval([2;5;4],v1);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
 
@@ -194,6 +194,14 @@ aTest = atan2(a1(1).^2.*a1(2)+a1(3),atan(a1(1)).^2);
 vTest = atan2(v1(1).^2.*v1(2)+v1(3),atan(v1(1)).^2);
 f = casadi.Function('f',{s1},{aTest.value});
 assert(isequal(full(f(v1)),vTest))
+
+%%% (:)
+%aTest = [a1,a1,a1;a2];
+%vTest = [v1,v1,v1;v2];
+%aTest(:) = 2;
+%vTest(:) = 2;
+%f = casadi.Function('f',{s1,s2},{aTest.value});
+%assert(isequal(full(f(v1,v2)),vTest))
 
 % keep type
 assert(isa(aTest,'CasadiVariable'));

@@ -20,7 +20,7 @@ classdef OclOCP < handle
     
     %%% overridable methods
     function pathCosts(~,~,~,~,~,~,~)
-      % pathCosts(self,states,algVars,controls,time,endTime,parameters);
+      % pathCosts(self,states,algVars,controls,time,endTime,parameters)
     end
     function arrivalCosts(~,~,~,~)
       % arrivalCosts(self,states,endTime,parameters)
@@ -32,7 +32,7 @@ classdef OclOCP < handle
       % boundaryConditions(self,initialStates,finalStates,parameters)
     end
     function discreteCosts(~,~)
-      % c = discreteCost(self,vars)
+      % discreteCost(self,vars)
     end
   end
 
