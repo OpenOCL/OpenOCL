@@ -132,12 +132,13 @@ classdef (Abstract) OclSystem < handle
       sN = size(solution.states);
       N = sN(3);
       parameters = solution.parameters;
+      t = times.states;
       
       for k=1:N-1
         states = solution.states(:,:,k+1);
-        algVars = solution.integratorVars(:,:,k).algVars;
+        algVars = solution.integrator(:,:,k).algVars;
         controls =  solution.controls(:,:,k);
-        self.simulationCallback(states,algVars,controls,times(k),times(k+1),parameters);
+        self.simulationCallback(states,algVars,controls,t(:,:,k),t(:,:,k+1),parameters);
       end
     end
     
@@ -147,10 +148,10 @@ classdef (Abstract) OclSystem < handle
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
       
-      % t0 = Variable.Matrix(timesBegin);
-      % t1 = Variable.Matrix(timesEnd);
+      t0 = Variable.Matrix(timesBegin);
+      t1 = Variable.Matrix(timesEnd);
       
-      self.simulationCallback(x,z,u,timesBegin,timesEnd,p);
+      self.simulationCallback(x,z,u,t0,t1,p);
       
     end
     

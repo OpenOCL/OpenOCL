@@ -2,7 +2,7 @@
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
 CONTROL_INTERVALS = 50;     % control discretization
-MAX_TIME = 20;             % [s]
+MAX_TIME = 20;              % [s]
 
 options = OclOptions();
 options.nlp.controlIntervals = CONTROL_INTERVALS;
