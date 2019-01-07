@@ -45,7 +45,7 @@ classdef CasadiNLPSolver < NLPSolver
       end
 
       % call nlp function with scaled variables
-      [costs,constraints,constraints_LB,constraints_UB] = nlp.nlpFun.evaluate(vars);
+      [costs,constraints,constraints_LB,constraints_UB,~] = nlp.nlpFun.evaluate(vars);
       
       % get struct with nlp for casadi
       casadiNLP = struct;
@@ -157,6 +157,8 @@ classdef CasadiNLPSolver < NLPSolver
         [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(solution);
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
+      
+      times = Variable.createNumeric(self.nlp.timesStruct,times);
 
       initialGuess.set(solution);
       outVars = initialGuess;

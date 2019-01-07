@@ -19,6 +19,7 @@ classdef CollocationIntegrator < handle
     varsStruct
     nx
     nz
+    nt
   end
   
   properties(Access = private)
@@ -37,6 +38,7 @@ classdef CollocationIntegrator < handle
       self.system = system;
       self.nx = prod(system.statesStruct.size());
       self.nz = prod(system.algVarsStruct.size());
+      self.nt = order;
       
       self.order = order;
       self.tau_root = collocationPoints(order);
@@ -53,12 +55,12 @@ classdef CollocationIntegrator < handle
       st = [1,1];
       
       fh = @(self,varargin)self.getIntegrator(varargin{:});
-      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,st,sp}, 4);
+      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,st,sp}, 5);
                                                   
     end
 
-    function [statesEnd, AlgVarsEnd, costs, equations] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                         controls,startTime,endTime,ocpEndTime,parameters)
+    function [statesEnd, AlgVarsEnd, costs, equations, times] = getIntegrator(self,statesBegin,integratorVars,...
+                                                                    controls,startTime,endTime,ocpEndTime,parameters)
                                                                          
       h = endTime-startTime;
       equations = cell(self.order,1);
@@ -66,6 +68,7 @@ classdef CollocationIntegrator < handle
       
       % Loop over collocation points
       statesEnd = self.D(1)*statesBegin;
+      times = cell(self.order,1);
       for j=1:self.order
         
         j_vars = (j-1)*(self.nx+self.nz);
@@ -80,6 +83,7 @@ classdef CollocationIntegrator < handle
         end
 
         time = startTime + self.tau_root(j+1) * h;
+        times{j} = time;
 
         % Append collocation equations
         [ode,alg] = self.system.systemFun.evaluate(integratorVars(j_states), ...
@@ -98,6 +102,7 @@ classdef CollocationIntegrator < handle
       AlgVarsEnd = integratorVars(j_algVars);
       costs = J;
       equations = vertcat(equations{:});
+      times = vertcat(times{:});
     end
   end
 

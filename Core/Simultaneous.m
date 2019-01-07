@@ -5,6 +5,7 @@ classdef Simultaneous < handle
   properties
     nlpFun
     varsStruct
+    timesStruct
     ocpHandler
     integratorFun
     nv
@@ -21,6 +22,7 @@ classdef Simultaneous < handle
     ni
     nu
     np
+    nit
   end
   
   methods
@@ -33,11 +35,12 @@ classdef Simultaneous < handle
       self.nu = prod(system.controlsStruct.size());
       self.np = prod(system.parametersStruct.size());
       self.nv = (N+1)*self.nx + N*self.ni + N*self.nu+self.np+1;
+      self.nit = integrator.nt;
       
       self.integratorFun = integrator.integratorFun;
       
       self.varsStruct = OclStructure();
-      self.varsStruct.addRepeated({'states','integratorVars','controls'},...
+      self.varsStruct.addRepeated({'states','integrator','controls'},...
                                       {system.statesStruct,...
                                       integrator.varsStruct,...
                                       system.controlsStruct},self.N);
@@ -45,6 +48,11 @@ classdef Simultaneous < handle
       
       self.varsStruct.add('parameters',system.parametersStruct);
       self.varsStruct.add('time',[1 1]);
+      
+      self.timesStruct = OclStructure();
+      self.timesStruct.addRepeated({'states','integrator','controls'},...
+                                   {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
+      self.timesStruct.add('states',OclMatrix([1,1]));
       
       % initialize bounds      
       nlpVarsFlatFlat = self.varsStruct.flat();
@@ -95,7 +103,7 @@ classdef Simultaneous < handle
     function interpolateGuess(self,guess)
       for i=1:self.N
         state = guess.states(:,:,i).value;
-        guess.integratorVars(:,:,i).states.set(state);
+        guess.integrator(:,:,i).states.set(state);
       end
     end
     
@@ -187,12 +195,17 @@ classdef Simultaneous < handle
       self.ocpHandler.callbackFunction(var,values);
     end
 
-    function [costs,constraints,constraints_LB,constraints_UB,timeGrid] = getNLPFun(self,nlpVars)
+    function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
       
       T = nlpVars(self.nv);
       parameters = nlpVars(self.nv-self.np:self.nv-1);
 
       timeGrid = linspace(0,T,self.N+1);
+      
+      % N+1 state times
+      % N integrator times
+      % N control times
+      times = cell((self.N+1)+self.N+self.N);
       
       % N integrator equations
       % N path constraints
@@ -212,19 +225,29 @@ classdef Simultaneous < handle
         k_pathConstraints = 3*(k-1)+2;
         k_continuity = 3*(k-1)+3;
         
+        kt_states = 3*(k-1)+1;
+        kt_integrator = 3*(k-1)+2;
+        kt_controls = 3*(k-1)+3;
+        
+        times{kt_states} = timeGrid(k);
+        times{kt_controls} = timeGrid(k);
+         
         thisIntegratorVars = nlpVars(k_vars+1:k_vars+self.ni);
         k_vars = k_vars+self.ni;
         thisControls = nlpVars(k_vars+1:k_vars+self.nu);
         k_vars = k_vars+self.nu;
         
         % add integrator equations
-        [endStates, endAlgVars, integrationCosts, integratorEquations] = ...
+        [endStates, endAlgVars, integrationCosts, integratorEquations, integratorTimes] = ...
               self.integratorFun.evaluate(thisStates,...
                                           thisIntegratorVars,...
                                           thisControls,...
                                           timeGrid(k),...
                                           timeGrid(k+1),...
                                           T,parameters);
+                                          
+        times{kt_integrator} = integratorTimes;
+                                          
         constraints{k_integratorEquations} = integratorEquations;
         constraints_LB{k_integratorEquations} = zeros(size(integratorEquations));
         constraints_UB{k_integratorEquations} = zeros(size(integratorEquations));
@@ -252,6 +275,9 @@ classdef Simultaneous < handle
         constraints_LB{k_continuity} = zeros(size(continuity_constraint));
         constraints_UB{k_continuity} = zeros(size(continuity_constraint));
       end
+      
+      times{end} = T;
+      times = vertcat(times{:});
       
       % add terminal cost
       terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,T,parameters);

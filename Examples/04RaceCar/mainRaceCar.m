@@ -52,8 +52,8 @@ initialGuess.states.y.set(y_center);
 % Plot solution
 figure('units','normalized','outerposition',[0 0 1 1])
 subplot(3,2,1);hold on;grid on; 
-plot(times,solution.states.x.value,'Color','b','LineWidth',1.5);
-plot(times,solution.states.y.value,'Color','r','LineWidth',1.5);
+plot(times.states.value,solution.states.x.value,'Color','b','LineWidth',1.5);
+plot(times.states.value,solution.states.y.value,'Color','r','LineWidth',1.5);
 ylabel('[m]');legend({'x','y'});
 
 subplot(3,2,3);hold on;grid on; 
@@ -61,19 +61,19 @@ vx = solution.states.vx.value;
 vy = solution.states.vy.value;
 V  = sqrt(vx.^2+vy.^2);
 
-plot(times,vx,'Color','b','LineWidth',1.5);
-plot(times,vy,'Color','r','LineWidth',1.5);
-plot(times,V,'Color','g','LineWidth',1.5);
+plot(times.states.value,vx,'Color','b','LineWidth',1.5);
+plot(times.states.value,vy,'Color','r','LineWidth',1.5);
+plot(times.states.value,V,'Color','g','LineWidth',1.5);
 legend({'vx','vy','V'});
-plot(times,Vmax.*ones(1,length(times)),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times.states.value,Vmax.*ones(1,length(times)),'Color','k','LineWidth',1.5,'LineStyle','-.')
 ylabel('[m/s]');
 
 subplot(3,2,5);hold on;grid on; 
-plot(times(1:end-1),solution.controls.Fx.value,'Color','b','LineWidth',1.5)
-plot(times(1:end-1),solution.controls.Fy.value,'Color','r','LineWidth',1.5)
+plot(times.controls.value,solution.controls.Fx.value,'Color','b','LineWidth',1.5)
+plot(times.controls.value,solution.controls.Fy.value,'Color','r','LineWidth',1.5)
 legend({'Fx','Fy'});
-plot(times(1:end-1),-Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
-plot(times(1:end-1), Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times.controls.value,-Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times.controls.value, Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
 ylabel('[N]');xlabel('time');
 
 % build street
@@ -92,4 +92,4 @@ plot(solution.states.x.value,...
 axis equal;xlabel('x[m]');ylabel('y[m]');
 
 % Show Animation
-animateRaceCar(times,solution,x_road,y_center,y_min,y_max)
+animateRaceCar(times.states.value,solution,x_road,y_center,y_min,y_max)
