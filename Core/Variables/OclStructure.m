@@ -1,29 +1,85 @@
-classdef OclStructure < handle
-  %OCLSTRUCTURE Abtract class for defining variable structures.
-  %   Structures can be trees or matrizes or trajectories
+classdef OclTree < OclStructure
+  % OCLTREE Basic datatype represent variables in a tree like structure.
+  %
   properties
+    children
+    len
   end
-  
+
   methods
-    function get(varargin)
-      % r = get(id)
-      % r = get(id,slice)
-      error('Not Implemented.');
+    function self = OclTree()
+      % OclTree()
+      narginchk(0,0);
+      self.children = struct;
+      self.len = 0;
+    end
+
+    function add(self,id,in2)
+      % add(id,size)
+      % add(id,obj)
+      if isnumeric(in2)
+        % args:(id,size)
+        N = in2(1);
+        M = in2(2);
+        K = 1;
+        obj = OclTree();
+      else
+        % args:(id,obj)
+        [N,M,K] = in2.size;
+        obj = in2;
+      end
+      pos = self.len+1:self.len+N*M*K;
+      pos = reshape(pos,N,M,K);
+      self.addObject(id,obj,pos);
     end
     
-    function size(varargin)
-      error('Not Implemented.');
+    function addRepeated(self,names,arr,N)
+      % addRepeated(self,arr,N)
+      %   Adds repeatedly a list of structure objects
+      %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
+      for i=1:N
+        for j=1:length(arr)
+          self.add(names{j},arr{j})
+        end
+      end
     end
     
-    function getPositions(varargin)
-      error('Not Implemented.');
+    function addObject(self,id,obj,pos)
+      % addVar(id, obj)
+      %   Adds a structure object
+      
+      [N,M,K] = size(pos);
+      self.len = self.len+N*M*K;
+      
+      if ~isfield(self.children, id)
+        self.children.(id).type = obj;
+        self.children.(id).positions = pos;
+      else
+        self.children.(id).positions(:,:,end+1) = pos;
+      end
     end
     
-  end % methods
-  
-  methods (Static)
-  
-    function pout = merge(p1,p2)
+    function [t,p] = get(self,id,pos)
+      % get(pos,id)
+      if nargin==2
+        pos = (1:self.len).';
+      end
+      p = self.children.(id).positions;
+      t = self.children.(id).type;
+      p = self.merge(pos,p);
+    end
+    
+    function [N,M,K] = size(self)
+      if nargout>1
+        N = self.len;
+        M = 1;
+        K = 1;
+      else
+        N = [self.len,1];
+      end
+    end
+
+    function pout = merge(self,p1,p2)
       % merge(p1,p2)
       % Combine arrays of positions on the third dimension
       % p2 are relative to p1
@@ -40,6 +96,57 @@ classdef OclStructure < handle
       end
     end % merge
     
-  end % methods (Static)
-end % classdef
+    
+    
+  
+    
+    
+    
+    
+    function tree = getFlat(self)
+      tree = OclTree();
+      self.iterateLeafs((1:self.len).',tree);
+    end
+    
+    
+    
+    
+    
+    function iterateLeafs(self,positions,treeOut)
+      childrenIds = fieldnames(self.children);
+      for k=1:length(childrenIds)
+        id = childrenIds{k};
+        [child,pos] = self.get(positions,id);
+        if isa(child,'OclMatrix')
+          treeOut.addObject(id,child,pos);
+        elseif isa(child,'OclTree')
+          child.iterateLeafs(pos,treeOut);
+        end
+      end
+    end 
+    
+    function sizes = getMatrixSizes(self)
+      sizes = {};
+      pos = (1:self.len).';
+      sizes = self.iterateSizes(pos,sizes);
+    end
+    
+    function sizesOut = iterateSizes(self,positions,sizesOut)
+      childrenIds = fieldnames(self.children);
+      for k=1:length(childrenIds)
+        id = childrenIds{k};
+        [child,pos] = self.get(positions,id);
+        if isa(child,'OclMatrix')
+          sizesOut{end+1} = size(pos);
+        elseif isa(child,'OclTree')
+          s = child.iterateSizes(pos,sizesOut);
+          sizesOut{end+1} = size(pos);
+        end
+      end
+    end 
+    
+  end % methods
+end % class
+
+
 
