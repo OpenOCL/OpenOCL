@@ -42,7 +42,7 @@ classdef CollocationIntegrator < handle
       self.tau_root = collocationPoints(order);
       [self.C,self.D,self.B] = self.getCoefficients(order);
       
-      self.varsStruct = OclTree();
+      self.varsStruct = OclStructure();
       self.varsStruct.addRepeated({'states','algVars'},...
                                   {self.system.statesStruct,self.system.algVarsStruct}, order);
       

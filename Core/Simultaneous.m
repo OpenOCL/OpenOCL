@@ -36,7 +36,7 @@ classdef Simultaneous < handle
       
       self.integratorFun = integrator.integratorFun;
       
-      self.varsStruct = OclTree();
+      self.varsStruct = OclStructure();
       self.varsStruct.addRepeated({'states','integratorVars','controls'},...
                                       {system.statesStruct,...
                                       integrator.varsStruct,...
@@ -47,7 +47,7 @@ classdef Simultaneous < handle
       self.varsStruct.add('time',[1 1]);
       
       % initialize bounds      
-      nlpVarsFlatFlat = self.varsStruct.getFlat;
+      nlpVarsFlatFlat = self.varsStruct.flat();
       
       self.lowerBounds = Variable.create(nlpVarsFlatFlat,-inf);
       self.upperBounds = Variable.create(nlpVarsFlatFlat,inf);
@@ -94,8 +94,8 @@ classdef Simultaneous < handle
     
     function interpolateGuess(self,guess)
       for i=1:self.N
-        state = guess.states(i).value;
-        guess.integratorVars(i).states.set(state);
+        state = guess.states(:,:,i).value;
+        guess.integratorVars(:,:,i).states.set(state);
       end
     end
     
