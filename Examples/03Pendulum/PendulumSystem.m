@@ -52,7 +52,7 @@ classdef PendulumSystem < OclSystem
       xlim([-l,l])
       ylim([-l,l])
       
-      pause(dt.value);
+      pause(dt);
       hold off
     end
   end

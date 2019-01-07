@@ -26,10 +26,10 @@ classdef (Abstract) OclSystem < handle
   methods
     
     function self = OclSystem()
-      self.statesStruct     = OclTree();
-      self.algVarsStruct    = OclTree();
-      self.controlsStruct   = OclTree();
-      self.parametersStruct = OclTree();
+      self.statesStruct     = OclStructure();
+      self.algVarsStruct    = OclStructure();
+      self.controlsStruct   = OclStructure();
+      self.parametersStruct = OclStructure();
       
       self.ode = struct;
       self.setupVariables;
@@ -134,9 +134,9 @@ classdef (Abstract) OclSystem < handle
       parameters = solution.parameters;
       
       for k=1:N-1
-        states = solution.states(k+1);
-        algVars = solution.integratorVars(k).algVars;
-        controls =  solution.controls(k);
+        states = solution.states(:,:,k+1);
+        algVars = solution.integratorVars(:,:,k).algVars;
+        controls =  solution.controls(:,:,k);
         self.simulationCallback(states,algVars,controls,times(k),times(k+1),parameters);
       end
     end
@@ -147,10 +147,10 @@ classdef (Abstract) OclSystem < handle
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
       
-      t0 = Variable.Matrix(timesBegin);
-      t1 = Variable.Matrix(timesEnd);
+      % t0 = Variable.Matrix(timesBegin);
+      % t1 = Variable.Matrix(timesEnd);
       
-      self.simulationCallback(x,z,u,t0,t1,p);
+      self.simulationCallback(x,z,u,timesBegin,timesEnd,p);
       
     end
     

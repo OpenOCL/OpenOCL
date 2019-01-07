@@ -1,4 +1,4 @@
-classdef OclTree < OclStructure
+classdef OclStructure < handle
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
   properties
@@ -7,7 +7,7 @@ classdef OclTree < OclStructure
   end
 
   methods
-    function self = OclTree()
+    function self = OclStructure()
       % OclTree()
       narginchk(0,0);
       self.children = struct;
@@ -22,7 +22,7 @@ classdef OclTree < OclStructure
         N = in2(1);
         M = in2(2);
         K = 1;
-        obj = OclTree();
+        obj = OclMatrix([N,M]);
       else
         % args:(id,obj)
         [N,M,K] = in2.size;
@@ -55,7 +55,7 @@ classdef OclTree < OclStructure
         self.children.(id).type = obj;
         self.children.(id).positions = pos;
       else
-        self.children.(id).positions(:,:,end+1) = pos;
+        self.children.(id).positions(:,:,end+1:end+K) = pos;
       end
     end
     
@@ -96,51 +96,22 @@ classdef OclTree < OclStructure
       end
     end % merge
     
-    
-    
-  
-    
-    
-    
-    
-    function tree = getFlat(self)
-      tree = OclTree();
+
+    function tree = flat(self)
+      tree = OclStructure();
       self.iterateLeafs((1:self.len).',tree);
     end
-    
-    
-    
     
     
     function iterateLeafs(self,positions,treeOut)
       childrenIds = fieldnames(self.children);
       for k=1:length(childrenIds)
         id = childrenIds{k};
-        [child,pos] = self.get(positions,id);
+        [child,pos] = self.get(id,positions);
         if isa(child,'OclMatrix')
           treeOut.addObject(id,child,pos);
-        elseif isa(child,'OclTree')
+        elseif isa(child,'OclStructure')
           child.iterateLeafs(pos,treeOut);
-        end
-      end
-    end 
-    
-    function sizes = getMatrixSizes(self)
-      sizes = {};
-      pos = (1:self.len).';
-      sizes = self.iterateSizes(pos,sizes);
-    end
-    
-    function sizesOut = iterateSizes(self,positions,sizesOut)
-      childrenIds = fieldnames(self.children);
-      for k=1:length(childrenIds)
-        id = childrenIds{k};
-        [child,pos] = self.get(positions,id);
-        if isa(child,'OclMatrix')
-          sizesOut{end+1} = size(pos);
-        elseif isa(child,'OclTree')
-          s = child.iterateSizes(pos,sizesOut);
-          sizesOut{end+1} = size(pos);
         end
       end
     end 

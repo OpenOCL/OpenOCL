@@ -28,7 +28,7 @@ classdef Simulator < handle
     end
     
     function controlsVec = getControlsVec(self,N)
-        controlsVecStruct  = OclTree();
+        controlsVecStruct  = OclStructure();
         controlsVecStruct.addRepeated({'u'},{self.system.controlsStruct},N);
         controlsVec = Variable.create(controlsVecStruct,0);
         controlsVec = controlsVec.u;
@@ -62,10 +62,10 @@ classdef Simulator < handle
         callback = varargin{3};
       end
       
-      statesVecStruct = OclTree();
+      statesVecStruct = OclStructure();
       statesVecStruct.addRepeated({'x'},{self.system.statesStruct},N+1);
       
-      algVarsVecStruct = OclTree();
+      algVarsVecStruct = OclStructure();
       algVarsVecStruct.addRepeated({'z'},{self.system.algVarsStruct},N);
       
       statesVec = Variable.create(statesVecStruct,0);
@@ -85,7 +85,7 @@ classdef Simulator < handle
       u0 = uVec(1:nu);
       
       [x,z] = self.getConsistentIntitialCondition(x0,z,u0,p);
-      statesVec(1).set(x);
+      statesVec(:,:,1).set(x);
       
       % setup callback
       if callback
@@ -103,9 +103,9 @@ classdef Simulator < handle
         
         [x,z] = self.integrator.evaluate(x,z,u,t,p);
         
-        statesVec.get(k+1).set(x);
-        algVarsVec.get(k).set(z);
-        controlsVec.get(k).set(u);
+        statesVec(:,:,k+1).set(x);
+        algVarsVec(:,:,k).set(z);
+        controlsVec(:,:,k).set(u);
       end  
       if callback
         self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);
