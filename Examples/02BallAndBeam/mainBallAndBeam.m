@@ -45,27 +45,27 @@ vars = ocl.getInitialGuess();
 % Plot solution
 figure;
 subplot(3,1,1);hold on;grid on; 
-plot(times,vars.states.r.value     ,'Color','b','LineWidth',1.5)
-plot(times,vars.states.dr.value    ,'Color','r','LineWidth',1.5)
+plot(times.states.value,vars.states.r.value     ,'Color','b','LineWidth',1.5)
+plot(times.states.value,vars.states.dr.value    ,'Color','r','LineWidth',1.5)
 legend({'r [m]','dr [m/s]'})
-plot(times, r_b.*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times,-r_b.*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, r_b.*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value,-r_b.*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
 
 subplot(3,1,2);hold on;grid on;
-plot(times,rad2deg(vars.states.theta.value) ,'Color','b','LineWidth',1.5)
-plot(times,rad2deg(vars.states.dtheta.value),'Color','r','LineWidth',1.5)
+plot(times.states.value,rad2deg(vars.states.theta.value) ,'Color','b','LineWidth',1.5)
+plot(times.states.value,rad2deg(vars.states.dtheta.value),'Color','r','LineWidth',1.5)
 legend({'\theta [deg]','dtheta [deg/s]'})
-plot(times, rad2deg(  theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times, rad2deg( -theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times, rad2deg( dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
-plot(times, rad2deg(-dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg(  theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg( -theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg( dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg(-dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
 
 subplot(3,1,3);hold on;grid on;
-stairs(times(1:end-1),vars.controls.tau.value,'Color','g','LineWidth',1.5)
-plot(times, tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
-plot(times,-tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
+stairs(times.controls.value,vars.controls.tau.value,'Color','g','LineWidth',1.5)
+plot(times.states.value, tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value,-tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
 legend({'\tau [Nm]'})
 xlabel('time');
 
 % Show Animation
-animateBallAndBeam(times,vars.states.r.value,vars.states.theta.value);
+animateBallAndBeam(times.states.value,vars.states.r.value,vars.states.theta.value);
