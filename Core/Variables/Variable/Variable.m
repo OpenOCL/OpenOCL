@@ -223,6 +223,19 @@ classdef Variable < handle
       end
     end
     
+    function toJSON(self,path,name,varargin)
+      % toJSON(self,path,name,opt)
+      if nargin==1
+        path = fullfile(getenv('OPENOCL_WORK'),[datestr(now,'yyyymmddHHMM'),'var.json']);
+      end
+      if nargin<=2
+        name = 'var';
+      end
+      s = self.toStruct();
+      savejson(name,s,path);
+      disp(['json saved to ', path]);
+    end
+   
     function r = toStruct(self)
       r = self.type.toStruct(self.value);
     end
