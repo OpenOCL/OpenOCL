@@ -117,13 +117,13 @@ classdef OclStructure < handle
     end 
     
     function valueStruct = toStruct(self,value)
-      valueStruct = struct;
       positions = (1:self.len).';
-      valueStruct = self.iterateStruct(positions,value,valueStruct);
+      valueStruct = self.iterateStruct(positions,value);
     end
     
-    function [valueStruct,posStruct] = iterateStruct(self,positions,value,valueStruct)
+    function [valueStruct,posStruct] = iterateStruct(self,positions,value)
       
+      valueStruct = struct;
       valueStruct.value = value(positions);
       valueStruct.positions = positions;
       childrenIds = fieldnames(self.children);
@@ -131,11 +131,10 @@ classdef OclStructure < handle
         id = childrenIds{k};
         [child,pos] = self.get(id,positions);
         if isa(child,'OclStructure')
-          childValueStruct = child.iterateStruct(pos,value,valueStruct);
+          childValueStruct = child.iterateStruct(pos,value);
+          valueStruct.(id) = childValueStruct;
         end
-        valueStruct.(id) = childValueStruct;
       end
-      
     end
     
     

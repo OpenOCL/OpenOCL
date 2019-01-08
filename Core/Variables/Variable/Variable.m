@@ -103,8 +103,8 @@ classdef Variable < handle
       
       dotsStr = ''
       if numel(valueStr) >= Variable.MAX_DISP_LENGTH 
-        valueStr = valueStr(1:Variable.MAX_DISP_LENGTH)
-        dotsStr = '...'
+        valueStr = valueStr(1:Variable.MAX_DISP_LENGTH);
+        dotsStr = '...';
       end
       
       childrenString = '  Children: None\n';
