@@ -223,6 +223,10 @@ classdef Variable < handle
       end
     end
     
+    function r = toStruct(self)
+      r = self.type.toStruct(self.value);
+    end
+    
     function y = linspace(d1,d2,n)
       n1 = n-1;
       y = d1 + (0:n1).*(d2 - d1)/n1;
