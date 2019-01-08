@@ -37,7 +37,7 @@ ocl.setEndBounds('vx',  0.0 );
 ocl.setEndBounds( 'y',  0.0 );
 ocl.setEndBounds('vy',  0.0 );
 
-initialGuess    = ocl.getInitialGuess();           
+initialGuess    = ocl.getInitialGuess();     
 
 % Initialize the middle lane
 N        = length(initialGuess.states.x.value);
