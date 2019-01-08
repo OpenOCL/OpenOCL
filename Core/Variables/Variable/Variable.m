@@ -3,6 +3,10 @@ classdef Variable < handle
     % variables
     % This class can be derived from to implement new arithemtics for 
     % variables e.g. casadi variables, or symbolic variables.
+    
+  properties (Constant)
+      MAX_DISP_LENGTH = 200
+   end
   
   properties
     val
@@ -96,6 +100,13 @@ classdef Variable < handle
           valueStr = ['{', str_joined(1:end-1), '}'];
         end
       end
+      
+      dotsStr = ''
+      if numel(valueStr) >= Variable.MAX_DISP_LENGTH 
+        valueStr = valueStr(1:Variable.MAX_DISP_LENGTH)
+        dotsStr = '...'
+      end
+      
       childrenString = '  Children: None\n';
       if ~isempty(fieldnames(self.type.children))
         cArray = cell(1, length(fieldnames(self.type.children)));
@@ -112,7 +123,7 @@ classdef Variable < handle
                    '  Size: ', mat2str(self.size()), '\n' ....
                    '  Type: ', class(self.type), '\n' ...
                    childrenString, ...
-                   '  Value: ', valueStr, '\n' ...
+                   '  Value: ', valueStr, dotsStr, '\n' ...
                    ]);
     end
     
