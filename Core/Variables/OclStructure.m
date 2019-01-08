@@ -116,7 +116,6 @@ classdef OclStructure < handle
       end
     end 
     
-    
     function valueStruct = toStruct(self,value)
       valueStruct = struct;
       positions = (1:self.len).';
