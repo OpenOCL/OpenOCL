@@ -1,4 +1,4 @@
-function testExamples
+function [o1,o2,o3] = testExamples
 
 % test basic example (VanDerPol)
 mainVanDerPol
@@ -33,6 +33,8 @@ assert(all(abs(solution.get('controls').value - ...
   -0.0017
   -0.0005
   -0.0000]) < 1e-3 ), 'Control vector of solution is wrong in Example.');
+  
+o1 = ocl.timeMeasures;
 
 % test ball and beam example problem
 mainBallAndBeam
@@ -88,6 +90,7 @@ assert(all(abs(vars.controls.value - ...
   0.2796
   0.4469]) < 1e-3 ), 'Ball and beam problem Test failed.');
 
+o2 = ocl.timeMeasures;
 
 
 % test race car problem
@@ -144,6 +147,7 @@ assert(all(all(abs(solution.controls.value - ...
    -0.9175   -0.3977
    -0.9170   -0.3988]') < 1e-3 )), 'Solve RaceCar Test failed.');
 
+o3 = ocl.timeMeasures;
  
 % test pendulum simulation
 simulatePendulum

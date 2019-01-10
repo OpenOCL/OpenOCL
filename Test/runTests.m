@@ -68,7 +68,8 @@ function runTests(testExamples,version,changeMessage)
     testResult.exception = '';
     try
       tic;
-      scriptHandle();
+      testResult.outputs = cell(nargout(scriptHandle),1);
+      [testResult.outputs{:}] = scriptHandle();
       testResult.runtime = toc;
     catch exception
       testResult.passed = false;
@@ -81,6 +82,17 @@ function runTests(testExamples,version,changeMessage)
     	outputString = sprintf('%s Tests passed\n',testResult.name);
       fprintf(resultsFile,outputString);fprintf(outputString);
       outputString = sprintf('It took %.4f seconds.\n\n',testResult.runtime);
+      fprintf(resultsFile,outputString);fprintf(outputString);
+      
+      for i=1:length(testResult.outputs)
+        out = testResult.outputs{i};
+        names = fieldnames(out);
+        for j=1:length(names)
+          outputString = sprintf('Test %i, %s: %.4f seconds.\n', i, names{j}, out.(names{j}));
+          fprintf(resultsFile,outputString);fprintf(outputString);
+        end
+      end
+      outputString = '\n';
       fprintf(resultsFile,outputString);fprintf(outputString);
     else
       outputString = sprintf('%s Tests failed\n',testResult.name);
