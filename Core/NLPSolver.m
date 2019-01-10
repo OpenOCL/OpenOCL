@@ -2,11 +2,13 @@ classdef NLPSolver < handle
   
   properties
     nlp
+    timeMeasures
   end
   
   methods
     
     function self = NLPSolver()
+      self.timeMeasures = struct;
     end
     
     function solutionCallback(self,times,solution)
@@ -14,7 +16,9 @@ classdef NLPSolver < handle
     end
     
     function r = getInitialGuess(self,varargin)
+      igTic = tic;
       r = self.nlp.getInitialGuess(varargin{:});
+      self.timeMeasures.initialGuess = toc(igTic);
     end
     
     function setBounds(self,varargin)

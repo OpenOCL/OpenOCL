@@ -1,4 +1,4 @@
-function [o1,o2,o3] = testExamples
+function [o1,o2,o3,o4] = testExamples
 
 % test basic example (VanDerPol)
 mainVanDerPol
@@ -33,7 +33,6 @@ assert(all(abs(solution.get('controls').value - ...
   -0.0017
   -0.0005
   -0.0000]) < 1e-3 ), 'Control vector of solution is wrong in Example.');
-  
 o1 = ocl.timeMeasures;
 
 % test ball and beam example problem
@@ -150,7 +149,10 @@ assert(all(all(abs(solution.controls.value - ...
 o3 = ocl.timeMeasures;
  
 % test pendulum simulation
+simTic = tic;
 simulatePendulum
 assertAlmostEqual(statesVec.p(1,:,1:10:41).value.', ...
                   [-0.545396928860894 -0.998707452717328 -0.352622719093813 -0.944457401768328 0], ...
                   'PendulumSim Test failed.');
+o4 = struct;
+o4.simulationTest = toc(simTic);

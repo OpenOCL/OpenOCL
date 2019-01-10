@@ -1,9 +1,5 @@
 classdef CasadiNLPSolver < NLPSolver
   
-  properties
-    timeMeasures
-  end
-  
   properties (Access = private)
     nlpData
     options
@@ -13,13 +9,13 @@ classdef CasadiNLPSolver < NLPSolver
     
     function self = CasadiNLPSolver(nlp,options)
       
-      [self.nlpData,self.timeMeasures] = self.construct(nlp,options);
+      self.nlpData = self.construct(nlp,options);
       
       self.nlp = nlp;
       self.options = options;
     end
     
-    function [nlpData,timeMeasures] = construct(self,nlp,options)
+    function nlpData = construct(self,nlp,options)
       
       constructTotalTic = tic;
       
@@ -79,7 +75,7 @@ classdef CasadiNLPSolver < NLPSolver
       nlpData.casadiNLP = casadiNLP;
       nlpData.constraints_LB = constraints_LB;
       nlpData.constraints_UB = constraints_UB;
-      timeMeasures.constructTotal = toc(constructTotalTic);
+      self.timeMeasures.constructTotal = toc(constructTotalTic);
     end
     
     function [outVars,times,objective,constraints] = solve(self,initialGuess)
