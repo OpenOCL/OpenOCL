@@ -24,7 +24,20 @@ classdef CasadiNLPSolver < NLPSolver
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      vars = casadi.MX.sym('v',[nlp.nv,1]);
+      vStruct = nlp.varsStruct.flat.children;
+      vars = cell(nlp.nv,1);
+      names = fieldnames(vStruct);
+      for i=1:length(names)
+        id = names{i};
+        el = vStruct.(id);
+        for j=1:size(el.positions,3)
+          name = [id,'_',num2str(j)];
+          pos = el.positions(:,:,j);
+          var = casadi.MX.sym(name,numel(pos));
+          vars(pos(1))=var;
+        end
+      end
+      vars = vertcat(vars{:});
       
       % apply scaling to variables
       if options.nlp.scaling
