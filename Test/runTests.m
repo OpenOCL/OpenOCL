@@ -24,9 +24,11 @@ function runTests(testExamples,version,changeMessage)
   tests{1}.name = 'Variable';     tests{1}.file = 'testVariable';
   tests{2}.name = 'TreeVariable'; tests{2}.file = 'testTreeVariable';
   tests{3}.name = 'VarStructure'; tests{3}.file = 'testVarStructure';
+  tests{4}.name = 'OclFunction';  tests{4}.file = 'testOclFunction';
+  tests{5}.name = 'OclSystem';    tests{5}.file = 'testOclSystem';
   
   if testExamples
-    tests{4}.name = 'Example';      tests{4}.file = 'testExamples';
+    tests{6}.name = 'Example';      tests{6}.file = 'testExamples';
   end
   
   NTests = length(tests);

@@ -79,7 +79,12 @@ classdef (Abstract) OclSystem < handle
     function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned variables
       
+      % reset alg and ode
       self.alg = [];
+      names = fieldnames(self.ode);
+      for i=1:length(names)
+        self.ode.(names{i}) = [];
+      end
       
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
@@ -91,6 +96,15 @@ classdef (Abstract) OclSystem < handle
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});
       alg = self.alg;
+      
+      if length(alg) ~= self.nz
+        oclException(['Number of algebraic equations does not match ',...
+                      'number of algebraic variables.']);
+      end      
+      if length(ode) ~= self.nx
+        oclException(['Number of ode equations does not match ',...
+                      'number of state variables.']);
+      end
     end
     
     function ic = getInitialConditions(self,states,parameters)
@@ -117,6 +131,12 @@ classdef (Abstract) OclSystem < handle
     end
 
     function setODE(self,id,eq)
+      if ~isfield(self.ode,id)
+        oclException(['State ', id, ' does not exist.']);
+      end
+      if ~isempty(self.ode.(id))
+        oclException(['Ode for var ', id, ' already defined']);
+      end
       self.ode.(id) = Variable.getValueAsColumn(eq);
     end
     
