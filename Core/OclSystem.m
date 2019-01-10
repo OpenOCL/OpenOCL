@@ -102,18 +102,18 @@ classdef (Abstract) OclSystem < handle
       ic = self.thisInitialConditions;
     end
     
-    function addState(self,id,size)
-      self.ode.(id) = size;
-      self.statesStruct.add(id,size);
+    function addState(self,id,varargin)
+      self.ode.(id) = [];
+      self.statesStruct.add(id,varargin{:});
     end
-    function addAlgVar(self,id,size)
-      self.algVarsStruct.add(id,size);
+    function addAlgVar(self,id,varargin)
+      self.algVarsStruct.add(id,varargin{:});
     end
-    function addControl(self,id,size)
-      self.controlsStruct.add(id,size);
+    function addControl(self,id,varargin)
+      self.controlsStruct.add(id,varargin{:});
     end
-    function addParameter(self,id,size)
-      self.parametersStruct.add(id,size);
+    function addParameter(self,id,varargin)
+      self.parametersStruct.add(id,varargin{:});
     end
 
     function setODE(self,id,eq)

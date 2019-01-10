@@ -1,18 +1,18 @@
 classdef BallAndBeamSystem < OclSystem
   methods
     function setupVariables(self)
-      self.addState('r'     ,[1,1]);
-      self.addState('dr'    ,[1,1]);
-      self.addState('theta' ,[1,1]);
-      self.addState('dtheta',[1,1]);
+      self.addState('r');
+      self.addState('dr');
+      self.addState('theta');
+      self.addState('dtheta');
       
-      self.addControl('tau',[1,1]);
+      self.addControl('tau');
       
-      self.addParameter('I',[1 1]); % Inertia Beam 
-      self.addParameter('J',[1 1]); % Inertia Ball
-      self.addParameter('m',[1 1]); % mass ball
-      self.addParameter('R',[1 1]); % radious ball
-      self.addParameter('g',[1 1]); % gravity
+      self.addParameter('I'); % Inertia Beam 
+      self.addParameter('J'); % Inertia Ball
+      self.addParameter('m'); % mass ball
+      self.addParameter('R'); % radious ball
+      self.addParameter('g'); % gravity
     end
     function setupEquation(self,states,algVars,controls,parameters)
       I = parameters.I;

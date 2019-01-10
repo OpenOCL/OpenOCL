@@ -1,13 +1,13 @@
 classdef PendulumSystem < OclSystem
   methods
     function setupVariables(self)
-      self.addState('p',[2,1]);
-      self.addState('v',[2,1]);
-      self.addControl('F',[1,1]);
-      self.addAlgVar('lambda',[1,1]);
+      self.addState('p', 2);
+      self.addState('v', 2);
+      self.addControl('F');
+      self.addAlgVar('lambda');
       
-      self.addParameter('m',[1 1]);
-      self.addParameter('l',[1 1]);
+      self.addParameter('m');
+      self.addParameter('l');
       
     end
     function setupEquation(self,state,algVars,controls,parameters)

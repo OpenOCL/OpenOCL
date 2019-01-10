@@ -15,9 +15,23 @@ classdef OclStructure < handle
     end
 
     function add(self,id,in2)
+      % add(id)
+      % add(id,length)
       % add(id,size)
       % add(id,obj)
-      if isnumeric(in2)
+      if nargin==2
+        % add(id)
+        N = 1;
+        M = 1;
+        K = 1;
+        obj = OclMatrix([N,M]);
+      elseif isnumeric(in2) && length(in2) == 1
+        % args:(id,length)
+        N = in2;
+        M = 1;
+        K = 1;
+        obj = OclMatrix([N,M]);
+      elseif isnumeric(in2)
         % args:(id,size)
         N = in2(1);
         M = in2(2);
