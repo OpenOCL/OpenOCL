@@ -34,7 +34,7 @@ classdef CasadiNLPSolver < NLPSolver
           name = [id,'_',num2str(j)];
           pos = el.positions(:,:,j);
           var = casadi.MX.sym(name,numel(pos));
-          vars(pos(1))=var;
+          vars{pos(1)}=var;
         end
       end
       vars = vertcat(vars{:});
