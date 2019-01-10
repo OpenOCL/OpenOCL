@@ -101,7 +101,7 @@ classdef Variable < handle
         end
       end
       
-      dotsStr = ''
+      dotsStr = '';
       if numel(valueStr) >= Variable.MAX_DISP_LENGTH 
         valueStr = valueStr(1:Variable.MAX_DISP_LENGTH);
         dotsStr = '...';
