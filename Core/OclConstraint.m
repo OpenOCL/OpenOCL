@@ -1,5 +1,5 @@
 classdef OclConstraint < handle
-  %CONSTRAINTS Constraints 
+  %CONSTRAINT OclConstraint
   %   Create, store and access constraints with this class
   
   properties

@@ -21,14 +21,15 @@ function runTests(testExamples,version,changeMessage)
     error('Test directory not set. Run StartupOCL again.')
   end
   
-  tests{1}.name = 'Variable';     tests{1}.file = 'testVariable';
-  tests{2}.name = 'TreeVariable'; tests{2}.file = 'testTreeVariable';
-  tests{3}.name = 'VarStructure'; tests{3}.file = 'testVarStructure';
-  tests{4}.name = 'OclFunction';  tests{4}.file = 'testOclFunction';
-  tests{5}.name = 'OclSystem';    tests{5}.file = 'testOclSystem';
+  tests{1}.name = 'Variable';     tests{end}.file = 'testVariable';
+  tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'testTreeVariable';
+  tests{end+1}.name = 'VarStructure'; tests{end}.file = 'testVarStructure';
+  tests{end+1}.name = 'OclFunction';  tests{end}.file = 'testOclFunction';
+  tests{end+1}.name = 'OclSystem';    tests{end}.file = 'testOclSystem';
+  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'testOclOCP';
   
   if testExamples
-    tests{6}.name = 'Example';      tests{6}.file = 'testExamples';
+    tests{end+1}.name = 'Example';      tests{end}.file = 'testExamples';
   end
   
   NTests = length(tests);

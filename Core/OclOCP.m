@@ -55,7 +55,7 @@ classdef OclOCP < handle
     end
     
     function addDiscreteCost(self,expr)
-      self.discreteCosts = self.discreteCosts + Variable.getValueAsColumn(expr);
+      self.thisDiscreteCosts = self.thisDiscreteCosts + Variable.getValueAsColumn(expr);
     end
     
   end
