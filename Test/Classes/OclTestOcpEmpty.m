@@ -1,0 +1,2 @@
+classdef OclTestOcpEmpty < OclOCP
+end
