@@ -1,9 +1,7 @@
 function runTests(testExamples,version,changeMessage)
-  % runTests(version,changeMessage)
-  % Run all tests with version (e.g. 1.01a) and a message that describes
-  % the changes of this test with respect to the previous version.
-  % Indicate wether examples or tests were added because than the runtime
-  % of test will differ from preious versions.
+  % runTests()
+  % runTests(testExamples)
+  % runTests(testExamples,version,changeMessage)
   
   if nargin < 1
     testExamples  = false;
@@ -21,7 +19,7 @@ function runTests(testExamples,version,changeMessage)
     error('Test directory not set. Run StartupOCL again.')
   end
   
-  tests{1}.name = 'Variable';     tests{end}.file = 'testVariable';
+  tests{1}.name = 'Variable';         tests{end}.file = 'testVariable';
   tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'testTreeVariable';
   tests{end+1}.name = 'VarStructure'; tests{end}.file = 'testVarStructure';
   tests{end+1}.name = 'OclFunction';  tests{end}.file = 'testOclFunction';
@@ -33,7 +31,6 @@ function runTests(testExamples,version,changeMessage)
   end
   
   NTests = length(tests);
- 
   
   % turn off figures for testing examples
   if testExamples
