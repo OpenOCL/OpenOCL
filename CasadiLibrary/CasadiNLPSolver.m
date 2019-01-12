@@ -88,7 +88,7 @@ classdef CasadiNLPSolver < NLPSolver
       
       % detect variables as parameters if they are constant (lb==ub)
       nv = self.nlp.nlpFun.inputSizes{1};
-      [lbv,ubv] = self.nlp.getBounds();
+      [lbv,ubv] = self.getNlpBounds();
       paramIndizes = [];
       params = [];
       varIndizes = 1:nv;

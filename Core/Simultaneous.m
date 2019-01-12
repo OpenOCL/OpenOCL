@@ -13,8 +13,6 @@ classdef Simultaneous < handle
   end
   
   properties(Access = private)
-    lowerBounds
-    upperBounds
     scalingMin
     scalingMax
     N
@@ -57,47 +55,16 @@ classdef Simultaneous < handle
       % initialize bounds      
       nlpVarsFlatFlat = self.varsStruct.flat();
       
-      self.lowerBounds = Variable.create(nlpVarsFlatFlat,-inf);
-      self.upperBounds = Variable.create(nlpVarsFlatFlat,inf);
-      self.lowerBounds.time.set(0);
-      
       self.scalingMin = Variable.create(nlpVarsFlatFlat,0);
       self.scalingMax = Variable.create(nlpVarsFlatFlat,1);
       
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
     end    
-
-    function [lb,ub] = getBounds(self)
-      lb = self.lowerBounds.value;
-      ub = self.upperBounds.value;
-    end
     
     function [scalingMin,scalingMax] = getScaling(self)
       scalingMin = self.scalingMin;
       scalingMax = self.scalingMax;
-    end
-
-    function initialGuess = getInitialGuess(self)
-      initialGuess = Variable.create(self.varsStruct,0);
-      
-      [lb,ub] = getBounds(self);
-      
-      guessValues = (lb + ub) / 2;
-      
-      % set to lowerBounds if upperBounds are inf
-      indizes = isinf(ub);
-      guessValues(indizes) = lb(indizes);
-      
-      % set to upperBounds of lowerBounds are inf
-      indizes = isinf(lb);
-      guessValues(indizes) = ub(indizes);
-      
-      % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lb) & isinf(ub);
-      guessValues(indizes) = 0;
-
-      initialGuess.set(guessValues);
     end
     
     function interpolateGuess(self,guess)
@@ -111,61 +78,6 @@ classdef Simultaneous < handle
       % setParameter(id,lower,upper)
       % setParameter(id,value)     
       self.setBound(id,'all',varargin{:},false)
-    end
-    
-    function setInitialBounds(self,id,varargin)
-      % setInitialBound(id,lower,upper)
-      % setInitialBound(id,value)     
-      self.setBound(id,1,varargin{:},false)
-    end
-    
-    function setEndBounds(self,id,varargin)
-      % setEndBound(id,lower,upper)
-      % setEndBound(id,value)     
-      self.setBound(id,'end',varargin{:},false)
-    end
-    
-    function setBounds(self,id,varargin)
-      % setVariableBound(id,lower,upper)
-      % setVariableBound(id,value)     
-      self.setBound(id,'all',varargin{:})
-    end
-    
-    function setBound(self,id,slice,varargin)
-      % addBound(id,slice,lower,upper,showWarning=true)
-      % addBound(id,slice,value,showWarning=true)
-      
-      if nargin == 4
-        lower = varargin{1};
-        upper = varargin{1};
-        showWarning = true;
-      elseif nargin == 5
-        if islogical(varargin{2})
-          lower = varargin{1};
-          upper = varargin{1};
-          showWarning = varargin{2};
-        else
-          lower = varargin{1};
-          upper = varargin{2};
-          showWarning = true;
-        end
-      elseif nargin == 6
-          lower = varargin{1};
-          upper = varargin{2};
-          showWarning = varargin{3};
-      end
-      lowValNotInf = ~isinf(self.lowerBounds.get(id).get(slice).value);
-      upValNotInf  = ~isinf(self.upperBounds.get(id).get(slice).value);
-      if showWarning && (any(lowValNotInf(:)) || any(upValNotInf(:)))
-        warning(['Existing bound overwritten. Make sure that setBounds ', ...
-                 'is always called before setInitialBounds and setEndBounds']);
-      end
-      
-      self.lowerBounds.get(id).get('all','all',slice).set(lower);
-      self.upperBounds.get(id).get('all','all',slice).set(upper);
-      
-      self.scalingMin.get(id).get('all','all',slice).set(lower);
-      self.scalingMax.get(id).get('all','all',slice).set(upper);
     end
     
     function setVariableScaling(self,id,varargin)

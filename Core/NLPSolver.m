@@ -68,7 +68,7 @@ classdef NLPSolver < handle
       self.parameters = struct;
     end
     
-    function solve(self,varargin)
+    function solve(~,varargin)
       % -
       % name: solve
       % desc: Calls the solver and starts doing iterations.
@@ -84,7 +84,7 @@ classdef NLPSolver < handle
       oclError('Not implemented. Call CasadiNLPSolver instead.');
     end
     
-    function r = getInitialGuess(self)
+    function initialGuess = getInitialGuess(self)
       % -
       % name: getInitialGuess
       % desc: >
@@ -96,7 +96,27 @@ classdef NLPSolver < handle
       %   - type: [OclVariable](#apiocl_variable)
       %     desc: Structured variable for setting the initial guess
       igTic = tic;
-      r = self.nlp.getInitialGuess(varargin{:});
+      
+      initialGuess = Variable.create(self.nlp.varsStruct,0);
+      
+      [lb,ub] = self.getNlpBounds();
+      
+      guessValues = (lb + ub) / 2;
+      
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(ub);
+      guessValues(indizes) = lb(indizes);
+      
+      % set to upperBounds of lowerBounds are inf
+      indizes = isinf(lb);
+      guessValues(indizes) = ub(indizes);
+      
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lb) & isinf(ub);
+      guessValues(indizes) = 0;
+
+      initialGuess.set(guessValues);
+      
       self.timeMeasures.initialGuess = toc(igTic);
     end
     
@@ -140,7 +160,7 @@ classdef NLPSolver < handle
       end
     end
     
-    function setInitialBounds(self,varargin)
+    function setInitialBounds(self,id,in3,in4)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.initialBounds.(id) = struct;
@@ -153,7 +173,7 @@ classdef NLPSolver < handle
       end
     end
     
-    function setEndBounds(self,varargin)
+    function setEndBounds(self,id,in3,in4)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
       self.endBounds.(id) = struct;
@@ -166,9 +186,40 @@ classdef NLPSolver < handle
       end
     end    
     
-    function getNlpBounds(self)
+    function [lowerBounds,upperBounds] = getNlpBounds(self)
       
       boundsStruct = self.nlp.varsStruct.flat();
+      lowerBounds = Variable.create(boundsStruct,-inf);
+      upperBounds = Variable.create(boundsStruct,inf);
+      
+      lowerBounds.time.set(0);
+      
+      % trajectory bounds
+      names = fieldnames(self.bounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).set(self.bounds.(id).lower);
+        upperBounds.get(id).set(self.bounds.(id).upper);
+      end
+      
+      % initial bounds
+      names = fieldnames(self.initialBounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).get('all','all',1).set(self.initialBounds.(id).lower);
+        upperBounds.get(id).get('all','all',1).set(self.initialBounds.(id).upper);
+      end
+      
+      % end bounds
+      names = fieldnames(self.endBounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).get('all','all','end').set(self.endBounds.(id).lower);
+        upperBounds.get(id).get('all','all','end').set(self.endBounds.(id).upper);
+      end
+      
+      lowerBounds = lowerBounds.value;
+      upperBounds = upperBounds.value;
       
     end
     
