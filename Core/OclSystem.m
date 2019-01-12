@@ -35,8 +35,10 @@ classdef (Abstract) OclSystem < handle
       self.parametersStruct = OclStructure();
       
       self.bounds = struct;
-      
       self.ode = struct;
+    end
+    
+    function setup(self)
       self.setupVariables;
       
       sx = self.statesStruct.size();

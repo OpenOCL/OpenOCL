@@ -6,12 +6,7 @@ classdef BallAndBeamSystem < OclSystem
     tau_b
   end
   methods
-  
-    function self = BallAndBeamSystem()
-      % bounds
 
-    end
-  
     function setupVariables(self)
       
       self.r_b      = 1;           % beam length [m]

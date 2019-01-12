@@ -6,6 +6,7 @@ addpath(fullfile(oclDir,'Test','Classes'));
 % ocp empty test
 ocp = OclTestOcpEmpty;
 s = OclTestSystemEmpty;
+s.setup();
 h = OCPHandler(ocp,s,OclMatrix([0,1]));
 assertEqual(h.pathCostsFun.evaluate([],[],[],1,1,[]),0);
 assertEqual(h.arrivalCostsFun.evaluate([],1,[]),0);
@@ -22,6 +23,7 @@ assertEqual(ub,[]);
 % ocp valid test
 ocp = OclTestOcpValid;
 s = OclTestSystemValid;
+s.setup();
 N = 2;
 nv = (N+1)*s.nx+N*s.nu;
 h = OCPHandler(ocp,s,OclMatrix([nv,1]));
