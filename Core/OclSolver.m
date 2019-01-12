@@ -8,11 +8,9 @@ function solver = OclSolver(system, ocp, options)
   integrator.ocpHandler = ocpHandler;
   nlp.ocpHandler = ocpHandler;
 
-  if ~options.debug
-    ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-    system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
-    nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
-  end
+  ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
+  system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
+  nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
     
   if strcmp(options.solverInterface,'casadi')
     preparationTime = toc(preparationTic);

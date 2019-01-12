@@ -11,10 +11,6 @@ options.nlp.solver = 'ipopt';
 
 ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options);
 
-% state and control bounds
-ocl.setBounds('x',    -0.25, inf);   % -0.25 <= x <= inf
-ocl.setBounds('u',    -1,    1);     % -1    <= u <= 1
-
 % intial state bounds
 ocl.setInitialBounds('x',     0);            % x1 == 0
 ocl.setInitialBounds('y',     1);            % y1 == 1

@@ -14,7 +14,10 @@ classdef (Abstract) OclSystem < handle
     ode
     alg
     
+    bounds
+    
     thisInitialConditions
+    
     systemFun
     icFun
   end
@@ -30,6 +33,8 @@ classdef (Abstract) OclSystem < handle
       self.algVarsStruct    = OclStructure();
       self.controlsStruct   = OclStructure();
       self.parametersStruct = OclStructure();
+      
+      self.bounds = struct;
       
       self.ode = struct;
       self.setupVariables;
@@ -116,18 +121,69 @@ classdef (Abstract) OclSystem < handle
       ic = self.thisInitialConditions;
     end
     
-    function addState(self,id,varargin)
+    function addState(self,id,s,lb,ub)
+      % addState(id)
+      % addState(id,size)
+      % addState(id,size,lb,ub)
+      if nargin==2
+        s = 1;
+      end
+      if nargin <=3
+        lb = -inf;
+        ub = inf;
+      end
       self.ode.(id) = [];
-      self.statesStruct.add(id,varargin{:});
+      self.statesStruct.add(id,s);
+      self.bounds.(id).lower = lb;
+      self.bounds.(id).upper = ub;
     end
-    function addAlgVar(self,id,varargin)
-      self.algVarsStruct.add(id,varargin{:});
+    function addAlgVar(self,id,s,lb,ub)
+      % addAlgVar(id)
+      % addAlgVar(id,size)
+      % addAlgVar(id,size,lb,ub)
+      if nargin==2
+        s = 1;
+      end
+      if nargin <=3
+        lb = -inf;
+        ub = inf;
+      end
+      self.algVarsStruct.add(id,s);
+      self.bounds.(id).lower = lb;
+      self.bounds.(id).upper = ub;
     end
-    function addControl(self,id,varargin)
-      self.controlsStruct.add(id,varargin{:});
+    function addControl(self,id,s,lb,ub)
+      % addControl(id)
+      % addControl(id,size)
+      % addControl(id,size,lb,ub)
+      if nargin==2
+        s = 1;
+      end
+      if nargin <=3
+        lb = -inf;
+        ub = inf;
+      end
+      self.controlsStruct.add(id,s);
+      self.bounds.(id).lower = lb;
+      self.bounds.(id).upper = ub;
     end
-    function addParameter(self,id,varargin)
-      self.parametersStruct.add(id,varargin{:});
+    function addParameter(self,id,s,defaultValue)
+      % addParameter(id)
+      % addParameter(id,size)
+      % addParameter(id,size,defaultValue)
+      if nargin==2
+        s = 1;
+      end
+      if nargin <=3
+        lb = -inf;
+        ub = inf;
+      else
+        lb = defaultValue;
+        ub = defaultValue;
+      end
+      self.parametersStruct.add(id,s);
+      self.bounds.(id).lower = lb;
+      self.bounds.(id).upper = ub;
     end
 
     function setODE(self,id,eq)

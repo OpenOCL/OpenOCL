@@ -1,18 +1,28 @@
 classdef BallAndBeamSystem < OclSystem
   methods
     function setupVariables(self)
-      self.addState('r');
-      self.addState('dr');
-      self.addState('theta');
-      self.addState('dtheta');
       
-      self.addControl('tau');
+      % bounds
+      r_b      = 1;           % beam length [m]
+      theta_b  = deg2rad(30); % max angle [deg]
+      dtheta_b = deg2rad(50); % max angular speed [deg/s]
+      tau_b    = 20;          % bound torque [Nm]
+
+      % addState(id,size,lowerBound,upperBound)
+      self.addState('r',      1, -r_b      , r_b      );
+      self.addState('dr',     1, -theta_b  , theta_b  );
+      self.addState('theta'                           );
+      self.addState('dtheta', 1, -dtheta_b , dtheta_b );
       
-      self.addParameter('I'); % Inertia Beam 
-      self.addParameter('J'); % Inertia Ball
-      self.addParameter('m'); % mass ball
-      self.addParameter('R'); % radious ball
-      self.addParameter('g'); % gravity
+      % addControl(id,size,lowerBound,upperBound)
+      self.addControl('tau',  1, -tau_b    , tau_b    );
+      
+      % addParamter(id,size,defaultValue)
+      self.addParameter('I',1, 0.5);        % Inertia Beam 
+      self.addParameter('J',1, 25*10^(-3)); % Inertia Ball
+      self.addParameter('m',1, 2);          % mass ball
+      self.addParameter('R',1, 0.05);       % radious ball
+      self.addParameter('g',1, 9.81);       % gravity
     end
     function setupEquation(self,states,algVars,controls,parameters)
       I = parameters.I;

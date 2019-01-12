@@ -3,12 +3,13 @@ classdef VanDerPolSystem < OclSystem
 
   methods
     function setupVariables(self)    
-      % Define two scalar state variables
-      self.addState('x');
+      % Scalar x:  -0.25 <= x <= inf
+      % Scalar y: unbounded
+      self.addState('x',1,-0.25,inf);
       self.addState('y');
       
-      % Define a scalar control variable
-      self.addControl('u');
+      % Scalar u: -1 <= u <= 1
+      self.addControl('u',1,-1,1);
     end
     function setupEquation(self,states,algVars,controls,parameters)     
       % Get access to the system variables

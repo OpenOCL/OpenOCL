@@ -194,7 +194,15 @@ classdef NLPSolver < handle
       
       lowerBounds.time.set(0);
       
-      % trajectory bounds
+      % system bounds
+      names = fieldnames(self.nlp.system.bounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).set(self.nlp.system.bounds.(id).lower);
+        upperBounds.get(id).set(self.nlp.system.bounds.(id).upper);
+      end
+      
+      % solver bounds
       names = fieldnames(self.bounds);
       for i=1:length(names)
         id = names{i};
