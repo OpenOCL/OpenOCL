@@ -223,6 +223,10 @@ classdef Variable < handle
         r = Variable.createFromVar(self.type,p,self);
       end
     end
+    
+    function r = slice(self,varargin)
+      r = self.get(varargin{:});
+    end
 
     function toJSON(self,path,name,varargin)
       % toJSON(self,path,name,opt)
