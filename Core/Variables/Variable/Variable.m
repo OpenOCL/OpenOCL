@@ -196,8 +196,8 @@ classdef Variable < handle
       s = size(self.positions);      
     end
     
-    function r = numel(self)
-      r = prod(self.size)
+    function r = end(self,k,n)
+      r = builtin('end',self.positions,k,n);
     end
 
     function r = get(self,varargin)
