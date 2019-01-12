@@ -68,18 +68,16 @@ assert( isequal(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1)
 % slice on selection
 assert(isequal(v.x(:,:,1).p.value,[100;0;50]))
 
-% :, all, end
-assert(isequal(v('all').value,v.value)) 
-if ~isOctave
-  assert(isequal(v(':').value,v.value))
-end
-v.x(:,:,'end').set((2:19)')
+% :, end
+assert(isequal(v(':').value,v.value))
+v.x(:,:,end).set((2:19)')
 
-assert(isequal(v.x(:,:,'end').get(2).value,3))
+assert(isequal(v.x(:,:,end).get(2).value,3))
 
-assert(isequal(v.x(:,:,'end').get('end').value,19))
-assert(isequal(v.x(:,:,'end').get(2).value,3))
-assert(isequal(v.x(:,:,'end').get('end').value,19))
+xend = v.x(:,:,end);
+assert(isequal(xend(end).value,19))
+assert(isequal(xend(2).value,3))
+assert(isequal(xend(end).value,19))
 
 % str
 v.str();
@@ -100,10 +98,6 @@ assertEqual(v.x.R(2,3,4).value, A(2,3,4));
 assertEqual(v.x.R(:).value, A(:));
 assertEqual(v.x.R(:,:).value, A(:,:));
 assertEqual(v.x.R(:,:,:).value, A(:,:,:));
-
-assertEqual(v.x.R('all').value, A(:));
-assertEqual(v.x.R('all','all').value, A(:,:));
-assertEqual(v.x.R('all','all','all').value, A(:,:,:));
 
 assertEqual(v.x.R('end').value, A('end'));
 assertEqual(v.x.R('end','end').value, A('end','end'));

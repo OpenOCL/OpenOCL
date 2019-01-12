@@ -195,6 +195,10 @@ classdef Variable < handle
     function s = size(self)
       s = size(self.positions);      
     end
+    
+    function r = numel(self)
+      r = prod(self.size)
+    end
 
     function r = get(self,varargin)
       % r = get(self,id)
@@ -207,25 +211,8 @@ classdef Variable < handle
         % get(id)
         [t,p] = self.type.get(in1,self.positions);
         r = Variable.createFromVar(t,p,self);
-      elseif length(varargin)==1
-        % get(index)
-        if isAllOperator(varargin{1})
-          p = self.positions(:);
-        elseif strcmp(varargin{1},'end')
-          p = self.positions(end);
-        else
-          p = self.positions(varargin{1});
-        end
-        r = Variable.createFromVar(self.type,p,self);
       else
         % get(dim1,dim2,dim3)
-        for k=1:length(varargin)
-          if isAllOperator(varargin{k})
-            varargin{k} = (1:size(self.positions,k)).';
-          elseif strcmp(varargin{k},'end')
-            varargin{k} = size(self.positions,k);
-          end
-        end
         % slice
         p = self.positions(varargin{:});
         r = Variable.createFromVar(self.type,p,self);
