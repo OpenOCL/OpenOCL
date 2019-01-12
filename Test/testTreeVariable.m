@@ -30,17 +30,17 @@ u.add('ail',[1,1]);
 
 state = Variable.create(x,0);
 
-state.get('R') = eye(3);
-state.get('p') = [100;0;-50];
-state.get('v') = [20;0;0];
-state.get('w') = [0;1;0.1];
+state.R = eye(3);
+state.p = [100;0;-50];
+state.v = [20;0;0];
+state.w = [0;1;0.1];
 
-assert( isequal( state.get('R').value,   eye(3) ) )
-assert( isequal( state.get('p').value,   [100;0;-50] ) )
-assert( isequal( state.get('v').value,   [20;0;0] ) )
-assert( isequal( state.get('w').value,   [0;1;0.1] ) )
+assert( isequal( state.R.value,   eye(3) ) )
+assert( isequal( state.p.value,   [100;0;-50] ) )
+assert( isequal( state.v.value,   [20;0;0] ) )
+assert( isequal( state.w.value,   [0;1;0.1] ) )
 
-state.get('p') = [100;0;50];
+state.p = [100;0;50];
 
 assert( isequal( state.get('p').value,   [100;0;50] ) )
 assert( isequal( state.size,   [18 1] ) )
@@ -50,16 +50,17 @@ ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
 v = Variable.create(ocpVar,0);
-v.get('x').get('R') = eye(3);
+v.get('x').R
+v.get('x').R = eye(3);
 v.get('x').get('p') = [100;0;50];
 v.get('x').get('v') = [20;0;0];
-v.get('x').get('w') = [0;1;0.1];
+v.get('x').w = [0;1;0.1];
 
 assert( isequal( v.x(:,:,4:6).p(1,:,:).value, [100;100;100]));
 
 
-v.get('x').get('R') = eye(3);
-assert( isequal(v.get('x').get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
+v.get('x').R = eye(3);
+assert( isequal(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
 assert(isequal(v.x(:,:,1).R.value,eye(3)))
 
 v.get('x').get('R') = ones(3,3);

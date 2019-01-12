@@ -156,8 +156,12 @@ classdef Variable < handle
           % v.x.get(3).set(2).value || v.x.y.get(1)
           v = self.get(s(1).subs);
           [varargout{1:nargout}] = subsref(v,s(2:end));
+        elseif numel(s) > 2
+          % v.get(4).x.value || v.get(id).value
+          v = self.get(s(2).subs{:});
+          [varargout{1:nargout}] = subsref(v,s(3:end));
         else
-          % v.value || v.set(1) || v.get(4).set(3).x.value
+          % v.slice(1) || v.get(id)
           [varargout{1:nargout}] = builtin('subsref',self,s);
         end
       else
@@ -174,7 +178,7 @@ classdef Variable < handle
       v = Variable.getValue(v);
       
       if numel(s)==1 && strcmp(s.type,'()')
-        self.set(v);
+        self.get(s.subs{:}).set(v);
       else
         subVar = subsref(self,s);
         subVar.set(v);
