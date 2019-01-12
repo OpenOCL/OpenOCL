@@ -1,5 +1,6 @@
 function solver = OclSolver(system, ocp, options)
   preparationTic = tic;
+  system.setup();
   N = options.nlp.controlIntervals;
   integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
   nlp = Simultaneous(system,integrator,N);

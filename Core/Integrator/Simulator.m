@@ -22,6 +22,8 @@ classdef Simulator < handle
         self.options = options;
       end
       
+      system.setup();
+      
       self.integrator = CasadiIntegrator(system);
       self.system = system;
       self.system.systemFun = CasadiFunction(self.system.systemFun);
