@@ -13,8 +13,6 @@ classdef Simultaneous < handle
   end
   
   properties(Access = private)
-    scalingMin
-    scalingMax
     N
     nx
     ni
@@ -51,21 +49,10 @@ classdef Simultaneous < handle
       self.timesStruct.addRepeated({'states','integrator','controls'},...
                                    {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
       self.timesStruct.add('states',OclMatrix([1,1]));
-      
-      % initialize bounds      
-      nlpVarsFlatFlat = self.varsStruct.flat();
-      
-      self.scalingMin = Variable.create(nlpVarsFlatFlat,0);
-      self.scalingMax = Variable.create(nlpVarsFlatFlat,1);
-      
+
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
     end    
-    
-    function [scalingMin,scalingMax] = getScaling(self)
-      scalingMin = self.scalingMin;
-      scalingMax = self.scalingMax;
-    end
     
     function interpolateGuess(self,guess)
       for i=1:self.N
@@ -73,36 +60,7 @@ classdef Simultaneous < handle
         guess.integrator(:,:,i).states.set(state);
       end
     end
-    
-    function setParameter(self,id,varargin)
-      % setParameter(id,lower,upper)
-      % setParameter(id,value)     
-      self.setBound(id,'all',varargin{:},false)
-    end
-    
-    function setVariableScaling(self,id,varargin)
-      % setVariableScaling(id,lower,upper)
-      % setVariableScaling(id,value)     
-      self.setScaling(id,'all',varargin{:})
-    end
-    
-    function setScaling(self,id,slice,valMin,valMax)
-      
-      if valMin == valMax
-        error('Can not scale with zero range for the variable');
-      end
-      self.scalingMin.get(id,slice).set(valMin);
-      self.scalingMax.get(id,slice).set(valMax);     
-    end
-    
-    function checkScaling(self)
-      
-      if any(isinf(self.scalingMin.value)) || any(isinf(self.scalingMax.value))
-        error('Scaling information for some variable missing. Provide scaling for all variables or set scaling option to false.');
-      end
-      
-    end
-    
+
     function getCallback(self,var,values)
       self.ocpHandler.callbackFunction(var,values);
     end
