@@ -169,14 +169,13 @@ classdef Variable < handle
       end
     end % subsref
     
-    function subsasgn(self,s,v)
+    function self = subsasgn(self,s,v)
       % v = 1
       % v(1) = 1
       % v.get(1) = 1
       % v.value(1) = 1
       % v* = Variable
       v = Variable.getValue(v);
-      
       subVar = subsref(self,s);
       subVar.set(v);
     end

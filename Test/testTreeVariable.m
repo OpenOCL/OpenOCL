@@ -50,10 +50,10 @@ ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
 v = Variable.create(ocpVar,0);
-v.get('x').R = eye(3);
-v.get('x').get('p') = [100;0;50];
-v.get('x').get('v') = [20;0;0];
-v.get('x').w = [0;1;0.1];
+v.x.R = eye(3);
+v.x.p = [100;0;50];
+v.x.v = [20;0;0];
+v.x.w = [0;1;0.1];
 
 assert( isequal( v.x(:,:,4:6).p(1,:,:).value, [100;100;100]));
 
