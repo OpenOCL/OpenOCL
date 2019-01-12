@@ -9,13 +9,15 @@ classdef BallAndBeamSystem < OclSystem
   
     function self = BallAndBeamSystem()
       % bounds
+
+    end
+  
+    function setupVariables(self)
+      
       self.r_b      = 1;           % beam length [m]
       self.theta_b  = deg2rad(30); % max angle [deg]
       self.dtheta_b = deg2rad(50); % max angular speed [deg/s]
       self.tau_b    = 20;          % bound torque [Nm]
-    end
-  
-    function setupVariables(self)
 
       % addState(id,size,lowerBound,upperBound)
       self.addState('r',      1, -self.r_b      , self.r_b      );
@@ -24,7 +26,7 @@ classdef BallAndBeamSystem < OclSystem
       self.addState('dtheta', 1, -self.dtheta_b , self.dtheta_b );
       
       % addControl(id,size,lowerBound,upperBound)
-      self.addControl('tau',  1, -tau_b    , tau_b    );
+      self.addControl('tau',  1, -self.tau_b    , self.tau_b    );
       
       % addParamter(id,size,defaultValue)
       self.addParameter('I',1, 0.5);        % Inertia Beam 
