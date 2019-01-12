@@ -174,10 +174,10 @@ classdef Variable < handle
       v = Variable.getValue(v);
       
       if numel(s)==1 && strcmp(s.type,'()')
-        self.get(s.subs{:}).set(v);
+        self.set(v);
       else
-        v = subsasgn(self.get(s.subs),s(2:end),v);
-        self.set(builtin('subsasgn',self,s,v));
+        subVar = subsref(self,s);
+        subVar.set(v);
       end
     end
     
