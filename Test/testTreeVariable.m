@@ -86,3 +86,32 @@ v.str();
 v.x.str();
 v.x.R.str();
 
+% automatic slice testing
+A = randi(10,v.x.R.size);
+v.x.R.set(num2cell(A,[1,2]));
+
+assertEqual(v.x.R(1).value, A(1));
+assertEqual(v.x.R(1,1).value, A(1,1));
+assertEqual(v.x.R(3,1).value, A(3,1));
+assertEqual(v.x.R(2,3).value, A(2,3));
+assertEqual(v.x.R(1,1,1).value, A(1,1,1));
+assertEqual(v.x.R(2,3,4).value, A(2,3,4));
+
+assertEqual(v.x.R(:).value, A(:));
+assertEqual(v.x.R(:,:).value, A(:,:));
+assertEqual(v.x.R(:,:,:).value, A(:,:,:));
+
+assertEqual(v.x.R('all').value, A(:));
+assertEqual(v.x.R('all','all').value, A(:,:));
+assertEqual(v.x.R('all','all','all').value, A(:,:,:));
+
+assertEqual(v.x.R('end').value, A('end'));
+assertEqual(v.x.R('end','end').value, A('end','end'));
+assertEqual(v.x.R('end','end','end').value, A('end','end','end'));
+
+assertEqual(v.x.R(1:2,[1,3],2:5).value, A(1:2,[1,3],2:5));
+assertEqual(v.x.R(:,2,:).value, A(:,2,:));
+assertEqual(v.x.R(:,:,3).value, A(:,:,3));
+assertEqual(v.x.R(:,2).value, A(:,2));
+
+

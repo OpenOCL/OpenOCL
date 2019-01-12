@@ -207,6 +207,16 @@ classdef Variable < handle
         % get(id)
         [t,p] = self.type.get(in1,self.positions);
         r = Variable.createFromVar(t,p,self);
+      elseif length(varargin)==1
+        % get(index)
+        if isAllOperator(varargin{1})
+          p = self.positions(:);
+        elseif strcmp(varargin{1},'end')
+          p = self.positions(end);
+        else
+          p = self.positions(varargin{1});
+        end
+        r = Variable.createFromVar(self.type,p,self);
       else
         % get(dim1,dim2,dim3)
         for k=1:length(varargin)
@@ -216,13 +226,12 @@ classdef Variable < handle
             varargin{k} = size(self.positions,k);
           end
         end
-        p = self.positions;
         % slice
-        p = p(varargin{:});
+        p = self.positions(varargin{:});
         r = Variable.createFromVar(self.type,p,self);
       end
     end
-    
+
     function toJSON(self,path,name,varargin)
       % toJSON(self,path,name,opt)
       if nargin==1
