@@ -50,7 +50,6 @@ ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
 v = Variable.create(ocpVar,0);
-v.get('x').R
 v.get('x').R = eye(3);
 v.get('x').get('p') = [100;0;50];
 v.get('x').get('v') = [20;0;0];
