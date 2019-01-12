@@ -169,7 +169,7 @@ classdef Variable < handle
       end
     end % subsref
     
-    function self = subsasgn(self,s,v)
+    function subsasgn(self,s,v)
       % v = 1
       % v(1) = 1
       % v.get(1) = 1
@@ -177,12 +177,8 @@ classdef Variable < handle
       % v* = Variable
       v = Variable.getValue(v);
       
-      if numel(s)==1 && strcmp(s.type,'()')
-        self.get(s.subs{:}).set(v);
-      else
-        subVar = subsref(self,s);
-        subVar.set(v);
-      end
+      subVar = subsref(self,s);
+      subVar.set(v);
     end
     
     %%% delegate methods to OclValue

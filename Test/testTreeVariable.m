@@ -114,3 +114,5 @@ assertSqueezeEqual(v.x.R(:,2,:).value, A(:,2,:));
 assertEqual(v.x.R(:,:,3).value, A(:,:,3));
 assertEqual(v.x.R(:,2).value, A(:,2));
 
+v.x(:,1,2) = 2
+
