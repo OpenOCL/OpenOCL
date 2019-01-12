@@ -105,6 +105,10 @@ assertEqual(v.x.R(end).value, A(end));
 assertEqual(v.x.R(end,end).value, A(end,end));
 assertEqual(v.x.R(end,end,end).value, A(end,end,end));
 
+assertEqual(v.x.R(end-3).value, A(end-3));
+assertEqual(v.x.R(end-2,end-3).value, A(end-2,end-3));
+assertEqual(v.x.R(end,:,end-4).value, A(end,:,end-4));
+
 assertSqueezeEqual(v.x.R(1:2,[1,3],2:5).value, A(1:2,[1,3],2:5));
 assertSqueezeEqual(v.x.R(:,2,:).value, A(:,2,:));
 assertEqual(v.x.R(:,:,3).value, A(:,:,3));
