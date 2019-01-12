@@ -195,16 +195,14 @@ classdef Variable < handle
     function s = size(self)
       s = size(self.positions);      
     end
-    
-    function r = numel(self)
-      r = builtin('numel',self);
-      if isOctave()
-        r = prod(self.size());
-      end
-    end
-    
-    function r = end(self,k,n)
-      r = builtin('end',self.positions,k,n);
+
+    function ind = end(self,k,n)
+       szd = size(self.positions);
+       if k < n
+          ind = szd(k);
+       else
+          ind = prod(szd(k:end));
+       end
     end
 
     function r = get(self,varargin)
