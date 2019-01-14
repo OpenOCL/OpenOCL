@@ -6,7 +6,7 @@ function solver = OclSolver(system, ocp, options)
   nlp = Simultaneous(system,integrator,N);
 
   ocpHandler = OCPHandler(ocp,system,nlp.varsStruct);
-  integrator.ocpHandler = ocpHandler;
+  integrator.pathCostsFun = ocpHandler.pathCostsFun;
   nlp.ocpHandler = ocpHandler;
 
   ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);

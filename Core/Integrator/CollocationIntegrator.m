@@ -15,7 +15,7 @@ classdef CollocationIntegrator < handle
   properties
     system
     integratorFun
-    ocpHandler
+    pathCostsFun
     varsStruct
     nx
     nz
@@ -95,7 +95,7 @@ classdef CollocationIntegrator < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.ocpHandler.pathCostsFun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,time,ocpEndTime,parameters);
+        qj = self.pathCostsFun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,time,ocpEndTime,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 

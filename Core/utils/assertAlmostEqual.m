@@ -1,6 +1,9 @@
-function assertAlmostEqual(a,b,varargin)
+function assertAlmostEqual(a,b,eps,varargin)
   
-  eps = 1e-4;
+  if nargin<=2
+    eps = 1e-4;
+  end
+  
   a = a(:);
   b = b(:);
   assert(all(abs(a-b)<=eps), varargin{:});

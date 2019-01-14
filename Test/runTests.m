@@ -21,11 +21,11 @@ function runTests(testExamples,version,changeMessage)
   
   tests{1}.name = 'Variable';         tests{end}.file = 'testVariable';
   tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'testTreeVariable';
-
   tests{end+1}.name = 'VarStructure'; tests{end}.file = 'testVarStructure';
   tests{end+1}.name = 'OclFunction';  tests{end}.file = 'testOclFunction';
   tests{end+1}.name = 'OclSystem';    tests{end}.file = 'testOclSystem';
   tests{end+1}.name = 'OclOCP';       tests{end}.file = 'testOclOCP';
+  tests{end+1}.name = 'Integrator';   tests{end}.file = 'testOclIntegrator';
   
   if testExamples
     tests{end+1}.name = 'Example';      tests{end}.file = 'testExamples';
