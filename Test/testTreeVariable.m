@@ -70,7 +70,7 @@ assert(isequal(v.x(:,:,1).p.value,[100;0;50]))
 
 % :, end
 assert(isequal(v(':').value,v.value))
-v.x(:,:,end) = (2:19)';
+v.x(:,:,end).set((2:19));
 
 assert(isequal(v.x(:,:,end).get(2).value,3))
 
@@ -86,7 +86,7 @@ v.x.R.str();
 
 % automatic slice testing
 A = randi(10,v.x.R.size);
-v.x.R = num2cell(A,[1,2]);
+v.x.R.set(num2cell(A,[1,2]));
 
 assertEqual(v.x.R(1).value, A(1));
 assertEqual(v.x.R(1,1).value, A(1,1));
