@@ -67,3 +67,5 @@ pEnd = p0 + v0*T + 0.5*u*T^2;
 vEnd = v0 + u*T;
 
 assertAlmostEqual(x,[pEnd;vEnd],0.1);
+
+rmpath(fullfile(oclDir,'Test','Classes'));

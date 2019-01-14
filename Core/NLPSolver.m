@@ -7,7 +7,6 @@ classdef NLPSolver < handle
     bounds
     initialBounds
     endBounds
-    parameters
   end
   
   methods
@@ -17,7 +16,6 @@ classdef NLPSolver < handle
       
       self.initialBounds = struct;
       self.endBounds = struct;
-      self.parameters = struct;
     end
     
     function solve(~,varargin)
