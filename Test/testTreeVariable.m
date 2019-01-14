@@ -8,7 +8,7 @@ xStruct.add('x1',[1,2]);
 x = Variable.create(xStruct,4);
 
 %%% set
-x.set((1:10).');
+x(:) = (1:10).';
 assert(isequal(x.value,(1:10)'))
 
 %%% get by id
@@ -118,6 +118,7 @@ assertEqual(v.x.R(:,2).value, A(:,2));
 % set tests
 if ~isOctave()
   v.x.R(:,:,end) = eye(3);
+  assertEqual( v.x.R(:,:,end).value, eye(3) );
 end
 
 
