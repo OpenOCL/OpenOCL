@@ -45,6 +45,13 @@ function runTests(testExamples,version,changeMessage)
     test = tests{k};
     testResults{k} = runTest(test.name,str2func(test.file));
   end
+  
+  nFails = 0;
+  for k=1:NTests
+    if testResults{k}.passed == false
+      nFails = nFails + 1;
+    end
+  end
 
   %% save results
   fileName = [datestr(now,'yyyy-mm-dd_HHMMSS') '.txt'];
@@ -55,6 +62,15 @@ function runTests(testExamples,version,changeMessage)
   for k=1:NTests
     printResults(testResults{k});
   end
+  
+  if nFails >0
+    outputString = sprintf('%i Tests failed.\n\n',nFails);
+    fprintf(resultsFile,outputString);fprintf(2,outputString);
+  else
+    outputString = 'All tests passed!\n\n';
+    fprintf(resultsFile,outputString);fprintf(outputString);
+  end
+  
   fclose(resultsFile);
   
   if testExamples

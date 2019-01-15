@@ -24,7 +24,7 @@ usym = casadi.SX.sym('u',s.nu);
 pcFun = OclFunction(s,@(varargin)0,{[s.nx*d,1],[],[1,1],[1,1],[1,1],[]},1);
 integ.pathCostsFun = pcFun;
 
-[~, ~, ~, equations, times] = integ.integratorFun.evaluate(xsym,xisym,usym,t0,t0+h,tf,[],pcFun);
+[~, ~, ~, equations, times] = integ.integratorFun.evaluate(xsym,xisym,usym,t0,t0+h,tf,[]);
 
 nlp    = struct('x', vertcat(xsym,xisym,usym), 'f', 0, 'g', equations);
 
@@ -48,7 +48,7 @@ for i=1:N
   x = v(2+d*2-1:2+d*2);
 end
 
-assertAlmostEqual(x,[1;1]);
+assertAlmostEqual(x,[1;1],'Integrator test (constant velocity) failed');
 
 % constant start velocity, constant acceleration
 p0 = 2;
@@ -66,6 +66,6 @@ end
 pEnd = p0 + v0*T + 0.5*u*T^2;
 vEnd = v0 + u*T;
 
-assertAlmostEqual(x,[pEnd;vEnd],0.1);
+assertAlmostEqual(x,[pEnd;vEnd],'Integrator test (constant acceleration) failed',0.1);
 
 rmpath(fullfile(oclDir,'Test','Classes'));
