@@ -2,6 +2,7 @@ classdef NlpValues < Variable
 
   properties
     manualInterpolation
+    isInterpolated
   end
   
   methods (Static)
@@ -18,9 +19,15 @@ classdef NlpValues < Variable
     function self = NlpValues(type,positions,val)
       self@Variable(type,positions,val);
       self.manualInterpolation = false;
+      self.isInterpolated = false;
     end
     
     function interpolateIntegrator(self)
+      
+      if self.isInterpolated
+        return;
+      end
+      
       if self.manualInterpolation
         oclWarning(['You manually retreived or set the integrator variables. ', ...
                     'Automatic interpolation of the initial guess is therefore ', ...
@@ -33,6 +40,7 @@ classdef NlpValues < Variable
         state = self.get('states').slice(:,:,i);
         self.get('integrator',true).get('states').set(state.value);
       end
+      self.isInterpolated = true;
     end
     
     function r = get(self,id,autoSet)
