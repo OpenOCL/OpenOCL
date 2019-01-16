@@ -31,7 +31,8 @@ classdef NlpValues < Variable
       if self.manualInterpolation
         oclWarning(['You manually retreived or set the integrator variables. ', ...
                     'Automatic interpolation of the initial guess is therefore ', ...
-                    'deactivated!']);
+                    'deactivated! If you wish to hide this warning set the option '...
+                    'options.nlp.auto_interpolation to false.']);
         return;
       end
       
