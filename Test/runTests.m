@@ -1,9 +1,12 @@
-function runTests(testExamples)
+function runTests(testExamples,saveLog)
   % runTests()
   % runTests(testExamples)
   
   if nargin < 1
-    testExamples  = false;
+    testExamples = false;
+  end
+  if nargin < 2
+    saveLog = false;
   end
   
   testDir = getenv('OPENOCL_TEST');
@@ -72,6 +75,10 @@ function runTests(testExamples)
   end
   
   fclose(resultsFile);
+  
+  if saveLog
+    copyfile(filePath,'Test/log');
+  end
   
   if testExamples
     set(0,'DefaultFigureVisible','on');
