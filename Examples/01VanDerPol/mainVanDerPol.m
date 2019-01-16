@@ -3,7 +3,6 @@ CONTROL_INTERVALS = 30;     % control discretization
 
 % Get and set solver options
 options = OclOptions();
-options.iterationCallback = false;
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';

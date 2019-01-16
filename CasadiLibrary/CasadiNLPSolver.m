@@ -44,13 +44,6 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = casadi.MX.sym('p',[0,1]);
-      
-      if options.iterationCallback
-        callbackFun = IterationCallback('itCbFun', ...
-          numel(vars), numel(constraints), numel(psym), ...
-          @(values)self.callBackHandle(values,initialGuess) );
-        self.options.iteration_callback = callbackFun;
-      end
 
       nlpData = struct;
       nlpData.casadiNLP = casadiNLP;
@@ -117,14 +110,6 @@ classdef CasadiNLPSolver < NLPSolver
       self.timeMeasures.constructSolver = constructSolverTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
     end
-  end
-  
-  methods(Access = private)
-    
-    function callBackHandle(self,values,vars,options)
-      self.nlp.getCallback(vars,values);
-    end
-    
   end
   
 end
