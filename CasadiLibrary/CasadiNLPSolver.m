@@ -58,7 +58,7 @@ classdef CasadiNLPSolver < NLPSolver
       solveTotalTic = tic;
       
       % interpolate initial guess
-      self.nlp.interpolateGuess(initialGuess);
+      initialGuess.interpolateIntegrator();
       v0 = initialGuess.value;
       
       % detect variables as parameters if they are constant (lb==ub)

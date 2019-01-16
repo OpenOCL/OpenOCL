@@ -58,7 +58,7 @@ v.x.w.set([0;1;0.1]);
 assert( isequal( v.x(:,:,4:6).p(1,:,:).value, [100;100;100]));
 
 
-v.get('x').R.set(eye(3));
+v.get('x').get('R').set(eye(3));
 assert( isequal(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
 assert(isequal(v.x(:,:,1).R.value,eye(3)))
 
@@ -72,7 +72,7 @@ assert(isequal(v.x(:,:,1).p.value,[100;0;50]))
 assert(isequal(v(':').value,v.value))
 v.x(:,:,end).set((2:19));
 
-assert(isequal(v.x(:,:,end).get(2).value,3))
+assert(isequal(v.x(:,:,end).slice(2).value,3))
 
 xend = v.x(:,:,end);
 assert(isequal(xend(end).value,19))

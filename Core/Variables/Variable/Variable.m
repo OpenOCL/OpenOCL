@@ -141,25 +141,21 @@ classdef Variable < handle
       
       if numel(s) == 1 && strcmp(s.type,'()')
         % v(1)
-        [varargout{1}] = self.get(s.subs{:});
+        [varargout{1}] = self.slice(s.subs{:});
       elseif numel(s) > 1 && strcmp(s(1).type,'()')
         % v(1).something().a
-        v = self.get(s(1).subs{:});
+        v = self.slice(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
         if isfield(self.type.children,id) && numel(s) == 1
           % v.x
-          [varargout{1}] = self.get(s.subs);
+          [varargout{1}] = self.get(id);
         elseif isfield(self.type.children,id)
           % v.x.get(3).set(2).value || v.x.y.get(1)
-          v = self.get(s(1).subs);
+          v = self.get(id);
           [varargout{1:nargout}] = subsref(v,s(2:end));
-        elseif numel(s) > 2
-          % v.get(4).x.value || v.get(id).value
-          v = self.get(s(2).subs{:});
-          [varargout{1:nargout}] = subsref(v,s(3:end));
         else
           % v.slice(1) || v.get(id)
           [varargout{1:nargout}] = builtin('subsref',self,s);
@@ -204,27 +200,16 @@ classdef Variable < handle
        end
     end
 
-    function r = get(self,varargin)
-      % r = get(self,id)
-      % r = get(self,dim1,dim2,dim3)
-      function t = isAllOperator(in)
-        t = strcmp(in,'all') || strcmp(in,':');
-      end
-      in1 = varargin{1};
-      if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
-        % get(id)
-        [t,p] = self.type.get(in1,self.positions);
-        r = Variable.createFromVar(t,p,self);
-      else
-        % get(dim1,dim2,dim3)
-        % slice
-        p = self.positions(varargin{:});
-        r = Variable.createFromVar(self.type,p,self);
-      end
+    function r = get(self,id)
+      % r = get(id)
+      [t,p] = self.type.get(id,self.positions);
+      r = Variable.createFromVar(t,p,self);
     end
     
     function r = slice(self,varargin)
-      r = self.get(varargin{:});
+      % r = get(dim1,dim2,dim3)
+      p = self.positions(varargin{:});
+      r = Variable.createFromVar(self.type,p,self);
     end
 
     function toJSON(self,path,name,varargin)

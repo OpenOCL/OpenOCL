@@ -52,13 +52,6 @@ classdef Simultaneous < handle
 
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
-    end    
-    
-    function interpolateGuess(self,guess)
-      for i=1:self.N
-        state = guess.states(:,:,i).value;
-        guess.integrator(:,:,i).states.set(state);
-      end
     end
 
     function getCallback(self,var,values)
