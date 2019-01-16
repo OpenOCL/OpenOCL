@@ -1,4 +1,4 @@
-CONTROL_INTERVALS = 40;     % control discretization
+CONTROL_INTERVALS = 50;     % control discretization
 
 % Get and set solver options
 options = OclOptions();
@@ -19,8 +19,8 @@ ocl.setInitialBounds('omega', omega0);
 
 ocl.setEndBounds('p', 0);
 ocl.setEndBounds('v', 0); 
-ocl.setEndBounds('theta', 0); 
-ocl.setEndBounds('omega', 0); 
+ocl.setEndBounds('theta', 0);
+ocl.setEndBounds('omega', 0);
 
 ocl.setParameter('time', 0, 20);
 
@@ -33,10 +33,13 @@ initialGuess = ocl.getInitialGuess();
 % plot solution
 handles = {};
 pmax = max(abs(sol.states.p.value));
-for k=2:length(times.states.value)
-  t = times.states(k);
-  x = sol.states(:,:,k);
-  handles = visualizeCartPole(t, x, [0,0,0,0], -pmax, pmax, handles);
-  dt = times.states(k)-times.states(k-1);
+for k=2:prod(times.integrator.size)
+  t = times.integrator(k);
+  x = sol.integrator.states(:,:,k);
+  handles = visualizeCartPole(t, x, [0,0,0,0], pmax, handles);
+  dt = times.integrator(k)-times.integrator(k-1);
   pause(dt.value);
 end
+
+figure;
+oclPlot(times.controls, sol.controls)

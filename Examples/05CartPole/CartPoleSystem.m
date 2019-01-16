@@ -7,7 +7,7 @@ classdef CartPoleSystem < OclSystem
       self.addState('v');
       self.addState('omega');
 
-      self.addControl('F',1,-18,18);
+      self.addControl('F',1,-20,20);
     end
     function setupEquation(self,x,z,u,p)     
       
