@@ -35,10 +35,10 @@ classdef NlpValues < Variable
         return;
       end
       
-      stateSize = self.get('states').size();
+      stateSize = self.get('controls').size();
       for i=1:stateSize(3)
-        state = self.get('states').slice(:,:,i);
-        self.get('integrator',true).get('states').set(state.value);
+        state = self.get('states').slice(:,:,i).value;
+        self.get('integrator',true).slice(:,:,i).get('states').set(state);
       end
       self.isInterpolated = true;
     end

@@ -1,19 +1,17 @@
-function runTests(testExamples,version,changeMessage)
+function runTests(testExamples)
   % runTests()
   % runTests(testExamples)
-  % runTests(testExamples,version,changeMessage)
   
   if nargin < 1
     testExamples  = false;
   end
-  if nargin < 2
-    version       = 'undefined';   
-  end
-  if nargin < 3
-    changeMessage = 'undefined';   
-  end
   
   testDir = getenv('OPENOCL_TEST');
+  oclDir = getenv('OPENOCL_PATH');
+  
+  % go to main dir and get current git hash
+  cd(oclDir);
+  [~,version] = system('git rev-parse HEAD');
   
   if isempty(testDir)
     error('Test directory not set. Run StartupOCL again.')
@@ -56,10 +54,10 @@ function runTests(testExamples,version,changeMessage)
   end
 
   %% save results
-  fileName = [datestr(now,'yyyy-mm-dd_HHMMSS') '.txt'];
+  fileName = [datestr(now,'yyyy-mm-dd_HHMMSS'), '_', version(1:7),  '.txt'];
   filePath = fullfile(testDir,fileName);
   resultsFile = fopen(filePath,'w');
-  fprintf(resultsFile,'Test on %s\nVersion: %s\nChange message: %s\n\n',datestr(now),version,changeMessage);
+  fprintf(resultsFile,'Test on %s\nVersion: %s\n\n',datestr(now),version);
   
   for k=1:NTests
     printResults(testResults{k});
