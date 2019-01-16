@@ -62,7 +62,6 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Test'))
   addpath(fullfile(oclPath,'Test','Compatibility'))
 
-
   % check if casadi is working
   try
     casadi.SX.sym('x');
