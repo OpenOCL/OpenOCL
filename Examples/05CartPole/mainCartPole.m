@@ -1,12 +1,8 @@
-CONTROL_INTERVALS = 50;     % control discretization
 
-% Get and set solver options
+% Set solver options
 options = OclOptions();
-options.nlp.controlIntervals = CONTROL_INTERVALS;
+options.nlp.controlIntervals = 50;
 options.nlp.collocationOrder = 3;
-options.nlp.ipopt.linear_solver = 'mumps';
-options.nlp.solver = 'ipopt';
-options.nlp.detectParameters = true;
 
 ocl = OclSolver(CartPoleSystem,CartPoleOCP,options);
 
