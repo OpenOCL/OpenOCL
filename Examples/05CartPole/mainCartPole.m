@@ -6,6 +6,7 @@ options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
+options.nlp.detectParameters = true;
 
 ocl = OclSolver(CartPoleSystem,CartPoleOCP,options);
 
