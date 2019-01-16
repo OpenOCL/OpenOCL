@@ -1,4 +1,4 @@
-function handles = visualizeCartPole(time, x, Xref, pmax, handles)
+function handles = visualizeCartPole(time, dt, x, Xref, pmax, handles)
 
 p = x.p.value;
 theta = x.theta.value;
@@ -10,8 +10,6 @@ ms = 10;
 if isempty(handles)
   
   figure;
-  whitebg([1.0 1.0 1.0])
-  set(gcf,'Color',[1 1 1])
 
   hold on;
   x_r = Xref(1);
@@ -55,4 +53,10 @@ else
   set(h5,'Xdata',xB);
   set(h5,'Ydata',yB); 
 end
+
+global testRun
+if isempty(testRun) || (testRun==false)
+  pause(dt);
+end
+
 

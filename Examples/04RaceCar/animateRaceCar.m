@@ -20,6 +20,11 @@ for i = 2:1:length(time)
   set(carLine, 'YData' , y_car(1:i));
   set(car    , 'XData' , x_car(i));
   set(car    , 'YData' , y_car(i));
-  pause(ts)
+  
+  global testRun
+  if isempty(testRun) || (testRun==false)
+    pause(ts);
+  end
+
   drawnow
 end

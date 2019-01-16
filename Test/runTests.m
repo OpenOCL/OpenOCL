@@ -37,6 +37,8 @@ function runTests(testExamples,version,changeMessage)
   if testExamples
     close all
     set(0,'DefaultFigureVisible','off');
+    global testRun
+    testRun = true;
   end
   
   %% run all tests
@@ -75,6 +77,8 @@ function runTests(testExamples,version,changeMessage)
   
   if testExamples
     set(0,'DefaultFigureVisible','on');
+    global testRun
+    testRun = false;
   end
   
   function testResult = runTest(testName,scriptHandle)

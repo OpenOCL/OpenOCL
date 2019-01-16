@@ -1,4 +1,4 @@
-function [o1,o2,o3,o4] = testExamples
+function [o1,o2,o3,o4,o5] = testExamples
 
 % test basic example (VanDerPol)
 mainVanDerPol
@@ -156,3 +156,12 @@ assertAlmostEqual(statesVec.p(1,:,1:10:41).value.', ...
                   'PendulumSim Test failed.');
 o4 = struct;
 o4.simulationTest = toc(simTic);
+
+
+% test cart pole
+mainCartPole
+res = sol.states.theta(:,:,1:10:end).value;
+truth = [3.14159265358979;2.08020288269446;1.1182684981062;0.264782496320745;-0.523717518888155;4.00847302898047e-17];
+assertAlmostEqual(res, truth, 'Cart pole test failed.');
+o5 = struct;
+o5 = ocl.timeMeasures;

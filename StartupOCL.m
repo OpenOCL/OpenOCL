@@ -59,6 +59,7 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Examples','02BallAndBeam'))
   addpath(fullfile(oclPath,'Examples','03Pendulum'))
   addpath(fullfile(oclPath,'Examples','04RaceCar'))
+  addpath(fullfile(oclPath,'Examples','05CartPole'))
   addpath(fullfile(oclPath,'Test'))
   addpath(fullfile(oclPath,'Test','Compatibility'))
 
