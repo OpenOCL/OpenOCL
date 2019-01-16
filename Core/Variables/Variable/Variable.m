@@ -171,9 +171,13 @@ classdef Variable < handle
       % v.get(1) = 1
       % v.value(1) = 1
       % v* = Variable
-      v = Variable.getValue(v);
-      subVar = subsref(self,s);
-      subVar.set(v);
+      if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.children,s(1).subs)
+        self = builtin('subsasgn',self,s,v);
+      else
+        v = Variable.getValue(v);
+        subVar = subsref(self,s);
+        subVar.set(v);
+      end
     end
     
     %%% delegate methods to OclValue
