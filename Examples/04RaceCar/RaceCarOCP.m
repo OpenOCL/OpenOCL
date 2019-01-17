@@ -1,5 +1,5 @@
 classdef RaceCarOCP < OclOCP
-  methods
+  methods (Static)
     function arrivalCosts(self,state,time,parameters)
       self.addArrivalCost(time);
     end

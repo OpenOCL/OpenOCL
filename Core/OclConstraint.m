@@ -15,18 +15,26 @@ classdef OclConstraint < handle
       self.lowerBounds = [];
       self.upperBounds = [];
     end
-
-    function c = copy(self)
-      c = Constraint();
-      c.values = self.values.copy;
-      c.lowerBounds = self.lowerBounds.copy;
-      c.upperBounds = self.upperBounds.copy;
+    
+    function setInitialCondition(self,varargin)
+      oclDeprecation('Using of setInitialCondition is deprecated. Just use add instead.');
+      self.add(varargin{:});
+    end
+    
+    function addPathConstraint(self,varargin)
+      oclDeprecation('Using of addPathConstraint is deprecated. Just use add instead.');
+      self.add(varargin{:});
+    end
+    
+    function addBoundaryCondition(self,varargin)
+      oclDeprecation('Using of addBoundaryCondition is deprecated. Just use add instead.');
+      self.add(varargin{:});
     end
     
     function add(self,varargin)
       % add(self,lhs,op,rhs)
       % add(self,lb,expr,ub)
-      % add(self,constraint)
+      % add(self,val)
       
       if nargin==4
         if ischar(varargin{2})
@@ -36,7 +44,7 @@ classdef OclConstraint < handle
         end
         
       elseif nargin==2
-        self.appendConstraint(varargin{1});
+        self.addWithOperator(varargin{1},'==',0);
       else
         error('Wrong number of arguments');
       end

@@ -1,5 +1,5 @@
 classdef BallAndBeamOCP < OclOCP
-  methods
+  methods (Static)
     function pathCosts(self,x,~,u,~,~,~)
       Q  = eye(4);
       R  = 1;

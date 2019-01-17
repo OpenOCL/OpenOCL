@@ -1,6 +1,6 @@
 classdef CartPoleOCP < OclOCP
   
-  methods
+  methods (Static)
     function pathCosts(self,x,z,u,t,tf,p)
     end
     function arrivalCosts(self,x,tf,p)      

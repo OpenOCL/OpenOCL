@@ -25,7 +25,7 @@ classdef PendulumSystem < OclSystem
       % this constraints the pendulum mass to be on a circular path
       self.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
     end
-    function initialCondition(self,state,parameters)
+    function initialConditions(self,state,parameters)
       l = parameters.l;
       p = state.p;
       v = state.v;

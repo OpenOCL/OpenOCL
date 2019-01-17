@@ -30,9 +30,10 @@ classdef OclSystem < handle
 
   methods
     
-    function self = OclSystem(fhVars,fhEq)
+    function self = OclSystem(fhVars,fhEq,fhIC)
       % OclSystem()
-      % OclSystem(varSetupFunctionHandle,equationSetupFunctionHandle)
+      % OclSystem(fhVarSetup,fhEquationSetup)
+      % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
       self.controlsStruct   = OclStructure();
@@ -46,9 +47,13 @@ classdef OclSystem < handle
       if nargin==0
         self.fh.vars = @(varargin)setupVariables(varargin{:});
         self.fh.eq = @(varargin)setupEquation(varargin{:});
+        self.fh.ic = @(varargin)initialConditions(varargin{:});
       else
         self.fh.vars = fhVars;
         self.fh.eq = fhEq;
+        if nargin == 3 && ~isempty(fhIC)
+          self.fh.ic = fhIC;
+        end
       end
     end
     
@@ -81,12 +86,6 @@ classdef OclSystem < handle
     
     function initialConditions(~,~,~)
       % initialConditions(states,parameters)
-    end
-    
-    function initialCondition(~,~,~)
-      % initialCondition(states,parameters)
-      % This methods is deprecated in favor of initialConditions
-      % It will be removed in future versions.
     end
     
     function simulationCallbackSetup(~)
@@ -129,12 +128,13 @@ classdef OclSystem < handle
     end
     
     function ic = getInitialConditions(self,states,parameters)
-      self.thisInitialConditions = [];
+      icHandler = OclConstraint();
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
-      self.initialCondition(x,p)
-      self.initialConditions(x,p)
-      ic = self.thisInitialConditions;
+      self.fh.ic(icHandler,x,p)
+      ic = icHandler.value;
+      assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
+          'In initial condition are only equality constraints allowed.');
     end
     
     function addState(self,id,s,lb,ub)
