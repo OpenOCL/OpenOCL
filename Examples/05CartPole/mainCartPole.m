@@ -34,7 +34,6 @@ for k=2:prod(times.integrator.size)
   t = times.integrator(k);
   x = sol.integrator.states(:,:,k);
   dt = times.integrator(k)-times.integrator(k-1);
-  
   handles = visualizeCartPole(t, dt.value, x, [0,0,0,0], pmax, handles);
 end
 

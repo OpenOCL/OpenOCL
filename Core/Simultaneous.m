@@ -10,6 +10,7 @@ classdef Simultaneous < handle
     integratorFun
     nv
     system
+    options
   end
   
   properties(Access = private)
@@ -22,10 +23,11 @@ classdef Simultaneous < handle
   end
   
   methods
-    function self = Simultaneous(system,integrator,N)
+    function self = Simultaneous(system,integrator,N,options)
       
       self.system = system;
       self.N = N;
+      self.options = options;
       self.nx = prod(system.statesStruct.size());
       self.ni = prod(integrator.varsStruct.size());
       self.nu = prod(system.controlsStruct.size());
@@ -84,15 +86,15 @@ classdef Simultaneous < handle
       thisStates = initialStates;
       k_vars = self.nx;
       
-      
-      [pathConstraint,lb,ub] = ...
-            self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                        timeGrid(1),...
-                                                        parameters);   
-      constraints{1} = pathConstraint;
-      constraints_LB{1} = lb;
-      constraints_UB{1} = ub;
-                                                      
+      if self.options.path_constraints_at_boundary
+        [pathConstraint,lb,ub] = ...
+              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
+                                                          timeGrid(1),...
+                                                          parameters);   
+        constraints{1} = pathConstraint;
+        constraints_LB{1} = lb;
+        constraints_UB{1} = ub;
+      end                                          
       
       for k=1:self.N
         k_integratorEquations = 3*(k-1)+2;
@@ -112,7 +114,7 @@ classdef Simultaneous < handle
         k_vars = k_vars+self.nu;
         
         % add integrator equations
-        [endStates, endAlgVars, integrationCosts, integratorEquations, integratorTimes] = ...
+        [endStates, ~, integrationCosts, integratorEquations, integratorTimes] = ...
               self.integratorFun.evaluate(thisStates,...
                                           thisIntegratorVars,...
                                           thisControls,...
@@ -132,14 +134,16 @@ classdef Simultaneous < handle
         thisStates = nlpVars(k_vars+1:k_vars+self.nx);
         k_vars = k_vars+self.nx;
         
-        % add path constraints
-        [pathConstraint,lb,ub] = ...
-              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                          timeGrid(k+1),...
-                                                          parameters);                                   
-        constraints{k_pathConstraints} = pathConstraint;
-        constraints_LB{k_pathConstraints} = lb;
-        constraints_UB{k_pathConstraints} = ub;
+        if k~=self.N || self.options.path_constraints_at_boundary
+          % add path constraints
+          [pathConstraint,lb,ub] = ...
+                self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
+                                                            timeGrid(k+1),...
+                                                            parameters);                                   
+          constraints{k_pathConstraints} = pathConstraint;
+          constraints_LB{k_pathConstraints} = lb;
+          constraints_UB{k_pathConstraints} = ub;
+        end
         
         % continuity equation
         continuity_constraint = endStates - thisStates;

@@ -3,7 +3,7 @@ function solver = OclSolver(system, ocp, options)
   system.setup();
   N = options.nlp.controlIntervals;
   integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
-  nlp = Simultaneous(system,integrator,N);
+  nlp = Simultaneous(system,integrator,N,options);
 
   ocpHandler = OCPHandler(ocp,system,nlp.varsStruct,options);
   integrator.pathCostsFun = ocpHandler.pathCostsFun;

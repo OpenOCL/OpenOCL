@@ -4,6 +4,7 @@ function opt = OclOptions()
   opt.system_casadi_mx  = false;
   opt.controls_regularization = true;
   opt.controls_regularization_value = 1e-6;
+  opt.path_constraints_at_boundary = true;
   opt.nlp = struct;
   opt.nlp.discretization         = 'collocation';
   opt.nlp.controlIntervals       = 20;

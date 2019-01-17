@@ -24,10 +24,10 @@ classdef CartPoleSystem < OclSystem
       stheta = sin(x.theta);
 
       domega = (g*stheta + ...
-                ctheta * (-u.F-pml*x.omega**2*stheta) / m) / ...
-                (phl * (4.0 / 3.0 - pm * ctheta**2 / m));
+                ctheta * (-u.F-pml*x.omega^2*stheta) / m) / ...
+                (phl * (4.0 / 3.0 - pm * ctheta^2 / m));
 
-      a = (u.F + pml*(x.omega**2*stheta-domega*ctheta)) / m;
+      a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
       
       self.setODE('p',x.v); 
       self.setODE('theta',x.omega); 

@@ -6,6 +6,7 @@ MAX_TIME = 20;              % [s]
 
 options = OclOptions();
 options.nlp.controlIntervals = CONTROL_INTERVALS;
+options.controls_regularization_value = 1e-3;
 
 ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);
 
