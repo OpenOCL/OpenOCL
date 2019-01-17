@@ -32,8 +32,8 @@ classdef PendulumSystem < OclSystem
       
       % this constraints the pendulum mass to be at distance l from the center
       % at the beginning of the simulation
-      self.setInitialCondition(p(1)^2+p(2)^2-l^2);
-      self.setInitialCondition(dot(p,v));
+      self.add(p(1)^2+p(2)^2-l^2);
+      self.add(dot(p,v));
     end
     
     function simulationCallbackSetup(~)
