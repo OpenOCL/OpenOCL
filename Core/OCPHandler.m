@@ -12,14 +12,16 @@ classdef OCPHandler < handle
     ocp    
     system
     nlpVarsStruct
+    options
   end
 
   methods
     
-    function self = OCPHandler(ocp,system,nlpVarsStruct)
+    function self = OCPHandler(ocp,system,nlpVarsStruct,options)
       self.ocp = ocp;
       self.system = system;
       self.nlpVarsStruct = nlpVarsStruct;
+      self.options = options;
       
       % variable sizes
       sx = system.statesStruct.size();
@@ -48,6 +50,11 @@ classdef OCPHandler < handle
     
     function r = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
       self.ocp.thisPathCosts = 0;
+      
+      if self.options.controls_regularization
+        self.ocp.thisPathCosts = self.options.controls_regularization_value*(controls.'*controls);
+      end
+      
       x = Variable.create(self.system.statesStruct,states);
       z = Variable.create(self.system.algVarsStruct,algVars);
       u = Variable.create(self.system.controlsStruct,controls);

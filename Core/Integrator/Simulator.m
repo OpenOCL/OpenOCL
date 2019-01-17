@@ -90,7 +90,8 @@ classdef Simulator < handle
       statesVec(:,:,1).set(x);
       
       % setup callback
-      if callback
+      global testRun
+      if callback && (isempty(testRun) || (testRun==false))
         self.system.simulationCallbackSetup;
       end
       
@@ -99,7 +100,7 @@ classdef Simulator < handle
         t = times(k+1)-times(k);
         u = uVec((k-1)*nu+1);
         
-        if callback
+        if callback && (isempty(testRun) || (testRun==false))
           self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);
         end
         
@@ -109,7 +110,7 @@ classdef Simulator < handle
         algVarsVec(:,:,k).set(z);
         controlsVec(:,:,k).set(u);
       end  
-      if callback
+      if callback && (isempty(testRun) || (testRun==false))
         self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);
       end
     end

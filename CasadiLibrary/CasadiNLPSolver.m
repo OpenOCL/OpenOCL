@@ -44,13 +44,6 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = casadi.MX.sym('p',[0,1]);
-      
-      if options.iterationCallback
-        callbackFun = IterationCallback('itCbFun', ...
-          numel(vars), numel(constraints), numel(psym), ...
-          @(values)self.callBackHandle(values,initialGuess,varIndizes,paramIndizes,params) );
-        self.options.iteration_callback = callbackFun;
-      end
 
       nlpData = struct;
       nlpData.casadiNLP = casadiNLP;
@@ -65,31 +58,16 @@ classdef CasadiNLPSolver < NLPSolver
       solveTotalTic = tic;
       
       % interpolate initial guess
-      self.nlp.interpolateGuess(initialGuess);
-      
-      % detect variables as parameters if they are constant (lb==ub)
-      nv = self.nlp.nlpFun.inputSizes{1};
-      [lbv,ubv] = self.getNlpBounds();
-      paramIndizes = [];
-      params = [];
-      varIndizes = 1:nv;
-      if (self.options.nlp.detectParameters)
-        % find parameters
-        paramIndizes = find((lbv-ubv)==0);
-        % get parameter values
-        params = lbv(paramIndizes);
-        % get indizes of variables (in constrast to parameters)
-        varIndizes(paramIndizes) = [];
-        % bounds after removing parameters
-        lbv = lbv(varIndizes);
-        ubv = ubv(varIndizes);
-        
-        self.nlpData.casadiNLP.p = casadi.MX.sym('p',size(params));
-        self.nlpData.parameters = self.nlpData.casadiNLP.x(paramIndizes);
+      if self.options.nlp.auto_interpolation
+        initialGuess.interpolateIntegrator();
       end
       
       v0 = initialGuess.value;
       
+      % detect variables as parameters if they are constant (lb==ub)
+      nv = self.nlp.nlpFun.inputSizes{1};
+      [lbv,ubv] = self.getNlpBounds();
+ 
       opts = self.options.nlp.casadi;
       if isfield(self.options.nlp,self.options.nlp.solver)
         opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
@@ -103,7 +81,7 @@ classdef CasadiNLPSolver < NLPSolver
       args = struct;
       args.lbg = self.nlpData.constraints_LB;
       args.ubg = self.nlpData.constraints_UB;
-      args.p = params;
+      args.p = [];
       args.lbx = lbv;
       args.ubx = ubv;
       args.x0 = v0;
@@ -118,9 +96,6 @@ classdef CasadiNLPSolver < NLPSolver
       end
       
       solution = sol.x.full();
-      
-      solution(varIndizes) = solution;
-      solution(paramIndizes) = params;
       
       nlpFunEvalTic = tic;
       if nargout > 1
@@ -138,22 +113,6 @@ classdef CasadiNLPSolver < NLPSolver
       self.timeMeasures.constructSolver = constructSolverTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
     end
-  end
-  
-  methods(Access = private)
-    
-    function callBackHandle(self,values,vars,varIndizes,paramIndizes,params,options)
-      
-      v = vars.value;
-      v(varIndizes) = values;
-      
-      % replace parameters
-      if options.nlp.detectParameters
-        v(paramIndizes) = params;
-      end
-      self.nlp.getCallback(vars,v);
-    end
-    
   end
   
 end

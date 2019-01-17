@@ -25,7 +25,7 @@ classdef NLPSolver < handle
     function initialGuess = getInitialGuess(self)
       igTic = tic;
       
-      initialGuess = Variable.create(self.nlp.varsStruct,0);
+      initialGuess = NlpValues.create(self.nlp.varsStruct,0);
       
       [lb,ub] = self.getNlpBounds();
       

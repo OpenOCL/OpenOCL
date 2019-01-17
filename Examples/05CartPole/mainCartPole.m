@@ -1,11 +1,8 @@
-CONTROL_INTERVALS = 40;     % control discretization
 
-% Get and set solver options
+% Set solver options
 options = OclOptions();
-options.nlp.controlIntervals = CONTROL_INTERVALS;
+options.nlp.controlIntervals = 50;
 options.nlp.collocationOrder = 3;
-options.nlp.ipopt.linear_solver = 'mumps';
-options.nlp.solver = 'ipopt';
 
 ocl = OclSolver(CartPoleSystem,CartPoleOCP,options);
 
@@ -19,8 +16,8 @@ ocl.setInitialBounds('omega', omega0);
 
 ocl.setEndBounds('p', 0);
 ocl.setEndBounds('v', 0); 
-ocl.setEndBounds('theta', 0); 
-ocl.setEndBounds('omega', 0); 
+ocl.setEndBounds('theta', 0);
+ocl.setEndBounds('omega', 0);
 
 ocl.setParameter('time', 0, 20);
 
@@ -33,10 +30,13 @@ initialGuess = ocl.getInitialGuess();
 % plot solution
 handles = {};
 pmax = max(abs(sol.states.p.value));
-for k=2:length(times.states.value)
-  t = times.states(k);
-  x = sol.states(:,:,k);
-  handles = visualizeCartPole(t, x, [0,0,0,0], -pmax, pmax, handles);
-  dt = times.states(k)-times.states(k-1);
-  pause(dt.value);
+for k=2:prod(times.integrator.size)
+  t = times.integrator(k);
+  x = sol.integrator.states(:,:,k);
+  dt = times.integrator(k)-times.integrator(k-1);
+  
+  handles = visualizeCartPole(t, dt.value, x, [0,0,0,0], pmax, handles);
 end
+
+figure;
+oclPlot(times.controls, sol.controls)
