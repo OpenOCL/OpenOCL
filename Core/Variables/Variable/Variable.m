@@ -6,6 +6,7 @@ classdef Variable < handle
     
   properties (Constant)
       MAX_DISP_LENGTH = 200
+      DISP_FLOAT_PREC = 6;
    end
   
   properties
@@ -92,7 +93,7 @@ classdef Variable < handle
       if nargin==1
         value = self.value;
         if isnumeric(value)
-          valueStr = mat2str(self.value);
+          valueStr = mat2str(self.value,Variable.DISP_FLOAT_PREC);
         else
           % cell array
           cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
