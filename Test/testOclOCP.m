@@ -13,7 +13,7 @@ h = OCPHandler(ocp,s,OclMatrix([0,1]),opt);
 assertEqual(h.pathCostsFun.evaluate([],[],[],1,1,[]),0);
 assertEqual(h.arrivalCostsFun.evaluate([],1,[]),0);
 
-[val,lb,ub] = h.pathConstraintsFun.evaluate([],[],[],1,[]);
+[val,lb,ub] = h.pathConstraintsFun.evaluate([],1,[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
@@ -37,7 +37,7 @@ c = h.arrivalCostsFun.evaluate(ones(s.nx,1),1,ones(s.np,1));
 assertEqual(c, -1);
 
 % path constraints in the form of : -inf <= val <= 0 or 0 <= val <= 0
-[val,lb,ub] = h.pathConstraintsFun.evaluate(ones(s.nx,1),ones(s.nz,1),ones(s.nu,1),1,ones(s.np,1));
+[val,lb,ub] = h.pathConstraintsFun.evaluate(ones(s.nx,1),1,ones(s.np,1));
 % ub all zero
 assertEqual(ub,zeros(36,1));
 % lb either zero for eq or -inf for ineq

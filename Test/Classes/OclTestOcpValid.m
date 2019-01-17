@@ -17,7 +17,7 @@ classdef OclTestOcpValid < OclOCP
       self.addArrivalCost(-1*p.v*tf);
     end
     
-    function pathConstraints(self,x,z,u,t,p)
+    function pathConstraints(self,x,t,p)
       
       % scalar with constant
       self.addPathConstraint(x.a,'<=',1);
@@ -28,16 +28,16 @@ classdef OclTestOcpValid < OclOCP
       self.addPathConstraint(1,'<=',t+p.aa(1,1,1));
       
       % vector with vector
-      self.addPathConstraint(u.l,'>=',2+ones(5,1));
+      self.addPathConstraint(x.f,'>=',2+ones(5,1));
       
       % scalar with scalar
-      self.addPathConstraint(z.q,'==',u.h);
+      self.addPathConstraint(x.d,'==',x.b);
       
-      % matrix 3x4 wit scalar
-      self.addPathConstraint(z.t,'<=',4);
+      % matrix 3x4 with scalar
+      self.addPathConstraint(x.g,'<=',4);
       
       % matrix with matrix 3x4
-      self.addPathConstraint(z.t,'<=',p.aa);
+      self.addPathConstraint(x.g,'<=',p.aa);
     end
     
     function boundaryConditions(self,x0,xf,p)
