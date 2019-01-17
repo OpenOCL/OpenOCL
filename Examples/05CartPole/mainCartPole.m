@@ -27,15 +27,18 @@ initialGuess = ocl.getInitialGuess();
 % Run solver to obtain solution
 [sol,times] = ocl.solve(initialGuess);
 
-% plot solution
-handles = {};
-pmax = max(abs(sol.states.p.value));
-for k=2:prod(times.integrator.size)
-  t = times.integrator(k);
-  x = sol.integrator.states(:,:,k);
-  dt = times.integrator(k)-times.integrator(k-1);
-  handles = visualizeCartPole(t, dt.value, x, [0,0,0,0], pmax, handles);
-end
+% visualize solution
+figure; hold on; grid on;
+oclStairs(times.controls, sol.controls/10.)
+xlabel('time [s]');
+oclPlot(times.states, sol.states.p)
+xlabel('time [s]');
+oclPlot(times.states, sol.states.v)
+xlabel('time [s]'); 
+oclPlot(times.states, sol.states.theta)
+legend({'force [10*N]','position [m]','velocity [m/s]','theta [deg]'})
+xlabel('time [s]');
 
-figure;
-oclPlot(times.controls, sol.controls)
+animateCartPole(sol,times);
+
+
