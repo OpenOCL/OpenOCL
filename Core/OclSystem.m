@@ -132,7 +132,7 @@ classdef OclSystem < handle
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
       self.fh.ic(icHandler,x,p)
-      ic = icHandler.value;
+      ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
           'In initial condition are only equality constraints allowed.');
     end
