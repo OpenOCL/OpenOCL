@@ -34,7 +34,9 @@ classdef OclOCP < handle
         self.fh.dcH   = dcH;
       end
     end
-    
+  end
+  
+  methods (Static)
     %%% overridable methods
     function pathCosts(~,~,~,~,~,~,~)
       % pathCosts(self,states,algVars,controls,time,endTime,parameters)

@@ -1,5 +1,5 @@
 classdef OclTestSystemEmpty < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)    
     end
     function setupEquation(self,x,z,u,p)     

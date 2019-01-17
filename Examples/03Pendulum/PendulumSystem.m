@@ -1,16 +1,16 @@
 classdef PendulumSystem < OclSystem
-  methods
-    function setupVariables(self)
-      self.addState('p', 2);
-      self.addState('v', 2);
-      self.addControl('F');
-      self.addAlgVar('lambda');
+  methods (Static)
+    function setupVariables(sys)
+      sys.addState('p', 2);
+      sys.addState('v', 2);
+      sys.addControl('F');
+      sys.addAlgVar('lambda');
       
-      self.addParameter('m');
-      self.addParameter('l');
+      sys.addParameter('m');
+      sys.addParameter('l');
       
     end
-    function setupEquation(self,state,algVars,controls,parameters)
+    function setupEquation(sys,state,algVars,controls,parameters)
       p       = state.p;
       v       = state.v;
       F       = controls.F;
@@ -19,28 +19,28 @@ classdef PendulumSystem < OclSystem
 
       ddp     = - 1/m * lambda*p - [0;9.81] + [F;0];
 
-      self.setODE('p',v); 
-      self.setODE('v',ddp);
+      sys.setODE('p',v); 
+      sys.setODE('v',ddp);
 
       % this constraints the pendulum mass to be on a circular path
-      self.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
+      sys.setAlgEquation(dot(ddp,p)+v(1)^2+v(2)^2);
     end
-    function initialConditions(self,state,parameters)
+    function initialConditions(sys,state,parameters)
       l = parameters.l;
       p = state.p;
       v = state.v;
       
       % this constraints the pendulum mass to be at distance l from the center
       % at the beginning of the simulation
-      self.add(p(1)^2+p(2)^2-l^2);
-      self.add(dot(p,v));
+      sys.add(p(1)^2+p(2)^2-l^2);
+      sys.add(dot(p,v));
     end
     
     function simulationCallbackSetup(~)
       figure;
     end
     
-    function simulationCallback(self,states,algVars,controls,t0,t1,parameters)
+    function simulationCallback(states,algVars,controls,t0,t1,parameters)
       p = states.p.value;
       l = parameters.l.value;
       dt = t1-t0;

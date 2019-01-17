@@ -1,5 +1,5 @@
 classdef OclTestSystemValid < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)
       self.addState('a');
       self.addState('b',1);

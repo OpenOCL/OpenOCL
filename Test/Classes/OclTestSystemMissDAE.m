@@ -1,5 +1,5 @@
 classdef OclTestSystemMissDAE < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)    
       self.addState('x');
       self.addAlgVar('z');

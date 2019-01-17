@@ -1,5 +1,5 @@
 classdef CartPoleSystem < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)    
       
       self.addState('p',1,-5,5);
@@ -14,7 +14,6 @@ classdef CartPoleSystem < OclSystem
       g = 9.8;
       cm = 1.0;
       pm = 0.1;
-      l = 1.0;
       phl = 0.5; % pole half length
       
       m = cm+pm;

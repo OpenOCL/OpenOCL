@@ -1,5 +1,5 @@
 classdef RaceCarSystem < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)
       self.addState('x');   % position x[m]
       self.addState('vx');  % velocity vx[m/s]

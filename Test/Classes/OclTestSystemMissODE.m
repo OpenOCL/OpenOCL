@@ -1,5 +1,5 @@
 classdef OclTestSystemMissODE < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)    
       self.addState('x')
     end

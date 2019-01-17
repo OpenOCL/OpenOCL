@@ -1,5 +1,5 @@
 classdef OclTestLinearSystem < OclSystem
-  methods
+  methods (Static)
     function setupVariables(self)
       self.addState('p');
       self.addState('v');

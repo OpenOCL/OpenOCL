@@ -1,6 +1,6 @@
 classdef OclTestOcpValid < OclOCP
   
-  methods
+  methods (Static)
     
     function pathCosts(self,x,z,u,t,tf,p)
       self.addPathCost(x.a); % 1

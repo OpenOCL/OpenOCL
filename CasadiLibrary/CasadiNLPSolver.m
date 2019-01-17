@@ -15,7 +15,7 @@ classdef CasadiNLPSolver < NLPSolver
       self.options = options;
     end
     
-    function nlpData = construct(self,nlp,options)
+    function nlpData = construct(self,nlp,~)
       
       constructTotalTic = tic;
       
@@ -65,7 +65,6 @@ classdef CasadiNLPSolver < NLPSolver
       v0 = initialGuess.value;
       
       % detect variables as parameters if they are constant (lb==ub)
-      nv = self.nlp.nlpFun.inputSizes{1};
       [lbv,ubv] = self.getNlpBounds();
  
       opts = self.options.nlp.casadi;

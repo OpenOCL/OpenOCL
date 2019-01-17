@@ -5,8 +5,7 @@ classdef BallAndBeamSystem < OclSystem
     dtheta_b
     tau_b
   end
-  methods
-
+  methods (Static)
     function setupVariables(self)
       
       self.r_b      = 1;           % beam length [m]

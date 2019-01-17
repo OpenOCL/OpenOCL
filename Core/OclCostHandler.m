@@ -9,6 +9,11 @@ classdef OclCostHandler < handle
       self.value = 0;
     end
   
+    function addDiscreteCost(self,varargin)
+      oclDeprecation('Using of addDiscreteCost is deprecated. Just use ch.add(val) instead.');
+      self.add(varargin{:});
+    end
+    
     function addPathCost(self,varargin)
       oclDeprecation('Using of addPathCost is deprecated. Just use ch.add(val) instead.');
       self.add(varargin{:});

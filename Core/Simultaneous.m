@@ -55,11 +55,7 @@ classdef Simultaneous < handle
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
     end
-
-    function getCallback(self,var,values)
-      self.ocpHandler.callbackFunction(var,values);
-    end
-
+    
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
       
       T = nlpVars(self.nv);
