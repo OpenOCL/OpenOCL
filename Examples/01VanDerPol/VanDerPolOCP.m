@@ -11,7 +11,7 @@ classdef VanDerPolOCP < OclOCP
     function arrivalCosts(self,states,endTime,parameters)
       % Define terminal cost terms.
     end
-    function pathConstraints(self,states,algVars,controls,time,parameters)
+    function pathConstraints(self,states,time,parameters)
       % Define non-linear path constraints on variables.
     end    
     function boundaryConditions(self,states0,statesF,parameters)

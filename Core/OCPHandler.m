@@ -39,7 +39,7 @@ classdef OCPHandler < handle
       self.boundaryConditionsFun = OclFunction(self, fhBC, {sx,sx,sp}, 3);
       
       fhPConst = @(self,varargin)self.getPathConstraints(varargin{:});
-      self.pathConstraintsFun = OclFunction(self, fhPConst, {sx,sz,su,st,sp}, 3);
+      self.pathConstraintsFun = OclFunction(self, fhPConst, {sx,st,sp}, 3);
       
       fhDC = @(self,varargin)self.getDiscreteCosts(varargin{:});
       self.discreteCostsFun = OclFunction(self, fhDC, {sv}, 1);
@@ -68,15 +68,13 @@ classdef OCPHandler < handle
       r = self.ocp.thisArrivalCosts;
     end
     
-    function [val,lb,ub] = getPathConstraints(self,states,algVars,controls,time,parameters)
+    function [val,lb,ub] = getPathConstraints(self,states,time,parameters)
       self.ocp.thisPathConstraints = OclConstraint();
       x = Variable.create(self.system.statesStruct,states);
-      z = Variable.create(self.system.algVarsStruct,algVars);
-      u = Variable.create(self.system.controlsStruct,controls);
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(time);
       
-      self.ocp.pathConstraints(x,z,u,t,p);
+      self.ocp.pathConstraints(x,t,p);
       val = self.ocp.thisPathConstraints.values;
       lb = self.ocp.thisPathConstraints.lowerBounds;
       ub = self.ocp.thisPathConstraints.upperBounds;

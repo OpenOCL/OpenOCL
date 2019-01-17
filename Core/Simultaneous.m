@@ -78,10 +78,10 @@ classdef Simultaneous < handle
       times = cell((self.N+1)+self.N+self.N);
       
       % N integrator equations
-      % N path constraints
+      % N+1 path constraints
       % N continuity constraints
       % 1 boundary condition
-      nc = 3*self.N+1;
+      nc = 3*self.N+2;
       constraints = cell(nc,1);
       constraints_LB = cell(nc,1);
       constraints_UB = cell(nc,1);
@@ -90,10 +90,21 @@ classdef Simultaneous < handle
       initialStates = nlpVars(1:self.nx);
       thisStates = initialStates;
       k_vars = self.nx;
+      
+      
+      [pathConstraint,lb,ub] = ...
+            self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
+                                                        timeGrid(1),...
+                                                        parameters);   
+      constraints{1} = pathConstraint;
+      constraints_LB{1} = lb;
+      constraints_UB{1} = ub;
+                                                      
+      
       for k=1:self.N
-        k_integratorEquations = 3*(k-1)+1;
-        k_pathConstraints = 3*(k-1)+2;
-        k_continuity = 3*(k-1)+3;
+        k_integratorEquations = 3*(k-1)+2;
+        k_pathConstraints = 3*(k-1)+3;
+        k_continuity = 3*(k-1)+4;
         
         kt_states = 3*(k-1)+1;
         kt_integrator = 3*(k-1)+2;
@@ -130,9 +141,7 @@ classdef Simultaneous < handle
         
         % add path constraints
         [pathConstraint,lb,ub] = ...
-              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,... 
-                                                          endAlgVars,...
-                                                          thisControls,...
+              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
                                                           timeGrid(k+1),...
                                                           parameters);                                   
         constraints{k_pathConstraints} = pathConstraint;
