@@ -23,19 +23,19 @@ classdef OclOCP < handle
       self.fh.pconH = @(varargin)pathConstraints(varargin{:});
       self.fh.bcH   = @(varargin)boundaryConditions(varargin{:});
       self.fh.dcH   = @(varargin)discreteCosts(varargin{:});
-      if nargin>=1
+      if nargin>=1 && ~isempty(pcH)
         self.fh.pcH   = pcH;
       end
-      if nargin>=2
+      if nargin>=2 && ~isempty(acH)
         self.fh.acH   = acH;
       end
-      if nargin>=3
+      if nargin>=3 && ~isempty(pconH)
         self.fh.pconH = pconH;
       end
-      if nargin>=4
+      if nargin>=4 && ~isempty(bcH)
         self.fh.bcH   = bcH;
       end
-      if nargin>=5
+      if nargin>=5 && ~isempty(dcH)
         self.fh.dcH   = dcH;
       end
     end

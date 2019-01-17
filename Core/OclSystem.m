@@ -44,8 +44,8 @@ classdef OclSystem < handle
       self.fh = struct;
       
       if nargin==0
-        self.fh.vars = @setupVariables;
-        self.fh.eq = @setupEquation;
+        self.fh.vars = @(varargin)setupVariables(varargin{:});
+        self.fh.eq = @(varargin)setupEquation(varargin{:});
       else
         self.fh.vars = fhVars;
         self.fh.eq = fhEq;
