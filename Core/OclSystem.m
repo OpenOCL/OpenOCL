@@ -1,4 +1,4 @@
-classdef (Abstract) OclSystem < handle
+classdef OclSystem < handle
   
   properties
     statesStruct
@@ -14,6 +14,8 @@ classdef (Abstract) OclSystem < handle
     ode
     alg
     
+    fh
+    
     bounds
     
     thisInitialConditions
@@ -28,7 +30,9 @@ classdef (Abstract) OclSystem < handle
 
   methods
     
-    function self = OclSystem()
+    function self = OclSystem(fhVars,fhEq)
+      % OclSystem()
+      % OclSystem(varSetupFunctionHandle,equationSetupFunctionHandle)
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
       self.controlsStruct   = OclStructure();
@@ -36,10 +40,20 @@ classdef (Abstract) OclSystem < handle
       
       self.bounds = struct;
       self.ode = struct;
+      
+      self.fh = struct;
+      
+      if nargin==0
+        self.fh.vars = @setupVariables;
+        self.fh.eq = @setupEquation;
+      else
+        self.fh.vars = fhVars;
+        self.fh.eq = fhEq;
+      end
     end
     
     function setup(self)
-      self.setupVariables;
+      self.fh.vars(self);
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
@@ -51,8 +65,8 @@ classdef (Abstract) OclSystem < handle
       self.nu = prod(su);
       self.np = prod(sp);
       
-      fh = @(self,varargin)self.getEquations(varargin{:});
-      self.systemFun = OclFunction(self, fh, {sx,sz,su,sp},2);
+      fhEq = @(self,varargin)self.getEquations(varargin{:});
+      self.systemFun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
       
       fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
       self.icFun = OclFunction(self, fhIC, {sx,sp},1);
@@ -98,7 +112,7 @@ classdef (Abstract) OclSystem < handle
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
 
-      self.setupEquation(x,z,u,p);
+      self.fh.eq(self,x,z,u,p);
      
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});

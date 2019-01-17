@@ -1,8 +1,8 @@
 function [o1,o2,o3,o4,o5] = testExamples
 
 % test basic example (VanDerPol)
-mainVanDerPol
-assert(all(abs(solution.get('controls').value - ...
+[sol,~,ocl] = mainVanDerPol;
+assert(all(abs(sol.get('controls').value - ...
   [ 0.2434
   0.9611
   0.9074

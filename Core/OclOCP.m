@@ -9,12 +9,34 @@ classdef OclOCP < handle
     thisPathConstraints
     thisBoundaryConditions
     thisDiscreteCosts
+    fh
   end
   
   methods(Access = public)
-    function self = OclOCP(~)
-      if nargin==1
+    function self = OclOCP(pcH,acH,pconH,bcH,dcH)
+      if nargin==1 && (isa(pcH,'OclSystem') || isa(pcH,'System'))
         oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
+      end
+      
+      self.fh.pcH   = @(varargin)pathCosts(varargin{:});
+      self.fh.acH   = @(varargin)arrivalCosts(varargin{:});
+      self.fh.pconH = @(varargin)pathConstraints(varargin{:});
+      self.fh.bcH   = @(varargin)boundaryConditions(varargin{:});
+      self.fh.dcH   = @(varargin)discreteCosts(varargin{:});
+      if nargin>=1
+        self.fh.pcH   = pcH;
+      end
+      if nargin>=2
+        self.fh.acH   = acH;
+      end
+      if nargin>=3
+        self.fh.pconH = pconH;
+      end
+      if nargin>=4
+        self.fh.bcH   = bcH;
+      end
+      if nargin>=5
+        self.fh.dcH   = dcH;
       end
     end
     
@@ -34,10 +56,7 @@ classdef OclOCP < handle
     function discreteCosts(~,~)
       % discreteCost(self,vars)
     end
-  end
-
-  methods(Access = protected)
-    
+  
     function addPathConstraint(self,lhs, op, rhs)
       self.thisPathConstraints.add(lhs,op,rhs);
     end
@@ -57,8 +76,6 @@ classdef OclOCP < handle
     function addDiscreteCost(self,expr)
       self.thisDiscreteCosts = self.thisDiscreteCosts + Variable.getValueAsColumn(expr);
     end
-    
   end
-  
 end
 

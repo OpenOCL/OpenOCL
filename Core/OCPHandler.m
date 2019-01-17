@@ -61,7 +61,7 @@ classdef OCPHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(endTime);
       
-      self.ocp.pathCosts(x,z,u,time,t,p);
+      self.ocp.fh.pcH(self.ocp,x,z,u,time,t,p);
       r = self.ocp.thisPathCosts;
     end
     
@@ -71,7 +71,7 @@ classdef OCPHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(endTime);
       
-      self.ocp.arrivalCosts(x,t,p);
+      self.ocp.fh.acH(self.ocp,x,t,p);
       r = self.ocp.thisArrivalCosts;
     end
     
@@ -81,7 +81,7 @@ classdef OCPHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(time);
       
-      self.ocp.pathConstraints(x,t,p);
+      self.ocp.fh.pconH(self.ocp,x,t,p);
       val = self.ocp.thisPathConstraints.values;
       lb = self.ocp.thisPathConstraints.lowerBounds;
       ub = self.ocp.thisPathConstraints.upperBounds;
@@ -93,7 +93,7 @@ classdef OCPHandler < handle
       xF = Variable.create(self.system.statesStruct,finalStates);
       p = Variable.create(self.system.parametersStruct,parameters);
       
-      self.ocp.boundaryConditions(x0,xF,p);
+      self.ocp.fh.bcH(self.ocp,x0,xF,p);
       val = Variable.getValue(self.ocp.thisBoundaryConditions.values);
       lb = Variable.getValue(self.ocp.thisBoundaryConditions.lowerBounds);
       ub = Variable.getValue(self.ocp.thisBoundaryConditions.upperBounds);
@@ -102,13 +102,13 @@ classdef OCPHandler < handle
     function r = getDiscreteCosts(self,varsValue)
       self.ocp.thisDiscreteCosts = 0;
       v = Variable.create(self.nlpVarsStruct,varsValue);
-      self.ocp.discreteCosts(v);
+      self.ocp.fh.dcH(self.ocp,v);
       r = self.ocp.thisDiscreteCosts;
     end
 
     function callbackFunction(self,nlpVars,variableValues)
       nlpVars.set(variableValues);
-      self.ocp.iterationCallback(nlpVars);
+      self.ocp.fh.icH(self.ocp,nlpVars);
     end
 
   end

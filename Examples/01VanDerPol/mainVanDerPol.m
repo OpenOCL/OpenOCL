@@ -1,3 +1,5 @@
+function [solution,times,ocl] = mainVanDerPol
+
 FINALTIME = 10;             % horizon length (seconds)
 CONTROL_INTERVALS = 30;     % control discretization
 
@@ -8,7 +10,9 @@ options.nlp.collocationOrder = 3;
 options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
-ocl = OclSolver(VanDerPolSystem,VanDerPolOCP,options);
+system = OclSystem(@sysVars,@sysEq);
+ocp = OclOCP(@pathCosts);
+ocl = OclSolver(system,ocp,options);
 
 % intial state bounds
 ocl.setInitialBounds('x',     0);            % x1 == 0
@@ -31,3 +35,33 @@ plot(times.states.value,solution.states.y.value,'--k','LineWidth',2)
 stairs(times.controls.value,solution.controls.u.value,'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})
+
+end
+
+function sysVars(sh)
+  % sysVars(systemHandler)
+  %   Define system variables
+
+  % Scalar x:  -0.25 <= x <= inf
+  % Scalar y: unbounded
+  sh.addState('x',1,-0.25,inf);
+  sh.addState('y');
+
+  % Scalar u: -1 <= u <= 1
+  sh.addControl('u',1,-1,1);
+end
+
+function sysEq(sh,x,~,u,~)     
+  % sysEq(systemHandler,states,algVars,controls,parameters) 
+  %   Defines differential equations
+  sh.setODE('x',(1-x.y^2)*x.x - x.y + u); 
+  sh.setODE('y',x.x);
+end
+
+function pathCosts(ch,x,~,u,~,~,~)
+  % pathCosts(costHandler,states,algVars,controls,time,endTime,parameters)
+  %   Defines lagrange (intermediate) cost terms.
+  ch.addPathCost( x.x^2 );
+  ch.addPathCost( x.y^2 );
+  ch.addPathCost( u^2 );
+end
