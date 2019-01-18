@@ -9,7 +9,7 @@ s = OclTestSystemEmpty;
 s.setup();
 opt = OclOptions;
 opt.controls_regularization = false;
-h = OCPHandler(ocp,s,OclMatrix([0,1]),opt);
+h = OclOcpHandler(ocp,s,OclMatrix([0,1]),opt);
 assertEqual(h.pathCostsFun.evaluate([],[],[],1,1,[]),0);
 assertEqual(h.arrivalCostsFun.evaluate([],1,[]),0);
 
@@ -28,7 +28,7 @@ s = OclTestSystemValid;
 s.setup();
 N = 2;
 nv = (N+1)*s.nx+N*s.nu;
-h = OCPHandler(ocp,s,OclMatrix([nv,1]),opt);
+h = OclOcpHandler(ocp,s,OclMatrix([nv,1]),opt);
 
 c = h.pathCostsFun.evaluate(ones(s.nx,1),ones(s.nz,1),ones(s.nu,1),1,1,ones(s.np,1));
 assertEqual(c,26+1e-3*12);

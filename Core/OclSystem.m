@@ -128,7 +128,7 @@ classdef OclSystem < handle
     end
     
     function ic = getInitialConditions(self,states,parameters)
-      icHandler = OclConstraint();
+      icHandler = OclConstraint(self);
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
       self.fh.ic(icHandler,x,p)

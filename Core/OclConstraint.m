@@ -6,14 +6,16 @@ classdef OclConstraint < handle
     values
     lowerBounds
     upperBounds
+    obj
   end
   
   methods
     
-    function self = OclConstraint()
+    function self = OclConstraint(obj)
       self.values = [];
       self.lowerBounds = [];
       self.upperBounds = [];
+      self.obj = obj;
     end
     
     function setInitialCondition(self,varargin)

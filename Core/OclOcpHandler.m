@@ -1,5 +1,5 @@
 
-classdef OCPHandler < handle
+classdef OclOcpHandler < handle
   properties (Access = public)
     pathCostsFun
     arrivalCostsFun
@@ -17,7 +17,7 @@ classdef OCPHandler < handle
 
   methods
     
-    function self = OCPHandler(ocp,system,nlpVarsStruct,options)
+    function self = OclOcpHandler(ocp,system,nlpVarsStruct,options)
       self.ocp = ocp;
       self.system = system;
       self.nlpVarsStruct = nlpVarsStruct;
@@ -49,7 +49,7 @@ classdef OCPHandler < handle
     end
     
     function r = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
-      pcHandler = OclCostHandler();
+      pcHandler = OclCost(self.ocp);
       
       if self.options.controls_regularization
         pcHandler.add(self.options.controls_regularization_value*(controls.'*controls));
@@ -66,7 +66,7 @@ classdef OCPHandler < handle
     end
     
     function r = getArrivalCosts(self,states,endTime,parameters)
-      acHandler = OclCostHandler();
+      acHandler = OclCost(self.ocp);
       x = Variable.create(self.system.statesStruct,states);
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(endTime);
@@ -76,7 +76,7 @@ classdef OCPHandler < handle
     end
     
     function [val,lb,ub] = getPathConstraints(self,states,time,parameters)
-      pathConstraintHandler = OclConstraint();
+      pathConstraintHandler = OclConstraint(self.ocp);
       x = Variable.create(self.system.statesStruct,states);
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(time);
@@ -88,7 +88,7 @@ classdef OCPHandler < handle
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,initialStates,finalStates,parameters)
-      bcHandler = OclConstraint();
+      bcHandler = OclConstraint(self.ocp);
       x0 = Variable.create(self.system.statesStruct,initialStates);
       xF = Variable.create(self.system.statesStruct,finalStates);
       p = Variable.create(self.system.parametersStruct,parameters);
@@ -100,7 +100,7 @@ classdef OCPHandler < handle
     end
     
     function r = getDiscreteCosts(self,varsValue)
-      dcHandler = OclCostHandler();
+      dcHandler = OclCost(self.ocp);
       v = Variable.create(self.nlpVarsStruct,varsValue);
       self.ocp.fh.dcH(dcHandler,v);
       r = dcHandler.value;

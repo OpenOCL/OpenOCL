@@ -5,7 +5,7 @@ function solver = OclSolver(system, ocp, options)
   integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
   nlp = Simultaneous(system,integrator,N,options);
 
-  ocpHandler = OCPHandler(ocp,system,nlp.varsStruct,options);
+  ocpHandler = OclOcpHandler(ocp,system,nlp.varsStruct,options);
   integrator.pathCostsFun = ocpHandler.pathCostsFun;
   nlp.ocpHandler = ocpHandler;
 

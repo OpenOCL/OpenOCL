@@ -1,12 +1,14 @@
-classdef OclCostHandler < handle
+classdef OclCost < handle
   properties
     value
+    obj
   end
   
   methods
     
-    function self = OclCostHandler()
+    function self = OclCost(obj)
       self.value = 0;
+      self.obj = obj;
     end
   
     function addDiscreteCost(self,varargin)
