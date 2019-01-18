@@ -1,40 +1,36 @@
 classdef OclOCP < handle
-  %OCLOCP Optimal Control Problem formulation
-  %   Derive from this class to formulate an optimal control problem by
-  %   implementing the abstract methods.
+  %OCLOCP Class for defining Optimal Control Problems
 
   properties (Access = public)
-    fh
+    fh % function handles
   end
   
   methods(Access = public)
-    function self = OclOCP(pcH,acH,pconH,bcH,dcH)
-      if nargin==1 && (isa(pcH,'OclSystem') || isa(pcH,'System'))
+    function self = OclOCP(varargin)
+
+      
+      defFhPC = @(varargin)self.pathCosts(varargin{:});
+      defFhAC = @(varargin)self.arrivalCosts(varargin{:});
+      defFhPCon = @(varargin)self.pathConstraints(varargin{:});
+      defFhBC = @(varargin)self.boundaryConditions(varargin{:});
+      defFhDC = @(varargin)self.discreteCosts(varargin{:});
+      
+      p = inputParser;
+      p.addOptional('pathCosts',defFhPC,@oclIsFunHandle);
+      p.addOptional('arrivalCosts',defFhAC,@oclIsFunHandle);
+      p.addOptional('pathConstraints',defFhPCon,@oclIsFunHandle);
+      p.addOptional('boundaryConditions',defFhBC,@oclIsFunHandle);
+      p.addOptional('discreteCosts',defFhDC,@oclIsFunHandle);
+      p.parse(varargin{:});
+      
+      self.fh.pathCosts = p.Results.pathCosts;
+      self.fh.arrivalCosts = p.Results.arrivalCosts;
+      self.fh.pathConstraints = p.Results.pathConstraints;
+      self.fh.boundaryConditions = p.Results.boundaryConditions;
+      self.fh.discreteCosts = p.Results.discreteCosts;
+      
+      if nargin==1 && (isa(self.fh.pathCosts,'OclSystem') || isa(self.fh.pathCosts,'System'))
         oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
-      end
-      
-      
-      
-      
-      self.fh.pcH   = @(varargin)self.pathCosts(varargin{:});
-      self.fh.acH   = @(varargin)self.arrivalCosts(varargin{:});
-      self.fh.pconH = @(varargin)self.pathConstraints(varargin{:});
-      self.fh.bcH   = @(varargin)self.boundaryConditions(varargin{:});
-      self.fh.dcH   = @(varargin)self.discreteCosts(varargin{:});
-      if nargin>=1 && ~isempty(pcH)
-        self.fh.pcH   = pcH;
-      end
-      if nargin>=2 && ~isempty(acH)
-        self.fh.acH   = acH;
-      end
-      if nargin>=3 && ~isempty(pconH)
-        self.fh.pconH = pconH;
-      end
-      if nargin>=4 && ~isempty(bcH)
-        self.fh.bcH   = bcH;
-      end
-      if nargin>=5 && ~isempty(dcH)
-        self.fh.dcH   = dcH;
       end
     end
   end

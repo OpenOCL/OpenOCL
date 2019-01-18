@@ -61,7 +61,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(endTime);
       
-      self.ocp.fh.pcH(pcHandler,x,z,u,time,t,p);
+      self.ocp.fh.pathCosts(pcHandler,x,z,u,time,t,p);
       r = pcHandler.value;
     end
     
@@ -71,7 +71,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(endTime);
       
-      self.ocp.fh.acH(acHandler,x,t,p);
+      self.ocp.fh.arrivalCosts(acHandler,x,t,p);
       r = acHandler.value;
     end
     
@@ -81,7 +81,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,parameters);
       t = Variable.Matrix(time);
       
-      self.ocp.fh.pconH(pathConstraintHandler,x,t,p);
+      self.ocp.fh.pathConstraints(pathConstraintHandler,x,t,p);
       val = pathConstraintHandler.values;
       lb = pathConstraintHandler.lowerBounds;
       ub = pathConstraintHandler.upperBounds;
@@ -93,7 +93,7 @@ classdef OclOcpHandler < handle
       xF = Variable.create(self.system.statesStruct,finalStates);
       p = Variable.create(self.system.parametersStruct,parameters);
       
-      self.ocp.fh.bcH(bcHandler,x0,xF,p);
+      self.ocp.fh.boundaryConditions(bcHandler,x0,xF,p);
       val = bcHandler.values;
       lb = bcHandler.lowerBounds;
       ub = bcHandler.upperBounds;
@@ -102,7 +102,7 @@ classdef OclOcpHandler < handle
     function r = getDiscreteCosts(self,varsValue)
       dcHandler = OclCost(self.ocp);
       v = Variable.create(self.nlpVarsStruct,varsValue);
-      self.ocp.fh.dcH(dcHandler,v);
+      self.ocp.fh.discreteCosts(dcHandler,v);
       r = dcHandler.value;
     end
 
