@@ -15,6 +15,7 @@ classdef OclSystem < handle
     alg
     
     fh
+    opts
     
     bounds
     
@@ -30,10 +31,34 @@ classdef OclSystem < handle
 
   methods
     
-    function self = OclSystem(fhVars,fhEq,fhIC)
+    function self = OclSystem(varargin)
       % OclSystem()
       % OclSystem(fhVarSetup,fhEquationSetup)
       % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
+      % OclSystem(__,'independent_variable',name)
+      % OclSystem(__,'dependent',isDependent)
+      
+      defFhVars = @(varargin)self.setupVariables(varargin{:});
+      defFhEq = @(varargin)self.setupEquation(varargin{:});
+      defFhIC = @(varargin)self.initialConditions(varargin{:});
+      
+      p = inputParser;
+      p.addOptional('fhVars',defFhVars,@oclIsFunHandle);
+      p.addOptional('fhEq',defFhEq,@oclIsFunHandle);
+      p.addOptional('fhIC',defFhIC,@oclIsFunHandle);
+      p.addParameter('independent_variable','time',@isstring);
+      p.addParameter('dependent',false,@islogical);
+      p.parse(varargin{:});
+      
+      self.fh = struct;
+      self.fh.vars = p.Results.fhVars;
+      self.fh.eq = p.Results.fhEq;
+      self.fh.ic = p.Results.fhIC;
+      
+      self.opts = struct;
+      self.opts.independent_variable = p.Results.independent_variable;
+      self.opts.dependent = p.Results.dependent;
+      
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
       self.controlsStruct   = OclStructure();
@@ -41,24 +66,14 @@ classdef OclSystem < handle
       
       self.bounds = struct;
       self.ode = struct;
-      
-      self.fh = struct;
-      
-      if nargin==0
-        self.fh.vars = @(varargin)self.setupVariables(varargin{:});
-        self.fh.eq = @(varargin)self.setupEquation(varargin{:});
-        self.fh.ic = @(varargin)self.initialConditions(varargin{:});
-      else
-        self.fh.vars = fhVars;
-        self.fh.eq = fhEq;
-        if nargin == 3 && ~isempty(fhIC)
-          self.fh.ic = fhIC;
-        end
-      end
     end
     
     function setup(self)
       self.fh.vars(self);
+      
+      if self.opts.dependent
+        self.addState(self.opts.independent_variable);
+      end
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
@@ -112,6 +127,10 @@ classdef OclSystem < handle
       p = Variable.create(self.parametersStruct,parameters);
 
       self.fh.eq(self,x,z,u,p);
+      
+      if self.opts.dependent
+        self.setODE(self.opts.independent_variable,1);
+      end
      
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});

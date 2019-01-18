@@ -13,6 +13,9 @@ classdef OclOCP < handle
         oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
       end
       
+      
+      
+      
       self.fh.pcH   = @(varargin)self.pathCosts(varargin{:});
       self.fh.acH   = @(varargin)self.arrivalCosts(varargin{:});
       self.fh.pconH = @(varargin)self.pathConstraints(varargin{:});
