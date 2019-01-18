@@ -4,7 +4,7 @@ oclDir = getenv('OPENOCL_PATH');
 addpath(fullfile(oclDir,'Test','Classes'));
 
 % ocp empty test
-ocp = OclTestOcpEmpty;
+ocp = OclTestOcpEmpty(10);
 s = OclTestSystemEmpty;
 s.setup();
 opt = OclOptions;
@@ -23,7 +23,7 @@ assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % ocp valid test
-ocp = OclTestOcpValid;
+ocp = OclTestOcpValid(10);
 s = OclTestSystemValid;
 s.setup();
 N = 2;

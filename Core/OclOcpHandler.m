@@ -45,31 +45,30 @@ classdef OclOcpHandler < handle
       
       fhDC = @(self,varargin)self.getDiscreteCosts(varargin{:});
       self.discreteCostsFun = OclFunction(self, fhDC, {sv}, 1);
-      
     end
     
-    function r = getPathCosts(self,states,algVars,controls,time,endTime,parameters)
+    function r = getPathCosts(self,x,z,c,t,T,p)
       pcHandler = OclCost(self.ocp);
       
       if self.options.controls_regularization
-        pcHandler.add(self.options.controls_regularization_value*(controls.'*controls));
+        pcHandler.add(self.options.controls_regularization_value*(c.'*c));
       end
       
-      x = Variable.create(self.system.statesStruct,states);
-      z = Variable.create(self.system.algVarsStruct,algVars);
-      u = Variable.create(self.system.controlsStruct,controls);
-      p = Variable.create(self.system.parametersStruct,parameters);
-      t = Variable.Matrix(endTime);
+      x = Variable.create(self.system.statesStruct,x);
+      z = Variable.create(self.system.algVarsStruct,z);
+      u = Variable.create(self.system.controlsStruct,c);
+      p = Variable.create(self.system.parametersStruct,p);
+      t = Variable.Matrix(T);
       
-      self.ocp.fh.pathCosts(pcHandler,x,z,u,time,t,p);
+      self.ocp.fh.pathCosts(pcHandler,x,z,u,t,t,p);
       r = pcHandler.value;
     end
     
-    function r = getArrivalCosts(self,states,endTime,parameters)
+    function r = getArrivalCosts(self,x,T,parameters)
       acHandler = OclCost(self.ocp);
-      x = Variable.create(self.system.statesStruct,states);
+      x = Variable.create(self.system.statesStruct,x);
       p = Variable.create(self.system.parametersStruct,parameters);
-      t = Variable.Matrix(endTime);
+      t = Variable.Matrix(T);
       
       self.ocp.fh.arrivalCosts(acHandler,x,t,p);
       r = acHandler.value;
