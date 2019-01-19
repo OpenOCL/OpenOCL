@@ -1,11 +1,12 @@
-function solver = OclSolver(system, ocp, options)
+function solver = OclSolver(T, system, ocp, options)
   preparationTic = tic;
   system.setup();
   N = options.nlp.controlIntervals;
   integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
-  nlp = Simultaneous(system,integrator,N,options);
-
-  ocpHandler = OclOcpHandler(ocp,system,nlp.varsStruct,options);
+  ocpHandler = OclOcpHandler(T,system,ocp,options);
+  nlp = Simultaneous(system,ocpHandler,integrator,N,options);
+  
+  ocpHandler.setNlpVarsStruct(nlp.varsStruct);
   integrator.pathCostsFun = ocpHandler.pathCostsFun;
   nlp.ocpHandler = ocpHandler;
 

@@ -6,16 +6,11 @@ classdef OclSystem < handle
     controlsStruct
     parametersStruct
     
-    nx
-    nz
-    nu
-    np
-    
     ode
     alg
     
     fh
-    opts
+    options
     
     bounds
     
@@ -55,9 +50,9 @@ classdef OclSystem < handle
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
       
-      self.opts = struct;
-      self.opts.independent_variable = p.Results.independent_variable;
-      self.opts.dependent = p.Results.dependent;
+      self.options = struct;
+      self.options.independent_variable = p.Results.independent_variable;
+      self.options.dependent = p.Results.dependent;
       
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
@@ -68,22 +63,34 @@ classdef OclSystem < handle
       self.ode = struct;
     end
     
+    function r = nx(self)
+      r = prod(self.statesStruct.size());
+    end
+    
+    function r = nz(self)
+      r = prod(self.algVarsStruct.size());
+    end
+    
+    function r = nu(self)
+      r = prod(self.controlsStruct.size());
+    end
+    
+    function r = np(self)
+      r = prod(self.parametersStruct.size());
+    end
+    
     function setup(self)
-      self.fh.vars(self);
       
-      if self.opts.dependent
-        self.addState(self.opts.independent_variable);
+      if self.options.dependent
+        self.addState(self.options.independent_variable);
       end
+      
+      self.fh.vars(self);
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
       su = self.controlsStruct.size();
       sp = self.parametersStruct.size();
-      
-      self.nx = prod(sx);
-      self.nz = prod(sz);
-      self.nu = prod(su);
-      self.np = prod(sp);
       
       fhEq = @(self,varargin)self.getEquations(varargin{:});
       self.systemFun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
@@ -128,8 +135,8 @@ classdef OclSystem < handle
 
       self.fh.eq(self,x,z,u,p);
       
-      if self.opts.dependent
-        self.setODE(self.opts.independent_variable,1);
+      if self.options.dependent
+        self.setODE(self.options.independent_variable,1);
       end
      
       ode = struct2cell(self.ode);

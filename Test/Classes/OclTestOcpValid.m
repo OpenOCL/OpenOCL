@@ -2,22 +2,22 @@ classdef OclTestOcpValid < OclOCP
   
   methods (Static)
     
-    function pathCosts(self,x,z,u,t,tf,p)
+    function pathCosts(self,x,z,u,p)
       self.addPathCost(x.a); % 1
       self.addPathCost(x.c.'*x.c); % 7
-      self.addPathCost(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+t+tf); % 1e-3*12+26
+      self.addPathCost(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+p.ttt_end); % 1e-3*12+26
       self.addPathCost(0); % 0 ([]) or () ? invalid!
       self.addPathCost(-1); % -1
     end
     
-    function arrivalCosts(self,xf,tf,p)
+    function arrivalCosts(self,xf,p)
       self.addArrivalCost(xf.d);
       self.addArrivalCost(0);
       self.addArrivalCost(-1);
-      self.addArrivalCost(-1*p.v*tf);
+      self.addArrivalCost(-1*p.v*p.ttt_end);
     end
     
-    function pathConstraints(self,x,t,p)
+    function pathConstraints(self,x,p)
       
       % scalar with constant
       self.addPathConstraint(x.a,'<=',1);
@@ -25,7 +25,7 @@ classdef OclTestOcpValid < OclOCP
       self.addPathConstraint(x.a,'==',1);
       self.addPathConstraint(1,'==',x.a);
       self.addPathConstraint(1,'>=',x.a);
-      self.addPathConstraint(1,'<=',t+p.aa(1,1,1));
+      self.addPathConstraint(1,'<=',x.ttt+p.aa(1,1,1));
       
       % vector with vector
       self.addPathConstraint(x.f,'>=',2+ones(5,1));

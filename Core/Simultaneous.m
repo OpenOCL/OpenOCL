@@ -23,9 +23,10 @@ classdef Simultaneous < handle
   end
   
   methods
-    function self = Simultaneous(system,integrator,N,options)
+    function self = Simultaneous(system,ocpHandler,integrator,N,options)
       
       self.system = system;
+      self.ocpHandler = ocpHandler;
       self.N = N;
       self.options = options;
       self.nx = prod(system.statesStruct.size());
@@ -45,7 +46,6 @@ classdef Simultaneous < handle
       self.varsStruct.add('states',system.statesStruct);
       
       self.varsStruct.add('parameters',system.parametersStruct);
-      self.varsStruct.add('time',[1 1]);
       
       self.timesStruct = OclStructure();
       self.timesStruct.addRepeated({'states','integrator','controls'},...
@@ -56,17 +56,104 @@ classdef Simultaneous < handle
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
     end
     
+    function setBounds(self,varargin)
+      % setInitialBounds(id,value)
+      % setInitialBounds(id,lower,upper)
+      self.ocpHandler.setBounds(varargin{:})
+    end
+    
+    function setInitialBounds(self,varargin)
+      % setInitialBounds(id,value)
+      % setInitialBounds(id,lower,upper)
+      self.ocpHandler.setInitialBounds(varargin{:})
+    end
+    
+    function setEndBounds(self,varargin)
+      % setEndBounds(id,value)
+      % setEndBounds(id,lower,upper)
+      self.ocpHandler.setEndBounds(varargin{:})
+    end    
+    
+    function [lowerBounds,upperBounds] = getNlpBounds(self)
+      
+      boundsStruct = self.varsStruct.flat();
+      lowerBounds = Variable.create(boundsStruct,-inf);
+      upperBounds = Variable.create(boundsStruct,inf);
+      
+      % system bounds
+      names = fieldnames(self.system.bounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).set(self.system.bounds.(id).lower);
+        upperBounds.get(id).set(self.system.bounds.(id).upper);
+      end
+      
+      % solver bounds
+      names = fieldnames(self.ocpHandler.bounds);
+      for i=1:length(names)
+        id = names{i};
+        lowerBounds.get(id).set(self.ocpHandler.bounds.(id).lower);
+        upperBounds.get(id).set(self.ocpHandler.bounds.(id).upper);
+      end
+      
+      % initial bounds
+      names = fieldnames(self.ocpHandler.initialBounds);
+      for i=1:length(names)
+        id = names{i};
+        lb = lowerBounds.get(id);
+        ub = upperBounds.get(id);
+        lb(:,:,1).set(self.ocpHandler.initialBounds.(id).lower);
+        ub(:,:,1).set(self.ocpHandler.initialBounds.(id).upper);
+      end
+      
+      % end bounds
+      names = fieldnames(self.ocpHandler.endBounds);
+      for i=1:length(names)
+        id = names{i};
+        lb = lowerBounds.get(id);
+        ub = upperBounds.get(id);
+        lb(:,:,end).set(self.ocpHandler.endBounds.(id).lower);
+        ub(:,:,end).set(self.ocpHandler.endBounds.(id).upper);
+      end
+      
+      lowerBounds = lowerBounds.value;
+      upperBounds = upperBounds.value;
+      
+    end
+    
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
       
-      T = nlpVars(self.nv);
+      if isempty(self.ocpHandler.T)
+        T = nlpVars(self.nv-self.np);
+      else
+        T = self.ocpHandler.T;
+      end
+      
+      timeConstraints = {T};
+      timeConstraints_LB = {0};
+      timeConstraints_UB = {inf};
+      timeCost = 0;
+      
+      if self.system.options.dependent && isempty(self.ocpHandler.T)
+        timeGrid = nlpVars(1:self.ni+self.nu+self.nx:end-self.np);
+        timeConstraints = {timeGrid(1),timeGrid(end)-T,timeGrid(2:end)-timeGrid(1:end-1)};
+        timeConstraints_LB = {0,0,zeros(self.N,1)};
+        timeConstraints_UB = {0,0,inf * ones(self.N,1)};
+        
+        x = timeGrid(2:end)-timeGrid(1:end-1);
+        timeCost = sum((x-mean(x).^2)); % sum(x-xmean)^2
+      else
+        timeGrid = linspace(0,T,self.N+1);
+      end
+      
+      
+      
       parameters = nlpVars(self.nv-self.np:self.nv-1);
-
-      timeGrid = linspace(0,T,self.N+1);
       
       % N+1 state times
       % N integrator times
       % N control times
-      times = cell((self.N+1)+self.N+self.N);
+      times = cell((self.N+1)+self.N+self.N,1);
       
       % N integrator equations
       % N+1 path constraints
@@ -85,7 +172,6 @@ classdef Simultaneous < handle
       if self.options.path_constraints_at_boundary
         [pathConstraint,lb,ub] = ...
               self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                          timeGrid(1),...
                                                           parameters);   
         constraints{1} = pathConstraint;
         constraints_LB{1} = lb;
@@ -134,7 +220,6 @@ classdef Simultaneous < handle
           % add path constraints
           [pathConstraint,lb,ub] = ...
                 self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                            timeGrid(k+1),...
                                                             parameters);                                   
           constraints{k_pathConstraints} = pathConstraint;
           constraints_LB{k_pathConstraints} = lb;
@@ -152,7 +237,7 @@ classdef Simultaneous < handle
       times = vertcat(times{:});
       
       % add terminal cost
-      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,T,parameters);
+      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,parameters);
       costs = costs + terminalCosts;
 
       % add boundary constraints
@@ -161,11 +246,11 @@ classdef Simultaneous < handle
       constraints_LB{nc} = lb;
       constraints_UB{nc} = ub;
       
-      costs = costs + self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
+      costs = costs + self.ocpHandler.discreteCostsFun.evaluate(nlpVars) + 1e3*timeCost;    
       
-      constraints = vertcat(constraints{:});
-      constraints_LB = vertcat(constraints_LB{:});
-      constraints_UB = vertcat(constraints_UB{:});
+      constraints = vertcat(constraints{:},timeConstraints{:});
+      constraints_LB = vertcat(constraints_LB{:},timeConstraints_LB{:});
+      constraints_UB = vertcat(constraints_UB{:},timeConstraints_UB{:});
     end % getNLPFun
   end % methods
 end % classdef

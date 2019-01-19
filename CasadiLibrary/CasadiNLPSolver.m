@@ -10,7 +10,6 @@ classdef CasadiNLPSolver < NLPSolver
     function self = CasadiNLPSolver(nlp,options)
       
       self.nlpData = self.construct(nlp,options);
-      
       self.nlp = nlp;
       self.options = options;
     end
@@ -29,7 +28,7 @@ classdef CasadiNLPSolver < NLPSolver
         for j=1:size(el.positions,3)
           name = [id,'_',num2str(j)];
           pos = el.positions(:,:,j);
-          var = casadi.MX.sym(name,numel(pos));
+          var = casadi.SX.sym(name,numel(pos));
           vars{pos(1)}=var;
         end
       end
@@ -43,7 +42,7 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.x = vars;
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
-      casadiNLP.p = casadi.MX.sym('p',[0,1]);
+      casadiNLP.p = [];
 
       nlpData = struct;
       nlpData.casadiNLP = casadiNLP;
@@ -65,7 +64,7 @@ classdef CasadiNLPSolver < NLPSolver
       v0 = initialGuess.value;
       
       % detect variables as parameters if they are constant (lb==ub)
-      [lbv,ubv] = self.getNlpBounds();
+      [lbv,ubv] = self.nlp.getNlpBounds();
  
       opts = self.options.nlp.casadi;
       if isfield(self.options.nlp,self.options.nlp.solver)
