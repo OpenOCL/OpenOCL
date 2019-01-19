@@ -129,9 +129,9 @@ classdef Simultaneous < handle
         T = self.ocpHandler.T;
       end
       
-      timeConstraints = {T};
-      timeConstraints_LB = {0};
-      timeConstraints_UB = {inf};
+      timeConstraints = {};
+      timeConstraints_LB = {};
+      timeConstraints_UB = {};
       timeCost = 0;
       
       if self.system.options.dependent && isempty(self.ocpHandler.T)
@@ -140,8 +140,8 @@ classdef Simultaneous < handle
         timeConstraints_LB = {0,0,zeros(self.N,1)};
         timeConstraints_UB = {0,0,inf * ones(self.N,1)};
         
-        x = timeGrid(2:end)-timeGrid(1:end-1);
-        timeCost = sum((x-mean(x).^2)); % sum(x-xmean)^2
+        %x = timeGrid(2:end)-timeGrid(1:end-1);
+        %timeCost = sum((x-mean(x).^2)); % sum(x-xmean)^2
       else
         timeGrid = linspace(0,T,self.N+1);
       end

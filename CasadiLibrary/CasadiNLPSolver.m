@@ -110,6 +110,8 @@ classdef CasadiNLPSolver < NLPSolver
       self.timeMeasures.solveCasadi     = solveCasadiTime;
       self.timeMeasures.constructSolver = constructSolverTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
+      
+      oclWarningNotice()
     end
   end
   

@@ -29,11 +29,23 @@ classdef OclOcpHandler < handle
       self.options = options;
       self.T = T;
       
+      endName = [system.options.independent_variable,'_end'];
+      self.addParameter(endName);
+      if ~isempty(T)
+        self.setBounds(endName,T);
+      end
+      
+      self.bounds = struct;
+      self.initialBounds = struct;
+      self.endBounds = struct;
+    end
+    
+    function setup(self)
       % variable sizes
-      sx = system.statesStruct.size();
-      sz = system.algVarsStruct.size();
-      su = system.controlsStruct.size();
-      sp = system.parametersStruct.size();
+      sx = self.system.statesStruct.size();
+      sz = self.system.algVarsStruct.size();
+      su = self.system.controlsStruct.size();
+      sp = self.system.parametersStruct.size();
 
       fhPC = @(self,varargin) self.getPathCosts(varargin{:});
       self.pathCostsFun = OclFunction(self, fhPC, {sx,sz,su,sp}, 1);
@@ -46,16 +58,6 @@ classdef OclOcpHandler < handle
       
       fhPConst = @(self,varargin)self.getPathConstraints(varargin{:});
       self.pathConstraintsFun = OclFunction(self, fhPConst, {sx,sp}, 3);
-      
-      self.bounds = struct;
-      self.initialBounds = struct;
-      self.endBounds = struct;
-      
-      endName = [system.options.independent_variable,'_end'];
-      self.addParameter(endName);
-      if ~isempty(T)
-        self.setBounds(endName,T);
-      end
     end
     
     function setNlpVarsStruct(self,varsStruct)

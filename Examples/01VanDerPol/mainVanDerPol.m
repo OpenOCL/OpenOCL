@@ -19,7 +19,8 @@ ocl = OclSolver([],system,ocp,options);
 ocl.setInitialBounds('x',     0);            % x1 == 0
 ocl.setInitialBounds('y',     1);            % y1 == 1
 
-ocl.setParameter('time_end', END_TIME);            % y1 == 1
+%ocl.setParameter('time_end', END_TIME);            % y1 == 1
+ocl.setEndBounds('time', END_TIME)
 
 % Get and set initial guess
 initialGuess = ocl.getInitialGuess();

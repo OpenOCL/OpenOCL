@@ -1,15 +1,19 @@
 function solver = OclSolver(T, system, ocp, options)
   preparationTic = tic;
+  
+  ocpHandler = OclOcpHandler(T,system,ocp,options);
   system.setup();
+  ocpHandler.setup();
+  
   N = options.nlp.controlIntervals;
   integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
-  ocpHandler = OclOcpHandler(T,system,ocp,options);
   nlp = Simultaneous(system,ocpHandler,integrator,N,options);
   
   ocpHandler.setNlpVarsStruct(nlp.varsStruct);
   integrator.pathCostsFun = ocpHandler.pathCostsFun;
   nlp.ocpHandler = ocpHandler;
 
+  
   ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
   system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
   nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
