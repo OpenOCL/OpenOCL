@@ -88,7 +88,10 @@ classdef CollocationIntegrator < handle
         [ode,alg] = self.system.systemFun.evaluate(integratorVars(j_states), ...
                                                    integratorVars(j_algVars), ...
                                                    controls,parameters);
-        equations{j} = [h*ode-xp; alg];
+                                                 
+        ode(1:end-1) = h*ode(end)*ode(1:end-1);
+        ode(end) = h*ode(end);
+        equations{j} = [ode-xp; alg];
 
         % Add contribution to the end state
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);

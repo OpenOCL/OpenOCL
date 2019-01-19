@@ -54,6 +54,9 @@ classdef Simultaneous < handle
 
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
+      
+      self.setInitialBounds(self.system.independentVar,0);
+      
     end
     
     function setBounds(self,varargin)
@@ -128,14 +131,13 @@ classdef Simultaneous < handle
       timeConstraints_UB = {};
       timeCost = 0;
       
-      if isempty(self.ocpHandler.T)
-        T = nlpVars(self.nv-self.np);
-        timeGrid = linspace(0,T,self.N+1);
-      elseif numel(self.ocpHandler.T) == 1
+      if numel(self.ocpHandler.T) == 1
         T = self.ocpHandler.T;
         timeGrid = linspace(0,T,self.N+1);
       elseif numel(self.ocpHandler.T) == self.N+1
         timeGrid = self.ocpHandler.T;
+      elseif isempty(self.ocpHandler.T)
+        timeGrid = linspace(0,1,self.N+1);
       else
         oclError('Times/independent varible vector not supported.')
       end

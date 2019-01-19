@@ -12,15 +12,12 @@ options.nlp.solver = 'ipopt';
 
 system = OclSystem(@sysVars,@sysEq);
 ocp = OclOCP(@pathCosts);
-ocl = OclSolver(10,system,ocp,options);
+
+ocl = OclSolver(END_TIME,system,ocp,options);
 
 % intial state bounds
 ocl.setInitialBounds('x',     0);            % x1 == 0
 ocl.setInitialBounds('y',     1);            % y1 == 1
-
-ocl.setParameter('time_end', END_TIME);            % y1 == 1
-%ocl.setInitialBounds('time', 0)
-%ocl.setEndBounds('time', END_TIME)
 
 % Get and set initial guess
 initialGuess = ocl.getInitialGuess();

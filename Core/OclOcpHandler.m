@@ -29,14 +29,6 @@ classdef OclOcpHandler < handle
       self.options = options;
       self.T = T;
       
-      if ~system.options.dependent
-        endName = [system.options.independent_variable,'_end'];
-        self.addParameter(endName);
-        if ~isempty(T)
-          self.setBounds(endName,T);
-        end
-      end
-      
       self.bounds = struct;
       self.initialBounds = struct;
       self.endBounds = struct;
