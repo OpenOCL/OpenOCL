@@ -55,14 +55,13 @@ classdef CollocationIntegrator < handle
       st = [1,1];
       
       fh = @(self,varargin)self.getIntegrator(varargin{:});
-      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,st,sp}, 5);
+      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);
                                                   
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                    controls,startTime,endTime,ocpEndTime,parameters)
-                                                                         
-      h = endTime-startTime;
+                                                                    controls,startTime,endTime,parameters)
+      h = (endTime-startTime);                                                                   
       equations = cell(self.order,1);
       J = 0;
       

@@ -10,7 +10,8 @@ classdef OclSystem < handle
     alg
     
     fh
-    options
+    
+    independentVar
     
     bounds
     
@@ -41,18 +42,12 @@ classdef OclSystem < handle
       p.addOptional('fhVars',defFhVars,@oclIsFunHandle);
       p.addOptional('fhEq',defFhEq,@oclIsFunHandle);
       p.addOptional('fhIC',defFhIC,@oclIsFunHandle);
-      p.addParameter('independent_variable','time',@isstring);
-      p.addParameter('dependent',false,@islogical);
       p.parse(varargin{:});
       
       self.fh = struct;
       self.fh.vars = p.Results.fhVars;
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
-      
-      self.options = struct;
-      self.options.independent_variable = p.Results.independent_variable;
-      self.options.dependent = p.Results.dependent;
       
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
@@ -61,6 +56,8 @@ classdef OclSystem < handle
       
       self.bounds = struct;
       self.ode = struct;
+      
+      self.independentVar = 'time';
     end
     
     function r = nx(self)
@@ -81,11 +78,10 @@ classdef OclSystem < handle
     
     function setup(self)
       
-      if self.options.dependent
-        self.addState(self.options.independent_variable);
-      end
-      
       self.fh.vars(self);
+      
+      self.statesStruct.add(self.independentVar,1);
+      self.ode.(self.independentVar) = [];
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
@@ -128,16 +124,14 @@ classdef OclSystem < handle
         self.ode.(names{i}) = [];
       end
       
+      self.setODE(self.independentVar,1);
+      
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
 
       self.fh.eq(self,x,z,u,p);
-      
-      if self.options.dependent
-        self.setODE(self.options.independent_variable,1);
-      end
      
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});
@@ -163,6 +157,11 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
     
+    function addIndependentVar(self,id)
+      % addIndependentVar(id)
+      self.independentVar = id;
+    end
+
     function addState(self,id,s,lb,ub)
       % addState(id)
       % addState(id,size)
@@ -232,7 +231,7 @@ classdef OclSystem < handle
       if ~isfield(self.ode,id)
         oclException(['State ', id, ' does not exist.']);
       end
-      if ~isempty(self.ode.(id))
+      if ~isempty(self.ode.(id)) && ~strcmp(self.independentVar,id)
         oclException(['Ode for var ', id, ' already defined']);
       end
       self.ode.(id) = Variable.getValueAsColumn(eq);

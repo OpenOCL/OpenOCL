@@ -11,22 +11,22 @@ options.nlp.ipopt.linear_solver = 'mumps';
 options.nlp.solver = 'ipopt';
 
 system = OclSystem(@sysVars,@sysEq);
-system.options.dependent = 1;
 ocp = OclOCP(@pathCosts);
-ocl = OclSolver([],system,ocp,options);
+ocl = OclSolver(10,system,ocp,options);
 
 % intial state bounds
 ocl.setInitialBounds('x',     0);            % x1 == 0
 ocl.setInitialBounds('y',     1);            % y1 == 1
 
-%ocl.setParameter('time_end', END_TIME);            % y1 == 1
-ocl.setEndBounds('time', END_TIME)
+ocl.setParameter('time_end', END_TIME);            % y1 == 1
+%ocl.setInitialBounds('time', 0)
+%ocl.setEndBounds('time', END_TIME)
 
 % Get and set initial guess
 initialGuess = ocl.getInitialGuess();
 initialGuess.states.x.set(-0.2);
 
-initialGuess.states.time = linspace(0,10,31);
+%initialGuess.states.time = linspace(0,10,31);
 
 % Run solver to obtain solution
 [solution,times] = ocl.solve(initialGuess);

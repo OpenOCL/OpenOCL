@@ -33,7 +33,7 @@ classdef Simultaneous < handle
       self.ni = prod(integrator.varsStruct.size());
       self.nu = prod(system.controlsStruct.size());
       self.np = prod(system.parametersStruct.size());
-      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu+self.np+1;
+      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu+self.np;
       self.nit = integrator.nt;
       
       self.integratorFun = integrator.integratorFun;
@@ -123,31 +123,23 @@ classdef Simultaneous < handle
     
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
       
-      if isempty(self.ocpHandler.T)
-        T = nlpVars(self.nv-self.np);
-      else
-        T = self.ocpHandler.T;
-      end
-      
       timeConstraints = {};
       timeConstraints_LB = {};
       timeConstraints_UB = {};
       timeCost = 0;
       
-      if self.system.options.dependent && isempty(self.ocpHandler.T)
-        timeGrid = nlpVars(1:self.ni+self.nu+self.nx:end-self.np);
-        timeConstraints = {timeGrid(1),timeGrid(end)-T,timeGrid(2:end)-timeGrid(1:end-1)};
-        timeConstraints_LB = {0,0,zeros(self.N,1)};
-        timeConstraints_UB = {0,0,inf * ones(self.N,1)};
-        
-        %x = timeGrid(2:end)-timeGrid(1:end-1);
-        %timeCost = sum((x-mean(x).^2)); % sum(x-xmean)^2
-      else
+      if isempty(self.ocpHandler.T)
+        T = nlpVars(self.nv-self.np);
         timeGrid = linspace(0,T,self.N+1);
+      elseif numel(self.ocpHandler.T) == 1
+        T = self.ocpHandler.T;
+        timeGrid = linspace(0,T,self.N+1);
+      elseif numel(self.ocpHandler.T) == self.N+1
+        timeGrid = self.ocpHandler.T;
+      else
+        oclError('Times/independent varible vector not supported.')
       end
-      
-      
-      
+
       parameters = nlpVars(self.nv-self.np:self.nv-1);
       
       % N+1 state times
@@ -202,7 +194,7 @@ classdef Simultaneous < handle
                                           thisControls,...
                                           timeGrid(k),...
                                           timeGrid(k+1),...
-                                          T,parameters);
+                                          parameters);
                                           
         times{kt_integrator} = integratorTimes;
                                           
@@ -233,7 +225,7 @@ classdef Simultaneous < handle
         constraints_UB{k_continuity} = zeros(size(continuity_constraint));
       end
       
-      times{end} = T;
+      times{end} = timeGrid(end);
       times = vertcat(times{:});
       
       % add terminal cost
