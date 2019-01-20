@@ -1,4 +1,4 @@
-function runTests(testExamples,saveLog)
+function [nFails] = runTests(testExamples,saveLog)
   % runTests()
   % runTests(testExamples)
   
