@@ -2,7 +2,6 @@ function solver = OclSolver(T, system, ocp, options)
   preparationTic = tic;
   
   ocpHandler = OclOcpHandler(T,system,ocp,options);
-  system.setup();
   ocpHandler.setup();
   
   N = options.nlp.controlIntervals;

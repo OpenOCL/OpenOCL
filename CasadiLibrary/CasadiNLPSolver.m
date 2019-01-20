@@ -63,7 +63,6 @@ classdef CasadiNLPSolver < NLPSolver
       
       v0 = initialGuess.value;
       
-      % detect variables as parameters if they are constant (lb==ub)
       [lbv,ubv] = self.nlp.getNlpBounds();
  
       opts = self.options.nlp.casadi;

@@ -12,6 +12,7 @@ classdef OclSystem < handle
     fh
     
     independentVar
+    dependent
     
     bounds
     
@@ -32,7 +33,7 @@ classdef OclSystem < handle
       % OclSystem(fhVarSetup,fhEquationSetup)
       % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
       % OclSystem(__,'independent_variable',name)
-      % OclSystem(__,'dependent',isDependent)
+      % OclSystem(__,'dependent',true/false)
       
       defFhVars = @(varargin)self.setupVariables(varargin{:});
       defFhEq = @(varargin)self.setupEquation(varargin{:});
@@ -42,12 +43,16 @@ classdef OclSystem < handle
       p.addOptional('fhVars',defFhVars,@oclIsFunHandle);
       p.addOptional('fhEq',defFhEq,@oclIsFunHandle);
       p.addOptional('fhIC',defFhIC,@oclIsFunHandle);
+      p.addParameter('independent_variable','time',@ischar);
+      p.addParameter('dependent',false,@islogical);
       p.parse(varargin{:});
       
       self.fh = struct;
       self.fh.vars = p.Results.fhVars;
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
+      self.dependent = p.Results.dependent;
+      self.independentVar = p.Results.independent_variable;
       
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
@@ -56,8 +61,6 @@ classdef OclSystem < handle
       
       self.bounds = struct;
       self.ode = struct;
-      
-      self.independentVar = 'time';
     end
     
     function r = nx(self)
@@ -80,8 +83,12 @@ classdef OclSystem < handle
       
       self.fh.vars(self);
       
-      self.statesStruct.add(self.independentVar,1);
-      self.ode.(self.independentVar) = [];
+      if self.dependent
+        self.statesStruct.add(self.independentVar,1);
+        self.ode.(self.independentVar) = [];
+      end
+      
+      
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
@@ -124,7 +131,9 @@ classdef OclSystem < handle
         self.ode.(names{i}) = [];
       end
       
-      self.setODE(self.independentVar,1);
+      if self.dependent
+        self.setODE(self.independentVar,1);
+      end
       
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
@@ -155,11 +164,6 @@ classdef OclSystem < handle
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
           'In initial condition are only equality constraints allowed.');
-    end
-    
-    function addIndependentVar(self,id)
-      % addIndependentVar(id)
-      self.independentVar = id;
     end
 
     function addState(self,id,s,lb,ub)

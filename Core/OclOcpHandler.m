@@ -29,13 +29,46 @@ classdef OclOcpHandler < handle
       self.options = options;
       self.T = T;
       
+      N = options.nlp.controlIntervals;
+      
       self.bounds = struct;
       self.initialBounds = struct;
       self.endBounds = struct;
+      
+      if length(T) == 1
+        hControlsNormalized = 1/N;
+      elseif length(T) == N+1
+        hControlsNormalized = (T(2:N+1)-T(1:N)) / T(end);
+        T = T(end);
+      elseif length(T) == N
+        hControlsNormalized = T/sum(T);
+        T = sum(T);
+      elseif isempty(T)
+        hControlsNormalized = 1/N;
+        T = [];
+      else
+        oclError('Dimension of T does not match the number of control intervals.')
+      end
+      
+      self.setBounds('h_normalized',hControlsNormalized);
+      if ~isempty(T)
+        self.setBounds('T',T)
+      end
+      
+      if system.dependent
+        self.setInitialBounds(system.independentVar,0);
+      end
+      
     end
     
     function setup(self)
       % variable sizes
+      
+      self.system.addControl('h_normalized');
+      self.system.addParameter('T');
+      
+      self.system.setup();
+      
       sx = self.system.statesStruct.size();
       sz = self.system.algVarsStruct.size();
       su = self.system.controlsStruct.size();

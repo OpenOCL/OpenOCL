@@ -60,8 +60,7 @@ classdef CollocationIntegrator < handle
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                    controls,startTime,endTime,parameters)
-      h = (endTime-startTime);                                                                   
+                                                                    controls,startTime,h,parameters)                                                                  
       equations = cell(self.order,1);
       J = 0;
       
@@ -69,6 +68,8 @@ classdef CollocationIntegrator < handle
       statesEnd = self.D(1)*statesBegin;
       times = cell(self.order,1);
       for j=1:self.order
+        
+        times{j} = startTime + self.tau_root(j+1) * h;
         
         j_vars = (j-1)*(self.nx+self.nz);
         j_states = j_vars+1:j_vars+self.nx;
@@ -81,17 +82,12 @@ classdef CollocationIntegrator < handle
           xp = xp + self.C(r+1,j+1)*integratorVars(r_states);
         end
 
-        time = startTime + self.tau_root(j+1) * h;
-        times{j} = time;
-
         % Append collocation equations
         [ode,alg] = self.system.systemFun.evaluate(integratorVars(j_states), ...
                                                    integratorVars(j_algVars), ...
                                                    controls,parameters);
                                                  
-        ode(1:end-1) = h*ode(end)*ode(1:end-1);
-        ode(end) = h*ode(end);
-        equations{j} = [ode-xp; alg];
+        equations{j} = [h*ode-xp; alg];
 
         % Add contribution to the end state
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);

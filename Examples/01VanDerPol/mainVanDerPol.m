@@ -23,18 +23,15 @@ ocl.setInitialBounds('y',     1);            % y1 == 1
 initialGuess = ocl.getInitialGuess();
 initialGuess.states.x.set(-0.2);
 
-%initialGuess.states.time = linspace(0,10,31);
-
 % Run solver to obtain solution
 [solution,times] = ocl.solve(initialGuess);
 
 % plot solution
 figure
 hold on 
-ut = solution.states.time.value;
-plot(solution.states.time.value,solution.states.x.value,'-.','LineWidth',2)
-plot(solution.states.time.value,solution.states.y.value,'--k','LineWidth',2)
-stairs(ut(2:end),solution.controls.u.value,'r','LineWidth',2)
+plot(times.states.value,solution.states.x.value,'-.','LineWidth',2)
+plot(times.states.value,solution.states.y.value,'--k','LineWidth',2)
+stairs(times.controls.value,solution.controls.F.value,'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})
 
@@ -47,14 +44,14 @@ legend({'x','y','u'})
     sh.addState('x',1,-0.25,inf);
     sh.addState('y');
 
-    % Scalar u: -1 <= u <= 1
-    sh.addControl('u',1,-1,1);
+    % Scalar u: -1 <= F <= 1
+    sh.addControl('F',1,-1,1);
   end
 
   function sysEq(sh,x,~,u,~)     
     % sysEq(systemHandler,states,algVars,controls,parameters) 
     %   Defines differential equations
-    sh.setODE('x',(1-x.y^2)*x.x - x.y + u); 
+    sh.setODE('x',(1-x.y^2)*x.x - x.y + u.F); 
     sh.setODE('y',x.x);
   end
 
@@ -63,7 +60,7 @@ legend({'x','y','u'})
     %   Defines lagrange (intermediate) cost terms.
     ch.addPathCost( x.x^2 );
     ch.addPathCost( x.y^2 );
-    ch.addPathCost( u^2 );
+    ch.addPathCost( u.F^2 );
   end
 
 end
