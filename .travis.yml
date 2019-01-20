@@ -1,0 +1,8 @@
+before_install:
+  - sudo add-apt-repository ppa:octave/stable -y
+  - sudo apt-get update -q
+  - sudo apt-get install octave -y
+  
+script:
+  - octave StartupOCL.m
+  - octave runTests.m
