@@ -36,7 +36,7 @@ classdef OclSystem < handle
       % OclSystem(__,'dependent',true/false)
       
       defFhVars = @(varargin)self.setupVariables(varargin{:});
-      defFhEq = @(varargin)self.setupEquation(varargin{:});
+      defFhEq = @(varargin)self.setupEquations(varargin{:});
       defFhIC = @(varargin)self.initialConditions(varargin{:});
       
       p = inputParser;
@@ -105,7 +105,7 @@ classdef OclSystem < handle
     function setupVariables(varargin)
       error('Not Implemented.');
     end
-    function setupEquation(varargin)
+    function setupEquations(varargin)
       error('Not Implemented.');
     end
     

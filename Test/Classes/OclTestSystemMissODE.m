@@ -3,7 +3,7 @@ classdef OclTestSystemMissODE < OclSystem
     function setupVariables(self)    
       self.addState('x')
     end
-    function setupEquation(self,x,z,u,p)     
+    function setupEquations(self,x,z,u,p)     
     end
   end
 end

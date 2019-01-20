@@ -29,7 +29,7 @@ classdef BallAndBeamSystem < OclSystem
       self.addParameter('R',1, 0.05);       % radious ball
       self.addParameter('g',1, 9.81);       % gravity
     end
-    function setupEquation(self,states,algVars,controls,parameters)
+    function setupEquations(self,states,algVars,controls,parameters)
       I = parameters.I;
       J = parameters.J;
       m = parameters.m;

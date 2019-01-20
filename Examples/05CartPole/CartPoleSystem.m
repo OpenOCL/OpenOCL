@@ -9,7 +9,7 @@ classdef CartPoleSystem < OclSystem
 
       self.addControl('F',1,-20,20);
     end
-    function setupEquation(self,x,z,u,p)     
+    function setupEquations(self,x,z,u,p)     
       
       g = 9.8;
       cm = 1.0;

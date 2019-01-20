@@ -20,7 +20,7 @@ classdef RaceCarSystem < OclSystem
       self.addParameter('road_bound');  % lane road relative to the middle lane [m]
       self.addParameter('Fmax');        % maximal force on the car [N]
     end
-    function setupEquation(self,state,algVars,controls,parameters)    
+    function setupEquations(self,state,algVars,controls,parameters)    
       m    = parameters.m;
       A    = parameters.A;
       cd   = parameters.cd;

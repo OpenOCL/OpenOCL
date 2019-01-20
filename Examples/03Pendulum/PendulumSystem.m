@@ -10,7 +10,7 @@ classdef PendulumSystem < OclSystem
       sys.addParameter('l');
       
     end
-    function setupEquation(sys,state,algVars,controls,parameters)
+    function setupEquations(sys,state,algVars,controls,parameters)
       p       = state.p;
       v       = state.v;
       F       = controls.F;

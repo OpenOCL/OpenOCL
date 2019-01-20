@@ -4,7 +4,7 @@ classdef OclTestSystemManyDAE < OclSystem
       self.addState('x');
       self.addAlgVar('z');
     end
-    function setupEquation(self,x,z,u,p)   
+    function setupEquations(self,x,z,u,p)   
       self.setODE('x',x);
       self.setAlgEquation(z);
       self.setAlgEquation(z);

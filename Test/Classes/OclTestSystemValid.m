@@ -33,7 +33,7 @@ classdef OclTestSystemValid < OclSystem
       self.addParameter('z',[5,1]);
       self.addParameter('aa',[3,4]);
     end
-    function setupEquation(self,x,z,u,p)
+    function setupEquations(self,x,z,u,p)
       
       self.setODE('g',p.aa+z.t);
       self.setODE('b',z.n);

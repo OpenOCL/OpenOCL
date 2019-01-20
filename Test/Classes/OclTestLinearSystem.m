@@ -7,7 +7,7 @@ classdef OclTestLinearSystem < OclSystem
       self.addControl('F');
 
     end
-    function setupEquation(self,x,z,u,p)
+    function setupEquations(self,x,z,u,p)
       m = 1;
       
       self.setODE('p', x.v);
