@@ -27,6 +27,7 @@ function StartupOCL(in)
     oclError('Invalid argument.')
   end
 
+
   % add current directory to path
   addpath(pwd);
 
@@ -103,3 +104,15 @@ function StartupOCL(in)
     end
     addpath(fullfile(exportDir,'Variable'));
   end
+  
+  % travis-ci  
+  
+  if isOctave()
+    args = argv();
+    if length(args)>0 && args{1} == '1'
+      disp(args{1})
+      runTests(1)
+    end
+  end
+  
+  
