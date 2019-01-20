@@ -59,8 +59,8 @@ end
 function pathCosts(ch,x,~,u,p)
   % pathCosts(costHandler,states,algVars,controls,time,endTime,parameters)
   %   Defines lagrange (intermediate) cost terms.
-  ch.addPathCost( x.x^2 );
-  ch.addPathCost( x.y^2 );
-  ch.addPathCost( u.F^2 );
+  ch.add( x.x^2 );
+  ch.add( x.y^2 );
+  ch.add( u.F^2 );
 end
 

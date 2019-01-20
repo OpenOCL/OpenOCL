@@ -1,15 +1,15 @@
 classdef CartPoleSystem < OclSystem
   methods (Static)
-    function setupVariables(self)    
+    function setupVariables(sh)    
       
-      self.addState('p',1,-5,5);
-      self.addState('theta',1,-2*pi,2*pi);
-      self.addState('v');
-      self.addState('omega');
+      sh.addState('p',1,-5,5);
+      sh.addState('theta',1,-2*pi,2*pi);
+      sh.addState('v');
+      sh.addState('omega');
 
-      self.addControl('F',1,-20,20);
+      sh.addControl('F',1,-20,20);
     end
-    function setupEquations(self,x,z,u,p)     
+    function setupEquations(sh,x,z,u,p)     
       
       g = 9.8;
       cm = 1.0;
@@ -28,10 +28,10 @@ classdef CartPoleSystem < OclSystem
 
       a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
       
-      self.setODE('p',x.v); 
-      self.setODE('theta',x.omega); 
-      self.setODE('v',a);
-      self.setODE('omega',domega);
+      sh.setODE('p',x.v); 
+      sh.setODE('theta',x.omega); 
+      sh.setODE('v',a);
+      sh.setODE('omega',domega);
     end
   end
 end

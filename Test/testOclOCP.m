@@ -26,8 +26,6 @@ assertEqual(ub,[]);
 % ocp valid test
 ocp = OclTestOcpValid;
 s = OclTestSystemValid();
-s.independentVar = 'ttt';
-s.dependent = true;
 N = 2;
 nv = (N+1)*s.nx+N*s.nu;
 h = OclOcpHandler(1,s,ocp,opt);

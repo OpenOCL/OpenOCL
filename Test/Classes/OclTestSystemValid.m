@@ -9,6 +9,8 @@ classdef OclTestSystemValid < OclSystem
       self.addState('f',[5,1]);
       self.addState('g',[3,4]);
       
+      self.addState('ttt')
+      
       self.addControl('a'); % same as state!? (conflict bounds in Simultaneous)
       self.addControl('h',1);
       self.addControl('i',7);
@@ -42,6 +44,8 @@ classdef OclTestSystemValid < OclSystem
       self.setODE('c',z.p);
       self.setODE('f',z.s);
       self.setODE('e',u.k);
+      
+      self.setODE('ttt',1);
 
       % 31x1
       self.setAlgEquation(reshape(p.y,4,1));

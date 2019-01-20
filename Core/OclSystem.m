@@ -44,8 +44,6 @@ classdef OclSystem < handle
       self.fh.vars = p.Results.fhVars;
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
-      self.dependent = p.Results.dependent;
-      self.independentVar = p.Results.independent_variable;
       
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
@@ -148,76 +146,81 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
 
-    function addState(self,id,s,lb,ub)
+    function addState(self,id,varargin)
       % addState(id)
-      % addState(id,size)
-      % addState(id,size,lb,ub)
-      if nargin==2
-        s = 1;
-      end
-      if nargin <=3
-        lb = -inf;
-        ub = inf;
-      end
+      % addState(id,s)
+      % addState(id,s,lb=lb,lb=ub)
+      
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @(v)isnumeric(v));
+      p.addOptional('lb', -inf, @isnumeric);
+      p.addOptional('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
       self.ode.(id) = [];
-      self.statesStruct.add(id,s);
-      self.bounds.(id).lower = lb;
-      self.bounds.(id).upper = ub;
+      self.statesStruct.add(id, p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addAlgVar(self,id,s,lb,ub)
+    function addAlgVar(self,id,varargin)
       % addAlgVar(id)
-      % addAlgVar(id,size)
-      % addAlgVar(id,size,lb,ub)
-      if nargin==2
-        s = 1;
-      end
-      if nargin <=3
-        lb = -inf;
-        ub = inf;
-      end
-      self.algVarsStruct.add(id,s);
-      self.bounds.(id).lower = lb;
-      self.bounds.(id).upper = ub;
+      % addAlgVar(id,s)
+      % addAlgVar(id,s,lb=lb,ub=ub)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addOptional('lb', -inf, @isnumeric);
+      p.addOptional('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.algVarsStruct.add(id, p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addControl(self,id,s,lb,ub)
+    function addControl(self,id,varargin)
       % addControl(id)
-      % addControl(id,size)
-      % addControl(id,size,lb,ub)
-      if nargin==2
-        s = 1;
-      end
-      if nargin <=3
-        lb = -inf;
-        ub = inf;
-      end
-      self.controlsStruct.add(id,s);
-      self.bounds.(id).lower = lb;
-      self.bounds.(id).upper = ub;
+      % addControl(id,s)
+      % addControl(id,s,lb=lb,ub=ub)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addOptional('lb', -inf, @isnumeric);
+      p.addOptional('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.controlsStruct.add(id,p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addParameter(self,id,s,defaultValue)
+    function addParameter(self,id,varargin)
       % addParameter(id)
-      % addParameter(id,size)
-      % addParameter(id,size,defaultValue)
-      if nargin==2
-        s = 1;
-      end
-      if nargin <=3
-        lb = -inf;
-        ub = inf;
-      else
-        lb = defaultValue;
-        ub = defaultValue;
-      end
-      self.parametersStruct.add(id,s);
-      self.bounds.(id).lower = lb;
-      self.bounds.(id).upper = ub;
+      % addParameter(id,s)
+      % addParameter(id,s,defaultValue)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addOptional('val', 0, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.parametersStruct.add(id,p.Results.s);
+      self.bounds.(id).lower = p.Results.val;
+      self.bounds.(id).upper = p.Results.val;
     end
 
     function setODE(self,id,eq)
       if ~isfield(self.ode,id)
         oclException(['State ', id, ' does not exist.']);
       end
-      if ~isempty(self.ode.(id)) && ~strcmp(self.independentVar,id)
+      if ~isempty(self.ode.(id))
         oclException(['Ode for var ', id, ' already defined']);
       end
       self.ode.(id) = Variable.getValueAsColumn(eq);

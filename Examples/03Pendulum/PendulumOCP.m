@@ -1,8 +1,8 @@
 classdef PendulumOCP < OclOCP
   methods (Static)
-    function pathCosts(self,~,~,controls,~,~,~)
+    function pathCosts(ch,~,~,controls,~,~,~)
       F  = controls.F;
-      self.add( 1e-3 * F^2 );
+      ch.add( 1e-3 * F^2 );
     end
   end
 end

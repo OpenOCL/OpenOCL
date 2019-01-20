@@ -55,10 +55,6 @@ classdef OclOcpHandler < handle
         self.setBounds('T',T)
       end
       
-      if system.dependent
-        self.setInitialBounds(system.independentVar,0);
-      end
-      
     end
     
     function setup(self)
