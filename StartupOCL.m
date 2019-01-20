@@ -111,8 +111,9 @@ function StartupOCL(in)
     args = argv();
     if length(args)>0 && args{1} == '1'
       nFails = runTests(1);
-      exit(nFails);
+      if nFailes > 0
+        exit(nFails);
+      end
     end
   end
-  
   
