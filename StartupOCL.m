@@ -110,9 +110,8 @@ function StartupOCL(in)
   if isOctave()
     args = argv();
     if length(args)>0 && args{1} == '1'
-      nFails = runTests(1)
-      nFails = 1
-      exit(nFails)
+      nFails = runTests(1);
+      exit(nFails);
     end
   end
   
