@@ -1,4 +1,5 @@
 function solver = OclSolver(T, system, ocp, options)
+  % OclSolver(T, system, ocp, options)
   preparationTic = tic;
   
   ocpHandler = OclOcpHandler(T,system,ocp,options);

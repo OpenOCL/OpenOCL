@@ -9,12 +9,12 @@ classdef CasadiNLPSolver < NLPSolver
     
     function self = CasadiNLPSolver(nlp,options)
       
-      self.nlpData = self.construct(nlp,options);
       self.nlp = nlp;
       self.options = options;
+      self.nlpData = self.construct(nlp,options);
     end
     
-    function nlpData = construct(self,nlp,~)
+    function nlpData = construct(self,nlp,options)
       
       constructTotalTic = tic;
       
@@ -26,9 +26,13 @@ classdef CasadiNLPSolver < NLPSolver
         id = names{i};
         el = vStruct.(id);
         for j=1:size(el.positions,3)
-          name = [id,'_',num2str(j)];
           pos = el.positions(:,:,j);
-          var = casadi.SX.sym(name,numel(pos));
+          name = [id,'_',num2str(j)];
+          if options.system_casadi_mx
+            var = casadi.MX.sym(name,numel(pos));
+          else
+            var = casadi.SX.sym(name,numel(pos));
+          end
           vars{pos(1)}=var;
         end
       end

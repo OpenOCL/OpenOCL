@@ -1,12 +1,15 @@
-function [nFails] = runTests(testExamples,saveLog)
+function [nFails] = runTests(testExamples,saveLog,suffix)
   % runTests()
   % runTests(testExamples)
   
   if nargin < 1
     testExamples = false;
   end
-  if nargin < 2
+  if nargin <=1
     saveLog = false;
+    suffix = '';
+  else
+    suffix = ['_',suffix];
   end
   
   testDir = getenv('OPENOCL_TEST');
@@ -57,7 +60,7 @@ function [nFails] = runTests(testExamples,saveLog)
   end
 
   %% save results
-  fileName = [datestr(now,'yyyy-mm-dd_HHMMSS'), '_', version(1:7),  '.txt'];
+  fileName = [datestr(now,'yyyy-mm-dd_HHMMSS'), '_', version(1:7), suffix,  '.txt'];
   filePath = fullfile(testDir,fileName);
   resultsFile = fopen(filePath,'w');
   fprintf(resultsFile,'Test on %s\nVersion: %s\n\n',datestr(now),version);
