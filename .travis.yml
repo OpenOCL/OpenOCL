@@ -1,0 +1,9 @@
+before_install:
+  - sudo add-apt-repository ppa:octave/stable -y
+  - sudo apt-get update -q
+  - sudo apt-get install octave -y
+install:
+  - wget https://github.com/casadi/casadi/releases/download/3.4.5/casadi-linux-octave-v3.4.5.tar.gz
+  - tar xvzf casadi-linux-octave-v3.4.5.tar.gz
+script:
+  - octave StartupOCL.m 1 --exec-path casadi -W
