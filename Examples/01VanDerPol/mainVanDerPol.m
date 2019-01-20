@@ -34,33 +34,33 @@ plot(times.states.value,solution.states.y.value,'--k','LineWidth',2)
 stairs(times.controls.value,solution.controls.F.value,'r','LineWidth',2)
 xlabel('time')
 legend({'x','y','u'})
-
-  function sysVars(sh)
-    % sysVars(systemHandler)
-    %   Define system variables
-
-    % Scalar x:  -0.25 <= x <= inf
-    % Scalar y: unbounded
-    sh.addState('x',1,-0.25,inf);
-    sh.addState('y');
-
-    % Scalar u: -1 <= F <= 1
-    sh.addControl('F',1,-1,1);
-  end
-
-  function sysEq(sh,x,~,u,~)     
-    % sysEq(systemHandler,states,algVars,controls,parameters) 
-    %   Defines differential equations
-    sh.setODE('x',(1-x.y^2)*x.x - x.y + u.F); 
-    sh.setODE('y',x.x);
-  end
-
-  function pathCosts(ch,x,~,u,p)
-    % pathCosts(costHandler,states,algVars,controls,time,endTime,parameters)
-    %   Defines lagrange (intermediate) cost terms.
-    ch.addPathCost( x.x^2 );
-    ch.addPathCost( x.y^2 );
-    ch.addPathCost( u.F^2 );
-  end
-
 end
+
+function sysVars(sh)
+  % sysVars(systemHandler)
+  %   Define system variables
+
+  % Scalar x:  -0.25 <= x <= inf
+  % Scalar y: unbounded
+  sh.addState('x',1,-0.25,inf);
+  sh.addState('y');
+
+  % Scalar u: -1 <= F <= 1
+  sh.addControl('F',1,-1,1);
+end
+
+function sysEq(sh,x,~,u,~)     
+  % sysEq(systemHandler,states,algVars,controls,parameters) 
+  %   Defines differential equations
+  sh.setODE('x',(1-x.y^2)*x.x - x.y + u.F); 
+  sh.setODE('y',x.x);
+end
+
+function pathCosts(ch,x,~,u,p)
+  % pathCosts(costHandler,states,algVars,controls,time,endTime,parameters)
+  %   Defines lagrange (intermediate) cost terms.
+  ch.addPathCost( x.x^2 );
+  ch.addPathCost( x.y^2 );
+  ch.addPathCost( u.F^2 );
+end
+
