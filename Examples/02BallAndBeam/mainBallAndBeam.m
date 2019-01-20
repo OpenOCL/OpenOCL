@@ -5,10 +5,10 @@ options = OclOptions();
 options.nlp.controlIntervals = 50;
 
 sys = BallAndBeamSystem();
-ocl = OclSolver(sys,BallAndBeamOCP,options);
+ocl = OclSolver([],sys,BallAndBeamOCP,options);
 
  % bound on end time: 1 <= tf <= 5
-ocl.setParameter('time', 1, 5); 
+ocl.setParameter('T', 1, 5); 
 
 % set bounds for initial and endtime
 ocl.setInitialBounds('r'      , -0.8);

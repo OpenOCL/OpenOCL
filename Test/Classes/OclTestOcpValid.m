@@ -5,7 +5,7 @@ classdef OclTestOcpValid < OclOCP
     function pathCosts(self,x,z,u,p)
       self.addPathCost(x.a); % 1
       self.addPathCost(x.c.'*x.c); % 7
-      self.addPathCost(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+p.ttt_end); % 1e-3*12+26
+      self.addPathCost(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+p.T); % 1e-3*12+26
       self.addPathCost(0); % 0 ([]) or () ? invalid!
       self.addPathCost(-1); % -1
     end
@@ -14,7 +14,7 @@ classdef OclTestOcpValid < OclOCP
       self.addArrivalCost(xf.d);
       self.addArrivalCost(0);
       self.addArrivalCost(-1);
-      self.addArrivalCost(-1*p.v*p.ttt_end);
+      self.addArrivalCost(-1*p.v*p.T);
     end
     
     function pathConstraints(self,x,p)

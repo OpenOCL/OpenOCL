@@ -2,7 +2,7 @@ function [o1,o2,o3,o4,o5] = testExamples
 
 % test basic example (VanDerPol)
 [sol,~,ocl] = mainVanDerPol;
-assert(all(abs(sol.get('controls').value - ...
+assert(all(abs(sol.controls.F.value - ...
   [ 0.2434
   0.9611
   0.9074
@@ -37,7 +37,7 @@ o1 = ocl.timeMeasures;
 
 % test ball and beam example problem
 mainBallAndBeam
-assert(all(abs(vars.controls.value - ...
+assert(all(abs(vars.controls.tau.value - ...
   [-20.0000
   -20.0000
   -16.3269
@@ -94,7 +94,7 @@ o2 = ocl.timeMeasures;
 
 % test race car problem
 mainRaceCar
-assertAlmostEqual(solution.controls(1,:,1:10:end).value,...
+assertAlmostEqual(solution.controls.dFx(1,:,1:10:end).value,...
       [-0.00554603;0.548809;0.0892633;0.322054;0.362561],...
       'Solve RaceCar Test failed.');
 

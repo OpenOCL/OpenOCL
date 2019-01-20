@@ -8,7 +8,7 @@ options = OclOptions();
 options.nlp.controlIntervals = CONTROL_INTERVALS;
 options.controls_regularization_value = 1e-3;
 
-ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);
+ocl = OclSolver([],RaceCarSystem,RaceCarOCP,options);
 
 % parameters
 m    = 1;         % mass [kg]
@@ -26,7 +26,7 @@ ocl.setParameter('rho' , rho);
 ocl.setParameter('Vmax', Vmax);
 ocl.setParameter('Fmax', Fmax);
 ocl.setParameter('road_bound', road_bound);
-ocl.setParameter('time', 0, MAX_TIME);  
+ocl.setParameter('T', 0, MAX_TIME);  
 
 ocl.setInitialBounds( 'x',   0.0); 
 ocl.setInitialBounds('vx',   0.0);

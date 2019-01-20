@@ -1,9 +1,9 @@
 classdef RaceCarOCP < OclOCP
   methods (Static)
-    function arrivalCosts(self,state,time,parameters)
-      self.addArrivalCost(time);
+    function arrivalCosts(self,state,parameters)
+      self.addArrivalCost(parameters.T);
     end
-    function pathConstraints(self,state,time,parameters)
+    function pathConstraints(self,state,parameters)
       % speed constraint
       vx         = state.vx; 
       vy         = state.vy; 

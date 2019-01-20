@@ -24,7 +24,7 @@ usym = casadi.SX.sym('u',s.nu);
 pcFun = OclFunction(s,@(varargin)0,{[s.nx*d,1],[],[1,1],[1,1],[1,1],[]},1);
 integ.pathCostsFun = pcFun;
 
-[~, ~, ~, equations, ~] = integ.integratorFun.evaluate(xsym,xisym,usym,t0,t0+h,tf,[]);
+[~, ~, ~, equations, ~] = integ.integratorFun.evaluate(xsym,xisym,usym,t0,h,[]);
 
 nlp    = struct('x', vertcat(xsym,xisym,usym), 'f', 0, 'g', equations);
 

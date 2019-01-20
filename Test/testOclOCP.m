@@ -10,6 +10,7 @@ s.setup();
 opt = OclOptions;
 opt.controls_regularization = false;
 h = OclOcpHandler(1,s,ocp,opt);
+h.setup();
 assertEqual(h.pathCostsFun.evaluate([],[],[],[]),0);
 assertEqual(h.arrivalCostsFun.evaluate([],[]),0);
 
@@ -25,12 +26,12 @@ assertEqual(ub,[]);
 % ocp valid test
 ocp = OclTestOcpValid;
 s = OclTestSystemValid();
-s.options.independent_variable = 'ttt';
-s.options.dependent = true;
-s.setup();
+s.independentVar = 'ttt';
+s.dependent = true;
 N = 2;
 nv = (N+1)*s.nx+N*s.nu;
 h = OclOcpHandler(1,s,ocp,opt);
+h.setup();
 h.setNlpVarsStruct(OclMatrix([nv,1]));
 
 c = h.pathCostsFun.evaluate(ones(s.nx,1),ones(s.nz,1),ones(s.nu,1),ones(s.np,1));
