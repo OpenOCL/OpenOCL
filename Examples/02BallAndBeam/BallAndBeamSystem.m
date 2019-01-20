@@ -17,34 +17,33 @@ classdef BallAndBeamSystem < OclSystem
   
   methods (Static)
     function setupVariables(sh)
-      % addState(id,size,lowerBound,upperBound)
-      sh.addState('r', 1, -sh.r_b, sh.r_b);
+      sh.addState('r',      'lb', -sh.r_b,      'ub', sh.r_b      );
       sh.addState('dr');
-      sh.addState('theta', 1,  -sh.theta_b, sh.theta_b);
-      sh.addState('dtheta', 1, -sh.dtheta_b, sh.dtheta_b );
+      sh.addState('theta',  'lb', -sh.theta_b,  'ub', sh.theta_b  );
+      sh.addState('dtheta', 'lb', -sh.dtheta_b, 'ub', sh.dtheta_b );
       
       % addControl(id,size,lowerBound,upperBound)
-      sh.addControl('tau',  1, -sh.tau_b    , sh.tau_b    );
+      sh.addControl('tau',  'lb', -sh.tau_b,    'ub', sh.tau_b    );
       
       % addParamter(id,size,defaultValue)
-      sh.addParameter('I',1, 0.5);        % Inertia Beam 
-      sh.addParameter('J',1, 25*10^(-3)); % Inertia Ball
-      sh.addParameter('m',1, 2);          % mass ball
-      sh.addParameter('R',1, 0.05);       % radious ball
-      sh.addParameter('g',1, 9.81);       % gravity
+      sh.addParameter('I', 'default', 0.5       ); % Inertia Beam 
+      sh.addParameter('J', 'default', 25*10^(-3)); % Inertia Ball
+      sh.addParameter('m', 'default', 2         ); % mass ball
+      sh.addParameter('R', 'default', 0.05      ); % radious ball
+      sh.addParameter('g', 'default', 9.81      ); % gravity
     end
-    function setupEquations(sh,states,algVars,controls,parameters)
-      I = parameters.I;
-      J = parameters.J;
-      m = parameters.m;
-      R = parameters.R;
-      g = parameters.g;
+    function setupEquations(sh,x,~,u,p)
+      I = p.I;
+      J = p.J;
+      m = p.m;
+      R = p.R;
+      g = p.g;
 
-      r      = states.r;
-      dr     = states.dr;
-      theta  = states.theta;
-      dtheta = states.dtheta;
-      tau    = controls.tau;
+      r      = x.r;
+      dr     = x.dr;
+      theta  = x.theta;
+      dtheta = x.dtheta;
+      tau    = u.tau;
 
       sh.setODE('theta' ,dtheta); 
       sh.setODE('dtheta',(tau - m*g*r*cos(theta) - 2*m*r*dr*dtheta)/(I + m*r^2));

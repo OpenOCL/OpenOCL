@@ -153,9 +153,9 @@ classdef OclSystem < handle
       
       p = inputParser;
       p.addRequired('id', @ischar);
-      p.addOptional('s', 1, @(v)isnumeric(v));
-      p.addOptional('lb', -inf, @isnumeric);
-      p.addOptional('ub', inf, @isnumeric);
+      p.addOptional('s', 1, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
       p.parse(id,varargin{:});
       
       id = p.Results.id;
@@ -172,8 +172,8 @@ classdef OclSystem < handle
       p = inputParser;
       p.addRequired('id', @ischar);
       p.addOptional('s', 1, @isnumeric);
-      p.addOptional('lb', -inf, @isnumeric);
-      p.addOptional('ub', inf, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
       p.parse(id,varargin{:});
       
       id = p.Results.id;
@@ -189,8 +189,8 @@ classdef OclSystem < handle
       p = inputParser;
       p.addRequired('id', @ischar);
       p.addOptional('s', 1, @isnumeric);
-      p.addOptional('lb', -inf, @isnumeric);
-      p.addOptional('ub', inf, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
       p.parse(id,varargin{:});
       
       id = p.Results.id;
@@ -206,14 +206,14 @@ classdef OclSystem < handle
       p = inputParser;
       p.addRequired('id', @ischar);
       p.addOptional('s', 1, @isnumeric);
-      p.addOptional('val', 0, @isnumeric);
+      p.addParameter('default', 0, @isnumeric);
       p.parse(id,varargin{:});
       
       id = p.Results.id;
       
       self.parametersStruct.add(id,p.Results.s);
-      self.bounds.(id).lower = p.Results.val;
-      self.bounds.(id).upper = p.Results.val;
+      self.bounds.(id).lower = p.Results.default;
+      self.bounds.(id).upper = p.Results.default;
     end
 
     function setODE(self,id,eq)

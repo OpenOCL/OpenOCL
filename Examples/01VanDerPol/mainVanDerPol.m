@@ -42,11 +42,11 @@ function sysVars(sh)
 
   % Scalar x:  -0.25 <= x <= inf
   % Scalar y: unbounded
-  sh.addState('x',1,-0.25,inf);
+  sh.addState('x', 'lb', -0.25, 'ub', inf);
   sh.addState('y');
 
   % Scalar u: -1 <= F <= 1
-  sh.addControl('F',1,-1,1);
+  sh.addControl('F', 'lb', -1, 'ub', 1);
 end
 
 function sysEq(sh,x,~,u,~)     

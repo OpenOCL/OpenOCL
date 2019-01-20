@@ -2,14 +2,14 @@ classdef CartPoleSystem < OclSystem
   methods (Static)
     function setupVariables(sh)    
       
-      sh.addState('p',1,-5,5);
-      sh.addState('theta',1,-2*pi,2*pi);
+      sh.addState('p', 'lb', -5, 'ub', 5);
+      sh.addState('theta', 'lb', -2*pi, 'ub', 2*pi);
       sh.addState('v');
       sh.addState('omega');
 
-      sh.addControl('F',1,-20,20);
+      sh.addControl('F', 'lb', -20, 'ub', 20);
     end
-    function setupEquations(sh,x,z,u,p)     
+    function setupEquations(sh,x,~,u,~)     
       
       g = 9.8;
       cm = 1.0;
