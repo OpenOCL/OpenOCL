@@ -4,7 +4,8 @@
 
 The Open Optimal Control Library is a toolbox for Matlab/Octave that facilitates modelling and formulation of (parametric) optimal control problems. It interfaces Ipopt [1] to numerically solve the optimal control problems and CasADi [2] to automatically calcuate the necessary derivatives by algorithmic differentiation.
 
-[![Build Status](https://travis-ci.org/JonasKoenemann/optimal-control.svg?branch=master)](https://travis-ci.org/JonasKoenemann/optimal-control)
+master: [![Build Status](https://travis-ci.org/JonasKoenemann/optimal-control.svg?branch=master)](https://travis-ci.org/JonasKoenemann/optimal-control)
+develop: [![Build Status](https://travis-ci.org/JonasKoenemann/optimal-control.svg?branch=develop)](https://travis-ci.org/JonasKoenemann/optimal-control)
 
 ## Quick start
 
