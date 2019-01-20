@@ -111,6 +111,7 @@ function StartupOCL(in)
     args = argv();
     if length(args)>0 && args{1} == '1'
       disp(args{1})
+      error('test travis fail')
       runTests(1)
     end
   end
