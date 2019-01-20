@@ -11,9 +11,6 @@ classdef OclSystem < handle
     
     fh
     
-    independentVar
-    dependent
-    
     bounds
     
     thisInitialConditions
@@ -32,8 +29,6 @@ classdef OclSystem < handle
       % OclSystem()
       % OclSystem(fhVarSetup,fhEquationSetup)
       % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
-      % OclSystem(__,'independent_variable',name)
-      % OclSystem(__,'dependent',true/false)
       
       defFhVars = @(varargin)self.setupVariables(varargin{:});
       defFhEq = @(varargin)self.setupEquations(varargin{:});
@@ -43,8 +38,6 @@ classdef OclSystem < handle
       p.addOptional('fhVars',defFhVars,@oclIsFunHandle);
       p.addOptional('fhEq',defFhEq,@oclIsFunHandle);
       p.addOptional('fhIC',defFhIC,@oclIsFunHandle);
-      p.addParameter('independent_variable','time',@ischar);
-      p.addParameter('dependent',false,@islogical);
       p.parse(varargin{:});
       
       self.fh = struct;
@@ -82,13 +75,6 @@ classdef OclSystem < handle
     function setup(self)
       
       self.fh.vars(self);
-      
-      if self.dependent
-        self.statesStruct.add(self.independentVar,1);
-        self.ode.(self.independentVar) = [];
-      end
-      
-      
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
@@ -129,10 +115,6 @@ classdef OclSystem < handle
       names = fieldnames(self.ode);
       for i=1:length(names)
         self.ode.(names{i}) = [];
-      end
-      
-      if self.dependent
-        self.setODE(self.independentVar,1);
       end
       
       x = Variable.create(self.statesStruct,states);
