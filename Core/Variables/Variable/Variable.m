@@ -6,6 +6,7 @@ classdef Variable < handle
     
   properties (Constant)
       MAX_DISP_LENGTH = 200
+      DISP_FLOAT_PREC = 6;
    end
   
   properties
@@ -92,7 +93,7 @@ classdef Variable < handle
       if nargin==1
         value = self.value;
         if isnumeric(value)
-          valueStr = mat2str(self.value);
+          valueStr = mat2str(self.value,Variable.DISP_FLOAT_PREC);
         else
           % cell array
           cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
@@ -141,23 +142,23 @@ classdef Variable < handle
       
       if numel(s) == 1 && strcmp(s.type,'()')
         % v(1)
-        [varargout{1}] = self.get(s.subs{:});
+        [varargout{1}] = self.slice(s.subs{:});
       elseif numel(s) > 1 && strcmp(s(1).type,'()')
         % v(1).something().a
-        v = self.get(s(1).subs{:});
+        v = self.slice(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
         if isfield(self.type.children,id) && numel(s) == 1
           % v.x
-          [varargout{1}] = self.get(s.subs);
+          [varargout{1}] = self.get(id);
         elseif isfield(self.type.children,id)
           % v.x.get(3).set(2).value || v.x.y.get(1)
-          v = self.get(s(1).subs);
+          v = self.get(id);
           [varargout{1:nargout}] = subsref(v,s(2:end));
         else
-          % v.value || v.set(1) || v.get(4).set(3).x.value
+          % v.slice(1) || v.get(id)
           [varargout{1:nargout}] = builtin('subsref',self,s);
         end
       else
@@ -171,13 +172,12 @@ classdef Variable < handle
       % v.get(1) = 1
       % v.value(1) = 1
       % v* = Variable
-      v = Variable.getValue(v);
-      
-      if numel(s)==1 && strcmp(s.type,'()')
-        self.get(s.subs{:}).set(v);
+      if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.children,s(1).subs)
+        self = builtin('subsasgn',self,s,v);
       else
-        v = subsasgn(self.get(s.subs),s(2:end),v);
-        self.set(builtin('subsasgn',self,s,v));
+        v = Variable.getValue(v);
+        subVar = subsref(self,s);
+        subVar.set(v);
       end
     end
     
@@ -196,33 +196,27 @@ classdef Variable < handle
       s = size(self.positions);      
     end
 
-    function r = get(self,varargin)
-      % r = get(self,id)
-      % r = get(self,dim1,dim2,dim3)
-      function t = isAllOperator(in)
-        t = strcmp(in,'all') || strcmp(in,':');
-      end
-      in1 = varargin{1};
-      if ischar(in1) && ~isAllOperator(in1) && ~strcmp(in1,'end')
-        % get(id)
-        [t,p] = self.type.get(in1,self.positions);
-        r = Variable.createFromVar(t,p,self);
-      else
-        % get(dim1,dim2,dim3)
-        for k=1:length(varargin)
-          if isAllOperator(varargin{k})
-            varargin{k} = (1:size(self.positions,k)).';
-          elseif strcmp(varargin{k},'end')
-            varargin{k} = size(self.positions,k);
-          end
-        end
-        p = self.positions;
-        % slice
-        p = p(varargin{:});
-        r = Variable.createFromVar(self.type,p,self);
-      end
+    function ind = end(self,k,n)
+       szd = size(self.positions);
+       if k < n
+          ind = szd(k);
+       else
+          ind = prod(szd(k:end));
+       end
+    end
+
+    function r = get(self,id)
+      % r = get(id)
+      [t,p] = self.type.get(id,self.positions);
+      r = Variable.createFromVar(t,p,self);
     end
     
+    function r = slice(self,varargin)
+      % r = get(dim1,dim2,dim3)
+      p = self.positions(varargin{:});
+      r = Variable.createFromVar(self.type,p,self);
+    end
+
     function toJSON(self,path,name,varargin)
       % toJSON(self,path,name,opt)
       if nargin==1

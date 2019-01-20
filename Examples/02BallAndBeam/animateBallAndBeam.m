@@ -31,6 +31,10 @@ for i = 2:1:length(time)
   set(Ball, 'XData', Xball);
   set(Ball, 'YData', Yball);
   
-  pause(ts)
+  global testRun
+  if isempty(testRun) || (testRun==false)
+    pause(ts);
+  end
+  
   drawnow
 end

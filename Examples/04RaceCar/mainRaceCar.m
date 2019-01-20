@@ -6,8 +6,9 @@ MAX_TIME = 20;              % [s]
 
 options = OclOptions();
 options.nlp.controlIntervals = CONTROL_INTERVALS;
+options.controls_regularization_value = 1e-3;
 
-ocl = OclSolver(RaceCarSystem,RaceCarOCP,options);
+ocl = OclSolver([],RaceCarSystem,RaceCarOCP,options);
 
 % parameters
 m    = 1;         % mass [kg]
@@ -25,7 +26,7 @@ ocl.setParameter('rho' , rho);
 ocl.setParameter('Vmax', Vmax);
 ocl.setParameter('Fmax', Fmax);
 ocl.setParameter('road_bound', road_bound);
-ocl.setParameter('time', 0, MAX_TIME);  
+ocl.setParameter('T', 0, MAX_TIME);  
 
 ocl.setInitialBounds( 'x',   0.0); 
 ocl.setInitialBounds('vx',   0.0);
@@ -69,11 +70,11 @@ plot(times.states.value,Vmax.*ones(1,length(times)),'Color','k','LineWidth',1.5,
 ylabel('[m/s]');
 
 subplot(3,2,5);hold on;grid on; 
-plot(times.controls.value,solution.controls.Fx.value,'Color','b','LineWidth',1.5)
-plot(times.controls.value,solution.controls.Fy.value,'Color','r','LineWidth',1.5)
+plot(times.states.value,solution.states.Fx.value,'Color','b','LineWidth',1.5)
+plot(times.states.value,solution.states.Fy.value,'Color','r','LineWidth',1.5)
 legend({'Fx','Fy'});
-plot(times.controls.value,-Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
-plot(times.controls.value, Fmax.*ones(1,length(times(1:end-1))),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times.states.value,-Fmax.*ones(1,length(times.states.value)),'Color','k','LineWidth',1.5,'LineStyle','-.')
+plot(times.states.value, Fmax.*ones(1,length(times.states.value)),'Color','k','LineWidth',1.5,'LineStyle','-.')
 ylabel('[N]');xlabel('time');
 
 % build street

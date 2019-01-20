@@ -15,7 +15,7 @@ classdef CollocationIntegrator < handle
   properties
     system
     integratorFun
-    ocpHandler
+    pathCostsFun
     varsStruct
     nx
     nz
@@ -55,14 +55,12 @@ classdef CollocationIntegrator < handle
       st = [1,1];
       
       fh = @(self,varargin)self.getIntegrator(varargin{:});
-      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,st,sp}, 5);
+      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);
                                                   
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                    controls,startTime,endTime,ocpEndTime,parameters)
-                                                                         
-      h = endTime-startTime;
+                                                                    controls,startTime,h,parameters)                                                                  
       equations = cell(self.order,1);
       J = 0;
       
@@ -70,6 +68,8 @@ classdef CollocationIntegrator < handle
       statesEnd = self.D(1)*statesBegin;
       times = cell(self.order,1);
       for j=1:self.order
+        
+        times{j} = startTime + self.tau_root(j+1) * h;
         
         j_vars = (j-1)*(self.nx+self.nz);
         j_states = j_vars+1:j_vars+self.nx;
@@ -82,20 +82,18 @@ classdef CollocationIntegrator < handle
           xp = xp + self.C(r+1,j+1)*integratorVars(r_states);
         end
 
-        time = startTime + self.tau_root(j+1) * h;
-        times{j} = time;
-
         % Append collocation equations
         [ode,alg] = self.system.systemFun.evaluate(integratorVars(j_states), ...
                                                    integratorVars(j_algVars), ...
                                                    controls,parameters);
+                                                 
         equations{j} = [h*ode-xp; alg];
 
         % Add contribution to the end state
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.ocpHandler.pathCostsFun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,time,ocpEndTime,parameters);
+        qj = self.pathCostsFun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 

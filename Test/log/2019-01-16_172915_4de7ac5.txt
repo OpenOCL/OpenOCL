@@ -1,0 +1,69 @@
+Test on 16-Jan-2019 17:29:15
+Version: 4de7ac501549254d94444db96cddfac66e1c2822
+
+
+Variable Tests passed
+It took 0.4194 seconds.
+
+TreeVariable Tests passed
+It took 0.0882 seconds.
+
+VarStructure Tests passed
+It took 0.0100 seconds.
+
+OclFunction Tests passed
+It took 0.0239 seconds.
+
+OclSystem Tests passed
+It took 0.0657 seconds.
+
+OclOCP Tests passed
+It took 0.0743 seconds.
+
+Integrator Tests passed
+It took 0.6049 seconds.
+
+Example Tests passed
+It took 15.5465 seconds.
+
+Test 1, constructTotal: 0.6914 seconds.
+Test 1, preparation: 0.2049 seconds.
+Test 1, initialGuess: 0.0310 seconds.
+Test 1, solveTotal: 0.3179 seconds.
+Test 1, solveCasadi: 0.0236 seconds.
+Test 1, constructSolver: 0.0299 seconds.
+Test 1, nlpFunEval: 0.1495 seconds.
+Test 1, sum: 1.4482 seconds.
+
+Test 2, constructTotal: 1.5502 seconds.
+Test 2, preparation: 0.3403 seconds.
+Test 2, initialGuess: 0.0987 seconds.
+Test 2, solveTotal: 0.8518 seconds.
+Test 2, solveCasadi: 0.1860 seconds.
+Test 2, constructSolver: 0.1629 seconds.
+Test 2, nlpFunEval: 0.2490 seconds.
+Test 2, sum: 3.4389 seconds.
+
+Test 3, constructTotal: 1.6122 seconds.
+Test 3, preparation: 0.2820 seconds.
+Test 3, initialGuess: 0.1145 seconds.
+Test 3, solveTotal: 0.7359 seconds.
+Test 3, solveCasadi: 0.1054 seconds.
+Test 3, constructSolver: 0.1104 seconds.
+Test 3, nlpFunEval: 0.2508 seconds.
+Test 3, sum: 3.2113 seconds.
+
+Test 4, simulationTest: 0.6890 seconds.
+Test 4, sum: 0.6890 seconds.
+
+Test 5, constructTotal: 1.5487 seconds.
+Test 5, preparation: 0.2358 seconds.
+Test 5, initialGuess: 0.0902 seconds.
+Test 5, solveTotal: 0.8163 seconds.
+Test 5, solveCasadi: 0.2275 seconds.
+Test 5, constructSolver: 0.0950 seconds.
+Test 5, nlpFunEval: 0.2478 seconds.
+Test 5, sum: 3.2614 seconds.
+
+All tests passed!
+

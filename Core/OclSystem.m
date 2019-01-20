@@ -1,4 +1,4 @@
-classdef (Abstract) OclSystem < handle
+classdef OclSystem < handle
   
   properties
     statesStruct
@@ -6,15 +6,15 @@ classdef (Abstract) OclSystem < handle
     controlsStruct
     parametersStruct
     
-    nx
-    nz
-    nu
-    np
-    
     ode
     alg
     
+    fh
+    
+    bounds
+    
     thisInitialConditions
+    
     systemFun
     icFun
   end
@@ -25,27 +25,62 @@ classdef (Abstract) OclSystem < handle
 
   methods
     
-    function self = OclSystem()
+    function self = OclSystem(varargin)
+      % OclSystem()
+      % OclSystem(fhVarSetup,fhEquationSetup)
+      % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
+      
+      defFhVars = @(varargin)self.setupVariables(varargin{:});
+      defFhEq = @(varargin)self.setupEquations(varargin{:});
+      defFhIC = @(varargin)self.initialConditions(varargin{:});
+      
+      p = inputParser;
+      p.addOptional('fhVars',defFhVars,@oclIsFunHandle);
+      p.addOptional('fhEq',defFhEq,@oclIsFunHandle);
+      p.addOptional('fhIC',defFhIC,@oclIsFunHandle);
+      p.parse(varargin{:});
+      
+      self.fh = struct;
+      self.fh.vars = p.Results.fhVars;
+      self.fh.eq = p.Results.fhEq;
+      self.fh.ic = p.Results.fhIC;
+      
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
       self.controlsStruct   = OclStructure();
       self.parametersStruct = OclStructure();
       
+      self.bounds = struct;
       self.ode = struct;
-      self.setupVariables;
+    end
+    
+    function r = nx(self)
+      r = prod(self.statesStruct.size());
+    end
+    
+    function r = nz(self)
+      r = prod(self.algVarsStruct.size());
+    end
+    
+    function r = nu(self)
+      r = prod(self.controlsStruct.size());
+    end
+    
+    function r = np(self)
+      r = prod(self.parametersStruct.size());
+    end
+    
+    function setup(self)
+      
+      self.fh.vars(self);
       
       sx = self.statesStruct.size();
       sz = self.algVarsStruct.size();
       su = self.controlsStruct.size();
       sp = self.parametersStruct.size();
       
-      self.nx = prod(sx);
-      self.nz = prod(sz);
-      self.nu = prod(su);
-      self.np = prod(sp);
-      
-      fh = @(self,varargin)self.getEquations(varargin{:});
-      self.systemFun = OclFunction(self, fh, {sx,sz,su,sp},2);
+      fhEq = @(self,varargin)self.getEquations(varargin{:});
+      self.systemFun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
       
       fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
       self.icFun = OclFunction(self, fhIC, {sx,sp},1);
@@ -54,18 +89,12 @@ classdef (Abstract) OclSystem < handle
     function setupVariables(varargin)
       error('Not Implemented.');
     end
-    function setupEquation(varargin)
+    function setupEquations(varargin)
       error('Not Implemented.');
     end
     
     function initialConditions(~,~,~)
       % initialConditions(states,parameters)
-    end
-    
-    function initialCondition(~,~,~)
-      % initialCondition(states,parameters)
-      % This methods is deprecated in favor of initialConditions
-      % It will be removed in future versions.
     end
     
     function simulationCallbackSetup(~)
@@ -79,44 +108,121 @@ classdef (Abstract) OclSystem < handle
     function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned variables
       
+      % reset alg and ode
       self.alg = [];
+      names = fieldnames(self.ode);
+      for i=1:length(names)
+        self.ode.(names{i}) = [];
+      end
       
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
 
-      self.setupEquation(x,z,u,p);
+      self.fh.eq(self,x,z,u,p);
      
       ode = struct2cell(self.ode);
       ode = vertcat(ode{:});
       alg = self.alg;
+      
+      if length(alg) ~= self.nz
+        oclException(['Number of algebraic equations does not match ',...
+                      'number of algebraic variables.']);
+      end      
+      if length(ode) ~= self.nx
+        oclException(['Number of ode equations does not match ',...
+                      'number of state variables.']);
+      end
     end
     
     function ic = getInitialConditions(self,states,parameters)
-      self.thisInitialConditions = [];
+      icHandler = OclConstraint(self);
       x = Variable.create(self.statesStruct,states);
       p = Variable.create(self.parametersStruct,parameters);
-      self.initialCondition(x,p)
-      self.initialConditions(x,p)
-      ic = self.thisInitialConditions;
+      self.fh.ic(icHandler,x,p)
+      ic = icHandler.values;
+      assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
+          'In initial condition are only equality constraints allowed.');
     end
-    
-    function addState(self,id,size)
-      self.ode.(id) = size;
-      self.statesStruct.add(id,size);
+
+    function addState(self,id,varargin)
+      % addState(id)
+      % addState(id,s)
+      % addState(id,s,lb=lb,lb=ub)
+      
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.ode.(id) = [];
+      self.statesStruct.add(id, p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addAlgVar(self,id,size)
-      self.algVarsStruct.add(id,size);
+    function addAlgVar(self,id,varargin)
+      % addAlgVar(id)
+      % addAlgVar(id,s)
+      % addAlgVar(id,s,lb=lb,ub=ub)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.algVarsStruct.add(id, p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addControl(self,id,size)
-      self.controlsStruct.add(id,size);
+    function addControl(self,id,varargin)
+      % addControl(id)
+      % addControl(id,s)
+      % addControl(id,s,lb=lb,ub=ub)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addParameter('lb', -inf, @isnumeric);
+      p.addParameter('ub', inf, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.controlsStruct.add(id,p.Results.s);
+      self.bounds.(id).lower = p.Results.lb;
+      self.bounds.(id).upper = p.Results.ub;
     end
-    function addParameter(self,id,size)
-      self.parametersStruct.add(id,size);
+    function addParameter(self,id,varargin)
+      % addParameter(id)
+      % addParameter(id,s)
+      % addParameter(id,s,defaultValue)
+      p = inputParser;
+      p.addRequired('id', @ischar);
+      p.addOptional('s', 1, @isnumeric);
+      p.addParameter('default', 0, @isnumeric);
+      p.parse(id,varargin{:});
+      
+      id = p.Results.id;
+      
+      self.parametersStruct.add(id,p.Results.s);
+      self.bounds.(id).lower = p.Results.default;
+      self.bounds.(id).upper = p.Results.default;
     end
 
     function setODE(self,id,eq)
+      if ~isfield(self.ode,id)
+        oclException(['State ', id, ' does not exist.']);
+      end
+      if ~isempty(self.ode.(id))
+        oclException(['Ode for var ', id, ' already defined']);
+      end
       self.ode.(id) = Variable.getValueAsColumn(eq);
     end
     

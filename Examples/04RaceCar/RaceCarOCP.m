@@ -1,21 +1,21 @@
 classdef RaceCarOCP < OclOCP
-  methods
-    function arrivalCosts(self,state,time,parameters)
-      self.addArrivalCost(time);
+  methods (Static)
+    function arrivalCosts(ch,state,parameters)
+      ch.add(parameters.T);
     end
-    function pathConstraints(self,state,algVars,controls,time,parameters)
+    function pathConstraints(ch,state,parameters)
       % speed constraint
       vx         = state.vx; 
       vy         = state.vy; 
       Vmax       = parameters.Vmax;
       road_bound = parameters.road_bound;
-      self.addPathConstraint(vx^2+vy^2,'<=',Vmax^2);
+      ch.add(vx^2+vy^2,'<=',Vmax^2);
       
       % force constraint
-      Fx = controls.Fx;
-      Fy = controls.Fy;
+      Fx = state.Fx;
+      Fy = state.Fy;
       Fmax       = parameters.Fmax;
-      self.addPathConstraint(Fx^2+Fy^2,'<=',Fmax^2);
+      ch.add(Fx^2+Fy^2,'<=',Fmax^2);
       
       % road bounds
       x  = state.x; 
@@ -24,8 +24,8 @@ classdef RaceCarOCP < OclOCP
       y_center = sin(x);
       y_max = y_center + road_bound;
       y_min = y_center - road_bound;
-      self.addPathConstraint(y,'<=',y_max);
-      self.addPathConstraint(y,'>=',y_min);
+      ch.add(y,'<=',y_max);
+      ch.add(y,'>=',y_min);
     end
   end
 end

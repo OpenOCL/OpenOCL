@@ -1,10 +1,10 @@
 classdef BallAndBeamOCP < OclOCP
-  methods
-    function pathCosts(self,x,~,u,~,~,~)
+  methods (Static)
+    function pathCosts(ch,x,~,u,~,~,~)
       Q  = eye(4);
       R  = 1;
-      self.addPathCost( x.'*Q*x );
-      self.addPathCost( u.'*R*u );
+      ch.add( x.'*Q*x );
+      ch.add( u.'*R*u );
     end
   end
 end
