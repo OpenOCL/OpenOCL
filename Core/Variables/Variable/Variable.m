@@ -181,6 +181,11 @@ classdef Variable < handle
       end
     end
     
+    % TODO: test	
+    function n = numArgumentsFromSubscript(~,~,~)	
+      n=1;
+    end	
+
     %%% delegate methods to OclValue
     function set(self,val,varargin)
       % set(value)
