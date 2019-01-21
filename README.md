@@ -13,6 +13,7 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 |:------:|:-------:|
 | [![Build Status](https://travis-ci.org/OpenOCL/OpenOCL.svg?branch=master)](https://travis-ci.org/OpenOCL/OpenOCL) | [![Build Status](https://travis-ci.org/OpenOCL/OpenOCL.svg?branch=develop)](https://travis-ci.org/OpenOCL/OpenOCL) |
 </center>
+
 ## Models
 
 * airborne wind energy: https://openawe.github.io/
