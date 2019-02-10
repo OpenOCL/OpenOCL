@@ -30,7 +30,7 @@ classdef Simulator < handle
     end
     
     function controlsVec = getControlsVec(self,N)
-        controlsVecStruct  = OclStructure();
+        controlsVecStruct  = OclStructureBuilder();
         controlsVecStruct.addRepeated({'u'},{self.system.controlsStruct},N);
         controlsVec = Variable.create(controlsVecStruct,0);
         controlsVec = controlsVec.u;
