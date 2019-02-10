@@ -64,10 +64,10 @@ classdef Simulator < handle
         callback = varargin{3};
       end
       
-      statesVecStruct = OclStructure();
+      statesVecStruct = OclStructureBuilder();
       statesVecStruct.addRepeated({'x'},{self.system.statesStruct},N+1);
       
-      algVarsVecStruct = OclStructure();
+      algVarsVecStruct = OclStructureBuilder();
       algVarsVecStruct.addRepeated({'z'},{self.system.algVarsStruct},N);
       
       statesVec = Variable.create(statesVecStruct,0);

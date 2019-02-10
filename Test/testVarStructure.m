@@ -1,6 +1,6 @@
 function testVarStructure
   
-x = OclStructure();
+x = OclStructureBuilder();
 assertEqual(x.size,[0 1]);
 x.add('x1',[1,2]);
 x.add('x2',[3,2]);
@@ -11,11 +11,11 @@ assertEqual(p,[1,2])
 assertEqual(p,[3,4,5;6,7,8]')
 assertEqual(x.size,[8 1])
 
-x = OclStructure();
+x = OclStructureBuilder();
 x.add('x1',[1,8]);
 assertEqual(x.size,[8 1])
 
-x = OclStructure();
+x = OclStructureBuilder();
 x.add('x1',[1,3]);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
@@ -25,20 +25,20 @@ assertSqueezeEqual(p,{[1,2,3],[10,11,12]})
 [~,p] = x.get('x2');
 assertSqueezeEqual(p,{4:9})
 
-u = OclStructure();
+u = OclStructureBuilder();
 u.add('x1',[1,3]);
 u.add('x3',[3,3]);
 u.add('x1',[1,3]);
 u.add('x3',[3,3]);
 
-x = OclStructure();
+x = OclStructureBuilder();
 x.add('x1',[1,3]);
 x.add('u',u);
 x.add('u',u);
 x.add('x2',[3,2]);
 x.add('x1',[1,3]);
 
-y = OclStructure();
+y = OclStructureBuilder();
 y.add('x1',[1,2]);
 y.add('x1',[1,2]);
 y.add('x1',[1,2]);

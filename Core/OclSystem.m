@@ -45,10 +45,10 @@ classdef OclSystem < handle
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
       
-      self.statesStruct     = OclStructure();
-      self.algVarsStruct    = OclStructure();
-      self.controlsStruct   = OclStructure();
-      self.parametersStruct = OclStructure();
+      self.statesStruct     = OclStructureBuilder();
+      self.algVarsStruct    = OclStructureBuilder();
+      self.controlsStruct   = OclStructureBuilder();
+      self.parametersStruct = OclStructureBuilder();
       
       self.bounds = struct;
       self.ode = struct;

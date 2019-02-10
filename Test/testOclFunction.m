@@ -22,7 +22,7 @@ end
 function [r1,r2] = OclFunction_F1(x,y,z)
   
   xs = OclMatrix([3,1]);
-  ys = OclStructure();
+  ys = OclStructureBuilder();
   ys.add('x1',xs);
   ys.add('x2',xs);
   zs = OclMatrix([3,3]);

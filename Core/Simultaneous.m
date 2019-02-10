@@ -38,7 +38,7 @@ classdef Simultaneous < handle
       
       self.integratorFun = integrator.integratorFun;
       
-      self.varsStruct = OclStructure();
+      self.varsStruct = OclStructureBuilder();
       self.varsStruct.addRepeated({'states','integrator','controls'},...
                                       {system.statesStruct,...
                                       integrator.varsStruct,...
@@ -47,7 +47,7 @@ classdef Simultaneous < handle
       
       self.varsStruct.add('parameters',system.parametersStruct);
       
-      self.timesStruct = OclStructure();
+      self.timesStruct = OclStructureBuilder();
       self.timesStruct.addRepeated({'states','integrator','controls'},...
                                    {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
       self.timesStruct.add('states',OclMatrix([1,1]));
