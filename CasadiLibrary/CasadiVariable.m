@@ -14,15 +14,15 @@ classdef CasadiVariable < Variable
       var = CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
     end
     
-    function var = create(type,mx)
-      if isa(type,'OclTree')
-        names = fieldnames(type.children);
+    function var = create(structure,mx)
+      if isa(structure,'OclTensor') && ~isempty(structure.children)
+        names = fieldnames(structure.children);
         id = [names{:}];
       else
-        id = class(type);
+        id = class(structure);
       end
       
-      [N,M,K] = size(type);
+      [N,M,K] = structure.size();
       assert(K==1,'Not supported.');
       if N*M*K==0
         vv = [];
@@ -32,24 +32,28 @@ classdef CasadiVariable < Variable
         vv = casadi.SX.sym(id,N,M);
       end
       val = OclValue(vv);
-      p = reshape(1:N*M*K,N,M,K);
-      var = CasadiVariable(type,p,mx,val);
+      indizes = {1:N*M*K};
+      shapes = {[N,M,K]};
+      t = OclTensorChild(structure,indizes,shapes);
+      var = CasadiVariable(t,mx,val);
     end
     
-    function obj = Matrix(size,mx)
+    function obj = Matrix(shape,mx)
       if nargin==1
         mx = false;
       end
-      obj = CasadiVariable.create(OclMatrix(size),mx);
+      structure = OclTensorTreeBuilder();
+      structure.add('m',shape);
+      obj = CasadiVariable.create(structure,mx);
     end
   end
   
   methods
     
-    function self = CasadiVariable(type,positions,mx,val)
+    function self = CasadiVariable(type,mx,val)
       % CasadiVariable(type,positions,mx,val)
-      narginchk(4,4);      
-      self = self@Variable(type,positions,val);
+      narginchk(3,3);      
+      self = self@Variable(type,val);
       self.mx = mx;      
     end
     

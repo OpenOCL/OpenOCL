@@ -1,4 +1,4 @@
-classdef OclStructure < handle
+classdef OclTensorTree < OclTensorType
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
   properties
@@ -7,21 +7,23 @@ classdef OclStructure < handle
   end
 
   methods
-    function self = OclStructure()
+    function self = OclTensorTree()
       % OclTree()
       narginchk(0,0);
-      self.children = struct;
+      self.children = [];
       self.len = 0;
     end
     
-    function [t,p] = get(self,id,pos)
-      % get(pos,id)
+    function r = get(self,id,parentIndizes,parentShapes)
+      % get(id)
       if nargin==2
-        pos = (1:self.len).';
+        parentIndizes = {1:self.len};
+        parentShapes = {1};
       end
-      p = self.children.(id).positions;
-      t = self.children.(id).type;
-      p = self.merge(pos,p);
+      child = self.children.(id);
+      indizes = self.merge(parentIndizes, child.indizes);
+      shapes = [child.shapes parentShapes{2:end}];
+      r = TensorChild(child.tensor,indizes,shapes);
     end
     
     function [N,M,K] = size(self)
@@ -39,34 +41,35 @@ classdef OclStructure < handle
       % Combine arrays of positions on the third dimension
       % p2 are relative to p1
       % Returns: absolute p2
-      [~,~,K1] = size(p1);
-      [N2,M2,K2] = size(p2);
+      s1 = length(p1);
+      s2 = length(p2);
       
-      pout = zeros(N2,M2,K1*K2);
-      for k=1:K1
-       ap1 =  p1(:,:,k);
-       for l=1:K2
-         pout(:,:,l+(k-1)*K2) = ap1(p2(:,:,l));
+      pout = cell(1,s1*s2);
+      for k=1:s1
+       ap1 =  p1{k};
+       for l=1:s2
+         pout{l+(k-1)*s2} = ap1(p2{l});
        end
       end
     end % merge
     
 
     function tree = flat(self)
-      tree = OclStructureBuilder();
-      self.iterateLeafs((1:self.len).',tree);
+      tree = OclTensorTreeBuilder();
+      self.iterateLeafs({1:self.len},{self.len},tree);
     end
     
     
-    function iterateLeafs(self,positions,treeOut)
+    function iterateLeafs(self,indizes,shapes,treeOut)
       childrenIds = fieldnames(self.children);
       for k=1:length(childrenIds)
         id = childrenIds{k};
-        [child,pos] = self.get(id,positions);
-        if isa(child,'OclMatrix')
-          treeOut.addObject(id,child,pos);
-        elseif isa(child,'OclStructure')
-          child.iterateLeafs(pos,treeOut);
+        child = self.get(id,indizes,shapes);
+        if isempty(child.tensor.children)
+          s = [child.shapes{2:end}];
+          treeOut.addObject(id,child.tensor,child.indizes, [ child.shapes(1),{prod(s)} ] );
+        else
+          child.tensor.iterateLeafs(child.indizes,child.shapes,treeOut);
         end
       end
     end 

@@ -1,11 +1,11 @@
-classdef OclStructureBuilder < OclStructure
+classdef OclTensorTreeBuilder < OclTensorTree
   
   properties
   end
   
   methods
   
-    function self = OclStructureBuilder()
+    function self = OclTensorTreeBuilder()
     end
     
     function add(self,id,in2)
@@ -18,27 +18,30 @@ classdef OclStructureBuilder < OclStructure
         N = 1;
         M = 1;
         K = 1;
-        obj = OclMatrix([N,M]);
+        tensor = OclTensorTree();
+        shape = [N,M];
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
         N = in2;
         M = 1;
         K = 1;
-        obj = OclMatrix([N,M]);
+        tensor = OclTensorTree();
+        shape = [N,M];
       elseif isnumeric(in2)
         % args:(id,size)
         N = in2(1);
         M = in2(2);
         K = 1;
-        obj = OclMatrix([N,M]);
+        tensor = OclTensorTree();
+        shape = [N,M];
       else
         % args:(id,obj)
         [N,M,K] = in2.size;
-        obj = in2;
+        tensor = in2;
+        shape = [N,M,K];
       end
-      pos = self.len+1:self.len+N*M*K;
-      pos = reshape(pos,N,M,K);
-      self.addObject(id,obj,pos);
+      indizes = {self.len+1:self.len+N*M*K};
+      self.addObject(id,tensor,indizes,{shape,1});
     end
     
     function addRepeated(self,names,arr,N)
@@ -52,18 +55,18 @@ classdef OclStructureBuilder < OclStructure
       end
     end
     
-    function addObject(self,id,obj,pos)
-      % addVar(id, obj)
-      %   Adds a structure object
+    function addObject(self,id,tensor,indizes,shapes)
+      % addVar(id, structure, indizes, shape)
+      %   Adds a child object from structure, indizes, shape
       
-      [N,M,K] = size(pos);
-      self.len = self.len+N*M*K;
+      self.len = self.len+length([indizes{:}]);
       
       if ~isfield(self.children, id)
-        self.children.(id).type = obj;
-        self.children.(id).positions = pos;
+        self.children.(id) = OclTensorChild(tensor,indizes,shapes);
       else
-        self.children.(id).positions(:,:,end+1:end+K) = pos;
+        K = length(indizes);
+        self.children.(id).indizes(end+1:end+K) = indizes;
+        self.children.(id).shapes{end} = self.children.(id).shapes{end} + shapes{end};
       end
     end
     

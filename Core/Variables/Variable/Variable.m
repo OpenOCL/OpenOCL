@@ -11,44 +11,46 @@ classdef Variable < handle
   
   properties
     val
-    positions
     type
   end
   
   methods (Static)
     
     %%% factory methods
-    function var = create(type,value)
+    function var = create(structure,value)
       if isnumeric(value)
-        var = Variable.createNumeric(type,value);
+        var = Variable.createNumeric(structure,value);
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
-        var = CasadiVariable.createFromValue(type,value);
+        var = CasadiVariable.createFromValue(structure,value);
       else
         oclError('Not implemented for this type of variable.')
       end
     end
     
-    function var = createFromVar(type,pos,var)
+    function var = createFromVar(type,var)
       if isa(var, 'CasadiVariable')
-        var = CasadiVariable(type,pos,var.mx,var.val);
+        var = CasadiVariable(type,var.mx,var.val);
       elseif isa(var,'SymVariable')
-        var = SymVariable(type,pos,var.val);
+        var = SymVariable(type,var.val);
       else
-        var = Variable(type,pos,var.val);
+        var = Variable(type,var.val);
       end
     end
 
     function obj = Matrix(value)
       % obj = createMatrixLike(input,value)
-      t = OclMatrix(size(value));
-      obj = Variable.create(t,value);
+      structure = OclTensorTreeBuilder();
+      structure.add('m',size(value));
+      obj = Variable.create(structure,value);
     end
     
-    function var = createNumeric(type,value)
-        [N,M,K] = type.size();
-        v = OclValue(zeros(1,N,M,K));
-        p = reshape(1:N*M*K,N,M,K);
-        var = Variable(type,p,v);
+    function var = createNumeric(structure,value)
+        [N,M,K] = structure.size();
+        v = OclValue(zeros(1,N*M*K));
+        idz = {1:N*M*K};
+        shape = {[N,M,K]};
+        c = OclTensorChild(structure,idz,shape);
+        var = Variable(c,v);
         var.set(value);
     end
     
@@ -79,13 +81,11 @@ classdef Variable < handle
   end % methods(static)
   
   methods
-    function self = Variable(type,positions,val)
-      narginchk(3,3);
-      assert(isa(type,'OclStructure'));
-      assert(isnumeric(positions));
+    function self = Variable(type,val)
+      narginchk(2,2);
+      assert(isa(type,'OclTensorChild'));
       assert(isa(val,'OclValue'));
       self.type = type;
-      self.positions = positions;
       self.val = val;
     end
     
@@ -190,19 +190,19 @@ classdef Variable < handle
     function set(self,val,varargin)
       % set(value)
       % set(value,slice1,slice2,slice3)
-      self.val.set(self.type,self.positions,val,varargin{:})
+      self.val.set(self.type,self.indizes,val,varargin{:})
     end
     function v = value(self)
-      v = self.val.value(self.type,self.positions);
+      v = self.val.value(self.type);
     end
     %%%    
     
     function s = size(self)
-      s = size(self.positions);      
+      s = size(self.indizes);      
     end
 
     function ind = end(self,k,n)
-       szd = size(self.positions);
+       szd = size(self.indizes);
        if k < n
           ind = szd(k);
        else
@@ -212,14 +212,15 @@ classdef Variable < handle
 
     function r = get(self,id)
       % r = get(id)
-      [t,p] = self.type.get(id,self.positions);
-      r = Variable.createFromVar(t,p,self);
+      child = self.type.get(id,self.indizes);
+      r = Variable.createFromVar(child.tensor,child.indizes,child.shape,self);
     end
     
     function r = slice(self,varargin)
-      % r = get(dim1,dim2,dim3)
-      p = self.positions(varargin{:});
-      r = Variable.createFromVar(self.type,p,self);
+      % r = slice(dim1,[dim2],[dim3])
+      idz = reshape([self.indizes{:}],self.shape);
+      idz = idz(varargin{:});
+      r = Variable.createFromVar(self.type,idz,[varargin{:}],self);
     end
 
     function toJSON(self,path,name,varargin)
