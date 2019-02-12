@@ -8,8 +8,8 @@ v1 = [5;2.8;2];
 v2 = [1,5.01,3;6,5,4];
 
 %%% constructor
-a1 = CasadiVariable.Matrix([3,1],mx);
-a2 = CasadiVariable.Matrix([2,3],mx);
+a1 = CasadiTensor.Matrix([3,1],mx);
+a2 = CasadiTensor.Matrix([2,3],mx);
 s1 = a1.value;
 s2 = a2.value;
 

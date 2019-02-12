@@ -25,43 +25,51 @@ classdef OclValue < handle
       r = numel(self.val);
     end
     
-    function set(self,type,pos,value)
+    function set(self,type,value)
       % set(type,positions,value)
       if ~iscell(value)
         % value is numeric or casadi
-        pos = OclValue.squeeze(pos);
-        value = OclValue.squeeze(value);
-        [Np,Mp,Kp] = size(pos);
-        [Nv,Mv] = size(value);
-        if isempty(value) || Nv*Mv==0
+        shape = type.shape;
+        valShape = size(value);
+        if isempty(value) || prod(valShape)==0
           return
         end
-
-        if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0
-          oclError('Can not set values to variable. Dimensions do not match.')
-        end
         
-        for k=1:Kp
-          p = pos(:,:,k);
-          self.val(p) = repmat(value,Np/Nv,Mp/Mv);
-        end   
+        indizes = reshape(type.indizes,shape);
+%         [shape,valShape] = broadCastShape(shape,valShape);
+%         indizes = broadCastTo(indizes,shape);
+%         value = broadCastTo(value,valShape);
+        
+        self.val(indizes) = value;
       else
         % value is cell array
-        Kp = size(pos,3);
-        assert(length(value)==Kp);
-        for k=1:Kp
-          p = pos(:,:,k);
-          self.val(p) = value{k};
+        % assign on third dimension (trajectory)
+        
+        shape = type.shape;
+        indizes = reshape(type.indizes,shape);
+        s = size(indizes);
+        
+        assert(length(value)==s(3));
+        for k=1:s(end)
+          idz = indizes(:,:,k);
+          v = value{k};
+          self.val(idz(:)) = v(:);
         end
       end
     end % set
     
-    function vout = value(self,~,positions,varargin)
-      % v = value(type,positions)
-      p = squeeze(positions);      
-      vout = cell(1,size(p,3));
-      for k=1:size(p,3)
-        vout{k} = reshape(self.val(p(:,:,k)),size(p(:,:,k)));
+    function vout = value(self,type)
+      % v = value(type)   
+      vout = cell(1,length(type.indizes));
+      shape = [type.shapes{1:end-1}];
+      shape(shape==1) = [];
+      if length(shape) == 1
+        shape = [shape 1];
+      end
+      for k=1:length(type.indizes)
+        v = self.val(type.indizes{k});
+        v = reshape(v,shape);
+        vout{k} = v;
       end
       if length(vout)==1
         vout = vout{1};
