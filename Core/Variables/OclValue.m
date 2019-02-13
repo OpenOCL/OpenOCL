@@ -29,18 +29,18 @@ classdef OclValue < handle
       % set(type,positions,value)
       if ~iscell(value)
         % value is numeric or casadi
-        shape = type.shape;
-        valShape = size(value);
-        if isempty(value) || prod(valShape)==0
+%         shape = type.shape;
+%         valShape = size(value);
+        if isempty(value) || numel(value)==0
           return
         end
         
-        indizes = reshape(type.indizes,shape);
+%         indizes = reshape(type.indizes,shape);
 %         [shape,valShape] = broadCastShape(shape,valShape);
 %         indizes = broadCastTo(indizes,shape);
 %         value = broadCastTo(value,valShape);
         
-        self.val(indizes) = value;
+        self.val([type.indizes{:}]) = value;
       else
         % value is cell array
         % assign on third dimension (trajectory)
@@ -62,9 +62,14 @@ classdef OclValue < handle
       % v = value(type)   
       vout = cell(1,length(type.indizes));
       shape = [type.shapes{1:end-1}];
-      shape(shape==1) = [];
+      if length(shape) > 2
+        shape(shape==1) = [];
+      end
       if length(shape) == 1
         shape = [shape 1];
+      end
+      if isempty(shape)
+        shape = [1 1];
       end
       for k=1:length(type.indizes)
         v = self.val(type.indizes{k});
