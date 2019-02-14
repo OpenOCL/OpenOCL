@@ -18,33 +18,50 @@ classdef OclTensor < handle
     
     %%% factory methods
     function var = create(structure,value)
-      if ~isa(value, 'OclValue')
-        value = OclValue(value);
+      
+      % val: OclValue type
+      % value: numeric or symbolic type
+      if isa(value, 'OclValue')
+        val = value;
+        value = val.value;
+        setValue = false;
+      else
+        val = OclValue(zeros(size(value)));
+        setValue = true;
       end
+      
       if ~isa(structure,'OclTensorRoot')
-        structure = OclTensorRoot(structure,{1:numel(value)},{size(value.value),1});
+        s = size(structure);
+        N = prod(s);
+        structure = OclTensorRoot(structure,{1:N},{s,1});
       end
-      if isnumeric(value.value)
-        var = OclTensor.createNumeric(structure,value);
-      elseif isa(value.value,'casadi.MX') || isa(value.value,'casadi.SX')
-        var = CasadiTensor.createFromValue(structure,value);
+      
+      
+      if isnumeric(value)
+        var = OclTensor(structure,val);
+      elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
+        var = CasadiTensor(structure,val);
       else
         oclError('Not implemented for this type of variable.')
       end
+      
+      if setValue
+        var.set(value);
+      end
     end
 
-    function var = Matrix(value)
-      % obj = createMatrixLike(input,value)
-      tRoot = OclTensorRoot([],{1:numel(value)},{size(value),1});
+    function var = Matrix(val)
+      % obj = createMatrixLike(input,val)
+      tRoot = OclTensorRoot([],{1:numel(val)},{size(val),1});
       s = tRoot.shape;
       v = OclValue(zeros(1,prod(s)));
       var = OclTensor(tRoot,v);
-      var.set(value);
+      var.set(val);
     end
     
-    function var = createNumeric(structure,value)
-        var = OclTensor(structure,value);
-        var.set(value);
+    function var = createNumeric(structure,val)
+        var = OclTensor(structure,val);
+        var.set(val);
     end
     
     function v = createFromHandleOne(fh, a, varargin)
@@ -61,15 +78,15 @@ classdef OclTensor < handle
       v = OclTensor.Matrix(fh(a,b,varargin{:}));
     end
     %%% end factory methods   
-    function value = getValue(value)
-      if isa(value,'OclTensor')
-        value = value.value;
+    function val = getValue(val)
+      if isa(val,'OclTensor')
+        val = val.val;
       end
     end
     
-    function value = getValueAsColumn(value)
-      value = OclTensor.getValue(value);
-      value = value(:);
+    function val = getValueAsColumn(val)
+      val = OclTensor.getValue(val);
+      val = val(:);
     end
   end % methods(static)
   
@@ -84,12 +101,12 @@ classdef OclTensor < handle
     
     function r = str(self,valueStr)
       if nargin==1
-        value = self.value;
-        if isnumeric(value)
-          valueStr = mat2str(self.value,OclTensor.DISP_FLOAT_PREC);
+        val = self.val;
+        if isnumeric(val)
+          valueStr = mat2str(self.val,OclTensor.DISP_FLOAT_PREC);
         else
           % cell array
-          cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
+          cell2str = cellfun(@(v)[mat2str(v),','],val, 'UniformOutput',false);
           str_joined = strjoin(cell2str);
           valueStr = ['{', str_joined(1:end-1), '}'];
         end
@@ -128,7 +145,7 @@ classdef OclTensor < handle
     function varargout = subsref(self,s)
       % v(1)
       % v.x
-      % v.value
+      % v.val
       % v.set(4)
       % v.dot(w)
       % ...
@@ -147,7 +164,7 @@ classdef OclTensor < handle
           % v.x
           [varargout{1}] = self.get(id);
         elseif isa(self.type,'OclTreeTensor') && isfield(self.type.children,id)
-          % v.x.get(3).set(2).value || v.x.y.get(1)
+          % v.x.get(3).set(2).val || v.x.y.get(1)
           v = self.get(id);
           [varargout{1:nargout}] = subsref(v,s(2:end));
         else
@@ -163,7 +180,7 @@ classdef OclTensor < handle
       % v = 1
       % v(1) = 1
       % v.get(1) = 1
-      % v.value(1) = 1
+      % v.val(1) = 1
       % v* = OclTensor
       if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.children,s(1).subs)
         self = builtin('subsasgn',self,s,v);
@@ -181,8 +198,8 @@ classdef OclTensor < handle
 
     %%% delegate methods to OclValue
     function set(self,val)
-      % set(value)
-      % set(value,slice1,slice2,slice3)
+      % set(val)
+      % set(val,slice1,slice2,slice3)
       self.val.set(self.type,val)
     end
     function v = value(self)
@@ -233,7 +250,7 @@ classdef OclTensor < handle
     end
    
     function r = toStruct(self)
-      r = self.type.toStruct(self.value);
+      r = self.type.toStruct(self.val);
     end
     
     function y = linspace(d1,d2,n)

@@ -79,11 +79,12 @@ function StartupOCL(in)
   % parse error
   if isOctave()
     variableDir = fullfile(oclPath,'Core','Variables','Variable');
-    %rmpath(variableDir);
     
-    vFilePath = fullfile(exportDir, 'Variable','Variable.m');
+    vFilePath = fullfile(exportDir, 'Variable','OclTensor.m');
     if ~exist(vFilePath,'file') || octaveClear
-      delete(fullfile(exportDir, 'Variable','V*.m'))
+      if exist(fullfile(exportDir,'Variable','OclTensor.m'),'file')
+        delete(fullfile(exportDir, 'Variable','*.m'))
+      end
       status = copyfile(variableDir,exportDir);
       assert(status, 'Could not copy Variables folder');
     end
