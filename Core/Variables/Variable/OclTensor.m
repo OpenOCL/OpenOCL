@@ -18,22 +18,18 @@ classdef OclTensor < handle
     
     %%% factory methods
     function var = create(structure,value)
-      if isnumeric(value)
+      if ~isa(value, 'OclValue')
+        value = OclValue(value);
+      end
+      if ~isa(structure,'OclTensorRoot')
+        structure = OclTensorRoot(structure,{1:numel(value)},{size(value.value),1});
+      end
+      if isnumeric(value.value)
         var = OclTensor.createNumeric(structure,value);
-      elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
+      elseif isa(value.value,'casadi.MX') || isa(value.value,'casadi.SX')
         var = CasadiTensor.createFromValue(structure,value);
       else
         oclError('Not implemented for this type of variable.')
-      end
-    end
-    
-    function var = createFromVar(type,var)
-      if isa(var, 'CasadiTensor')
-        var = CasadiTensor(type,var.mx,var.val);
-      elseif isa(var,'SymVariable')
-        var = SymVariable(type,var.val);
-      else
-        var = OclTensor(type,var.val);
       end
     end
 
@@ -47,12 +43,7 @@ classdef OclTensor < handle
     end
     
     function var = createNumeric(structure,value)
-        [N,M,K] = structure.size();
-        v = OclValue(zeros(1,N*M*K));
-        indizes = {1:N*M*K};
-        shapes = {[N,M,K],1};
-        r = OclTensorRoot(structure,indizes,shapes);
-        var = OclTensor(r,v);
+        var = OclTensor(structure,value);
         var.set(value);
     end
     
