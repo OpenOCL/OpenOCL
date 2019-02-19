@@ -223,7 +223,7 @@ classdef OclTensor < handle
     function r = get(self,id)
       % r = get(id)
       child = self.type.get(id,self.indizes);
-      r = OclTensor.createFromVar(child.tensor,child.indizes,child.shape,self);
+      r = OclTensor(child,self.val);
     end
     
     function r = slice(self,varargin)
@@ -233,25 +233,9 @@ classdef OclTensor < handle
       shape = size(idz);
       
       m = OclTensorRoot([],{idz(:)}, {shape,1}); 
-      r = OclTensor.createFromVar(m,self);
+      r = OclTensor(m,self.val);
     end
 
-    function toJSON(self,path,name,varargin)
-      % toJSON(self,path,name,opt)
-      if nargin==1
-        path = fullfile(getenv('OPENOCL_WORK'),[datestr(now,'yyyymmddHHMM'),'var.json']);
-      end
-      if nargin<=2
-        name = 'var';
-      end
-      s = self.toStruct();
-      savejson(name,s,path);
-      disp(['json saved to ', path]);
-    end
-   
-    function r = toStruct(self)
-      r = self.type.toStruct(self.val);
-    end
     
     function y = linspace(d1,d2,n)
       n1 = n-1;
