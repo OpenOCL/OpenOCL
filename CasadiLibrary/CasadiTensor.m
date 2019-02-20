@@ -7,21 +7,21 @@ classdef CasadiTensor < OclTensor
   methods (Static)
   
   
-    function var = createFromValue(tr,value)
-      vs = OclValueStorage(value);
-      var = CasadiTensor(tr,isa(value,'casadi.MX'),vs);
-      vs.set(value);
-    end
+%     function var = createFromValue(tr,value)
+%       vs = OclValueStorage.allocate(value,numel(tr));
+%       vs.set(tr,value);
+%       var = CasadiTensor(tr,isa(value,'casadi.MX'),vs);
+%     end
     
-    function var = create(tensorRoot,mx)
-      if isa(tensorRoot.structure,'OclTreeTensor') && ~isempty(tensorRoot.structure.children)
-        names = fieldnames(tensorRoot.children);
+    function var = create(structure,mx)
+      if isa(structure,'OclTreeTensor') && ~isempty(structure.children)
+        names = fieldnames(structure.children);
         id = [names{:}];
       else
-        id = class(tensorRoot);
+        id = class(structure);
       end
       
-      s = tensorRoot.shape;
+      s = structure.shape();
       assert(length(s)==2 || s(3)==1);
       if prod(s)==0
         vv = [];
@@ -33,8 +33,8 @@ classdef CasadiTensor < OclTensor
       vs = OclValueStorage(vv);
       indizes = {1:prod(s)};
       shapes = {[s(1),s(2)],1};
-      t = OclTensorRoot(tensorRoot,indizes,shapes);
-      var = CasadiTensor(t,mx,vs);
+      tr = OclTensorRoot(structure,indizes,shapes);
+      var = CasadiTensor(tr,mx,vs);
     end
     
     function obj = Matrix(shape,mx)

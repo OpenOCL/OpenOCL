@@ -23,20 +23,17 @@ classdef OclTensor < handle
       N = prod(s);
       tr = OclTensorRoot(structure,{1:N},{s,1});
       
-      if isnumeric(value)
-        tensor = OclTensor.createNumeric(tr,value);
-      elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
-        tensor = CasadiTensor.createFromValue(tr,value);
-      else
-        oclError('Not implemented for this type of variable.')
-      end
+      vs = OclValueStorage.allocate(value,numel(tr));
+      vs.set(tr,value);
+      
+      tensor = OclTensor.construct(tr,vs);
     end
     
     function tensor = construct(tr,vs)
       if isnumeric(vs.storage)
         tensor = OclTensor(tr,value);
       elseif isa(vs.storage,'casadi.MX') || isa(vs.storage,'casadi.SX')
-        tensor = CasadiTensor(tr,isa(vs.storage,'casadi.MX'),value);
+        tensor = CasadiTensor(tr,isa(vs.storage,'casadi.MX'),vs);
       else
         oclError('Not implemented for this type of variable.')
       end
@@ -44,14 +41,10 @@ classdef OclTensor < handle
 
     function tensor = Matrix(value)
       % obj = Matrix(input,val)
-      tRoot = OclTensorRoot([],{1:numel(value)},{size(value),1});
-      tensor = OclTensor.create(tRoot,value);
-    end
-    
-    function var = createNumeric(tr,value)
-        vs = OclValueStorage(zeros(numel(tr)));
-        vs.set(tr,value);
-        var = OclTensor(tr,vs);
+      tr = OclTensorRoot([],{1:numel(value)},{size(value),1});
+      vs = OclValueStorage.allocate(value,numel(value));
+      vs.set(tr,value);
+      tensor = OclTensor.construct(tr,vs);
     end
     
     function v = createFromHandleOne(fh, a, varargin)

@@ -5,6 +5,21 @@ classdef OclValueStorage < handle
   end
   
   methods (Static)
+    
+    function vs = allocate(type,l)
+      % allocate(type,length)
+      if isa(type,'casadi.MX')
+        v = casadi.MX.zeros(l,1);
+        vs = OclValueStorage(v);
+      elseif isa(type,'casadi.SX')
+        v = casadi.SX.zeros(l,1);
+        vs = OclValueStorage(v);
+      else
+        v = zeros(l,1);
+        vs = OclValueStorage(v);
+      end
+    end
+    
     function r = squeeze(matrix)
        % totally! squeeze dimensions of length 1
         r = squeeze(matrix);
@@ -40,7 +55,7 @@ classdef OclValueStorage < handle
 %         indizes = broadCastTo(indizes,shape);
 %         value = broadCastTo(value,valShape);
         
-        self.storage([type.indizes{:}]) = value;
+        self.storage([type.indizes{:}]) = value(:);
       else
         % value is cell array
         % assign on third dimension (trajectory)
