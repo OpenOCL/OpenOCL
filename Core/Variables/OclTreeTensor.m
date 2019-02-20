@@ -18,25 +18,19 @@ classdef OclTreeTensor < handle
       % get(id)
       if nargin==2
         parentIndizes = {1:self.len};
-        parentShapes = {1};
+        parentShapes = [];
       end
       child = self.children.(id);
       indizes = self.merge(parentIndizes, child.indizes);
-      shapes = [child.shapes parentShapes{2:end}];
+      shapes = [child.shapes parentShapes];
       r = OclTensorRoot(child.structure,indizes,shapes);
     end
     
-    function [N,M,K] = size(self)
-      if nargout>1
-        N = self.len;
-        M = 1;
-        K = 1;
-      else
-        N = [self.len,1];
-      end
+    function N = size(self)
+      N = self.len;
     end
 
-    function pout = merge(self,p1,p2)
+    function pout = merge(~,p1,p2)
       % merge(p1,p2)
       % Combine arrays of positions on the third dimension
       % p2 are relative to p1

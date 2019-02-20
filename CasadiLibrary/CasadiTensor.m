@@ -32,8 +32,8 @@ classdef CasadiTensor < OclTensor
       end
       vs = OclValueStorage(vv);
       indizes = {1:prod(s)};
-      shapes = {[s(1),s(2)],1};
-      tr = OclTensorRoot(structure,indizes,shapes);
+      shape = [s(1),s(2)];
+      tr = OclTensorRoot(structure,indizes,shape);
       var = CasadiTensor(tr,mx,vs);
     end
     
@@ -41,7 +41,7 @@ classdef CasadiTensor < OclTensor
       if nargin==1
         mx = false;
       end
-      r = OclTensorRoot([],{1:prod(shape)},{shape,1});
+      r = OclTensorRoot([],{1:prod(shape)},shape);
       obj = CasadiTensor.create(r,mx);
     end
   end

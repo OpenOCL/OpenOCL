@@ -15,58 +15,47 @@ classdef OclTreeTensorBuilder < OclTreeTensor
       % add(id,obj)
       if nargin==2
         % add(id)
-        N = 1;
-        M = 1;
-        K = 1;
         tensor = OclTreeTensor();
-        shape = [N,M];
+        shape = [];
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
-        N = in2;
-        M = 1;
-        K = 1;
+        shape = in2;
         tensor = OclTreeTensor();
-        shape = [N,M];
       elseif isnumeric(in2)
         % args:(id,size)
-        N = in2(1);
-        M = in2(2);
-        K = 1;
+        shape = [in2(1) in2(2)];
         tensor = OclTreeTensor();
-        shape = [N,M];
       else
         % args:(id,obj)
-        [N,M,K] = in2.size;
+        shape = in2.size;
         tensor = in2;
-        shape = [N,M,K];
       end
-      indizes = {self.len+1:self.len+N*M*K};
-      self.addObject(id,tensor,indizes,{shape,1});
+      indizes = {self.len+1:self.len+prod(shape)};
+      self.addObject(id,tensor,indizes,shape);
     end
     
-    function addRepeated(self,names,arr,N)
-      % addRepeated(self,arr,N)
+    function addRepeated(self,ids,objList,N)
+      % addRepeated(self,ids,objList,N)
       %   Adds repeatedly a list of structure objects
-      %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
+      %     e.g. ocpVar.addRepeated({'states','controls'},{stateStructure,controlStructure},20);
       for i=1:N
-        for j=1:length(arr)
-          self.add(names{j},arr{j})
+        for j=1:length(objList)
+          self.add(ids{j},objList{j})
         end
       end
     end
     
-    function addObject(self,id,tensor,indizes,shapes)
+    function addObject(self,id,tensor,indizes,shape)
       % addVar(id, structure, indizes, shape)
       %   Adds a child object from structure, indizes, shape
       
       self.len = self.len+length([indizes{:}]);
       
       if ~isfield(self.children, id)
-        self.children.(id) = OclTensorRoot(tensor,indizes,shapes);
+        self.children.(id) = OclTensorRoot(tensor,indizes,shape);
       else
         K = length(indizes);
         self.children.(id).indizes(end+1:end+K) = indizes;
-        self.children.(id).shapes{end} = self.children.(id).shapes{end} + shapes{end};
       end
     end
     

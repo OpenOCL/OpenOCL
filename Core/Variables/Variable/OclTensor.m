@@ -21,7 +21,7 @@ classdef OclTensor < handle
       
       s = size(structure);
       N = prod(s);
-      tr = OclTensorRoot(structure,{1:N},{s,1});
+      tr = OclTensorRoot(structure,{1:N}, s);
       
       vs = OclValueStorage.allocate(value,numel(tr));
       vs.set(tr,value);
@@ -31,7 +31,7 @@ classdef OclTensor < handle
     
     function tensor = construct(tr,vs)
       if isnumeric(vs.storage)
-        tensor = OclTensor(tr,value);
+        tensor = OclTensor(tr,vs);
       elseif isa(vs.storage,'casadi.MX') || isa(vs.storage,'casadi.SX')
         tensor = CasadiTensor(tr,isa(vs.storage,'casadi.MX'),vs);
       else
@@ -41,7 +41,7 @@ classdef OclTensor < handle
 
     function tensor = Matrix(value)
       % obj = Matrix(input,val)
-      tr = OclTensorRoot([],{1:numel(value)},{size(value),1});
+      tr = OclTensorRoot([],{1:numel(value)},size(value));
       vs = OclValueStorage.allocate(value,numel(value));
       vs.set(tr,value);
       tensor = OclTensor.construct(tr,vs);
@@ -103,8 +103,8 @@ classdef OclTensor < handle
       
       childrenString = '  Children: None\n';
       if ~isempty(self.type.structure)
-        cArray = cell(1, length(fieldnames(self.type.structure)));
-        names = fieldnames(self.type.structure);
+        cArray = cell(1, length(fieldnames(self.type.structure.children)));
+        names = fieldnames(self.type.structure.children);
         for i=1:length(names)-1
           cArray{i} = [names{i}, ', '];
         end
@@ -143,10 +143,10 @@ classdef OclTensor < handle
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
-        if isa(self.type,'OclTreeTensor') && isfield(self.type.children,id) && numel(s) == 1
+        if isa(self.type,'OclTensorRoot') && isfield(self.type.children,id) && numel(s) == 1
           % v.x
           [varargout{1}] = self.get(id);
-        elseif isa(self.type,'OclTreeTensor') && isfield(self.type.children,id)
+        elseif isa(self.type,'OclTensorRoot') && isfield(self.type.children,id)
           % v.x.get(3).set(2).val || v.x.y.get(1)
           v = self.get(id);
           [varargout{1:nargout}] = subsref(v,s(2:end));
@@ -191,7 +191,7 @@ classdef OclTensor < handle
     %%%
     
     function s = size(self)
-      s = size(self.type.indizes);    
+      s = self.type.shape;    
     end
 
     function ind = end(self,k,n)
@@ -205,7 +205,7 @@ classdef OclTensor < handle
 
     function r = get(self,id)
       % r = get(id)
-      child = self.type.get(id,self.indizes);
+      child = self.type.get(id);
       r = OclTensor.construct(child,self.valueStorage);
     end
     
@@ -215,7 +215,7 @@ classdef OclTensor < handle
       idz = idz(varargin{:});
       shape = size(idz);
       
-      m = OclTensorRoot([],{idz(:)}, {shape,1}); 
+      m = OclTensorRoot([],{idz(:)}, shape); 
       r = OclTensor.construct(m,self.valueStorage);
     end
 

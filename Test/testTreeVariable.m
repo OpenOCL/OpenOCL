@@ -12,11 +12,11 @@ x(:) = (1:10).';
 assert(isequal(x.value,(1:10)'))
 
 %%% get by id
-assert(isequal(x.get('x1').value,[1,9;2,10]));
-assert(isequal(x.x1.value,[1,9;2,10]));
+assertSqueezeEqual(x.get('x1').value,[1,9;2,10]);
+assertSqueezeEqual(x.x1.value,[1,9;2,10]);
 
 %%% slice
-assert(isequal(x.x1(1,1,:).value,[1;9]));
+assertSqueezeEqual(x.x1(1,1,:).value,[1;9]);
 
 x = OclTreeTensorBuilder();
 x.add('p',[3,1]);
@@ -35,15 +35,15 @@ state.p = [100;0;-50];
 state.v = [20;0;0];
 state.w = [0;1;0.1];
 
-assert( isequal( state.R.value,   eye(3) ) )
-assert( isequal( state.p.value,   [100;0;-50] ) )
-assert( isequal( state.v.value,   [20;0;0] ) )
-assert( isequal( state.w.value,   [0;1;0.1] ) )
+assertEqual( state.R.value,   eye(3) );
+assertEqual( state.p.value,   [100;0;-50] );
+assertEqual( state.v.value,   [20;0;0] );
+assertEqual( state.w.value,   [0;1;0.1] );
 
 state.p = [100;0;50];
 
-assert( isequal( state.get('p').value,   [100;0;50] ) )
-assert( isequal( state.size,   [18 1] ) )
+assertEqual( state.get('p').value,   [100;0;50] );
+assertEqual( state.size,   [18 1] );
 
 ocpVar = OclTreeTensorBuilder();
 ocpVar.addRepeated({'x','u'},{x,u},5);
@@ -55,29 +55,29 @@ v.x.p.set([100;0;50]);
 v.x.v.set([20;0;0]);
 v.x.w.set([0;1;0.1]);
 
-assert( isequal( v.x(:,:,4:6).p(1,:,:).value, [100;100;100]));
+assertEqual( v.x.p(1,:,4:6).value, [100;100;100]);
 
 
 v.get('x').get('R').set(eye(3));
-assert( isequal(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
-assert(isequal(v.x(:,:,1).R.value,eye(3)))
+assertEqual(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    );
+assertEqual(v.x.R(:,:,1).value,eye(3));
 
 v.get('x').get('R').set(ones(3,3));
-assert( isequal(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1)    ));
+assertEqual(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1));
 
 % slice on selection
-assert(isequal(v.x(:,:,1).p.value,[100;0;50]))
+assertEqual(v.x.p(:,:,1).value,[100;0;50]);
 
 % :, end
-assert(isequal(v(':').value,v.value))
-v.x(:,:,end).set((2:19));
+assertEqual(v(':').value,v.value);
+v.x(:,end).set((2:19)');
 
-assert(isequal(v.x(:,:,end).slice(2).value,3))
+assertEqual(v.x(:,end).slice(2).value,3);
 
-xend = v.x(:,:,end);
-assert(isequal(xend(end).value,19))
-assert(isequal(xend(2).value,3))
-assert(isequal(xend(end).value,19))
+xend = v.x(:,end);
+assertEqual(xend(end).value,19);
+assertEqual(xend(2).value,3);
+assertEqual(xend(end).value,19);
 
 % str
 v.str();

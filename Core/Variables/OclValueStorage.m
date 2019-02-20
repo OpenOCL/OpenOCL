@@ -54,8 +54,15 @@ classdef OclValueStorage < handle
 %         [shape,valShape] = broadCastShape(shape,valShape);
 %         indizes = broadCastTo(indizes,shape);
 %         value = broadCastTo(value,valShape);
-        
-        self.storage([type.indizes{:}]) = value(:);
+        s = type.shapes;
+        if length(s) == 1
+          s = [s 1];
+        end
+        for k=1:length(type.indizes)
+          idz = type.indizes{k};
+          idz = reshape(idz,s);
+          self.storage(idz) = value;
+        end
       else
         % value is cell array
         % assign on third dimension (trajectory)
@@ -75,19 +82,21 @@ classdef OclValueStorage < handle
     
     function vout = value(self,type)
       % v = value(type)   
-      vout = cell(1,length(type.indizes));
-      shape = [type.shapes{1:end-1}];
+      
+      % need to squeeze shape for casadi (does not support tensors)
+      s = type.shape;
+      shape = s(1:end-1);
       if length(shape) > 2
         shape(shape==1) = [];
       end
       if length(shape) == 1
-        shape = [shape 1];
+        shape = [shape,1];
       end
-      if isempty(shape)
-        shape = [1 1];
-      end
+      
+      vout = cell(1,length(type.indizes));
       for k=1:length(type.indizes)
         v = self.storage(type.indizes{k});
+        
         v = reshape(v,shape);
         vout{k} = v;
       end
