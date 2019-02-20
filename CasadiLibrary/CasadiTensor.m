@@ -7,9 +7,10 @@ classdef CasadiTensor < OclTensor
   methods (Static)
   
   
-    function var = createFromValue(tensorRoot,value)
-      oclValue = OclValue(value);
-      var = CasadiTensor(tensorRoot,isa(value,'casadi.MX'),oclValue);
+    function var = createFromValue(tr,value)
+      vs = OclValueStorage(value);
+      var = CasadiTensor(tr,isa(value,'casadi.MX'),vs);
+      vs.set(value);
     end
     
     function var = create(tensorRoot,mx)
@@ -29,11 +30,11 @@ classdef CasadiTensor < OclTensor
       else
         vv = casadi.SX.sym(id,s(1),s(2));
       end
-      val = OclValue(vv);
+      vs = OclValueStorage(vv);
       indizes = {1:prod(s)};
       shapes = {[s(1),s(2)],1};
       t = OclTensorRoot(tensorRoot,indizes,shapes);
-      var = CasadiTensor(t,mx,val);
+      var = CasadiTensor(t,mx,vs);
     end
     
     function obj = Matrix(shape,mx)

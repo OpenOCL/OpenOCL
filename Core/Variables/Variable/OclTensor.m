@@ -10,58 +10,48 @@ classdef OclTensor < handle
    end
   
   properties
-    val
+    valueStorage
     type
   end
   
   methods (Static)
     
     %%% factory methods
-    function var = create(structure,value)
+    function tensor = create(structure,value) 
       
-      % val: OclValue type
-      % value: numeric or symbolic type
-      if isa(value, 'OclValue')
-        val = value;
-        value = val.value;
-        setValue = false;
-      else
-        val = OclValue(zeros(size(value)));
-        setValue = true;
-      end
-      
-      if ~isa(structure,'OclTensorRoot')
-        s = size(structure);
-        N = prod(s);
-        structure = OclTensorRoot(structure,{1:N},{s,1});
-      end
-      
+      s = size(structure);
+      N = prod(s);
+      tr = OclTensorRoot(structure,{1:N},{s,1});
       
       if isnumeric(value)
-        var = OclTensor(structure,val);
+        tensor = OclTensor.createNumeric(tr,value);
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
-        var = CasadiTensor(structure,val);
+        tensor = CasadiTensor.createFromValue(tr,value);
       else
         oclError('Not implemented for this type of variable.')
       end
-      
-      if setValue
-        var.set(value);
+    end
+    
+    function tensor = construct(tr,vs)
+      if isnumeric(vs.storage)
+        tensor = OclTensor(tr,value);
+      elseif isa(vs.storage,'casadi.MX') || isa(vs.storage,'casadi.SX')
+        tensor = CasadiTensor(tr,isa(vs.storage,'casadi.MX'),value);
+      else
+        oclError('Not implemented for this type of variable.')
       end
     end
 
-    function var = Matrix(val)
-      % obj = createMatrixLike(input,val)
-      tRoot = OclTensorRoot([],{1:numel(val)},{size(val),1});
-      s = tRoot.shape;
-      v = OclValue(zeros(1,prod(s)));
-      var = OclTensor(tRoot,v);
-      var.set(val);
+    function tensor = Matrix(value)
+      % obj = Matrix(input,val)
+      tRoot = OclTensorRoot([],{1:numel(value)},{size(value),1});
+      tensor = OclTensor.create(tRoot,value);
     end
     
-    function var = createNumeric(structure,val)
-        var = OclTensor(structure,val);
-        var.set(val);
+    function var = createNumeric(tr,value)
+        vs = OclValueStorage(zeros(numel(tr)));
+        vs.set(tr,value);
+        var = OclTensor(tr,vs);
     end
     
     function v = createFromHandleOne(fh, a, varargin)
@@ -80,7 +70,7 @@ classdef OclTensor < handle
     %%% end factory methods   
     function val = getValue(val)
       if isa(val,'OclTensor')
-        val = val.val;
+        val = val.value;
       end
     end
     
@@ -94,19 +84,19 @@ classdef OclTensor < handle
     function self = OclTensor(type,val)
       narginchk(2,2);
       assert(isa(type,'OclTensorRoot'));
-      assert(isa(val,'OclValue'));
+      assert(isa(val,'OclValueStorage'));
       self.type = type;
-      self.val = val;
+      self.valueStorage = val;
     end
     
     function r = str(self,valueStr)
       if nargin==1
-        val = self.val;
-        if isnumeric(val)
-          valueStr = mat2str(self.val,OclTensor.DISP_FLOAT_PREC);
+        value = self.value;
+        if isnumeric(value)
+          valueStr = mat2str(value,OclTensor.DISP_FLOAT_PREC);
         else
           % cell array
-          cell2str = cellfun(@(v)[mat2str(v),','],val, 'UniformOutput',false);
+          cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
           str_joined = strjoin(cell2str);
           valueStr = ['{', str_joined(1:end-1), '}'];
         end
@@ -196,14 +186,14 @@ classdef OclTensor < handle
       n=1;
     end	
 
-    %%% delegate methods to OclValue
+    %%% delegate methods to OclValueStorage
     function set(self,val)
       % set(val)
       % set(val,slice1,slice2,slice3)
-      self.val.set(self.type,val)
+      self.valueStorage.set(self.type,val)
     end
     function v = value(self)
-      v = self.val.value(self.type);
+      v = self.valueStorage.value(self.type);
     end
     %%%
     
@@ -223,7 +213,7 @@ classdef OclTensor < handle
     function r = get(self,id)
       % r = get(id)
       child = self.type.get(id,self.indizes);
-      r = OclTensor(child,self.val);
+      r = OclTensor.construct(child,self.valueStorage);
     end
     
     function r = slice(self,varargin)
@@ -233,7 +223,7 @@ classdef OclTensor < handle
       shape = size(idz);
       
       m = OclTensorRoot([],{idz(:)}, {shape,1}); 
-      r = OclTensor(m,self.val);
+      r = OclTensor.construct(m,self.valueStorage);
     end
 
     

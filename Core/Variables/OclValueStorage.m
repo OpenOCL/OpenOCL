@@ -1,7 +1,7 @@
-classdef OclValue < handle
-  % OCLVALUE Class for storing values (numeric or symbolic)
+classdef OclValueStorage < handle
+  % OCLVALUESTORAGE Class for storing values (numeric or symbolic)
   properties
-    val
+    storage
   end
   
   methods (Static)
@@ -16,13 +16,13 @@ classdef OclValue < handle
   end
   
   methods
-    function self = OclValue(v)
+    function self = OclValueStorage(v)
       narginchk(1,1); 
-      self.val = v;
+      self.storage = v;
     end
     
     function r = numel(self)
-      r = numel(self.val);
+      r = numel(self.storage);
     end
     
     function set(self,type,value)
@@ -40,7 +40,7 @@ classdef OclValue < handle
 %         indizes = broadCastTo(indizes,shape);
 %         value = broadCastTo(value,valShape);
         
-        self.val([type.indizes{:}]) = value;
+        self.storage([type.indizes{:}]) = value;
       else
         % value is cell array
         % assign on third dimension (trajectory)
@@ -53,7 +53,7 @@ classdef OclValue < handle
         for k=1:s(end)
           idz = indizes(:,:,k);
           v = value{k};
-          self.val(idz(:)) = v(:);
+          self.storage(idz(:)) = v(:);
         end
       end
     end % set
@@ -72,7 +72,7 @@ classdef OclValue < handle
         shape = [1 1];
       end
       for k=1:length(type.indizes)
-        v = self.val(type.indizes{k});
+        v = self.storage(type.indizes{k});
         v = reshape(v,shape);
         vout{k} = v;
       end
