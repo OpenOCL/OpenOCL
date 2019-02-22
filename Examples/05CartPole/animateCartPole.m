@@ -3,18 +3,16 @@ function handles = animateCartPole(sol,times)
   handles = {};
   pmax = max(abs(sol.states.p.value));
   for k=2:prod(times.integrator.size)
-    t = times.integrator(k);
-    x = sol.integrator.states(:,:,k);
+    t = times.integrator(k).value;
+    p = sol.integrator.states.p(:,:,k).value;
+    theta = sol.integrator.states.theta(:,:,k).value;
     dt = times.integrator(k)-times.integrator(k-1);
-    handles = draw(t, dt.value, x, [0,0,0,0], pmax, handles);
+    handles = draw(t, dt.value, p, theta, [0,0,0,0], pmax, handles);
   end
 
 end
 
-function handles = draw(time, dt, x, Xref, pmax, handles)
-  p = x.p.value;
-  theta = x.theta.value;
-  t = time.value;
+function handles = draw(t, dt, p, theta, Xref, pmax, handles)
 
   l = 1.0;
   ms = 10;

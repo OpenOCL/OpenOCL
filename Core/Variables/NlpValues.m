@@ -1,4 +1,4 @@
-classdef NlpValues < Variable
+classdef NlpValues < OclTensor
 
   properties
     manualInterpolation
@@ -6,18 +6,16 @@ classdef NlpValues < Variable
   end
   
   methods (Static)
-    function var = create(type,value)
-        [N,M,K] = type.size();
-        v = OclValue(zeros(1,N,M,K));
-        p = reshape(1:N*M*K,N,M,K);
-        var = NlpValues(type,p,v);
-        var.set(value);
+    function tensor = create(rn,value) 
+      vs = OclValueStorage.allocate(value,numel(rn));
+      vs.set(rn,value);
+      tensor = NlpValues(rn,vs);
     end
   end
 
   methods
-    function self = NlpValues(type,positions,val)
-      self@Variable(type,positions,val);
+    function self = NlpValues(type,val)
+      self@OclTensor(type,val);
       self.manualInterpolation = false;
       self.isInterpolated = false;
     end
@@ -36,10 +34,10 @@ classdef NlpValues < Variable
         return;
       end
       
-      stateSize = self.get('controls').size();
-      for i=1:stateSize(3)
+      uSize = self.get('controls').size();
+      for i=1:uSize(3)
         state = self.get('states').slice(:,:,i).value;
-        self.get('integrator',true).slice(:,:,i).get('states').set(state);
+        self.get('integrator',true).get('states').slice(:,:,i).set(state);
       end
       self.isInterpolated = true;
     end
@@ -48,7 +46,7 @@ classdef NlpValues < Variable
       if strcmp(id,'integrator') && (nargin==2 || autoSet==false)
         self.manualInterpolation = true;
       end
-      r = get@Variable(self,id);
+      r = get@OclTensor(self,id);
     end
   end
 end

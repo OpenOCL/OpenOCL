@@ -79,6 +79,8 @@ classdef OclValueStorage < handle
       end
       if length(vout)==1
         vout = vout{1};
+      else
+        vout = cell2mat(vout);
       end
     end
   end

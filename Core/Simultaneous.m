@@ -38,7 +38,7 @@ classdef Simultaneous < handle
       
       self.integratorFun = integrator.integratorFun;
       
-      self.varsStruct = OclStructureBuilder();
+      self.varsStruct = OclTreeBuilder();
       self.varsStruct.addRepeated({'states','integrator','controls'},...
                                       {system.statesStruct,...
                                       integrator.varsStruct,...
@@ -47,7 +47,7 @@ classdef Simultaneous < handle
       
       self.varsStruct.add('parameters',system.parametersStruct);
       
-      self.timesStruct = OclStructureBuilder();
+      self.timesStruct = OclTreeBuilder();
       self.timesStruct.addRepeated({'states','integrator','controls'},...
                                    {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
       self.timesStruct.add('states',OclMatrix([1,1]));
@@ -77,9 +77,9 @@ classdef Simultaneous < handle
     
     function [lowerBounds,upperBounds] = getNlpBounds(self)
       
-      boundsStruct = self.varsStruct.flat();
-      lowerBounds = Variable.create(boundsStruct,-inf);
-      upperBounds = Variable.create(boundsStruct,inf);
+      boundsStruct = oclFlattenTree(self.varsStruct);
+      lowerBounds = OclTensor.create(boundsStruct,-inf);
+      upperBounds = OclTensor.create(boundsStruct,inf);
       
       % system bounds
       names = fieldnames(self.system.bounds);

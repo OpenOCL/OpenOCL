@@ -10,7 +10,7 @@ function iterateLeafs(node,treeOut)
     childNode = node.get(branch);
     if childNode.hasBranches
       iterateLeafs(childNode,treeOut);
-    else
+    elseif numel(childNode) > 0
       treeOut.addNode(branch, childNode);
     end
   end

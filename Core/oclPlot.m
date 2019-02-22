@@ -1,6 +1,6 @@
 function oclPlot(x,y,varargin)
-  x = Variable.getValue(x);
-  y = Variable.getValue(y);
+  x = OclTensor.getValue(x);
+  y = OclTensor.getValue(y);
   
   plot(x,y,'LineWidth', 3, varargin{:})
   

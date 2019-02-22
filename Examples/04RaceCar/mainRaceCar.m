@@ -44,8 +44,8 @@ initialGuess    = ocl.getInitialGuess();
 N        = length(initialGuess.states.x.value);
 x_road   = linspace(0,2*pi,N);
 y_center = sin(x_road);
-initialGuess.states.x.set(x_road);
-initialGuess.states.y.set(y_center);
+initialGuess.states.x.set(num2cell(x_road));
+initialGuess.states.y.set(num2cell(y_center));
 
 % Solve OCP
 [solution,times] = ocl.solve(initialGuess);

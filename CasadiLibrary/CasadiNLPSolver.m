@@ -19,21 +19,22 @@ classdef CasadiNLPSolver < NLPSolver
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      vStruct = nlp.varsStruct.flat.children;
+      vStruct = oclFlattenTree(nlp.varsStruct);
+      branches = vStruct.branches;
       vars = cell(nlp.nv,1);
-      names = fieldnames(vStruct);
+      names = fieldnames(branches);
       for i=1:length(names)
         id = names{i};
-        el = vStruct.(id);
-        for j=1:size(el.positions,3)
-          pos = el.positions(:,:,j);
+        el = branches.(id);
+        for j=1:length(el)
+          idz = el.indizes{j};
           name = [id,'_',num2str(j)];
           if options.system_casadi_mx
-            var = casadi.MX.sym(name,numel(pos));
+            var = casadi.MX.sym(name,numel(idz));
           else
-            var = casadi.SX.sym(name,numel(pos));
+            var = casadi.SX.sym(name,numel(idz));
           end
-          vars{pos(1)}=var;
+          vars{idz(1)}=var;
         end
       end
       vars = vertcat(vars{:});
@@ -104,7 +105,7 @@ classdef CasadiNLPSolver < NLPSolver
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
       
-      times = Variable.createNumeric(self.nlp.timesStruct,times);
+      times = OclTensor.create(self.nlp.timesStruct,times);
 
       initialGuess.set(solution);
       outVars = initialGuess;
