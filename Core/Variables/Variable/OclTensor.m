@@ -41,7 +41,7 @@ classdef OclTensor < handle
 
     function tensor = Matrix(value)
       % obj = Matrix(input,val)
-      tr = OclTensorRoot([],{1:numel(value)},size(value));
+      tr = OclBranch([],size(value),{1:numel(value)});
       vs = OclValueStorage.allocate(value,numel(value));
       vs.set(tr,value);
       tensor = OclTensor.construct(tr,vs);
@@ -78,7 +78,7 @@ classdef OclTensor < handle
   methods
     function self = OclTensor(type,val)
       narginchk(2,2);
-      assert(isa(type,'OclTensorRoot'));
+      assert(isa(type,'OclBranch'));
       assert(isa(val,'OclValueStorage'));
       self.type = type;
       self.valueStorage = val;
@@ -209,7 +209,7 @@ classdef OclTensor < handle
       idz = idz(varargin{:});
       shape = size(idz);
       
-      m = OclTensorRoot([],{idz(:)}, shape); 
+      m = OclBranch([],shape,{idz(:)}); 
       r = OclTensor.construct(m,self.valueStorage);
     end
     %%%
