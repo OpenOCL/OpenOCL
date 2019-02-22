@@ -55,9 +55,9 @@ classdef OclConstraint < handle
     
     function addWithBounds(self,lb,expr,ub)
       
-      lb = Variable.getValueAsColumn(lb);
-      expr = Variable.getValueAsColumn(expr);
-      ub = Variable.getValueAsColumn(ub);
+      lb = OclTensor.getValueAsColumn(lb);
+      expr = OclTensor.getValueAsColumn(expr);
+      ub = OclTensor.getValueAsColumn(ub);
       
       self.lowerBounds  = [self.lowerBounds;lb];
       self.values       = [self.values;expr];
@@ -66,8 +66,8 @@ classdef OclConstraint < handle
     
     function addWithOperator(self, lhs, op, rhs)
       
-      lhs = Variable.getValueAsColumn(lhs);
-      rhs = Variable.getValueAsColumn(rhs);
+      lhs = OclTensor.getValueAsColumn(lhs);
+      rhs = OclTensor.getValueAsColumn(rhs);
       
       % Create new constraint entry
       if strcmp(op,'==')

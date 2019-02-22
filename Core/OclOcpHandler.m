@@ -141,10 +141,10 @@ classdef OclOcpHandler < handle
         pcHandler.add(self.options.controls_regularization_value*(u.'*u));
       end
       
-      x = Variable.create(self.system.statesStruct,x);
-      z = Variable.create(self.system.algVarsStruct,z);
-      u = Variable.create(self.system.controlsStruct,u);
-      p = Variable.create(self.system.parametersStruct,p);
+      x = OclTensor.create(self.system.statesStruct,x);
+      z = OclTensor.create(self.system.algVarsStruct,z);
+      u = OclTensor.create(self.system.controlsStruct,u);
+      p = OclTensor.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathCosts(pcHandler,x,z,u,p);
       r = pcHandler.value;
@@ -152,8 +152,8 @@ classdef OclOcpHandler < handle
     
     function r = getArrivalCosts(self,x,p)
       acHandler = OclCost(self.ocp);
-      x = Variable.create(self.system.statesStruct,x);
-      p = Variable.create(self.system.parametersStruct,p);
+      x = OclTensor.create(self.system.statesStruct,x);
+      p = OclTensor.create(self.system.parametersStruct,p);
       
       self.ocp.fh.arrivalCosts(acHandler,x,p);
       r = acHandler.value;
@@ -161,8 +161,8 @@ classdef OclOcpHandler < handle
     
     function [val,lb,ub] = getPathConstraints(self,x,p)
       pathConstraintHandler = OclConstraint(self.ocp);
-      x = Variable.create(self.system.statesStruct,x);
-      p = Variable.create(self.system.parametersStruct,p);
+      x = OclTensor.create(self.system.statesStruct,x);
+      p = OclTensor.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathConstraints(pathConstraintHandler,x,p);
       val = pathConstraintHandler.values;
@@ -172,9 +172,9 @@ classdef OclOcpHandler < handle
     
     function [val,lb,ub] = getBoundaryConditions(self,x0,xF,p)
       bcHandler = OclConstraint(self.ocp);
-      x0 = Variable.create(self.system.statesStruct,x0);
-      xF = Variable.create(self.system.statesStruct,xF);
-      p = Variable.create(self.system.parametersStruct,p);
+      x0 = OclTensor.create(self.system.statesStruct,x0);
+      xF = OclTensor.create(self.system.statesStruct,xF);
+      p = OclTensor.create(self.system.parametersStruct,p);
       
       self.ocp.fh.boundaryConditions(bcHandler,x0,xF,p);
       val = bcHandler.values;
@@ -184,7 +184,7 @@ classdef OclOcpHandler < handle
     
     function r = getDiscreteCosts(self,v)
       dcHandler = OclCost(self.ocp);
-      v = Variable.create(self.nlpVarsStruct,v);
+      v = OclTensor.create(self.nlpVarsStruct,v);
       self.ocp.fh.discreteCosts(dcHandler,v);
       r = dcHandler.value;
     end

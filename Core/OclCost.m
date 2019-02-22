@@ -28,7 +28,7 @@ classdef OclCost < handle
     
     function add(self,val)
       % add(self,val)
-      self.value = self.value + Variable.getValueAsColumn(val);
+      self.value = self.value + OclTensor.getValueAsColumn(val);
     end
   end
 end
