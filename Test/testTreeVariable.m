@@ -43,7 +43,7 @@ assertEqual( state.w.value,   [0;1;0.1] );
 state.p = [100;0;50];
 
 assertEqual( state.get('p').value,   [100;0;50] );
-assertEqual( state.size,   [18 1] );
+assertSqueezeEqual( state.size,   [18 1] );
 
 ocpVar = OclTreeBuilder();
 ocpVar.addRepeated({'x','u'},{x,u},5);
@@ -55,7 +55,7 @@ v.x.p.set([100;0;50]);
 v.x.v.set([20;0;0]);
 v.x.w.set([0;1;0.1]);
 
-assertEqual( v.x.p(1,:,4:6).value, [100;100;100]);
+assertSqueezeEqual( v.x.p(1,:,4:6).value, [100;100;100]);
 
 
 v.get('x').get('R').set(eye(3));

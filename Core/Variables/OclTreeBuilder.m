@@ -11,10 +11,6 @@ classdef OclTreeBuilder < OclRootNode
       self.len = 0;
     end
     
-    function s = shape(self)
-      s = [self.len 1];
-    end
-    
     function add(self,id,in2)
       % add(id)
       % add(id,length)

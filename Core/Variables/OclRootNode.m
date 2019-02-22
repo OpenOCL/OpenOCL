@@ -23,6 +23,13 @@ classdef OclRootNode < handle
       l = length(self.indizes);
     end
     
+    function s = size(self)
+      s = self.shape;
+      if length(self) > 1
+        s = [s length(self)];
+      end
+    end
+    
     function b = get(self,id)
       % get(id)
       b = self.branches.(id);

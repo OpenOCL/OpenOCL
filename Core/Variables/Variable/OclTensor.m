@@ -35,7 +35,7 @@ classdef OclTensor < handle
 
     function tensor = Matrix(value)
       % obj = Matrix(input,val)
-      tr = OclRootNode([],size(value),{1:numel(value)});
+      tr = OclRootNode(struct,size(value),{1:numel(value)});
       vs = OclValueStorage.allocate(value,numel(value));
       vs.set(tr,value);
       tensor = OclTensor.construct(tr,vs);
@@ -161,7 +161,7 @@ classdef OclTensor < handle
       % v.get(1) = 1
       % v.val(1) = 1
       % v* = OclTensor
-      if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.children,s(1).subs)
+      if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.branches,s(1).subs)
         self = builtin('subsasgn',self,s,v);
       else
         v = OclTensor.getValue(v);
@@ -188,7 +188,7 @@ classdef OclTensor < handle
     
     %%% delegate methods to type
     function s = size(self)
-      s = length(self.type.indizes);    
+      s = self.type.size;    
     end
     
     function r = get(self,id)
@@ -199,17 +199,17 @@ classdef OclTensor < handle
     
     function r = slice(self,varargin)
       % r = slice(dim1,[dim2],[dim3])
-      idz = reshape([self.type.indizes{:}],self.type.shape);
+      idz = reshape([self.type.indizes{:}],self.type.size);
       idz = idz(varargin{:});
       shape = size(idz);
       
-      m = OclRootNode([],shape,{idz(:)}); 
+      m = OclRootNode(struct,shape,{idz(:)}); 
       r = OclTensor.construct(m,self.valueStorage);
     end
     %%%
     
     function ind = end(self,k,n)
-       szd = size(self.type.indizes);
+       szd = self.type.size;
        if k < n
           ind = szd(k);
        else
