@@ -4,14 +4,14 @@ function tree = oclFlattenTree(branch)
 end
 
 function iterateLeafs(branch,treeOut)
-  branchIds = fieldnames(branch.node.branches);
+  branchIds = fieldnames(branch.branches);
   for k=1:length(branchIds)
     id = branchIds{k};
     childBranch = branch.get(id);
-    if childBranch.node.hasBranches
+    if childBranch.hasBranches
       iterateLeafs(childBranch,treeOut);
     else
-      treeOut.addBranch(id, childBranch.node,childBranch.indizes);
+      treeOut.addBranch(id, childBranch);
     end
   end
 end 

@@ -7,7 +7,7 @@ classdef OclTreeBuilder < OclBranch
   methods
   
     function self = OclTreeBuilder()
-      self@OclBranch(OclTreeNode(struct,[]),{});
+      self@OclBranch(struct,[],{});
       self.len = 0;
     end
     
@@ -22,23 +22,18 @@ classdef OclTreeBuilder < OclBranch
       % add(id,branch)
       if nargin==2
         % add(id)
-        node = OclTreeNode(struct, [1 1]);
-        indizes = {self.len+1:self.len+1};
+        branch = OclBranch(struct, [1 1], {self.len+1:self.len+1});
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
-        node = OclTreeNode(struct, [in2 1]);
-        indizes = {self.len+1:self.len+in2};
+        branch = OclBranch(struct, [in2 1], {self.len+1:self.len+in2});
       elseif isnumeric(in2)
         % args:(id,size)
-        node = OclTreeNode(struct,[in2(1) in2(2)]);
-        indizes = {self.len+1:self.len+prod(in2)};
+        branch = OclBranch(struct,[in2(1) in2(2)], {self.len+1:self.len+prod(in2)});
       else
         % args:(id,branch)
-        branch = in2;
-        node = branch.node;
-        indizes = {self.len+1:self.len+prod(node.shape)*length(branch)};
+        branch = OclBranch(in2.branches,in2.shape,{self.len+1:self.len+prod(in2.shape)*length(in2)});
       end
-      self.addBranch(id,node,indizes);
+      self.addBranch(id,branch);
     end
     
     function addRepeated(self,ids,objList,N)
@@ -52,34 +47,18 @@ classdef OclTreeBuilder < OclBranch
       end
     end
     
-    function addNode(self,id,n)
-       N = prod(n.shape);
-       
-       if ~isfield(self.node.branches, id)
-        self.node.branches.(id) = OclBranch(n, {self.len+1:self.len+N});
-       else
-        self.node.branches.(id).indizes{end+1} = self.len+1:self.len+N;
-       end
-       
-       self.len = self.len + N;
-       self.node.shape = [self.len 1];
-       self.indizes = {1:self.len};
-    end
-    
-    function addBranch(self,id,node,indizes)
+    function addBranch(self,id,branch)
       
-      branch = OclBranch(node,indizes);
-      
-      s = branch.node.shape;
+      s = branch.shape;
       N = length(branch.indizes)*prod(s);
       
-      if ~isfield(self.node.branches, id)
-        self.node.branches.(id) = OclBranch(branch.node, branch.indizes);
+      if ~isfield(self.branches, id)
+        self.branches.(id) = branch;
       else
-        self.node.branches.(id).indizes = [self.node.branches.(id).indizes branch.indizes];
+        self.branches.(id).indizes = [self.branches.(id).indizes branch.indizes];
       end
       self.len = self.len + N;
-      self.node.shape = [self.len 1];
+      self.shape = [self.len 1];
       self.indizes = {1:self.len};
     end
     
