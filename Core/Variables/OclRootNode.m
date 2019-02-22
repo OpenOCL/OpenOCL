@@ -1,4 +1,4 @@
-classdef OclBranch < handle
+classdef OclRootNode < handle
   % OCLBRANCH Basic datatype represent variables in a tree like structure.
   %
   properties
@@ -8,7 +8,7 @@ classdef OclBranch < handle
   end
 
   methods
-    function self = OclBranch(branches,shape,indizes)
+    function self = OclRootNode(branches,shape,indizes)
       % OclBranches()
       self.branches = branches;
       self.shape = shape;
@@ -27,7 +27,7 @@ classdef OclBranch < handle
       % get(id)
       b = self.branches.(id);
       idz = oclMergeArrays(self.indizes,b.indizes);
-      b = OclBranch(b.branches,b.shape,idz);
+      b = OclRootNode(b.branches,b.shape,idz);
     end
     
   end % methods

@@ -1,4 +1,4 @@
-classdef OclTreeBuilder < OclBranch
+classdef OclTreeBuilder < OclRootNode
   
   properties
     len
@@ -7,7 +7,7 @@ classdef OclTreeBuilder < OclBranch
   methods
   
     function self = OclTreeBuilder()
-      self@OclBranch(struct,[],{});
+      self@OclRootNode(struct,[],{});
       self.len = 0;
     end
     
@@ -22,18 +22,18 @@ classdef OclTreeBuilder < OclBranch
       % add(id,branch)
       if nargin==2
         % add(id)
-        branch = OclBranch(struct, [1 1], {self.len+1:self.len+1});
+        node = OclRootNode(struct, [1 1], {self.len+1:self.len+1});
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
-        branch = OclBranch(struct, [in2 1], {self.len+1:self.len+in2});
+        node = OclRootNode(struct, [in2 1], {self.len+1:self.len+in2});
       elseif isnumeric(in2)
         % args:(id,size)
-        branch = OclBranch(struct,[in2(1) in2(2)], {self.len+1:self.len+prod(in2)});
+        node = OclRootNode(struct,[in2(1) in2(2)], {self.len+1:self.len+prod(in2)});
       else
         % args:(id,branch)
-        branch = OclBranch(in2.branches,in2.shape,{self.len+1:self.len+prod(in2.shape)*length(in2)});
+        node = OclRootNode(in2.branches,in2.shape,{self.len+1:self.len+prod(in2.shape)*length(in2)});
       end
-      self.addBranch(id,branch);
+      self.addNode(id,node);
     end
     
     function addRepeated(self,ids,objList,N)
@@ -47,15 +47,15 @@ classdef OclTreeBuilder < OclBranch
       end
     end
     
-    function addBranch(self,id,branch)
+    function addNode(self,id,node)
       
-      s = branch.shape;
-      N = length(branch.indizes)*prod(s);
+      s = node.shape;
+      N = length(node.indizes)*prod(s);
       
       if ~isfield(self.branches, id)
-        self.branches.(id) = branch;
+        self.branches.(id) = node;
       else
-        self.branches.(id).indizes = [self.branches.(id).indizes branch.indizes];
+        self.branches.(id).indizes = [self.branches.(id).indizes node.indizes];
       end
       self.len = self.len + N;
       self.shape = [self.len 1];

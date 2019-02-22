@@ -1,17 +1,17 @@
-function tree = oclFlattenTree(branch)
+function tree = oclFlattenTree(rn)
   tree = OclTreeBuilder();
-  iterateLeafs(branch, tree);
+  iterateLeafs(rn, tree);
 end
 
-function iterateLeafs(branch,treeOut)
-  branchIds = fieldnames(branch.branches);
+function iterateLeafs(node,treeOut)
+  branchIds = fieldnames(node.branches);
   for k=1:length(branchIds)
-    id = branchIds{k};
-    childBranch = branch.get(id);
-    if childBranch.hasBranches
-      iterateLeafs(childBranch,treeOut);
+    branch = branchIds{k};
+    childNode = node.get(branch);
+    if childNode.hasBranches
+      iterateLeafs(childNode,treeOut);
     else
-      treeOut.addBranch(id, childBranch);
+      treeOut.addNode(branch, childNode);
     end
   end
 end 

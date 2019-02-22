@@ -17,23 +17,17 @@ classdef OclTensor < handle
   methods (Static)
     
     %%% factory methods
-    function tensor = create(structure,value) 
-      
-      s = size(structure);
-      N = prod(s);
-      tr = OclTensorRoot(structure,{1:N}, s);
-      
-      vs = OclValueStorage.allocate(value,numel(tr));
-      vs.set(tr,value);
-      
-      tensor = OclTensor.construct(tr,vs);
+    function tensor = create(rn,value) 
+      vs = OclValueStorage.allocate(value,length(rn));
+      vs.set(rn,value);
+      tensor = OclTensor.construct(rn,vs);
     end
     
-    function tensor = construct(tr,vs)
+    function tensor = construct(rn,vs)
       if isnumeric(vs.storage)
-        tensor = OclTensor(tr,vs);
+        tensor = OclTensor(rn,vs);
       elseif isa(vs.storage,'casadi.MX') || isa(vs.storage,'casadi.SX')
-        tensor = CasadiTensor(tr,isa(vs.storage,'casadi.MX'),vs);
+        tensor = CasadiTensor(rn,isa(vs.storage,'casadi.MX'),vs);
       else
         oclError('Not implemented for this type of variable.')
       end
@@ -41,7 +35,7 @@ classdef OclTensor < handle
 
     function tensor = Matrix(value)
       % obj = Matrix(input,val)
-      tr = OclBranch([],size(value),{1:numel(value)});
+      tr = OclRootNode([],size(value),{1:numel(value)});
       vs = OclValueStorage.allocate(value,numel(value));
       vs.set(tr,value);
       tensor = OclTensor.construct(tr,vs);
@@ -78,7 +72,7 @@ classdef OclTensor < handle
   methods
     function self = OclTensor(type,val)
       narginchk(2,2);
-      assert(isa(type,'OclBranch'));
+      assert(isa(type,'OclRootNode'));
       assert(isa(val,'OclValueStorage'));
       self.type = type;
       self.valueStorage = val;
@@ -103,15 +97,15 @@ classdef OclTensor < handle
         dotsStr = '...';
       end
       
-      childrenString = '  Children: None\n';
-      if ~isempty(self.type.structure)
-        cArray = cell(1, length(fieldnames(self.type.structure.children)));
-        names = fieldnames(self.type.structure.children);
+      childrenString = '  Branches: None\n';
+      if self.type.hasBranches()
+        cArray = cell(1, length(fieldnames(self.type.branches)));
+        names = fieldnames(self.type.branches);
         for i=1:length(names)-1
           cArray{i} = [names{i}, ', '];
         end
         cArray{end} = names{end};
-        childrenString = ['  Children: ', cArray{:}, '\n'];
+        childrenString = ['  Branches: ', cArray{:}, '\n'];
       end
       
       r = sprintf([ ...
@@ -145,10 +139,10 @@ classdef OclTensor < handle
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
-        if isa(self.type,'OclTensorRoot') && isfield(self.type.children,id) && numel(s) == 1
+        if isa(self.type,'OclRootNode') && isfield(self.type.branches,id) && numel(s) == 1
           % v.x
           [varargout{1}] = self.get(id);
-        elseif isa(self.type,'OclTensorRoot') && isfield(self.type.children,id)
+        elseif isa(self.type,'OclRootNode') && isfield(self.type.branches,id)
           % v.x.get(3).set(2).val || v.x.y.get(1)
           v = self.get(id);
           [varargout{1:nargout}] = subsref(v,s(2:end));
@@ -209,7 +203,7 @@ classdef OclTensor < handle
       idz = idz(varargin{:});
       shape = size(idz);
       
-      m = OclBranch([],shape,{idz(:)}); 
+      m = OclRootNode([],shape,{idz(:)}); 
       r = OclTensor.construct(m,self.valueStorage);
     end
     %%%

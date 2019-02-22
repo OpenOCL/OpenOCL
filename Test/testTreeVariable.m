@@ -1,6 +1,6 @@
 function testTreeVariable
 
-xStruct = OclTreeTensorBuilder();
+xStruct = OclTreeBuilder();
 xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);
@@ -18,13 +18,13 @@ assertSqueezeEqual(x.x1.value,[1,9;2,10]);
 %%% slice
 assertSqueezeEqual(x.x1(1,1,:).value,[1;9]);
 
-x = OclTreeTensorBuilder();
+x = OclTreeBuilder();
 x.add('p',[3,1]);
 x.add('R',[3,3]);
 x.add('v',[3,1]);
 x.add('w',[3,1]);
 
-u = OclTreeTensorBuilder();
+u = OclTreeBuilder();
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 
@@ -45,7 +45,7 @@ state.p = [100;0;50];
 assertEqual( state.get('p').value,   [100;0;50] );
 assertEqual( state.size,   [18 1] );
 
-ocpVar = OclTreeTensorBuilder();
+ocpVar = OclTreeBuilder();
 ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
