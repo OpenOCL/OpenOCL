@@ -1,37 +1,44 @@
-classdef OclTreeTensorBuilder < OclTreeTensor
+classdef OclTreeBuilder < OclBranch
   
   properties
+    len
   end
   
   methods
   
-    function self = OclTreeTensorBuilder()
+    function self = OclTreeBuilder()
+      self@OclBranch(OclTreeNode(struct,[]),{});
+      self.len = 0;
+    end
+    
+    function s = shape(self)
+      s = [self.len 1];
     end
     
     function add(self,id,in2)
       % add(id)
       % add(id,length)
       % add(id,size)
-      % add(id,obj)
+      % add(id,branch)
       if nargin==2
         % add(id)
-        tensor = OclTreeTensor();
-        shape = [];
+        node = OclTreeNode(struct, [1 1]);
+        indizes = {self.len+1:self.len+1};
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
-        shape = in2;
-        tensor = OclTreeTensor();
+        node = OclTreeNode(struct, [in2 1]);
+        indizes = {self.len+1:self.len+in2};
       elseif isnumeric(in2)
         % args:(id,size)
-        shape = [in2(1) in2(2)];
-        tensor = OclTreeTensor();
+        node = OclTreeNode(struct,[in2(1) in2(2)]);
+        indizes = {self.len+1:self.len+prod(in2)};
       else
-        % args:(id,obj)
-        shape = in2.size;
-        tensor = in2;
+        % args:(id,branch)
+        branch = in2;
+        node = branch.node;
+        indizes = {self.len+1:self.len+prod(node.shape)*length(branch)};
       end
-      indizes = {self.len+1:self.len+prod(shape)};
-      self.addObject(id,tensor,indizes,shape);
+      self.addBranch(id,node,indizes);
     end
     
     function addRepeated(self,ids,objList,N)
@@ -45,18 +52,35 @@ classdef OclTreeTensorBuilder < OclTreeTensor
       end
     end
     
-    function addObject(self,id,tensor,indizes,shape)
-      % addVar(id, structure, indizes, shape)
-      %   Adds a child object from structure, indizes, shape
+    function addNode(self,id,n)
+       N = prod(n.shape);
+       
+       if ~isfield(self.node.branches, id)
+        self.node.branches.(id) = OclBranch(n, {self.len+1:self.len+N});
+       else
+        self.node.branches.(id).indizes{end+1} = self.len+1:self.len+N;
+       end
+       
+       self.len = self.len + N;
+       self.node.shape = [self.len 1];
+       self.indizes = {1:self.len};
+    end
+    
+    function addBranch(self,id,node,indizes)
       
-      self.len = self.len+length([indizes{:}]);
+      branch = OclBranch(node,indizes);
       
-      if ~isfield(self.children, id)
-        self.children.(id) = OclTensorRoot(tensor,indizes,shape);
+      s = branch.node.shape;
+      N = length(branch.indizes)*prod(s);
+      
+      if ~isfield(self.node.branches, id)
+        self.node.branches.(id) = OclBranch(branch.node, branch.indizes);
       else
-        K = length(indizes);
-        self.children.(id).indizes(end+1:end+K) = indizes;
+        self.node.branches.(id).indizes = [self.node.branches.(id).indizes branch.indizes];
       end
+      self.len = self.len + N;
+      self.node.shape = [self.len 1];
+      self.indizes = {1:self.len};
     end
     
   end % methods

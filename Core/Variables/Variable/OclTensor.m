@@ -61,6 +61,7 @@ classdef OclTensor < handle
       v = OclTensor.Matrix(fh(a,b,varargin{:}));
     end
     %%% end factory methods   
+    
     function val = getValue(val)
       if isa(val,'OclTensor')
         val = val.value;
@@ -71,6 +72,7 @@ classdef OclTensor < handle
       val = OclTensor.getValue(val);
       val = val(:);
     end
+    
   end % methods(static)
   
   methods
@@ -190,19 +192,11 @@ classdef OclTensor < handle
     end
     %%%
     
+    %%% delegate methods to type
     function s = size(self)
-      s = self.type.shape;    
+      s = length(self.type.indizes);    
     end
-
-    function ind = end(self,k,n)
-       szd = size(self.type.indizes);
-       if k < n
-          ind = szd(k);
-       else
-          ind = prod(szd(k:end));
-       end
-    end
-
+    
     function r = get(self,id)
       % r = get(id)
       child = self.type.get(id);
@@ -218,8 +212,17 @@ classdef OclTensor < handle
       m = OclTensorRoot([],{idz(:)}, shape); 
       r = OclTensor.construct(m,self.valueStorage);
     end
-
+    %%%
     
+    function ind = end(self,k,n)
+       szd = size(self.type.indizes);
+       if k < n
+          ind = szd(k);
+       else
+          ind = prod(szd(k:end));
+       end
+    end
+
     function y = linspace(d1,d2,n)
       n1 = n-1;
       y = d1 + (0:n1).*(d2 - d1)/n1;

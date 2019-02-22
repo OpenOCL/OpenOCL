@@ -1,37 +1,23 @@
-classdef OclTensorRoot < handle
+classdef OclTreeNode < handle
   
   properties
-    structure
-    indizes
-    shapes
+    branches
+    shape
   end
   
   methods
     
-    function self = OclTensorRoot(structure,indizes,shapes)
-      self.structure = structure;
-      self.indizes = indizes;
-      self.shapes = shapes;
-    end
-    
-    function r = shape(self)
-      r = [self.shapes length(self.indizes)];
+    function self = OclTreeNode(branches,shape)
+      self.branches = branches;
+      self.shape = shape;
     end
     
     function r = get(self, id)
-      r = self.structure.get(id,self.indizes,self.shapes(2:end));
+      r = self.branches.(id);
     end
     
-    function r = type(self)
-      r = self.structure.type();
-    end
-    
-    function r = children(self)
-      if isempty(self.structure)
-        r = struct;
-      else
-        r = self.structure.children;
-      end
+    function r = hasBranches(self)
+      r = ~isempty(fieldnames(self.branches));
     end
     
   end

@@ -44,60 +44,37 @@ classdef OclValueStorage < handle
       % set(type,positions,value)
       if ~iscell(value)
         % value is numeric or casadi
-%         shape = type.shape;
-%         valShape = size(value);
         if isempty(value) || numel(value)==0
           return
         end
         
-%         indizes = reshape(type.indizes,shape);
-%         [shape,valShape] = broadCastShape(shape,valShape);
-%         indizes = broadCastTo(indizes,shape);
-%         value = broadCastTo(value,valShape);
-        s = type.shapes;
-        if length(s) == 1
-          s = [s 1];
-        end
         for k=1:length(type.indizes)
           idz = type.indizes{k};
-          idz = reshape(idz,s);
-          self.storage(idz) = value;
+          self.storage(idz) = value(:);
         end
       else
         % value is cell array
-        % assign on third dimension (trajectory)
-        
-        shape = type.shape;
-        indizes = reshape(type.indizes,shape);
-        s = size(indizes);
-        
-        assert(length(value)==s(3));
-        for k=1:s(end)
-          idz = indizes(:,:,k);
+
+        for k=1:length(type.indizes)
+          idz = type.indizes{k};
           v = value{k};
-          self.storage(idz(:)) = v(:);
+          self.storage(idz) = v(:);
         end
       end
     end % set
     
     function vout = value(self,type)
-      % v = value(type)   
+      % v = value(type)  
       
-      % need to squeeze shape for casadi (does not support tensors)
       s = type.shape;
-      shape = s(1:end-1);
-      if length(shape) > 2
-        shape(shape==1) = [];
-      end
-      if length(shape) == 1
-        shape = [shape,1];
+      if length(s) == 1
+        s = [s 1];
       end
       
       vout = cell(1,length(type.indizes));
       for k=1:length(type.indizes)
         v = self.storage(type.indizes{k});
-        
-        v = reshape(v,shape);
+        v = reshape(v,s);
         vout{k} = v;
       end
       if length(vout)==1

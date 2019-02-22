@@ -13,27 +13,18 @@ classdef CasadiTensor < OclTensor
 %       var = CasadiTensor(tr,isa(value,'casadi.MX'),vs);
 %     end
     
-    function var = create(structure,mx)
-      if isa(structure,'OclTreeTensor') && ~isempty(structure.children)
-        names = fieldnames(structure.children);
-        id = [names{:}];
-      else
-        id = class(structure);
-      end
-      
-      s = structure.shape();
+    function var = create(tr,mx)      
+      s = tr.shape;
       assert(length(s)==2 || s(3)==1);
+      
       if prod(s)==0
         vv = [];
       elseif mx == true
-        vv = casadi.MX.sym(id,s(1),s(2));
+        vv = casadi.MX.sym('v',s(1),s(2));
       else
-        vv = casadi.SX.sym(id,s(1),s(2));
+        vv = casadi.SX.sym('v',s(1),s(2));
       end
       vs = OclValueStorage(vv);
-      indizes = {1:prod(s)};
-      shape = [s(1),s(2)];
-      tr = OclTensorRoot(structure,indizes,shape);
       var = CasadiTensor(tr,mx,vs);
     end
     
@@ -41,7 +32,7 @@ classdef CasadiTensor < OclTensor
       if nargin==1
         mx = false;
       end
-      r = OclTensorRoot([],{1:prod(shape)},shape);
+      r = OclBranch(OclTreeNode(struct,shape),{1:prod(shape)});
       obj = CasadiTensor.create(r,mx);
     end
   end
@@ -55,7 +46,7 @@ classdef CasadiTensor < OclTensor
       self.mx = mx;      
     end
     
-    function r = disp(self)
+    function disp(self)
       disp(self.str(self.value.str()));
     end
   end
