@@ -7,7 +7,7 @@ classdef OclTreeBuilder < OclRootNode
   methods
   
     function self = OclTreeBuilder()
-      self@OclRootNode(struct,[],{});
+      self@OclRootNode(struct,[0 1],{});
       self.len = 0;
     end
     
@@ -45,8 +45,7 @@ classdef OclTreeBuilder < OclRootNode
     
     function addNode(self,id,node)
       
-      s = node.shape;
-      N = length(node.indizes)*prod(s);
+      N = numel(node);
       
       if ~isfield(self.branches, id)
         self.branches.(id) = node;

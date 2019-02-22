@@ -18,7 +18,7 @@ classdef OclTensor < handle
     
     %%% factory methods
     function tensor = create(rn,value) 
-      vs = OclValueStorage.allocate(value,length(rn));
+      vs = OclValueStorage.allocate(value,numel(rn));
       vs.set(rn,value);
       tensor = OclTensor.construct(rn,vs);
     end

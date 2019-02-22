@@ -22,14 +22,14 @@ end
 function [r1,r2] = OclFunction_F1(x,y,z)
   
   xs = OclMatrix([3,1]);
-  ys = OclStructureBuilder();
+  ys = OclTreeBuilder();
   ys.add('x1',xs);
   ys.add('x2',xs);
   zs = OclMatrix([3,3]);
   
-  xv = Variable.create(xs,x);
-  yv = Variable.create(ys,y);
-  zv = Variable.create(zs,z);
+  xv = OclTensor.create(xs,x);
+  yv = OclTensor.create(ys,y);
+  zv = OclTensor.create(zs,z);
   
   r1 = zv*xv;
   r2 = yv * 2;

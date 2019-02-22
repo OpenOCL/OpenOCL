@@ -1,5 +1,5 @@
 classdef OclRootNode < handle
-  % OCLBRANCH Basic datatype represent variables in a tree like structure.
+  % OCLROOTNODE Basic datatype represent variables in a tree like structure.
   %
   properties
     branches
@@ -10,6 +10,7 @@ classdef OclRootNode < handle
   methods
     function self = OclRootNode(branches,shape,indizes)
       % OclBranches()
+      assert(length(shape)>1)
       self.branches = branches;
       self.shape = shape;
       self.indizes = indizes;
@@ -25,9 +26,13 @@ classdef OclRootNode < handle
     
     function s = size(self)
       s = self.shape;
-      if length(self) > 1
+      if isempty(s) || length(self) > 1
         s = [s length(self)];
       end
+    end
+    
+    function r = numel(self)
+      r = prod(self.size());
     end
     
     function b = get(self,id)

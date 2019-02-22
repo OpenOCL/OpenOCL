@@ -45,10 +45,10 @@ classdef OclSystem < handle
       self.fh.eq = p.Results.fhEq;
       self.fh.ic = p.Results.fhIC;
       
-      self.statesStruct     = OclStructureBuilder();
-      self.algVarsStruct    = OclStructureBuilder();
-      self.controlsStruct   = OclStructureBuilder();
-      self.parametersStruct = OclStructureBuilder();
+      self.statesStruct     = OclTreeBuilder();
+      self.algVarsStruct    = OclTreeBuilder();
+      self.controlsStruct   = OclTreeBuilder();
+      self.parametersStruct = OclTreeBuilder();
       
       self.bounds = struct;
       self.ode = struct;
@@ -115,10 +115,10 @@ classdef OclSystem < handle
         self.ode.(names{i}) = [];
       end
       
-      x = Variable.create(self.statesStruct,states);
-      z = Variable.create(self.algVarsStruct,algVars);
-      u = Variable.create(self.controlsStruct,controls);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = OclTensor.create(self.statesStruct,states);
+      z = OclTensor.create(self.algVarsStruct,algVars);
+      u = OclTensor.create(self.controlsStruct,controls);
+      p = OclTensor.create(self.parametersStruct,parameters);
 
       self.fh.eq(self,x,z,u,p);
      
@@ -138,8 +138,8 @@ classdef OclSystem < handle
     
     function ic = getInitialConditions(self,states,parameters)
       icHandler = OclConstraint(self);
-      x = Variable.create(self.statesStruct,states);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = OclTensor.create(self.statesStruct,states);
+      p = OclTensor.create(self.parametersStruct,parameters);
       self.fh.ic(icHandler,x,p)
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
@@ -223,11 +223,11 @@ classdef OclSystem < handle
       if ~isempty(self.ode.(id))
         oclException(['Ode for var ', id, ' already defined']);
       end
-      self.ode.(id) = Variable.getValueAsColumn(eq);
+      self.ode.(id) = OclTensor.getValueAsColumn(eq);
     end
     
     function setAlgEquation(self,eq)
-      self.alg = [self.alg;Variable.getValueAsColumn(eq)];
+      self.alg = [self.alg;OclTensor.getValueAsColumn(eq)];
     end
     
     function setInitialCondition(self,eq)
@@ -249,13 +249,13 @@ classdef OclSystem < handle
     end
     
     function callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)
-      x = Variable.create(self.statesStruct,states);
-      z = Variable.create(self.algVarsStruct,algVars);
-      u = Variable.create(self.controlsStruct,controls);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = OclTensor.create(self.statesStruct,states);
+      z = OclTensor.create(self.algVarsStruct,algVars);
+      u = OclTensor.create(self.controlsStruct,controls);
+      p = OclTensor.create(self.parametersStruct,parameters);
       
-      t0 = Variable.Matrix(timesBegin);
-      t1 = Variable.Matrix(timesEnd);
+      t0 = OclTensor.Matrix(timesBegin);
+      t1 = OclTensor.Matrix(timesEnd);
       
       self.simulationCallback(x,z,u,t0,t1,p);
       

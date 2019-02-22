@@ -32,7 +32,7 @@ classdef CasadiTensor < OclTensor
       if nargin==1
         mx = false;
       end
-      r = OclRootNode(struct,shape, {1:prod(shape)});
+      r = OclMatrix(shape);
       obj = CasadiTensor.create(r,mx);
     end
   end
