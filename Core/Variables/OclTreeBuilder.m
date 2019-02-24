@@ -45,12 +45,13 @@ classdef OclTreeBuilder < OclRootNode
     
     function addNode(self,id,node)
       
-      N = numel(node);
+      N = nel(node);
       
       if ~isfield(self.branches, id)
         self.branches.(id) = node;
       else
-        self.branches.(id).indizes = [self.branches.(id).indizes node.indizes];
+        branch = self.branches.(id);
+        branch.indizes(end+1:end+length(node.indizes)) = node.indizes;
       end
       self.len = self.len + N;
       self.shape = [self.len 1];

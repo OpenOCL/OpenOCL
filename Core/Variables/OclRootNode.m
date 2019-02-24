@@ -31,7 +31,7 @@ classdef OclRootNode < handle
       end
     end
     
-    function r = numel(self)
+    function r = nel(self)
       r = prod(self.size());
     end
     

@@ -57,13 +57,16 @@ v.x.w.set([0;1;0.1]);
 
 assertSqueezeEqual( v.x.p(1,:,4:6).value, [100;100;100]);
 
-
 v.get('x').get('R').set(eye(3));
-assertEqual(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    );
+if ~isOctave()
+  assertEqual(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    );
+end
 assertEqual(v.x.R(:,:,1).value,eye(3));
 
 v.get('x').get('R').set(ones(3,3));
-assertEqual(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1));
+if ~isOctave()
+  assertEqual(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1));
+end
 
 % slice on selection
 assertEqual(v.x.p(:,:,1).value,[100;0;50]);
