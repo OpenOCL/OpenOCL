@@ -11,7 +11,7 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 
 ## Build status
 
-We are currently doing major refactoring in the development branch.
+2019/02/27: We are currently doing major refactoring in the development branch.
 
 | master | develop |
 |:------:|:-------:|
