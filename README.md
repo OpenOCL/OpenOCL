@@ -11,7 +11,8 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 
 ## Build status
 
-2019/02/27: The development branch is currently not building due to major developments.
+2019/02/27: The development branch is currently not building due to major developments in the C++ backend.
+For the C++ implementation see the ocl-cpp the repository.
 
 | master | develop |
 |:------:|:-------:|
