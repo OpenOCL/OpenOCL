@@ -17,7 +17,11 @@ function [nFails] = runTests(testExamples,saveLog,suffix)
   
   % go to main dir and get current git hash
   cd(oclDir);
-  [~,version] = system('git rev-parse HEAD');
+  [status,version] = system('git rev-parse HEAD');
+  if status~=0
+    oclInfo('Could not get git hash, log filename will not include the hash. This is not a problem.')
+    version='nogithash';  
+  end
   
   if isempty(testDir)
     error('Test directory not set. Run StartupOCL again.')
