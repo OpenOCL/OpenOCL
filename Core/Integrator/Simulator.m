@@ -79,12 +79,11 @@ classdef Simulator < handle
       nu = self.system.nu;
       
       z = zeros(nz,1);
-      uVec = Variable.getValueAsColumn(controlsVec);
       x0 = Variable.getValueAsColumn(initialStates);
       p = Variable.getValueAsColumn(parameters);
       times = Variable.getValueAsColumn(times);
       
-      u0 = uVec(1:nu);
+      u0 = Variable.getValueAsColumn(controlsVec(:,:,1));
       
       [x,z] = self.getConsistentIntitialCondition(x0,z,u0,p);
       statesVec(:,:,1).set(x);
@@ -98,7 +97,7 @@ classdef Simulator < handle
       for k=1:N-1
         
         t = times(k+1)-times(k);
-        u = uVec((k-1)*nu+1);
+        u = Variable.getValueAsColumn(controlsVec(:,:,k));
         
         if callback && (isempty(testRun) || (testRun==false))
           self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);

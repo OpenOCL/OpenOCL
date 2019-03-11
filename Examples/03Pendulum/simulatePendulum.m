@@ -13,7 +13,7 @@ p.l.set(1);
 times = 0:0.1:4;
 
 % simulate without control inputs
-simulator.simulate(states,times,p);
+%simulator.simulate(states,times,p);
 
 % simulate again using a given series of control inputs
 controlsSeries = simulator.getControlsVec(length(times)-1);
