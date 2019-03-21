@@ -16,8 +16,8 @@ ocp = OclOCP(@pathCosts);
 ocl = OclSolver(END_TIME,system,ocp,options);
 
 % intial state bounds
-ocl.setInitialBounds('x',     0);            % x1 == 0
-ocl.setInitialBounds('y',     1);            % y1 == 1
+ocl.setInitialBounds('x',     0); 
+ocl.setInitialBounds('y',     1); 
 
 % Get and set initial guess
 initialGuess = ocl.getInitialGuess();
