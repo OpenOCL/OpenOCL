@@ -8,16 +8,6 @@ The Open Optimal Control Library is a software toolbox for Matlab/Octave that fa
 
 Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, go through the [tutorial](https://openocl.org/tutorial/), and have a look [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
 
-
-## Build status
-
-2019/02/27: The development branch is currently not building due to major developments in the C++ backend.
-For the C++ implementation see the ocl-cpp the repository.
-
-| master | develop |
-|:------:|:-------:|
-| [![Build Status](https://travis-ci.org/OpenOCL/OpenOCL.svg?branch=master)](https://travis-ci.org/OpenOCL/OpenOCL) | [![Build Status](https://travis-ci.org/OpenOCL/OpenOCL.svg?branch=develop)](https://travis-ci.org/OpenOCL/OpenOCL) |
-
 ## Models
 
 * airborne wind energy: https://openawe.github.io/
