@@ -65,8 +65,9 @@ classdef OclSystem < handle
 
       self.fh = struct;
       self.fh.vars = varsfun;
-      self.fh.eq = p.Results.eqfun;
-      self.fh.ic = p.Results.icfun;
+      self.fh.eq = eqfun;
+      self.fh.ic = icfun;
+      
       self.fh.cb = p.Results.cbfun;
       self.fh.cbsetup = p.Results.cbsetupfun;
 
