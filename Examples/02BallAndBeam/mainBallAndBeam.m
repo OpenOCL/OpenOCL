@@ -4,11 +4,14 @@
 options = OclOptions();
 options.nlp.controlIntervals = 50;
 
-sys = BallAndBeamSystem();
-ocl = OclSolver([],sys,BallAndBeamOCP,options);
+bb = BallAndBeam();
+system = OclSystem(bb.varsfun, bb.eqfun);
+ocp = OclOCP(bb.pathcosts);
+
+ocl = OclSolver([],system,ocp,options);
 
  % bound on end time: 1 <= tf <= 5
-ocl.setParameter('T', 1, 5); 
+ocl.setParameter('T', 1, 5);
 
 % set bounds for initial and endtime
 ocl.setInitialBounds('r'      , -0.8);
@@ -27,7 +30,7 @@ vars = ocl.getInitialGuess();
 
 % Plot solution
 figure;
-subplot(3,1,1);hold on;grid on; 
+subplot(3,1,1);hold on;grid on;
 plot(times.states.value,vars.states.r.value     ,'Color','b','LineWidth',1.5)
 plot(times.states.value,vars.states.dr.value    ,'Color','r','LineWidth',1.5)
 legend({'r [m]','dr [m/s]'})
