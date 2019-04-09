@@ -69,7 +69,7 @@ function StartupOCL(in)
     disp('You have set-up an individual casadi installation.')
   elseif casadiFound == 2
     error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
-  elseif casadiFound == 1
+  elseif casadiFound == 1 && exist(fullfile(oclPath,'Lib'),'dir')
     % try binaries in Lib
     addpath(fullfile(oclPath,'Lib'))
     casadiFound = findCasadi();
@@ -78,6 +78,8 @@ function StartupOCL(in)
     elseif casadiFound == 2
       error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
     end
+  else
+    error('Casadi installation not found. Please setup casadi 3.3.');
   end
 
   % remove properties function in Variable.m for Octave which gives a
