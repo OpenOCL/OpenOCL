@@ -2,9 +2,11 @@ function mainPendulum
 
   options = OclOptions;
   options.nlp.controlIntervals = 50;
-  sys = OclSystem(@varsfun, @eqfun, @icfun, @simcallbacksetup, @simcallback);
+
+  sys = OclSystem(@varsfun, @eqfun, @icfun, 'cbsetupfun', @simcallbacksetup, 'cbfun', @simcallback);
   ocp = OclCP(@pathcosts);
-  ocl = OclSolver([],system, ocp, options);
+
+  ocl = OclSolver([], system, ocp, options);
 
   ocl.setParameter('T',  1, 10);
   ocl.setBounds('p',       -[3;3], [3;3]);

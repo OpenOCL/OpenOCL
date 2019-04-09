@@ -67,7 +67,7 @@ classdef OclSystem < handle
       self.fh.vars = varsfun;
       self.fh.eq = eqfun;
       self.fh.ic = icfun;
-      
+
       self.fh.cb = p.Results.cbfun;
       self.fh.cbsetup = p.Results.cbsetupfun;
 
