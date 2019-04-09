@@ -33,23 +33,42 @@ classdef OclSystem < handle
       defFhVars = @(varargin)self.setupVariables(varargin{:});
       defFhEq = @(varargin)self.setupEquations(varargin{:});
       defFhIC = @(varargin)self.initialConditions(varargin{:});
-      defFhSC = @(varargin)self.simulationCallback(varargin{:});
-      defFhSCS = @(varargin)self.simulationCallbackSetup(varargin{:});
+      defFhCB = @(varargin)self.simulationCallback(varargin{:});
+      defFhCBS = @(varargin)self.simulationCallbackSetup(varargin{:});
 
       p = inputParser;
-      p.addOptional('fhVars', defFhVars, @oclIsFunHandle);
-      p.addOptional('fhEq', defFhEq, @oclIsFunHandle);
-      p.addOptional('fhIC', defFhIC, @oclIsFunHandle);
-      p.addOptional('fhSC', defFhIC, @oclIsFunHandle);
-      p.addOptional('fhSCS', defFhIC, @oclIsFunHandle);
+      p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
+      p.addOptional('eqfunOpt', [], @oclIsFunHandleOrEmpty);
+      p.addOptional('icfunOpt', [], @oclIsFunHandleOrEmpty);
+
+      p.addParameter('varsfun', defFhVars, @oclIsFunHandle);
+      p.addParameter('eqfun', defFhEq, @oclIsFunHandle);
+      p.addParameter('icfun', defFhIC, @oclIsFunHandle);
+      p.addParameter('cbfun', defFhCB, @oclIsFunHandle);
+      p.addParameter('cbsetupfun', defFhCBS, @oclIsFunHandle);
       p.parse(varargin{:});
 
+      varsfun = p.Results.varsfunOpt;
+      if isempty(varsfun)
+        varsfun = p.Results.varsfun;
+      end
+
+      eqfun = p.Results.eqfunOpt;
+      if isempty(eqfun)
+        varsfun = p.Results.eqfun;
+      end
+
+      icfun = p.Results.icfunOpt;
+      if isempty(icfun)
+        varsfun = p.Results.icfun;
+      end
+
       self.fh = struct;
-      self.fh.vars = p.Results.fhVars;
-      self.fh.eq = p.Results.fhEq;
-      self.fh.ic = p.Results.fhIC;
-      self.fh.simCallback = p.Results.fhSC;
-      self.fh.simCallbackSetup = p.Results.fhSCS;
+      self.fh.vars = varsfun;
+      self.fh.eq = p.Results.eqfun;
+      self.fh.ic = p.Results.icfun;
+      self.fh.cb = p.Results.cbfun;
+      self.fh.cbsetup = p.Results.cbsetupfun;
 
       self.statesStruct     = OclStructure();
       self.algVarsStruct    = OclStructure();
@@ -250,12 +269,12 @@ classdef OclSystem < handle
         states = solution.states(:,:,k+1);
         algVars = solution.integrator(:,:,k).algVars;
         controls =  solution.controls(:,:,k);
-        self.fh.simCallback(states,algVars,controls,t(:,:,k),t(:,:,k+1),parameters);
+        self.fh.cb(states,algVars,controls,t(:,:,k),t(:,:,k+1),parameters);
       end
     end
 
     function callSimulationCallbackSetup()
-      self.fh.simCallbackSetup();
+      self.fh.cbsetup();
     end
 
     function u = callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)
@@ -267,7 +286,7 @@ classdef OclSystem < handle
       t0 = Variable.Matrix(timesBegin);
       t1 = Variable.Matrix(timesEnd);
 
-      self.fh.simCallback(x,z,u,t0,t1,p);
+      self.fh.cb(x,z,u,t0,t1,p);
       u = Variable.getValueAsColumn(u);
     end
 
