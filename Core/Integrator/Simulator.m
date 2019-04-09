@@ -91,7 +91,7 @@ classdef Simulator < handle
       % setup callback
       global testRun
       if callback && (isempty(testRun) || (testRun==false))
-        self.system.simulationCallbackSetup;
+        self.system.callSimulationCallbackSetup();
       end
 
       for k=1:N-1
