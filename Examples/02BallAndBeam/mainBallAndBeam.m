@@ -5,8 +5,8 @@ options = OclOptions();
 options.nlp.controlIntervals = 50;
 
 bb = BallAndBeam();
-system = OclSystem(bb.varsfun, bb.eqfun);
-ocp = OclOCP(bb.pathcosts);
+system = OclSystem(@bb.varsfun, @bb.eqfun);
+ocp = OclOCP(@bb.pathcosts);
 
 ocl = OclSolver([],system,ocp,options);
 
