@@ -9,8 +9,9 @@ function mainRaceCar
   options.nlp.controlIntervals = CONTROL_INTERVALS;
   options.controls_regularization_value = 1e-3;
 
-  system = OclSystem(@varsfun, @eqfun);
-  ocp = OclOCP([], @arrivalcosts, @pathconstraints);
+  system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
+  ocp = OclOCP('arrivalcosts', @arrivalcosts, 'pathcosts', @pathconstraints);
+
   ocl = OclSolver([],system,ocp,options);
 
   % parameters
