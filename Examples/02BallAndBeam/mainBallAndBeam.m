@@ -54,4 +54,4 @@ legend({'\tau [Nm]'})
 xlabel('time');
 
 % Show Animation
-animateBallAndBeam(times.states.value,vars.states.r.value,vars.states.theta.value);
+bb.animate(times.states.value,vars.states.r.value,vars.states.theta.value);
