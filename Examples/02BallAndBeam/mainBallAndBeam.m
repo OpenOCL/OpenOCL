@@ -34,22 +34,22 @@ subplot(3,1,1);hold on;grid on;
 plot(times.states.value,vars.states.r.value     ,'Color','b','LineWidth',1.5)
 plot(times.states.value,vars.states.dr.value    ,'Color','r','LineWidth',1.5)
 legend({'r [m]','dr [m/s]'})
-plot(times.states.value, sys.r_b*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times.states.value, sys.r_b*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, bb.c.r_b*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, bb.c.r_b*ones(length(times)),'Color','b','LineWidth',1.0,'LineStyle','-.');
 
 subplot(3,1,2);hold on;grid on;
 plot(times.states.value,rad2deg(vars.states.theta.value) ,'Color','b','LineWidth',1.5)
 plot(times.states.value,rad2deg(vars.states.dtheta.value),'Color','r','LineWidth',1.5)
 legend({'\theta [deg]','dtheta [deg/s]'})
-plot(times.states.value, rad2deg(  sys.theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times.states.value, rad2deg( -sys.theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
-plot(times.states.value, rad2deg( sys.dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
-plot(times.states.value, rad2deg(-sys.dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg(  bb.c.theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg( -bb.c.theta_b.*ones(length(times))),'Color','b','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg( bb.c.dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, rad2deg(-bb.c.dtheta_b.*ones(length(times))),'Color','r','LineWidth',1.0,'LineStyle','-.');
 
 subplot(3,1,3);hold on;grid on;
 stairs(times.controls.value,vars.controls.tau.value,'Color','g','LineWidth',1.5)
-plot(times.states.value, sys.tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
-plot(times.states.value,-sys.tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value, bb.c.tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
+plot(times.states.value,-bb.c.tau_b.*ones(length(times)),'Color','g','LineWidth',1.0,'LineStyle','-.');
 legend({'\tau [Nm]'})
 xlabel('time');
 

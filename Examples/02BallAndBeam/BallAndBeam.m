@@ -21,7 +21,7 @@ function bb = BallAndBeam()
   bb.eqfun      = @(sh,x,~,u,p) bbeqfun(sh,x,u,p,configuration);
   bb.pathcosts  = @(ch,x,~,u,~,~,~) @bbpathcosts(ch,x,u,configuration);
   bb.animate    = @(ts,rTraj,thetaTraj) bbanimate(ts,rTraj,thetaTraj,configuration);
-  bb.configuration = configuration;
+  bb.c = configuration;
 
 end
 
