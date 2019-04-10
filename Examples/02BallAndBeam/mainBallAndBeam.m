@@ -1,3 +1,4 @@
+function [vars,times,ocl] = mainBallAndBeam
 % Title: Ball and beam problem
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
@@ -10,7 +11,7 @@ ocp = OclOCP(@bb.pathcosts);
 
 ocl = OclSolver([],system,ocp,options);
 
- % bound on end time: 1 <= tf <= 5
+ % bound on end time: 1 <= T <= 5
 ocl.setParameter('T', 1, 5);
 
 % set bounds for initial and endtime

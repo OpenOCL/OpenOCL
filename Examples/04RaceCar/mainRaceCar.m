@@ -1,4 +1,4 @@
-function mainRaceCar
+function [solution,times,ocl] = mainRaceCar 
   % Title: Race Car Problem Example
   %  Authors: Jonas Koenneman & Giovanni Licitra
 

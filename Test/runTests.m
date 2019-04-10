@@ -1,6 +1,7 @@
 function [nFails] = runTests(testExamples,saveLog,suffix)
   % runTests()
   % runTests(testExamples)
+  % runTests(1,1,'computername')
   
   if nargin < 1
     testExamples = false;

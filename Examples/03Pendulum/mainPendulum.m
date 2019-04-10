@@ -1,4 +1,4 @@
-function mainPendulum
+function [vars,times,ocl] = mainPendulum
 
   options = OclOptions;
   options.nlp.controlIntervals = 50;
