@@ -10,7 +10,7 @@ function mainRaceCar
   options.controls_regularization_value = 1e-3;
 
   system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('arrivalcosts', @arrivalcosts, 'pathcosts', @pathconstraints);
+  ocp = OclOCP('arrivalcosts', @arrivalcosts, 'pathconstraints', @pathconstraints);
 
   ocl = OclSolver([],system,ocp,options);
 
