@@ -10,11 +10,11 @@ classdef OclOCP < handle
       % OclOCP(pathCostsFH,arrivalCostsFH,pathConstraintsFH,discreteCostsFH)
       % OclOCP(__,'T',integrationEnd)
       
-      defFhPC = @(varargin)self.pathCosts(varargin{:});
-      defFhAC = @(varargin)self.arrivalCosts(varargin{:});
-      defFhPCon = @(varargin)self.pathConstraints(varargin{:});
-      defFhBC = @(varargin)self.boundaryConditions(varargin{:});
-      defFhDC = @(varargin)self.discreteCosts(varargin{:});
+      defFhPC = @(varargin)[];
+      defFhAC = @(varargin)[];
+      defFhPCon = @(varargin)[];
+      defFhBC = @(varargin)[];
+      defFhDC = @(varargin)[];
       
       p = inputParser;
       p.addOptional('pathcostsOpt',[],@oclIsFunHandleOrEmpty);
@@ -64,25 +64,6 @@ classdef OclOCP < handle
       if nargin==1 && (isa(self.fh.pathCosts,'OclSystem') || isa(self.fh.pathCosts,'System'))
         oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
       end
-    end
-  end
-  
-  methods (Static)
-    %%% overridable methods
-    function pathCosts(~,~,~,~,~,~,~)
-      % pathCosts(self,states,algVars,controls,time,endTime,parameters)
-    end
-    function arrivalCosts(~,~,~,~)
-      % arrivalCosts(self,states,endTime,parameters)
-    end
-    function pathConstraints(~,~,~,~)
-      % pathConstraints(self,states,time,parameters)
-    end
-    function boundaryConditions(~,~,~,~)
-      % boundaryConditions(self,initialStates,finalStates,parameters)
-    end
-    function discreteCosts(~,~)
-      % discreteCost(self,vars)
     end
   end
 end

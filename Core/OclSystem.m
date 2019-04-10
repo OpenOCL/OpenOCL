@@ -30,11 +30,11 @@ classdef OclSystem < handle
       % OclSystem(fhVarSetup,fhEquationSetup)
       % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
 
-      defFhVars = @(varargin)self.setupVariables(varargin{:});
-      defFhEq = @(varargin)self.setupEquations(varargin{:});
-      defFhIC = @(varargin)self.initialConditions(varargin{:});
-      defFhCB = @(varargin)self.simulationCallback(varargin{:});
-      defFhCBS = @(varargin)self.simulationCallbackSetup(varargin{:});
+      defFhVars = @(varargin)[];
+      defFhEq = @(varargin)[];
+      defFhIC = @(varargin)[];
+      defFhCB = @(varargin)[];
+      defFhCBS = @(varargin)[];
 
       p = inputParser;
       p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
