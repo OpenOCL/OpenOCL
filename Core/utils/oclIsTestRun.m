@@ -1,4 +1,4 @@
 function r = oclIsTestRun()
   global testRun
-  return isempty(testRun) || (testRun==false)
+  r = ~isempty(testRun) && testRun;
 end
