@@ -3,8 +3,8 @@ function mainPendulum
   options = OclOptions;
   options.nlp.controlIntervals = 50;
 
-  sys = OclSystem(@varsfun, @eqfun, @icfun, 'cbsetupfun', @simcallbacksetup, 'cbfun', @simcallback);
-  ocp = OclCP(@pathcosts);
+  system = OclSystem(@varsfun, @eqfun, @icfun, 'cbsetupfun', @simcallbacksetup, 'cbfun', @simcallback);
+  ocp = OclOCP(@pathcosts);
 
   ocl = OclSolver([], system, ocp, options);
 
