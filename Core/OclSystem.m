@@ -55,12 +55,12 @@ classdef OclSystem < handle
 
       eqfun = p.Results.eqfunOpt;
       if isempty(eqfun)
-        varsfun = p.Results.eqfun;
+        eqfun = p.Results.eqfun;
       end
 
       icfun = p.Results.icfunOpt;
       if isempty(icfun)
-        varsfun = p.Results.icfun;
+        icfun = p.Results.icfun;
       end
 
       self.fh = struct;
@@ -274,7 +274,7 @@ classdef OclSystem < handle
       end
     end
 
-    function callSimulationCallbackSetup()
+    function callSimulationCallbackSetup(self)
       self.fh.cbsetup();
     end
 

@@ -1,13 +1,11 @@
-function assertException(expr,compStr)
+function assertException(compStr,fh, varargin)
   thrown = false;
   try
-    eval(expr)
+    fh(varargin{:});
   catch e
     thrown = true;
-    if nargin==2
-      assert(contains(e.message,'oclException'),'Not a oclException!');
-      assert(contains(e.message,compStr),'Wrong exception raised');
-    end
+    assert(contains(e.message,'oclException'),'Wrong exception raised.Not an oclException!');
+    assert(contains(e.message,compStr),'Wrong exception raised.');
   end
   if ~thrown
     error('Exception not raised');
