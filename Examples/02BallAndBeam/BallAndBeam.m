@@ -1,5 +1,9 @@
-function bb = BallAndBeam()
+% This file defines the system and optimal control problem
+% for the Ball and Beam example.
 
+function bb = BallAndBeam()
+  % Returns a struct with the parameters (configuration)
+  % and the function handles to the system and ocp functions.
   configuration = struct;
   configuration.r_b      = 1;           % beam length [m]
   configuration.theta_b  = deg2rad(30); % max angle [deg]
@@ -19,8 +23,8 @@ function bb = BallAndBeam()
   bb = struct;
   bb.varsfun    = @(sh) bbvarsfun(sh, configuration);
   bb.eqfun      = @(sh,x,~,u,p) bbeqfun(sh,x,u,p,configuration);
-  bb.pathcosts  = @(ch,x,~,u,~,~,~) @bbpathcosts(ch,x,u,configuration);
-  bb.animate    = @(ts,rTraj,thetaTraj) bbanimate(ts,rTraj,thetaTraj,configuration);
+  bb.pathcosts  = @(ch,x,~,u,~,~,~) bbpathcosts(ch,x,u,configuration);
+  bb.animate    = @(t,r,theta) bbanimate(t,r,theta,configuration);
   bb.c = configuration;
 
 end
@@ -46,39 +50,41 @@ function bbpathcosts(ch,x,u,c)
   ch.add( u.'*c.R*u );
 end
 
-function bbanimate(ts,rTrajectory,thetaTrajectory,c)
+function bbanimate(times,rTrajectory,thetaTrajectory,c)
 
-%% Initialize animation
-xbeam = c.L*cos(thetaTrajectory(1));
-ybeam = c.L*sin(thetaTrajectory(1));
-Xbeam = [-xbeam,xbeam];
-Ybeam = [-ybeam,ybeam];
-Xball = rTrajectory(1)*cos(thetaTrajectory(1));
-Yball = rTrajectory(1)*sin(thetaTrajectory(1));
-
-figure;hold on;grid on;
-Beam = plot(Xbeam,Ybeam,'LineWidth',4,'Color','b');
-plot(0,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',22)
-Ball = plot(Xball,Yball,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',22);
-axis([-1.2, 1.2, -0.7, 0.7]);
-xlabel('x [m]');ylabel('y [m]');
-
-for i = 2:1:length(time)
-  xbeam = c.L*cos(thetaTrajectory(i));
-  ybeam = c.L*sin(thetaTrajectory(i));
+  % Initialize animation
+  xbeam = c.L*cos(thetaTrajectory(1));
+  ybeam = c.L*sin(thetaTrajectory(1));
   Xbeam = [-xbeam,xbeam];
   Ybeam = [-ybeam,ybeam];
-  Xball = rTrajectory(i)*cos(thetaTrajectory(i));
-  Yball = rTrajectory(i)*sin(thetaTrajectory(i));
+  Xball = rTrajectory(1)*cos(thetaTrajectory(1));
+  Yball = rTrajectory(1)*sin(thetaTrajectory(1));
 
-  set(Beam, 'XData', Xbeam);
-  set(Beam, 'YData', Ybeam);
-  set(Ball, 'XData', Xball);
-  set(Ball, 'YData', Yball);
+  figure;hold on;grid on;
+  Beam = plot(Xbeam,Ybeam,'LineWidth',4,'Color','b');
+  plot(0,0,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',22)
+  Ball = plot(Xball,Yball,'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',22);
+  axis([-1.2, 1.2, -0.7, 0.7]);
+  xlabel('x [m]');ylabel('y [m]');
 
-  if ~oclIsTestRun()
-    pause(ts);
+  for i = 2:1:length(times)
+    xbeam = c.L*cos(thetaTrajectory(i));
+    ybeam = c.L*sin(thetaTrajectory(i));
+    Xbeam = [-xbeam,xbeam];
+    Ybeam = [-ybeam,ybeam];
+    Xball = rTrajectory(i)*cos(thetaTrajectory(i));
+    Yball = rTrajectory(i)*sin(thetaTrajectory(i));
+
+    set(Beam, 'XData', Xbeam);
+    set(Beam, 'YData', Ybeam);
+    set(Ball, 'XData', Xball);
+    set(Ball, 'YData', Yball);
+
+    if ~oclIsTestRun()
+      pause(times(i)-times(i-1));
+    end
+
+    drawnow
   end
 
-  drawnow
 end
