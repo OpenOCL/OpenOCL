@@ -1,11 +1,8 @@
 function testOclOCP
-  
-oclDir = getenv('OPENOCL_PATH');
-addpath(fullfile(oclDir,'Test','Classes'));
 
 % ocp empty test
-ocp = OclTestOcpEmpty;
-s = OclTestSystemEmpty;
+ocp = OclOCP();
+s = OclSystem(@emptyVars,@emptyEq);
 s.setup();
 opt = OclOptions;
 opt.controls_regularization = false;
@@ -24,8 +21,9 @@ assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % ocp valid test
-ocp = OclTestOcpValid;
-s = OclTestSystemValid();
+ocp = OclOCP(@validPathCosts, @validArrivalCosts, @validPathConstraints, ...
+             @validBoundaryConditions, @validDiscreteCosts);
+s = OclSystem(@validVars,@validEq);
 N = 2;
 nv = (N+1)*s.nx+N*s.nu;
 h = OclOcpHandler(1,s,ocp,opt);
@@ -55,6 +53,113 @@ assertEqual(val,[-1,1,-4].');
 
 c = h.discreteCostsFun.evaluate(ones(nv,1));
 assertEqual(c, nv);
-
-rmpath(fullfile(oclDir,'Test','Classes'));
   
+end
+
+function emptyVars(self)    
+end
+
+function emptyEq(self,x,z,u,p)     
+end
+
+function validVars(self)
+  self.addState('a');
+  self.addState('b',1);
+  self.addState('c',7);
+  self.addState('d',[1,1]);
+  self.addState('e',[1,4]);
+  self.addState('f',[5,1]);
+  self.addState('g',[3,4]);
+
+  self.addState('ttt')
+
+  self.addControl('a'); % same as state!? (conflict bounds in Simultaneous)
+  self.addControl('h',1);
+  self.addControl('i',7);
+  self.addControl('j',[1,1]);
+  self.addControl('k',[1,4]);
+  self.addControl('l',[5,1]);
+  self.addControl('m',[3,4]);
+
+  self.addAlgVar('n');
+  self.addAlgVar('o',1);
+  self.addAlgVar('p',7);
+  self.addAlgVar('q',[1,1]);
+  self.addAlgVar('r',[1,4]);
+  self.addAlgVar('s',[5,1]);
+  self.addAlgVar('t',[3,4]);
+
+  self.addParameter('u');
+  self.addParameter('v',1);
+  self.addParameter('w',7);
+  self.addParameter('x',[1,1]);
+  self.addParameter('y',[1,4]);
+  self.addParameter('z',[5,1]);
+  self.addParameter('aa',[3,4]);
+end
+function validEq(self,x,z,u,p)
+
+  self.setODE('g',p.aa+z.t);
+  self.setODE('b',z.n);
+  self.setODE('a',p.u);
+  self.setODE('d',x.a+x.b*z.o+p.u*p.x);
+  self.setODE('c',z.p);
+  self.setODE('f',z.s);
+  self.setODE('e',u.k);
+
+  self.setODE('ttt',1);
+
+  % 31x1
+  self.setAlgEquation(reshape(p.y,4,1));
+  self.setAlgEquation(reshape(z.t,12,1));
+  self.setAlgEquation(reshape(x.g,12,1)+[u.a,u.h,u.j,4,5,6,z.n,z.q,p.u,10,11,12].');
+  self.setAlgEquation(p.y(:,1:3,:));
+end
+
+function validPathCosts(self,x,z,u,p)
+  self.add(x.a); % 1
+  self.add(x.c.'*x.c); % 7
+  self.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+p.T); % 1e-3*12+26
+  self.add(0); % 0 ([]) or () ? invalid!
+  self.add(-1); % -1
+end
+
+function validArrivalCosts(self,xf,p)
+  self.add(xf.d);
+  self.add(0);
+  self.add(-1);
+  self.add(-1*p.v*p.T);
+end
+
+function validPathConstraints(self,x,p)
+
+  % scalar with constant
+  self.add(x.a,'<=',1);
+  self.add(x.a,'>=',1);
+  self.add(x.a,'==',1);
+  self.add(1,'==',x.a);
+  self.add(1,'>=',x.a);
+  self.add(1,'<=',x.ttt+p.aa(1,1,1));
+
+  % vector with vector
+  self.add(x.f,'>=',2+ones(5,1));
+
+  % scalar with scalar
+  self.add(x.d,'==',x.b);
+
+  % matrix 3x4 with scalar
+  self.add(x.g,'<=',4);
+
+  % matrix with matrix 3x4
+  self.add(x.g,'<=',p.aa);
+end
+
+function validBoundaryConditions(self,x0,xf,p)
+  self.add(x0.a,'==',xf.a);
+  self.add(x0.a,'>=',xf.a*p.x);
+  self.add(x0.b,'<=',xf.a+xf.a);
+end
+
+function validDiscreteCosts(self,vars)
+  self.add(sum(vars));
+end

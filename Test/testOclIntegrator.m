@@ -1,12 +1,8 @@
 function testOclIntegrator
-  
-oclDir = getenv('OPENOCL_PATH');
-addpath(fullfile(oclDir,'Test','Classes'));
 
-s = OclTestLinearSystem;
+% linear system defined below
+s = OclSystem(@linearVars,@linearEq);
 s.setup();
-
-
 
 d = 2;
 integ = CollocationIntegrator(s,d);
@@ -68,4 +64,18 @@ vEnd = v0 + u*T;
 
 assertAlmostEqual(x,[pEnd;vEnd],'Integrator test (constant acceleration) failed',0.1);
 
-rmpath(fullfile(oclDir,'Test','Classes'));
+end
+
+function linearVars(self)
+  self.addState('p');
+  self.addState('v');
+
+  self.addControl('F');
+end
+
+function linearEq(self,x,z,u,p)
+  m = 1;
+
+  self.setODE('p', x.v);
+  self.setODE('v', u.F/m);
+end
