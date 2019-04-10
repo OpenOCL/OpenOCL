@@ -1,4 +1,4 @@
-function mainCartPole
+function [sol,times,ocl] = mainCartPole  
 
   options = OclOptions();
   options.nlp.controlIntervals = 50;

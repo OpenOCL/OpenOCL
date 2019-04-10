@@ -17,12 +17,12 @@ function bb = BallAndBeam()
   configuration.R = 0.05;               % radius ball
   configuration.g = 9.81;               % gravity
 
-  configuration.Q = eye(4);             % LS path costs states weighting matrix
-  configuration.R = 1;             % LS path costs controls weighting matrix
+  configuration.costQ = eye(4);             % LS path costs states weighting matrix
+  configuration.costR = 1;             % LS path costs controls weighting matrix
 
   bb = struct;
   bb.varsfun    = @(sh) bbvarsfun(sh, configuration);
-  bb.eqfun      = @(sh,x,~,u,p) bbeqfun(sh,x,u,p,configuration);
+  bb.eqfun      = @(sh,x,~,u,p) bbeqfun(sh,x,u,configuration);
   bb.pathcosts  = @(ch,x,~,u,~,~,~) bbpathcosts(ch,x,u,configuration);
   bb.animate    = @(t,r,theta) bbanimate(t,r,theta,configuration);
   bb.c = configuration;
@@ -38,7 +38,7 @@ function bbvarsfun(sh, c)
   sh.addControl('tau',  'lb', -c.tau_b,    'ub', c.tau_b    );
 end
 
-function bbeqfun(sh,x,u,p,c)
+function bbeqfun(sh,x,u,c)
   sh.setODE('theta' ,x.dtheta);
   sh.setODE('dtheta',(u.tau - c.m*c.g*x.r*cos(x.theta) - 2*c.m*x.r*x.dr*x.dtheta)/(c.I + c.m*x.r^2));
   sh.setODE('r'     ,x.dr);
@@ -46,8 +46,8 @@ function bbeqfun(sh,x,u,p,c)
 end
 
 function bbpathcosts(ch,x,u,c)
-  ch.add( x.'*c.Q*x );
-  ch.add( u.'*c.R*u );
+  ch.add( x.'*c.costQ*x );
+  ch.add( u.'*c.costR*u );
 end
 
 function bbanimate(times,rTrajectory,thetaTrajectory,c)

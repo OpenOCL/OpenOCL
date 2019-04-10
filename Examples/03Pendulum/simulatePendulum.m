@@ -1,4 +1,4 @@
-function simulatePendulum
+function xVec = simulatePendulum
 
 % Create system and simulator
 system = OclSystem(@varsfun, @eqfun, @icfun, 'cbsetupfun', @simcallbacksetup, 'cbfun', @simcallback);
@@ -21,7 +21,7 @@ times = 0:0.1:4;
 controlsSeries = simulator.getControlsVec(length(times)-1);
 controlsSeries.F.set(10);
 
-[~,~,~] = simulator.simulate(states,times,controlsSeries,p);
+[xVec,~,~] = simulator.simulate(states,times,controlsSeries,p);
 
 end
 

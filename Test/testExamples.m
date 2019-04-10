@@ -36,8 +36,8 @@ assert(all(abs(sol.controls.F.value - ...
 o1 = ocl.timeMeasures;
 
 % test ball and beam example problem
-mainBallAndBeam
-assert(all(abs(vars.controls.tau.value - ...
+[sol,~,ocl] = mainBallAndBeam;
+assert(all(abs(sol.controls.tau.value - ...
   [-20.0000
   -20.0000
   -16.3269
@@ -93,8 +93,8 @@ o2 = ocl.timeMeasures;
 
 
 % test race car problem
-mainRaceCar
-assertAlmostEqual(solution.controls.dFx(1,:,1:10:end).value,...
+[sol,~,ocl] = mainRaceCar;
+assertAlmostEqual(sol.controls.dFx(1,:,1:10:end).value,...
       [-0.00554603;0.548809;0.0892633;0.322054;0.362561],...
       'Solve RaceCar Test failed.');
 
@@ -102,7 +102,7 @@ o3 = ocl.timeMeasures;
  
 % test pendulum simulation
 simTic = tic;
-simulatePendulum
+statesVec = simulatePendulum;
 assertAlmostEqual(statesVec.p(1,:,1:10:41).value, ...
                   [-0.545397;-0.998707;-0.352623;-0.944457;0], ...
                   'PendulumSim Test failed.');
@@ -111,9 +111,8 @@ o4.simulationTest = toc(simTic);
 
 
 % test cart pole
-mainCartPole
+[sol,~,ocl] = mainCartPole;
 res = sol.states.theta(:,:,1:10:end).value;
 truth = [3.14159;2.0802;1.11827;0.264782;-0.523718;4.00847e-17];
 assertAlmostEqual(res, truth, 'Cart pole test failed.');
-o5 = struct;
 o5 = ocl.timeMeasures;
