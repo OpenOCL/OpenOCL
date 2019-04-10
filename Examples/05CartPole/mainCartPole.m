@@ -5,7 +5,7 @@ function mainCartPole
   options.nlp.collocationOrder = 3;
 
   system = OclSystem('varsfun',@varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('arrivalfun', @arrivalcosts);
+  ocp = OclOCP('arrivalcosts', @arrivalcosts);
   ocl = OclSolver([], system, ocp, options);
 
   p0 = 0; v0 = 0;
