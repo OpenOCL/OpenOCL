@@ -172,9 +172,9 @@ classdef Simultaneous < handle
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path concstraints
-      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1)  pc_eq_arr].';
-      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1)   pc_lb_arr].';
-      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1)   pc_ub_arr].';
+      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr].';
+      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr].';
+      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr].';
       
       shooting_eq    = [shooting_eq(:);    int_eq_arr(:,self.N); continuity(:,self.N)];
       shooting_eq_lb = [shooting_eq_lb(:); zeros(self.ni,1);     zeros(self.nx,1)    ];
