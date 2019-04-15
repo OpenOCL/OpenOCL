@@ -7,7 +7,7 @@ function [solution,times,ocl] = mainVanDerPol
   options = OclOptions();
   options.nlp.controlIntervals = CONTROL_INTERVALS;
   options.nlp.collocationOrder = 3;
-  options.nlp.ipopt.linear_solver = 'ma27';
+  options.nlp.ipopt.linear_solver = 'mumps';
   options.nlp.solver = 'ipopt';
 
   system = OclSystem(@varsfun,@eqfun);
