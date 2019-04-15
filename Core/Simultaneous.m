@@ -129,119 +129,87 @@ classdef Simultaneous < handle
       
       % h_normalized is the first of the controls
       hNormalized = nlpVars(self.nx+self.ni+1:nci:self.N*nci); 
-      % T is the first of the parameters
-      T = nlpVars(self.nv-self.np+1);
       
-      hControls = hNormalized*T;
+      % Final time tf is the first of the parameters
+      tf = nlpVars(self.nv-self.np+1);
       
-      parameters = nlpVars(self.nv-self.np+1:self.nv);
+      H = hNormalized*tf;
+      p = nlpVars(self.nv-self.np+1:self.nv);
       
-      % N+1 state times
-      % N integrator times
-      % N control times
-      times = cell((self.N+1)+self.N+self.N,1);
+      % Finds indizes of the variables in the NlpVars array.
+      % cellfun is similar to python list comprehension 
+      % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nx)', 1:nci:self.nv-self.np, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.ni)', self.nx+1:nci:self.nv-self.np, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nu)', self.nx+self.ni+1:nci:self.nv-self.np, 'UniformOutput', false));
       
-      % N integrator equations
-      % N+1 path constraints
-      % N continuity constraints
-      % 1 boundary condition
-      nc = 3*self.N+2;
-      constraints = cell(nc,1);
-      constraints_LB = cell(nc,1);
-      constraints_UB = cell(nc,1);
+      X = nlpVars(X_indizes);
+      I = nlpVars(I_indizes);
+      U = nlpVars(U_indizes);
+      P = repmat(p,1,self.N);
       
-      costs = 0;
-      time = 0;
-      initialStates = nlpVars(1:self.nx);
-      thisStates = initialStates;
-      k_vars = self.nx;
+      T0 = cumsum(hControls);
       
+      % path constraints on first and last state
+      pc0 = {};
+      pc0_lb = {};
+      pc0_ub = {};
+      pcf = {};
+      pcf_lb = {};
+      pcf_ub = {};
       if self.options.path_constraints_at_boundary
-        [pathConstraint,lb,ub] = ...
-              self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                          parameters);   
-        constraints{1} = pathConstraint;
-        constraints_LB{1} = lb;
-        constraints_UB{1} = ub;
-      end                                          
+        [pc0, pc0_lb, pc0_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,1), p);   
+        [pcf,pcf_lb,pcf_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,end), p);   
+      end         
       
-      for k=1:self.N
-        k_integratorEquations = 3*(k-1)+2;
-        k_pathConstraints = 3*(k-1)+3;
-        k_continuity = 3*(k-1)+4;
-        
-        kt_states = 3*(k-1)+1;
-        kt_integrator = 3*(k-1)+2;
-        kt_controls = 3*(k-1)+3;
-        
-        times{kt_states} = time;
-        times{kt_controls} = time;
-        
-        thisIntegratorVars = nlpVars(k_vars+1:k_vars+self.ni);
-        k_vars = k_vars+self.ni;
-        thisControls = nlpVars(k_vars+1:k_vars+self.nu);
-        k_vars = k_vars+self.nu;
-        
-        % add integrator equations
-        [endStates, ~, integrationCosts, integratorEquations, integratorTimes] = ...
-              self.integratorFun.evaluate(thisStates,...
-                                          thisIntegratorVars,...
-                                          thisControls,...
-                                          time,...
-                                          hControls(k),...
-                                          parameters);
-                                          
-        times{kt_integrator} = integratorTimes;
-                                          
-        constraints{k_integratorEquations} = integratorEquations;
-        constraints_LB{k_integratorEquations} = zeros(size(integratorEquations));
-        constraints_UB{k_integratorEquations} = zeros(size(integratorEquations));
-        
-        costs = costs + integrationCosts;
-        
-        % go to next time gridpoint
-        thisStates = nlpVars(k_vars+1:k_vars+self.nx);
-        k_vars = k_vars+self.nx;
-        
-        if k~=self.N || self.options.path_constraints_at_boundary
-          % add path constraints
-          [pathConstraint,lb,ub] = ...
-                self.ocpHandler.pathConstraintsFun.evaluate(thisStates,...
-                                                            parameters);                                   
-          constraints{k_pathConstraints} = pathConstraint;
-          constraints_LB{k_pathConstraints} = lb;
-          constraints_UB{k_pathConstraints} = ub;
-        end
-        
-        % continuity equation
-        continuity_constraint = endStates - thisStates;
-        constraints{k_continuity} = continuity_constraint;
-        constraints_LB{k_continuity} = zeros(size(continuity_constraint));
-        constraints_UB{k_continuity} = zeros(size(continuity_constraint));
-        
-        time = time + hControls(k);
-        
-      end
+      [xend_arr, ~, cost_arr, int_eq_arr, ~] = self.integratorMap(X, I, U, T0, H, P);
+      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathConstraintsMap(X, P);   
       
-      times{end} = time;
-      times = vertcat(times{:});
+      % continuity
+      continuity = xend_arr - X(:,2:end);
+      continuity_lb = zeros(numel(continuity),1);
+      continuity_ub = zeros(numel(continuity),1);
+      
+      % merge integrator equations and path concstraints
+      shooting_eq = [int_eq_arr,pc_eq_arr(1:end-1)].';
+      shooting_eq_lb = [zeros(numel(int_eq_arr),1),pc_lb_arr(1:end-1)].';
+      shooting_eq_ub = [zeros(numel(int_eq_arr),1),pc_ub_arr(1:end-1)].';
+      
+      shooting_eq = [shooting_eq(:); pc_eq_arr(end)];
+      shooting_eq_lb = [shooting_eq_lb(:); pc_lb_arr(end)];
+      shooting_eq_ub = [shooting_eq_ub(:); pc_ub_arr(end)];
       
       % add terminal cost
-      terminalCosts = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,parameters);
-      costs = costs + terminalCosts;
+      costf = self.ocpHandler.arrivalCostsFun.evaluate(thisStates,p);
 
       % add boundary constraints
-      [boundaryConditions,lb,ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialStates,thisStates,parameters);
-      constraints{nc} = boundaryConditions;
-      constraints_LB{nc} = lb;
-      constraints_UB{nc} = ub;
+      [bc,bc_lb,bc_ub] = self.ocpHandler.boundaryConditionsFun.evaluate(initialStates,thisStates,p);
       
-      costs = costs + self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
+      costD = self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
       
-      constraints = vertcat(constraints{:});
-      constraints_LB = vertcat(constraints_LB{:});
-      constraints_UB = vertcat(constraints_UB{:});
+      constraints = vertcat(pc0, shooting_eq(:), pcf, bc);
+      constraints_LB = vertcat(pc0_lb, shooting_eq_lb, pcf_lb, bc_lb);
+      constraints_UB = vertcat(pc0_ub, shooting_eq_ub, pcf_ub, bc_ub);
+      
+      % sum all costs
+      costs = sum(cost_arr) + costf + costD;
+      
     end % getNLPFun
+    
+    function [int_eq, cont_eq, pc_eq, pc_lb, pc_ub, cost] = controlIntervalEquations(x, i, u, t0, h, p)
+      
+      % add integrator equations
+      [xend, ~, cost, int_eq, ~] = self.integratorFun.evaluate(x, i, u, t0, h, p);
+          
+      % add path constraints
+      [pc_eq, pc_lb, pc_ub] = self.ocpHandler.pathConstraintsFun.evaluate(x, p);         
+                                                      
+      % continuity equation
+      cont_eq = xend - x;
+    end
+    
+    
+    
   end % methods
 end % classdef
 
