@@ -11,6 +11,9 @@ classdef Simultaneous < handle
     nv
     system
     options
+    
+    integratorMap
+    pathconstraintsMap
   end
   
   properties(Access = private)
@@ -54,6 +57,9 @@ classdef Simultaneous < handle
 
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
+      
+      self.integratorMap = integrator.integratorFun.map(self.N);
+      self.pathconstraintsMap = ocpHandler.pathConstraintsFun.map(self.N);
       
     end
     
@@ -163,7 +169,7 @@ classdef Simultaneous < handle
       end         
       
       [xend_arr, ~, cost_arr, int_eq_arr, ~] = self.integratorMap(X, I, U, T0, H, P);
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathConstraintsMap(X, P);   
+      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap(X, P);   
       
       % continuity
       continuity = xend_arr - X(:,2:end);
@@ -194,22 +200,7 @@ classdef Simultaneous < handle
       % sum all costs
       costs = sum(cost_arr) + costf + costD;
       
-    end % getNLPFun
-    
-    function [int_eq, cont_eq, pc_eq, pc_lb, pc_ub, cost] = controlIntervalEquations(x, i, u, t0, h, p)
-      
-      % add integrator equations
-      [xend, ~, cost, int_eq, ~] = self.integratorFun.evaluate(x, i, u, t0, h, p);
-          
-      % add path constraints
-      [pc_eq, pc_lb, pc_ub] = self.ocpHandler.pathConstraintsFun.evaluate(x, p);         
-                                                      
-      % continuity equation
-      cont_eq = xend - x;
-    end
-    
-    
-    
+    end % getNLPFun    
   end % methods
 end % classdef
 
