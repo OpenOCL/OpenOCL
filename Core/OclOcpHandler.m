@@ -36,32 +36,34 @@ classdef OclOcpHandler < handle
       self.endBounds = struct;
       
       if length(T) == 1
-        hControlsNormalized = 1/N;
+        % T = final time
+        h = T/N;
+        T0 = linspace(0,T-h,N);
       elseif length(T) == N+1
-        hControlsNormalized = (T(2:N+1)-T(1:N)) / T(end);
-        T = T(end);
+        % T = N+1 timepoints at states
+        h = (T(2:N+1)-T(1:N));
+        T0 = T(1:end-1);
       elseif length(T) == N
-        hControlsNormalized = T/sum(T);
-        T = sum(T);
+        % T = N timesteps
+        h = T;
+        T0 = linspace(0,sum(T)-h,N);
       elseif isempty(T)
-        hControlsNormalized = 1/N;
+        % T = [] free end time
+        h = 1/N;
         T = [];
       else
         oclError('Dimension of T does not match the number of control intervals.')
       end
       
-      self.setBounds('h_normalized',hControlsNormalized);
+      self.setBounds('h',h);
       if ~isempty(T)
-        self.setBounds('T',T)
+        self.setBounds('T',T0)
       end
       
     end
     
     function setup(self)
       % variable sizes
-      
-      self.system.addControl('h_normalized');
-      self.system.addParameter('T');
       
       self.system.setup();
       
@@ -147,6 +149,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathCosts(pcHandler,x,z,u,p);
+      
       r = pcHandler.value;
     end
     
@@ -156,6 +159,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.arrivalCosts(acHandler,x,p);
+      
       r = acHandler.value;
     end
     
@@ -165,6 +169,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathConstraints(pathConstraintHandler,x,p);
+      
       val = pathConstraintHandler.values;
       lb = pathConstraintHandler.lowerBounds;
       ub = pathConstraintHandler.upperBounds;
@@ -177,6 +182,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.boundaryConditions(bcHandler,x0,xF,p);
+      
       val = bcHandler.values;
       lb = bcHandler.lowerBounds;
       ub = bcHandler.upperBounds;
@@ -185,7 +191,9 @@ classdef OclOcpHandler < handle
     function r = getDiscreteCosts(self,v)
       dcHandler = OclCost(self.ocp);
       v = Variable.create(self.nlpVarsStruct,v);
+      
       self.ocp.fh.discreteCosts(dcHandler,v);
+      
       r = dcHandler.value;
     end
 

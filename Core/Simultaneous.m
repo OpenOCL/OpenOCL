@@ -36,19 +36,25 @@ classdef Simultaneous < handle
       self.ni = prod(integrator.varsStruct.size());
       self.nu = prod(system.controlsStruct.size());
       self.np = prod(system.parametersStruct.size());
-      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu+self.np;
+      
+      % N control interval which each have states, integrator vars,
+      % controls, parameters, and time.
+      % Ends with a single state.
+      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu + N*self.np + N+ N;
+      
       self.nit = integrator.nt; % number of integrator timepoints
       
       self.integratorFun = integrator.integratorFun;
       
       self.varsStruct = OclStructure();
-      self.varsStruct.addRepeated({'states','integrator','controls'},...
-                                      {system.statesStruct,...
-                                      integrator.varsStruct,...
-                                      system.controlsStruct},self.N);
+      self.varsStruct.addRepeated({'states','integrator','controls','parameters','h','T'}, ...
+                                  {system.statesStruct, ...
+                                   integrator.varsStruct, ...
+                                   system.controlsStruct, ...
+                                   system.parametersStruct, ...
+                                   OclMatrix([1,1]), ...
+                                   OclMatrix([1,1])}, self.N);
       self.varsStruct.add('states',system.statesStruct);
-      
-      self.varsStruct.add('parameters',system.parametersStruct);
       
       self.timesStruct = OclStructure();
       self.timesStruct.addRepeated({'states','integrator','controls'},...
@@ -128,29 +134,25 @@ classdef Simultaneous < handle
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
   
       % number of variables in one control interval
-      nci = self.nx+self.ni+self.nu;
-      
-      % h_normalized is the first of the controls
-      hNormalized = nlpVars(self.nx+self.ni+1:nci:self.N*nci).'; 
-      
-      % Final time tf is the first of the parameters
-      tf = nlpVars(self.nv-self.np+1);
-      
-      H = hNormalized*tf;
-      p = nlpVars(self.nv-self.np+1:self.nv);
+      % + 1 for the end time + 1 for the normalized timestep
+      nci = self.nx+self.ni+self.nu+self.np+1+1;
       
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
       % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nx-1)', 1:nci:self.nv-self.np, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.ni-1)', self.nx+1:nci:self.nv-self.np, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nu-1)', self.nx+self.ni+1:nci:self.nv-self.np, 'UniformOutput', false));
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nx-1)', 1:nci:self.nv, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.ni-1)', self.nx+1:nci:self.nv, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nu-1)', self.nx+self.ni+1:nci:self.nv, 'UniformOutput', false));
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.np-1)', self.nx+self.ni+self.nu+1:nci:self.nv, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', self.nx+self.ni+self.nu+self.np+1:nci:self.nv, 'UniformOutput', false));
+      T0_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', self.nx+self.ni+self.nu+self.np+1+1:nci:self.nv, 'UniformOutput', false));
       
-      X = nlpVars(X_indizes);
-      I = nlpVars(I_indizes);
-      U = nlpVars(U_indizes);
-      
-      T0 = cumsum(H);
+      X = reshape(nlpVars(X_indizes), self.nx, self.N+1);
+      I = reshape(nlpVars(I_indizes), self.ni, self.N);
+      U = reshape(nlpVars(U_indizes), self.nu, self.N);
+      P = reshape(nlpVars(P_indizes), self.np, self.N);
+      H = reshape(nlpVars(H_indizes), 1      , self.N);
+      T0 = reshape(nlpVars(T0_indizes), 1    , self.N);
       
       % path constraints on first and last state
       pc0 = {};
@@ -160,42 +162,59 @@ classdef Simultaneous < handle
       pcf_lb = {};
       pcf_ub = {};
       if self.options.path_constraints_at_boundary
-        [pc0, pc0_lb, pc0_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,1), p);   
-        [pcf,pcf_lb,pcf_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,end), p);   
+        [pc0, pc0_lb, pc0_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,1), P(:,1));
+        [pcf,pcf_lb,pcf_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,end), P(:,end));
       end         
       
-      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = self.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, repmat(p, 1, self.N));
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), repmat(p, 1, self.N-1));   
+      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = self.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, P);
+      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), P(2:end));
+      
+      % parameters equations
+      % p0 = p1 = p2 ...
+      %param_eq = P(:,2:end) - P(:,1:end-1);
+      %param_eq_lb = zeros(self.np, self.N-1);
+      %param_eq_ub = zeros(self.np, self.N-1);
+      
+      % timepoints equations
+      % T1 < T2 < T3 < ... < TN
+      tp_eq = T0(:,2:end) - T0(:,1:end-1);
+      tp_eq_lb = zeros(1, self.N-1);
+      tp_eq_ub = inf*ones(1, self.N-1);
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path concstraints
-      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr];
-      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr];
-      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr];
+      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  tp_eq];
+      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  tp_eq_lb];
+      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  tp_eq_ub];
       
+      % reshape shooting equations to column vector, append final integrator and
+      % continuity equations
       shooting_eq    = [shooting_eq(:);    int_eq_arr(:,self.N); continuity(:,self.N)];
       shooting_eq_lb = [shooting_eq_lb(:); zeros(self.ni,1);     zeros(self.nx,1)    ];
       shooting_eq_ub = [shooting_eq_ub(:); zeros(self.ni,1);     zeros(self.nx,1)    ];
       
-      % add terminal cost
-      costf = self.ocpHandler.arrivalCostsFun.evaluate(X(:,end),p);
-
-      % add boundary constraints
-      [bc,bc_lb,bc_ub] = self.ocpHandler.boundaryConditionsFun.evaluate(X(:,1),X(:,end),p);
+      % boundary constraints
+      [bc,bc_lb,bc_ub] = self.ocpHandler.boundaryConditionsFun.evaluate(X(:,1),X(:,end),P(:,1));
       
-      costD = self.ocpHandler.discreteCostsFun.evaluate(nlpVars);    
-      
+      % collect all constraints
       constraints = vertcat(pc0, shooting_eq, pcf, bc);
-      constraints_LB = vertcat(pc0_lb, full(casadi.DM(shooting_eq_lb)), pcf_lb, bc_lb);
-      constraints_UB = vertcat(pc0_ub, full(casadi.DM(shooting_eq_ub)), pcf_ub, bc_ub);
+      constraints_LB = vertcat(pc0_lb, shooting_eq_lb, pcf_lb, bc_lb);
+      constraints_UB = vertcat(pc0_ub, shooting_eq_ub, pcf_ub, bc_ub);
+      
+      % terminal cost
+      costf = self.ocpHandler.arrivalCostsFun.evaluate(X(:,end),P(:,end));
+      
+      % discrete cost
+      costD = self.ocpHandler.discreteCostsFun.evaluate(nlpVars); 
       
       % sum all costs
       costs = sum(cost_arr) + costf + costD;
       
+      % times
       times = [T0; int_times; T0];
-      times = [times(:);tf];
+      times = [times(:); T0(end)+H(end)];
       
     end % getNLPFun    
   end % methods
