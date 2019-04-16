@@ -19,24 +19,11 @@ classdef CasadiNLPSolver < NLPSolver
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      vStruct = nlp.varsStruct.flat.children;
-      vars = cell(nlp.nv,1);
-      names = fieldnames(vStruct);
-      for i=1:length(names)
-        id = names{i};
-        el = vStruct.(id);
-        for j=1:size(el.positions,3)
-          pos = el.positions(:,:,j);
-          name = [id,'_',num2str(j)];
-          if options.system_casadi_mx
-            var = casadi.MX.sym(name,numel(pos));
-          else
-            var = casadi.SX.sym(name,numel(pos));
-          end
-          vars{pos(1)}=var;
-        end
+      if options.nlp_casadi_mx
+        vars = casadi.MX.sym('v', nlp.nv,1);
+      else
+        vars = casadi.SX.sym('v', nlp.nv,1);
       end
-      vars = vertcat(vars{:});
 
       % call nlp function
       [costs,constraints,constraints_LB,constraints_UB,~] = nlp.nlpFun.evaluate(vars);
