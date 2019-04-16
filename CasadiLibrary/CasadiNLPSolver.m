@@ -104,7 +104,7 @@ classdef CasadiNLPSolver < NLPSolver
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
       
-      times = Variable.createNumeric(self.nlp.timesStruct,times);
+      times = Variable.createNumeric(self.nlp.timesStruct,full(times));
 
       initialGuess.set(solution);
       outVars = initialGuess;
