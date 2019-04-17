@@ -3,6 +3,8 @@ function [sol,times,ocl] = mainCartPole
   options = OclOptions();
   options.nlp.controlIntervals = 50;
   options.nlp.collocationOrder = 3;
+  
+  options.nlp.solver = 'ipopt';
 
   system = OclSystem('varsfun',@varsfun, 'eqfun', @eqfun);
   ocp = OclOCP('arrivalcosts', @arrivalcosts);
@@ -10,6 +12,7 @@ function [sol,times,ocl] = mainCartPole
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
+  T0 = 2;
 
   ocl.setInitialBounds('p', p0);
   ocl.setInitialBounds('v', v0);
@@ -25,6 +28,13 @@ function [sol,times,ocl] = mainCartPole
 
   % Get and set initial guess
   initialGuess = ocl.getInitialGuess();
+  
+  initialGuess.states.p = p0;
+  initialGuess.states.v = v0;
+  initialGuess.states.theta = theta0;
+  initialGuess.states.omega = omega0;
+  initialGuess.h = T0/options.nlp.controlIntervals;
+  initialGuess.states.time = linspace(0,T0,options.nlp.controlIntervals+1);
 
   % Run solver to obtain solution
   [sol,times] = ocl.solve(initialGuess);

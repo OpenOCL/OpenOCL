@@ -64,6 +64,9 @@ classdef CasadiNLPSolver < NLPSolver
       constructSolverTic = tic;
       casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
                                    self.nlpData.casadiNLP, opts);
+                                 
+%       casadiSolver = casadi.nlpsol('my_solver', 'blocksqp',... 
+%                                    self.nlpData.casadiNLP, struct);
       constructSolverTime = toc(constructSolverTic);
       
       args = struct;
