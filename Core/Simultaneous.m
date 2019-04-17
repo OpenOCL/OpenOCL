@@ -167,21 +167,27 @@ classdef Simultaneous < handle
       [xend_arr, ~, cost_arr, int_eq_arr, int_times] = self.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, P);
       [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), P(:,2:end));
                 
-      % normalized timesteps (sum of timesteps is 1)
-      H_norm = self.ocpHandler.H_norm;
-      
       % timestep constraints
-      % h0 = h_0_hat / h_1_hat * h1 = h_1_hat / h_2_hat * h2 ...
-      H_ratio = H_norm(2:end)/H_norm(1:end-1);
-      h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
-      h_eq_lb = zeros(1, self.N-1);
-      h_eq_ub = zeros(1, self.N-1);
+      h_eq = [];
+      h_eq_lb = [];
+      h_eq_ub = [];
       
+      if isempty(self.ocpHandler.T)
+        % normalized timesteps (sum of timesteps is 1)
+        H_norm = self.ocpHandler.H_norm;
+        
+        % h0 = h_0_hat / h_1_hat * h1 = h_1_hat / h_2_hat * h2 ...
+        H_ratio = H_norm(2:end)/H_norm(1:end-1);
+        h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
+        h_eq_lb = zeros(1, self.N-1);
+        h_eq_ub = zeros(1, self.N-1);
+      end
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
-      % merge integrator equations, continuity, and path concstraints
+      % merge integrator equations, continuity, and path constraints,
+      % timesteps constraints
       shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  h_eq];
       shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  h_eq_lb];
       shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  h_eq_ub];
