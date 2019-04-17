@@ -184,14 +184,20 @@ classdef Simultaneous < handle
         h_eq_ub = zeros(1, self.N-1);
       end
       
+      % Parameter constraints 
+      % p0=p1=p2=p3 ...
+      p_eq = P(:,2:end)-P(:,1:end-1);
+      p_eq_lb = zeros(self.np, self.N-1);
+      p_eq_ub = zeros(self.np, self.N-1);
+      
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  h_eq];
-      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  h_eq_lb];
-      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  h_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  h_eq;     p_eq];
+      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  h_eq_lb;  p_eq_lb];
+      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  h_eq_ub;  p_eq_ub];
       
       % reshape shooting equations to column vector, append final integrator and
       % continuity equations
