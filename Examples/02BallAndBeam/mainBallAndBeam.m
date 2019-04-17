@@ -11,14 +11,15 @@ ocp = OclOCP(@bb.pathcosts);
 
 ocl = OclSolver([],system,ocp,options);
 
- % bound on end time: 1 <= T <= 5
-ocl.setParameter('T', 1, 5);
+ % bound on time: 0 <= time <= 5
+ocl.setBounds('time', 0, 5);
 
 % set bounds for initial and endtime
 ocl.setInitialBounds('r'      , -0.8);
 ocl.setInitialBounds('dr'     , 0.3);
 ocl.setInitialBounds('theta'  , deg2rad(5));
 ocl.setInitialBounds('dtheta' , 0.0);
+ocl.setInitialBounds('time' , 0);
 
 ocl.setEndBounds('r'      , 0);
 ocl.setEndBounds('dr'     , 0);

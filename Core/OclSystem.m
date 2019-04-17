@@ -263,13 +263,14 @@ classdef OclSystem < handle
     function solutionCallback(self,times,solution)
       sN = size(solution.states);
       N = sN(3);
-      parameters = solution.parameters;
+      
       t = times.states;
 
       for k=1:N-1
         states = solution.states(:,:,k+1);
         algVars = solution.integrator(:,:,k).algVars;
         controls =  solution.controls(:,:,k);
+        parameters = solution.parameters(:,:,k);
         self.fh.cb(states,algVars,controls,t(:,:,k),t(:,:,k+1),parameters);
       end
     end

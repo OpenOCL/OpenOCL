@@ -24,7 +24,7 @@ classdef OclOcpHandler < handle
   end
 
   methods
-    function self = OclOcpHandler(T,system,ocp,options, H_norm)
+    function self = OclOcpHandler(T,system,ocp,options,H_norm)
       self.ocp = ocp;
       self.system = system;
       self.options = options;
@@ -34,6 +34,10 @@ classdef OclOcpHandler < handle
       self.bounds = struct;
       self.initialBounds = struct;
       self.endBounds = struct;
+      
+      if nargin < 5
+        H_norm = repmat(1/N,1,N);
+      end
       
       if length(T) == 1
         % T = final time
@@ -57,6 +61,7 @@ classdef OclOcpHandler < handle
         % T = [] free end time
         self.T = [];
         self.H_norm = H_norm;
+        self.setBounds('h',0.001,inf);
       else
         oclError('Dimension of T does not match the number of control intervals.')
       end
