@@ -38,9 +38,9 @@ classdef Simultaneous < handle
       self.np = prod(system.parametersStruct.size());
       
       % N control interval which each have states, integrator vars,
-      % controls, parameters, and time.
+      % controls, parameters, and timesteps.
       % Ends with a single state.
-      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu + N*self.np + N+ N;
+      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu + N*self.np + N;
       
       self.nit = integrator.nt; % number of integrator timepoints
       
@@ -134,8 +134,8 @@ classdef Simultaneous < handle
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
   
       % number of variables in one control interval
-      % + 1 for the end time + 1 for the normalized timestep
-      nci = self.nx+self.ni+self.nu+self.np+1+1;
+      % + 1 for the timestep
+      nci = self.nx+self.ni+self.nu+self.np+1;
       
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
@@ -145,49 +145,46 @@ classdef Simultaneous < handle
       U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nu-1)', self.nx+self.ni+1:nci:self.nv, 'UniformOutput', false));
       P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.np-1)', self.nx+self.ni+self.nu+1:nci:self.nv, 'UniformOutput', false));
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', self.nx+self.ni+self.nu+self.np+1:nci:self.nv, 'UniformOutput', false));
-      T0_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', self.nx+self.ni+self.nu+self.np+1+1:nci:self.nv, 'UniformOutput', false));
       
       X = reshape(nlpVars(X_indizes), self.nx, self.N+1);
       I = reshape(nlpVars(I_indizes), self.ni, self.N);
       U = reshape(nlpVars(U_indizes), self.nu, self.N);
       P = reshape(nlpVars(P_indizes), self.np, self.N);
       H = reshape(nlpVars(H_indizes), 1      , self.N);
-      T0 = reshape(nlpVars(T0_indizes), 1    , self.N);
       
       % path constraints on first and last state
-      pc0 = {};
-      pc0_lb = {};
-      pc0_ub = {};
-      pcf = {};
-      pcf_lb = {};
-      pcf_ub = {};
+      pc0 = [];
+      pc0_lb = [];
+      pc0_ub = [];
+      pcf = [];
+      pcf_lb = [];
+      pcf_ub = [];
       if self.options.path_constraints_at_boundary
         [pc0, pc0_lb, pc0_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,1), P(:,1));
         [pcf,pcf_lb,pcf_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,end), P(:,end));
       end         
       
       [xend_arr, ~, cost_arr, int_eq_arr, int_times] = self.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, P);
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), P(2:end));
+      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), P(:,2:end));
+                
+      % normalized timesteps (sum of timesteps is 1)
+      H_norm = self.ocpHandler.H_norm;
       
-      % parameters equations
-      % p0 = p1 = p2 ...
-      %param_eq = P(:,2:end) - P(:,1:end-1);
-      %param_eq_lb = zeros(self.np, self.N-1);
-      %param_eq_ub = zeros(self.np, self.N-1);
+      % timestep constraints
+      % h0 = h_0_hat / h_1_hat * h1 = h_1_hat / h_2_hat * h2 ...
+      H_ratio = H_norm(2:end)/H_norm(1:end-1);
+      h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
+      h_eq_lb = zeros(1, self.N-1);
+      h_eq_ub = zeros(1, self.N-1);
       
-      % timepoints equations
-      % T1 < T2 < T3 < ... < TN
-      tp_eq = T0(:,2:end) - T0(:,1:end-1);
-      tp_eq_lb = zeros(1, self.N-1);
-      tp_eq_ub = inf*ones(1, self.N-1);
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path concstraints
-      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  tp_eq];
-      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  tp_eq_lb];
-      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  tp_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  h_eq];
+      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  h_eq_lb];
+      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  h_eq_ub];
       
       % reshape shooting equations to column vector, append final integrator and
       % continuity equations

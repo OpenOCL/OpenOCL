@@ -15,13 +15,13 @@ function [sol,times,ocl] = mainCartPole
   ocl.setInitialBounds('v', v0);
   ocl.setInitialBounds('theta', theta0);
   ocl.setInitialBounds('omega', omega0);
+  
+  ocl.setInitialBounds('time', 0);
 
   ocl.setEndBounds('p', 0);
   ocl.setEndBounds('v', 0);
   ocl.setEndBounds('theta', 0);
   ocl.setEndBounds('omega', 0);
-
-  ocl.setParameter('T', 0, 20);
 
   % Get and set initial guess
   initialGuess = ocl.getInitialGuess();
@@ -51,6 +51,8 @@ function varsfun(sh)
   sh.addState('theta', 'lb', -2*pi, 'ub', 2*pi);
   sh.addState('v');
   sh.addState('omega');
+  
+  sh.addState('time', 'lb', 0, 'ub', 20);
 
   sh.addControl('F', 'lb', -20, 'ub', 20);
 end
@@ -78,8 +80,11 @@ function eqfun(sh,x,~,u,~)
   sh.setODE('theta',x.omega);
   sh.setODE('v',a);
   sh.setODE('omega',domega);
+  
+  sh.setODE('time', 1);
+  
 end
 
-function arrivalcosts(self,x,tf,p)
-  self.add( tf );
+function arrivalcosts(self,x,p)
+  self.add( x.time );
 end

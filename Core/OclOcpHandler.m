@@ -12,6 +12,7 @@ classdef OclOcpHandler < handle
     endBounds
     
     T
+    H_hat
     
     options
   end
@@ -23,11 +24,12 @@ classdef OclOcpHandler < handle
   end
 
   methods
-    function self = OclOcpHandler(T,system,ocp,options)
+    function self = OclOcpHandler(T,system,ocp,options, H_norm)
       self.ocp = ocp;
       self.system = system;
       self.options = options;
       self.T = T;
+      self.H_norm = H_norm;
       
       N = options.nlp.controlIntervals;
       
@@ -50,16 +52,19 @@ classdef OclOcpHandler < handle
       elseif isempty(T)
         % T = [] free end time
         h = 1/N;
-        T = [];
+        T0 = [];
       else
         oclError('Dimension of T does not match the number of control intervals.')
       end
       
-      self.setBounds('h',h);
-      if ~isempty(T)
+      if ~isempty(T0)
+        self.setBounds('h',h);
         self.setBounds('T',T0)
-      end
-      
+      else
+        self.setBounds('h', 0.01, 0.05);
+        self.setInitialBounds('T',0);
+        self.setEndBounds('T',0,20);
+      end  
     end
     
     function setup(self)
