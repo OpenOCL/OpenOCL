@@ -1,8 +1,8 @@
-function solver = OclSolver(T, system, ocp, options)
+function solver = OclSolver(T, system, ocp, options, varargin)
   % OclSolver(T, system, ocp, options)
   preparationTic = tic;
   
-  ocpHandler = OclOcpHandler(T,system,ocp,options);
+  ocpHandler = OclOcpHandler(T,system,ocp,options,varargin{:});
   ocpHandler.setup();
   
   N = options.nlp.controlIntervals;

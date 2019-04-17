@@ -177,8 +177,8 @@ classdef Simultaneous < handle
         % normalized timesteps (sum of timesteps is 1)
         H_norm = self.ocpHandler.H_norm;
         
-        % h0 = h_0_hat / h_1_hat * h1 = h_1_hat / h_2_hat * h2 ...
-        H_ratio = H_norm(2:end)./H_norm(1:end-1);
+        % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
+        H_ratio = H_norm(1:end-1)./H_norm(2:end);
         h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
         h_eq_lb = zeros(1, self.N-1);
         h_eq_ub = zeros(1, self.N-1);

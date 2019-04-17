@@ -3,12 +3,13 @@ function [sol,times,ocl] = mainCartPole
   options = OclOptions();
   options.nlp.controlIntervals = 50;
   options.nlp.collocationOrder = 3;
-  
-  options.nlp.solver = 'ipopt';
 
   system = OclSystem('varsfun',@varsfun, 'eqfun', @eqfun);
   ocp = OclOCP('arrivalcosts', @arrivalcosts);
-  ocl = OclSolver([], system, ocp, options);
+  
+  T = linspace(0,1,options.nlp.controlIntervals+1).^2;
+  
+  ocl = OclSolver([], system, ocp, options,T(2:end)-T(1:end-1));
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;

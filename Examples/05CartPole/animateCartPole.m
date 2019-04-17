@@ -53,6 +53,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
     handles = {h2,h3,h4,h5};
 
     hold off;
+    pause(1)
 
   else
     [h2,h3,h4,h5] = handles{:};
