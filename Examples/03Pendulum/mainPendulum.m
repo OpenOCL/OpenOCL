@@ -9,7 +9,8 @@ function [vars,times,ocl] = mainPendulum
 
   ocl = OclSolver([], system, ocp, options);
 
-  ocl.setParameter('T',  1, 10);
+  ocl.setBounds('time',  0, 15);
+  
   ocl.setBounds('p',       -[3;3], [3;3]);
   ocl.setBounds('v',       -[3;3], [3;3]);
   ocl.setBounds('F',       -25, 25);
@@ -17,8 +18,10 @@ function [vars,times,ocl] = mainPendulum
   ocl.setBounds('m',       1);
   ocl.setBounds('l',       1);
 
-  ocl.setInitialBounds('p', [-inf;-1],[inf;-1]);
+  ocl.setInitialBounds('p', [0;-1],[0;-1]);
   ocl.setInitialBounds('v', [0.5;0]);
+  
+  ocl.setInitialBounds('time', 0);
 
   ocl.setEndBounds('p',     [0,1]);
   ocl.setEndBounds('v',     [-1;-1], [1;1]);

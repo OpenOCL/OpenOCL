@@ -119,7 +119,7 @@ end
 function validPathCosts(self,x,z,u,p)
   self.add(x.a); % 1
   self.add(x.c.'*x.c); % 7
-  self.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+p.T); % 1e-3*12+26
+  self.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+1); % 1e-3*12+26
   self.add(0); % 0 ([]) or () ? invalid!
   self.add(-1); % -1
 end
@@ -128,7 +128,7 @@ function validArrivalCosts(self,xf,p)
   self.add(xf.d);
   self.add(0);
   self.add(-1);
-  self.add(-1*p.v*p.T);
+  self.add(-1*p.v*1);
 end
 
 function validPathConstraints(self,x,p)

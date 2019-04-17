@@ -12,6 +12,7 @@ classdef OclOcpHandler < handle
     endBounds
     
     T
+    H_norm
     
     options
   end
@@ -23,11 +24,10 @@ classdef OclOcpHandler < handle
   end
 
   methods
-    function self = OclOcpHandler(T,system,ocp,options)
+    function self = OclOcpHandler(T,system,ocp,options,H_norm)
       self.ocp = ocp;
       self.system = system;
       self.options = options;
-      self.T = T;
       
       N = options.nlp.controlIntervals;
       
@@ -35,33 +35,41 @@ classdef OclOcpHandler < handle
       self.initialBounds = struct;
       self.endBounds = struct;
       
-      if length(T) == 1
-        hControlsNormalized = 1/N;
-      elseif length(T) == N+1
-        hControlsNormalized = (T(2:N+1)-T(1:N)) / T(end);
-        T = T(end);
-      elseif length(T) == N
-        hControlsNormalized = T/sum(T);
-        T = sum(T);
-      elseif isempty(T)
-        hControlsNormalized = 1/N;
-        T = [];
-      else
-        oclError('Dimension of T does not match the number of control intervals.')
+      if nargin < 5
+        H_norm = repmat(1/N,1,N);
       end
       
-      self.setBounds('h_normalized',hControlsNormalized);
-      if ~isempty(T)
-        self.setBounds('T',T)
+      if length(T) == 1
+        % T = final time
+        h = T/N;
+        self.setBounds('h',h);
+        self.T = T;
+        self.H_norm = [];
+      elseif length(T) == N+1
+        % T = N+1 timepoints at states
+        h = (T(2:N+1)-T(1:N));
+        self.setBounds('h',h);
+        self.T = T(end);
+        self.H_norm = [];
+      elseif length(T) == N
+        % T = N timesteps
+        h = T;
+        self.setBounds('h',h);
+        self.T = sum(h);
+        self.H_norm = [];
+      elseif isempty(T)
+        % T = [] free end time
+        self.T = [];
+        self.H_norm = H_norm;
+        self.setBounds('h',0.001,inf);
+      else
+        oclError('Dimension of T does not match the number of control intervals.')
       end
       
     end
     
     function setup(self)
       % variable sizes
-      
-      self.system.addControl('h_normalized');
-      self.system.addParameter('T');
       
       self.system.setup();
       
@@ -147,6 +155,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathCosts(pcHandler,x,z,u,p);
+      
       r = pcHandler.value;
     end
     
@@ -156,6 +165,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.arrivalCosts(acHandler,x,p);
+      
       r = acHandler.value;
     end
     
@@ -165,6 +175,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.pathConstraints(pathConstraintHandler,x,p);
+      
       val = pathConstraintHandler.values;
       lb = pathConstraintHandler.lowerBounds;
       ub = pathConstraintHandler.upperBounds;
@@ -177,6 +188,7 @@ classdef OclOcpHandler < handle
       p = Variable.create(self.system.parametersStruct,p);
       
       self.ocp.fh.boundaryConditions(bcHandler,x0,xF,p);
+      
       val = bcHandler.values;
       lb = bcHandler.lowerBounds;
       ub = bcHandler.upperBounds;
@@ -185,7 +197,9 @@ classdef OclOcpHandler < handle
     function r = getDiscreteCosts(self,v)
       dcHandler = OclCost(self.ocp);
       v = Variable.create(self.nlpVarsStruct,v);
+      
       self.ocp.fh.discreteCosts(dcHandler,v);
+      
       r = dcHandler.value;
     end
 

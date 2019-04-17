@@ -34,6 +34,8 @@ function bbvarsfun(sh, c)
   sh.addState('dr');
   sh.addState('theta',  'lb', -c.theta_b,  'ub', c.theta_b  );
   sh.addState('dtheta', 'lb', -c.dtheta_b, 'ub', c.dtheta_b );
+  
+  sh.addState('time');
 
   sh.addControl('tau',  'lb', -c.tau_b,    'ub', c.tau_b    );
 end
@@ -43,10 +45,12 @@ function bbeqfun(sh,x,u,c)
   sh.setODE('dtheta',(u.tau - c.m*c.g*x.r*cos(x.theta) - 2*c.m*x.r*x.dr*x.dtheta)/(c.I + c.m*x.r^2));
   sh.setODE('r'     ,x.dr);
   sh.setODE('dr'    ,(-c.m*c.g*sin(x.theta) + c.m*x.r*x.dtheta^2)/(c.m + c.J/c.R^2));
+  
+  sh.setODE('time'    , 1);
 end
 
 function bbpathcosts(ch,x,u,c)
-  ch.add( x.'*c.costQ*x );
+  ch.add( x(1:end-1).'*c.costQ*x(1:end-1) );
   ch.add( u.'*c.costR*u );
 end
 

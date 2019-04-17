@@ -1,5 +1,5 @@
 classdef CasadiFunction < OclFunction
-  properties (Access = private)
+  properties (Access = public)
     casadiFun
     numericOutputIndizes
     numericOutputValues

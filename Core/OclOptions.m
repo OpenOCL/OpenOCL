@@ -2,6 +2,7 @@ function opt = OclOptions()
   opt = struct;
   opt.solverInterface   = 'casadi';
   opt.system_casadi_mx  = false;
+  opt.nlp_casadi_mx     = false;
   opt.controls_regularization = true;
   opt.controls_regularization_value = 1e-6;
   opt.path_constraints_at_boundary = true;

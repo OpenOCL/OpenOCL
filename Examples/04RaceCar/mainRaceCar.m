@@ -30,7 +30,8 @@ function [solution,times,ocl] = mainRaceCar
   ocl.setParameter('Vmax', Vmax);
   ocl.setParameter('Fmax', Fmax);
   ocl.setParameter('road_bound', road_bound);
-  ocl.setParameter('T', 0, MAX_TIME);
+  
+  ocl.setBounds('time', 0, MAX_TIME);
 
   ocl.setInitialBounds( 'x',   0.0);
   ocl.setInitialBounds('vx',   0.0);
@@ -108,10 +109,12 @@ function varsfun(self)
   self.addState('vy');  % velocity vy[m/s]
 
   self.addState('Fx');  % Force x[N]
-  self.addState('Fy');  % Force x[N]
+  self.addState('Fy');  % Force y[N]
+  
+  self.addState('time');  % time [s]
 
   self.addControl('dFx');  % Force x[N]
-  self.addControl('dFy');  % Force x[N]
+  self.addControl('dFy');  % Force y[N]
 
   self.addParameter('m');           % mass [kg]
   self.addParameter('A');           % section area car [m^2]
@@ -129,10 +132,12 @@ function eqfun(sh,x,z,u,p)
   sh.setODE('vy', 1/p.m*x.Fy - 0.5*p.rho*p.cd*p.A*x.vx^2);
   sh.setODE('Fx', u.dFx);
   sh.setODE('Fy', u.dFy);
+  
+  sh.setODE('time', 1);
 end
 
 function arrivalcosts(ch,x,p)
-  ch.add(p.T);
+  ch.add(x.time);
 end
 
 function pathconstraints(ch,x,p)

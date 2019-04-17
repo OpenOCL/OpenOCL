@@ -1,8 +1,8 @@
-function solver = OclSolver(T, system, ocp, options)
+function solver = OclSolver(T, system, ocp, options, varargin)
   % OclSolver(T, system, ocp, options)
   preparationTic = tic;
   
-  ocpHandler = OclOcpHandler(T,system,ocp,options);
+  ocpHandler = OclOcpHandler(T,system,ocp,options,varargin{:});
   ocpHandler.setup();
   
   N = options.nlp.controlIntervals;
@@ -17,6 +17,9 @@ function solver = OclSolver(T, system, ocp, options)
   ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
   system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
   nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
+  
+  nlp.integratorMap = CasadiMapFunction(nlp.integratorFun,N);
+  nlp.pathconstraintsMap = CasadiMapFunction(ocpHandler.pathConstraintsFun, N-1);
     
   if strcmp(options.solverInterface,'casadi')
     preparationTime = toc(preparationTic);
