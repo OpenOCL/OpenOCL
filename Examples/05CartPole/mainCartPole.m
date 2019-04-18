@@ -11,7 +11,6 @@ function [sol,times,ocl] = mainCartPole
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
-  T0 = 2;
 
   ocl.setInitialBounds('p', p0);
   ocl.setInitialBounds('v', v0);

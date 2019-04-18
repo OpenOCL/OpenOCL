@@ -136,12 +136,6 @@ classdef OclOcpHandler < handle
       end
     end  
     
-    function addParameter(self,varargin)
-      % addParameter(id)
-      % addParameter(id,size)
-      self.system.parametersStruct.add(varargin{:});
-    end
-    
     function r = getPathCosts(self,x,z,u,p)
       pcHandler = OclCost(self.ocp);
       

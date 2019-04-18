@@ -97,6 +97,16 @@ classdef Simultaneous < handle
         upperBounds.get(id).set(self.system.bounds.(id).upper);
       end
       
+      % system parameter bounds
+      names = fieldnames(self.system.parameterBounds);
+      for i=1:length(names)
+        id = names{i};
+        lb = lowerBounds.get(id);
+        ub = upperBounds.get(id);
+        lb(:,:,1).set(self.system.parameterBounds.(id).lower);
+        ub(:,:,1).set(self.system.parameterBounds.(id).upper);
+      end
+      
       % solver bounds
       names = fieldnames(self.ocpHandler.bounds);
       for i=1:length(names)

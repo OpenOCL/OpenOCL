@@ -12,6 +12,7 @@ classdef OclSystem < handle
     fh
 
     bounds
+    parameterBounds
 
     thisInitialConditions
 
@@ -77,6 +78,7 @@ classdef OclSystem < handle
       self.parametersStruct = OclStructure();
 
       self.bounds = struct;
+      self.parameterBounds = struct;
       self.ode = struct;
     end
 
@@ -238,8 +240,8 @@ classdef OclSystem < handle
       id = p.Results.id;
 
       self.parametersStruct.add(id,p.Results.s);
-      self.bounds.(id).lower = p.Results.default;
-      self.bounds.(id).upper = p.Results.default;
+      self.parameterBounds.(id).lower = p.Results.default;
+      self.parameterBounds.(id).upper = p.Results.default;
     end
 
     function setODE(self,id,eq)
