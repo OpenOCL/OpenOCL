@@ -15,36 +15,19 @@ classdef NLPSolver < handle
       oclError('Not implemented. Call CasadiNLPSolver instead.');
     end
     
-    function initialGuess = getInitialGuess(self)
+    function ig = ig(self)
+      ig = self.getInitialGuess();
+    end
+    
+    function ig = getInitialGuess(self)
       igTic = tic;
-      
-      initialGuess = NlpValues.create(self.nlp.varsStruct,0);
-      
-      [lb,ub] = self.nlp.getNlpBounds();
-      
-      guessValues = (lb + ub) / 2;
-      
-      % set to lowerBounds if upperBounds are inf
-      indizes = isinf(ub);
-      guessValues(indizes) = lb(indizes);
-      
-      % set to upperBounds of lowerBounds are inf
-      indizes = isinf(lb);
-      guessValues(indizes) = ub(indizes);
-      
-      % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lb) & isinf(ub);
-      guessValues(indizes) = 0;
-
-      initialGuess.set(guessValues);
-      
+      ig = self.nlp.getInitialGuess();
       self.timeMeasures.initialGuess = toc(igTic);
     end
     
-    function setParameter(self,varargin)
+    function setParameter(self, id, value)
       % setParameter(id,value)
-      % setParameter(id,lower,upper)
-      self.nlp.setBounds(varargin{:})
+      self.nlp.setParameter(id, value)
     end
     
     function setBounds(self,varargin)

@@ -11,7 +11,6 @@ function opt = OclOptions()
   opt.nlp.controlIntervals       = 20;
   opt.nlp.collocationOrder       = 3;
   opt.nlp.solver                 = 'ipopt';
-  opt.nlp.auto_interpolation     = true;
   opt.nlp.casadi = struct;
   opt.nlp.ipopt = struct;
   opt.nlp.ipopt.linear_solver = 'mumps';

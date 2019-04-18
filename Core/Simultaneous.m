@@ -23,6 +23,13 @@ classdef Simultaneous < handle
     nu
     np
     nit
+    
+    igBoundsAll
+    igBounds0
+    igBoundsF
+    
+    igParameters
+    
   end
   
   methods
@@ -63,25 +70,118 @@ classdef Simultaneous < handle
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
       
+      self.igBoundsAll = struct;
+      self.igBounds0 = struct;
+      self.igBoundsF = struct;
+      
+      self.igParameters = struct;
+      
     end
     
-    function setBounds(self,varargin)
+    function setParameter(self,id,value)
+      self.ocpHandler.setInitialBounds(id,value);
+      self.igParameters.(id) = value;
+    end
+    
+    function setBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setBounds(varargin{:})
+      self.ocpHandler.setBounds(id,varargin{:})
+      self.igBoundsAll.(id) = mean([varargin{:}]);
     end
     
-    function setInitialBounds(self,varargin)
+    function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setInitialBounds(varargin{:})
+      self.ocpHandler.setInitialBounds(id,varargin{:});
+      self.igBounds0.(id) = mean([varargin{:}]);
     end
     
-    function setEndBounds(self,varargin)
+    function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      self.ocpHandler.setEndBounds(varargin{:})
+      self.ocpHandler.setEndBounds(id,varargin{:})
+      self.igBoundsF.(id) = mean([varargin{:}]);
     end    
+    
+    function setInitialGuess0(self, id, value)
+      self.igBounds0.(id) = value;
+    end
+    
+    function setInitialGuessF(self, id, value)
+      self.igBoundsF.(id) = value;
+    end
+    
+    function setInitialGuess(self, id, value)
+      self.igBoundsAll.(id) = value;
+    end
+    
+    function ig = ig(self)
+      ig = self.getInitialGuess();
+    end
+    
+    function initialGuess = getInitialGuess(self)
+      
+      initialGuess = Variable.create(self.varsStruct,0);
+      igFlat = Variable.create(self.varsStruct.flat(),0);
+      
+      % apply initial guesses from bounds
+      
+      % ig general (set everywhere)
+      names = fieldnames(self.igBoundsAll);
+      for i=1:length(names)
+        id = names{i};
+        igFlat.get(id).set(self.igBoundsAll.(id));
+      end
+      
+      % ig at end
+      names = fieldnames(self.igBoundsF);
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igId(:,:,end).set(self.igBoundsF.(id));
+      end
+      
+      % ig at start
+      names = fieldnames(self.igBounds0);
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igId(:,:,1).set(self.igBounds0.(id));
+      end
+
+      % linearily interpolate guess
+      names = igFlat.children();
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igStart = igId(:,:,1).value;
+        igEnd = igId(:,:,end).value;
+        s = igId.size();
+        gridpoints = reshape(linspace(0, 1, s(3)),1,1,s(3));
+        gridpoints = repmat(gridpoints,s(1),s(2));
+        interpolated = igStart + gridpoints.*(igEnd-igStart);
+        igFlat.get(id).set(interpolated);
+      end
+      
+      % ig for parameters
+      names = fieldnames(self.igParameters);
+      for i=1:length(names)
+        id = names{i};
+        igFlat.get(id).set(self.igParameters.(id));
+      end
+      
+      initialGuess.set(igFlat.value());
+      
+      % ig for timesteps
+      if isempty(self.ocpHandler.T)
+        H = self.ocpHandler.H_norm;
+      else
+        H = self.ocpHandler.H_norm.*self.ocpHandler.T;
+      end
+      initialGuess.get('h').set(H);
+      
+    end
     
     function [lowerBounds,upperBounds] = getNlpBounds(self)
       
@@ -95,6 +195,16 @@ classdef Simultaneous < handle
         id = names{i};
         lowerBounds.get(id).set(self.system.bounds.(id).lower);
         upperBounds.get(id).set(self.system.bounds.(id).upper);
+      end
+      
+      % system parameter bounds
+      names = fieldnames(self.system.parameterBounds);
+      for i=1:length(names)
+        id = names{i};
+        lb = lowerBounds.get(id);
+        ub = upperBounds.get(id);
+        lb(:,:,1).set(self.system.parameterBounds.(id).lower);
+        ub(:,:,1).set(self.system.parameterBounds.(id).upper);
       end
       
       % solver bounds

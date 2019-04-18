@@ -56,7 +56,7 @@ function [solution,times,ocl] = mainRaceCar
   [solution,times] = ocl.solve(initialGuess);
 
   % Plot solution
-  figure('units','normalized','outerposition',[0 0 1 1])
+  figure('units','normalized')
   subplot(3,2,1);hold on;grid on;
   plot(times.states.value,solution.states.x.value,'Color','b','LineWidth',1.5);
   plot(times.states.value,solution.states.y.value,'Color','r','LineWidth',1.5);

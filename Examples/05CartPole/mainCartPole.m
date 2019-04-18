@@ -11,7 +11,6 @@ function [sol,times,ocl] = mainCartPole
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
-  T0 = 2;
 
   ocl.setInitialBounds('p', p0);
   ocl.setInitialBounds('v', v0);
@@ -25,11 +24,8 @@ function [sol,times,ocl] = mainCartPole
   ocl.setEndBounds('theta', 0);
   ocl.setEndBounds('omega', 0);
 
-  % Get and set initial guess
-  initialGuess = ocl.getInitialGuess();
-
   % Run solver to obtain solution
-  [sol,times] = ocl.solve(initialGuess);
+  [sol,times] = ocl.solve(ocl.ig());
 
   % visualize solution
   figure; hold on; grid on;
