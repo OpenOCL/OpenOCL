@@ -102,27 +102,27 @@ function [solution,times,ocl] = mainRaceCar
 
 end
 
-function varsfun(self)
-  self.addState('x');   % position x[m]
-  self.addState('vx');  % velocity vx[m/s]
-  self.addState('y');   % position y[m]
-  self.addState('vy');  % velocity vy[m/s]
+function varsfun(sh)
+  sh.addState('x');   % position x[m]
+  sh.addState('vx');  % velocity vx[m/s]
+  sh.addState('y');   % position y[m]
+  sh.addState('vy');  % velocity vy[m/s]
 
-  self.addState('Fx');  % Force x[N]
-  self.addState('Fy');  % Force y[N]
+  sh.addState('Fx');  % Force x[N]
+  sh.addState('Fy');  % Force y[N]
   
-  self.addState('time');  % time [s]
+  sh.addState('time');  % time [s]
 
-  self.addControl('dFx');  % Force x[N]
-  self.addControl('dFy');  % Force y[N]
+  sh.addControl('dFx');  % Force x[N]
+  sh.addControl('dFy');  % Force y[N]
 
-  self.addParameter('m');           % mass [kg]
-  self.addParameter('A');           % section area car [m^2]
-  self.addParameter('cd');          % drag coefficient [mini cooper 2008
-  self.addParameter('rho');         % airdensity [kg/m^3]
-  self.addParameter('Vmax');        % max speed [m/s]
-  self.addParameter('road_bound');  % lane road relative to the middle lane [m]
-  self.addParameter('Fmax');        % maximal force on the car [N]
+  sh.addParameter('m');           % mass [kg]
+  sh.addParameter('A');           % section area car [m^2]
+  sh.addParameter('cd');          % drag coefficient [mini cooper 2008
+  sh.addParameter('rho');         % airdensity [kg/m^3]
+  sh.addParameter('Vmax');        % max speed [m/s]
+  sh.addParameter('road_bound');  % lane road relative to the middle lane [m]
+  sh.addParameter('Fmax');        % maximal force on the car [N]
 end
 
 function eqfun(sh,x,z,u,p)

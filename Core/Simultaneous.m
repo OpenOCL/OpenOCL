@@ -78,9 +78,9 @@ classdef Simultaneous < handle
       
     end
     
-    function setParameter(self,id,value)
-      self.ocpHandler.setInitialBounds(id,value);
-      self.igParameters.(id) = value;
+    function setParameter(self,id,varargin)
+      self.ocpHandler.setInitialBounds(id,varargin{:});
+      self.igParameters.(id) = mean([varargin{:}]);
     end
     
     function setBounds(self,id,varargin)
@@ -165,11 +165,20 @@ classdef Simultaneous < handle
       end
       
       % ig for parameters
+      names = fieldnames(self.system.parameterBounds);
+      for i=1:length(names)
+        id = names{i};
+        val = mean([self.system.parameterBounds.(id).lower,self.system.parameterBounds.(id).upper]);
+        igFlat.get(id).set(val);
+      end
+      
       names = fieldnames(self.igParameters);
       for i=1:length(names)
         id = names{i};
         igFlat.get(id).set(self.igParameters.(id));
       end
+      
+
       
       initialGuess.set(igFlat.value());
       
