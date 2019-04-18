@@ -15,6 +15,10 @@ classdef NLPSolver < handle
       oclError('Not implemented. Call CasadiNLPSolver instead.');
     end
     
+    function ig = ig(self)
+      ig = self.getInitialGuess();
+    end
+    
     function ig = getInitialGuess(self)
       igTic = tic;
       ig = self.nlp.getInitialGuess();

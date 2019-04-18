@@ -24,11 +24,8 @@ function [sol,times,ocl] = mainCartPole
   ocl.setEndBounds('theta', 0);
   ocl.setEndBounds('omega', 0);
 
-  % Get and set initial guess
-  initialGuess = ocl.getInitialGuess();
-
   % Run solver to obtain solution
-  [sol,times] = ocl.solve(initialGuess);
+  [sol,times] = ocl.solve(ocl.ig());
 
   % visualize solution
   figure; hold on; grid on;

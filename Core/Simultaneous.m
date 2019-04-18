@@ -24,7 +24,7 @@ classdef Simultaneous < handle
     np
     nit
     
-    ig
+    igAll
     ig0
     igF
     
@@ -68,7 +68,7 @@ classdef Simultaneous < handle
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
       
-      self.ig = struct;
+      self.igAll = struct;
       self.ig0 = struct;
       self.igF = struct;
       
@@ -104,7 +104,11 @@ classdef Simultaneous < handle
     end
     
     function setInitialGuess(self, id, value)
-      self.ig.(id) = value;
+      self.igAll.(id) = value;
+    end
+    
+    function ig = ig(self)
+      ig = self.getInitialGuess();
     end
     
     function initialGuess = getInitialGuess(self)
@@ -150,10 +154,19 @@ classdef Simultaneous < handle
       for i=1:length(names)
         id = names{i};
         igId = igFlat.get(id);
-        igId(:,:,2:end-1).set(self.ig.(id));
+        igId(:,:,2:end-1).set(self.igAll.(id));
       end
       
       initialGuess.set(igFlat.value());
+      
+      % ig for timesteps
+      if isempty(self.ocpHandler.T)
+        H = self.ocpHandler.H_norm;
+      else
+        H = self.ocpHandler.H_norm.*self.ocpHandler.T;
+      end
+      initialGuess.get('h').set(H);
+      
     end
     
     function [lowerBounds,upperBounds] = getNlpBounds(self)
