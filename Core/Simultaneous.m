@@ -23,6 +23,11 @@ classdef Simultaneous < handle
     nu
     np
     nit
+    
+    ig
+    ig0
+    igF
+    
   end
   
   methods
@@ -63,25 +68,93 @@ classdef Simultaneous < handle
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
       
+      self.ig = struct;
+      self.ig0 = struct;
+      self.igF = struct;
+      
     end
     
-    function setBounds(self,varargin)
+    function setBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setBounds(varargin{:})
+      self.ocpHandler.setBounds(id,varargin{:})
+      self.ig.(id) = mean([varargin{:}]);
     end
     
-    function setInitialBounds(self,varargin)
+    function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setInitialBounds(varargin{:})
+      self.ocpHandler.setInitialBounds(id,varargin{:});
+      self.ig0.(id) = mean([varargin{:}]);
     end
     
-    function setEndBounds(self,varargin)
+    function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      self.ocpHandler.setEndBounds(varargin{:})
+      self.ocpHandler.setEndBounds(id,varargin{:})
+      self.igF.(id) = mean([varargin{:}]);
     end    
+    
+    function setInitialGuess0(self, id, value)
+      self.ig0.(id) = value;
+    end
+    
+    function setInitialGuessF(self, id, value)
+      self.igF.(id) = value;
+    end
+    
+    function setInitialGuess(self, id, value)
+      self.ig.(id) = value;
+    end
+    
+    function initialGuess = getInitialGuess(self)
+      
+      initialGuess = NlpValues.create(self.varsStruct,0);
+      
+      [lb,ub] = self.getNlpBounds();
+      
+      guessValues = (lb + ub) / 2;
+      
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(ub);
+      guessValues(indizes) = lb(indizes);
+      
+      % set to upperBounds of lowerBounds are inf
+      indizes = isinf(lb);
+      guessValues(indizes) = ub(indizes);
+      
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lb) & isinf(ub);
+      guessValues(indizes) = 0;
+      
+      % apply manual set ig
+      igFlat = NlpValues.create(self.varsStruct.flat(),guessValues);
+      
+      % ig at end (set everywhere)
+      names = fieldnames(self.igF);
+      for i=1:length(names)
+        id = names{i};
+        igFlat.get(id).set(self.igF.(id));
+      end
+      
+      % ig at start (set everywhere except end)
+      names = fieldnames(self.ig0);
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igId(:,:,1:end-1).set(self.ig0.(id));
+      end
+      
+      % ig general (set everywhere except start and end)
+      names = fieldnames(self.ig);
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igId(:,:,2:end-1).set(self.ig.(id));
+      end
+      
+      initialGuess.set(igFlat.value());
+    end
     
     function [lowerBounds,upperBounds] = getNlpBounds(self)
       
