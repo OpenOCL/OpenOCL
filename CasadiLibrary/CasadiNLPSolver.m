@@ -47,11 +47,6 @@ classdef CasadiNLPSolver < NLPSolver
       
       solveTotalTic = tic;
       
-      % interpolate initial guess
-%       if self.options.nlp.auto_interpolation
-%         initialGuess.interpolateIntegrator();
-%       end
-      
       v0 = initialGuess.value;
       
       [lbv,ubv] = self.nlp.getNlpBounds();
