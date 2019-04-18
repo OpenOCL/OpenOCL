@@ -131,6 +131,12 @@ classdef Variable < handle
     function disp(self)
       disp(self.str());
     end
+    
+    
+    function c = children(self)
+      % returns names of children
+      c = fieldnames(self.type.children);
+    end
 
     function varargout = subsref(self,s)
       % v(1)

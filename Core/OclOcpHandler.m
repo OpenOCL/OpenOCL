@@ -44,19 +44,19 @@ classdef OclOcpHandler < handle
         h = T/N;
         self.setBounds('h',h);
         self.T = T;
-        self.H_norm = [];
+        self.H_norm = H_norm;
       elseif length(T) == N+1
         % T = N+1 timepoints at states
         h = (T(2:N+1)-T(1:N));
         self.setBounds('h',h);
         self.T = T(end);
-        self.H_norm = [];
+        self.H_norm = H_norm;
       elseif length(T) == N
         % T = N timesteps
         h = T;
         self.setBounds('h',h);
         self.T = sum(h);
-        self.H_norm = [];
+        self.H_norm = H_norm;
       elseif isempty(T)
         % T = [] free end time
         self.T = [];
@@ -135,12 +135,6 @@ classdef OclOcpHandler < handle
         self.endBounds.(id).upper = in4;
       end
     end  
-    
-    function addParameter(self,varargin)
-      % addParameter(id)
-      % addParameter(id,size)
-      self.system.parametersStruct.add(varargin{:});
-    end
     
     function r = getPathCosts(self,x,z,u,p)
       pcHandler = OclCost(self.ocp);

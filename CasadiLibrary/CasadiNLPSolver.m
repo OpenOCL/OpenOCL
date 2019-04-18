@@ -34,28 +34,8 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = [];
-
-      nlpData = struct;
-      nlpData.casadiNLP = casadiNLP;
-      nlpData.constraints_LB = constraints_LB;
-      nlpData.constraints_UB = constraints_UB;
-      self.timeMeasures.constructTotal = toc(constructTotalTic);
-    end
-    
-    function [outVars,times,objective,constraints] = solve(self,initialGuess)
-      % solve(initialGuess)
       
-      solveTotalTic = tic;
       
-      % interpolate initial guess
-      if self.options.nlp.auto_interpolation
-        initialGuess.interpolateIntegrator();
-      end
-      
-      v0 = initialGuess.value;
-      
-      [lbv,ubv] = self.nlp.getNlpBounds();
- 
       opts = self.options.nlp.casadi;
       if isfield(self.options.nlp,self.options.nlp.solver)
         opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
@@ -63,10 +43,28 @@ classdef CasadiNLPSolver < NLPSolver
       
       constructSolverTic = tic;
       casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
-                                   self.nlpData.casadiNLP, opts);
+                                   casadiNLP, opts);
 
       constructSolverTime = toc(constructSolverTic);
+
+      nlpData = struct;
+      nlpData.casadiNLP = casadiNLP;
+      nlpData.constraints_LB = constraints_LB;
+      nlpData.constraints_UB = constraints_UB;
+      nlpData.solver = casadiSolver;
+      self.timeMeasures.constructTotal = toc(constructTotalTic);
+      self.timeMeasures.constructSolver = constructSolverTime;
+    end
+    
+    function [outVars,times,objective,constraints] = solve(self,initialGuess)
+      % solve(initialGuess)
       
+      solveTotalTic = tic;
+      
+      v0 = initialGuess.value;
+      
+      [lbv,ubv] = self.nlp.getNlpBounds();
+ 
       args = struct;
       args.lbg = self.nlpData.constraints_LB;
       args.ubg = self.nlpData.constraints_UB;
@@ -77,11 +75,11 @@ classdef CasadiNLPSolver < NLPSolver
       
       % execute solver
       solveCasadiTic = tic;
-      sol = casadiSolver.call(args);
+      sol = self.nlpData.solver.call(args);
       solveCasadiTime = toc(solveCasadiTic);
       
-      if strcmp(self.options.nlp.solver,'ipopt') && strcmp(casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
-        error('Solver was interrupted by user.');
+      if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.nlpData.solver.stats().return_status,'NonIpopt_Exception_Thrown')
+        oclWarning('Solver was interrupted by user.');
       end
       
       solution = sol.x.full();
@@ -99,7 +97,6 @@ classdef CasadiNLPSolver < NLPSolver
       
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
       self.timeMeasures.solveCasadi     = solveCasadiTime;
-      self.timeMeasures.constructSolver = constructSolverTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
       
       oclWarningNotice()
