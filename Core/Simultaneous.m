@@ -24,9 +24,11 @@ classdef Simultaneous < handle
     np
     nit
     
-    igAll
-    ig0
-    igF
+    igBoundsAll
+    igBounds0
+    igBoundsF
+    
+    igParameters
     
   end
   
@@ -68,43 +70,50 @@ classdef Simultaneous < handle
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
       
-      self.igAll = struct;
-      self.ig0 = struct;
-      self.igF = struct;
+      self.igBoundsAll = struct;
+      self.igBounds0 = struct;
+      self.igBoundsF = struct;
       
+      self.igParameters = struct;
+      
+    end
+    
+    function setParameter(self,id,value)
+      self.ocpHandler.setInitialBounds(id,value);
+      self.igParameters.(id) = value;
     end
     
     function setBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.ocpHandler.setBounds(id,varargin{:})
-      self.ig.(id) = mean([varargin{:}]);
+      self.igBoundsAll.(id) = mean([varargin{:}]);
     end
     
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.ocpHandler.setInitialBounds(id,varargin{:});
-      self.ig0.(id) = mean([varargin{:}]);
+      self.igBounds0.(id) = mean([varargin{:}]);
     end
     
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
       self.ocpHandler.setEndBounds(id,varargin{:})
-      self.igF.(id) = mean([varargin{:}]);
+      self.igBoundsF.(id) = mean([varargin{:}]);
     end    
     
     function setInitialGuess0(self, id, value)
-      self.ig0.(id) = value;
+      self.igBounds0.(id) = value;
     end
     
     function setInitialGuessF(self, id, value)
-      self.igF.(id) = value;
+      self.igBoundsF.(id) = value;
     end
     
     function setInitialGuess(self, id, value)
-      self.igAll.(id) = value;
+      self.igBoundsAll.(id) = value;
     end
     
     function ig = ig(self)
@@ -113,48 +122,53 @@ classdef Simultaneous < handle
     
     function initialGuess = getInitialGuess(self)
       
-      initialGuess = NlpValues.create(self.varsStruct,0);
+      initialGuess = Variable.create(self.varsStruct,0);
+      igFlat = Variable.create(self.varsStruct.flat(),0);
       
-      [lb,ub] = self.getNlpBounds();
+      % apply initial guesses from bounds
       
-      guessValues = (lb + ub) / 2;
-      
-      % set to lowerBounds if upperBounds are inf
-      indizes = isinf(ub);
-      guessValues(indizes) = lb(indizes);
-      
-      % set to upperBounds of lowerBounds are inf
-      indizes = isinf(lb);
-      guessValues(indizes) = ub(indizes);
-      
-      % set to zero if both lower and upper bounds are inf
-      indizes = isinf(lb) & isinf(ub);
-      guessValues(indizes) = 0;
-      
-      % apply manual set ig
-      igFlat = NlpValues.create(self.varsStruct.flat(),guessValues);
-      
-      % ig at end (set everywhere)
-      names = fieldnames(self.igF);
+      % ig general (set everywhere)
+      names = fieldnames(self.igBoundsAll);
       for i=1:length(names)
         id = names{i};
-        igFlat.get(id).set(self.igF.(id));
+        igFlat.get(id).set(self.igBoundsAll.(id));
       end
       
-      % ig at start (set everywhere except end)
-      names = fieldnames(self.ig0);
+      % ig at end
+      names = fieldnames(self.igBoundsF);
       for i=1:length(names)
         id = names{i};
         igId = igFlat.get(id);
-        igId(:,:,1:end-1).set(self.ig0.(id));
+        igId(:,:,end).set(self.igBoundsF.(id));
       end
       
-      % ig general (set everywhere except start and end)
-      names = fieldnames(self.ig);
+      % ig at start
+      names = fieldnames(self.igBounds0);
       for i=1:length(names)
         id = names{i};
         igId = igFlat.get(id);
-        igId(:,:,2:end-1).set(self.igAll.(id));
+        igId(:,:,1).set(self.igBounds0.(id));
+      end
+
+      % linearily interpolate guess
+      names = igFlat.children();
+      for i=1:length(names)
+        id = names{i};
+        igId = igFlat.get(id);
+        igStart = igId(:,:,1).value;
+        igEnd = igId(:,:,end).value;
+        s = igId.size();
+        gridpoints = reshape(linspace(0, 1, s(3)),1,1,s(3));
+        gridpoints = repmat(gridpoints,s(1),s(2));
+        interpolated = igStart + gridpoints.*(igEnd-igStart);
+        igFlat.get(id).set(interpolated);
+      end
+      
+      % ig for parameters
+      names = fieldnames(self.igParameters);
+      for i=1:length(names)
+        id = names{i};
+        igFlat.get(id).set(self.igParameters.(id));
       end
       
       initialGuess.set(igFlat.value());

@@ -25,10 +25,9 @@ classdef NLPSolver < handle
       self.timeMeasures.initialGuess = toc(igTic);
     end
     
-    function setParameter(self,varargin)
+    function setParameter(self, id, value)
       % setParameter(id,value)
-      % setParameter(id,lower,upper)
-      self.nlp.setInitialBounds(varargin{:})
+      self.nlp.setParameter(id, value)
     end
     
     function setBounds(self,varargin)
