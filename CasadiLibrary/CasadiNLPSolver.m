@@ -76,7 +76,7 @@ classdef CasadiNLPSolver < NLPSolver
       solveCasadiTime = toc(solveCasadiTic);
       
       if strcmp(self.options.nlp.solver,'ipopt') && strcmp(casadiSolver.stats().return_status,'NonIpopt_Exception_Thrown')
-        error('Solver was interrupted by user.');
+        oclWarning('Solver was interrupted by user.');
       end
       
       solution = sol.x.full();
