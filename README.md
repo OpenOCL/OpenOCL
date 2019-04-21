@@ -8,6 +8,10 @@ The Open Optimal Control Library is a software toolbox for Matlab/Octave that fa
 
 Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
 
+## Contribute
+
+If you would like to participate in the project, you are very welcome!
+
 ## Models
 
 * airborne wind energy: https://openawe.github.io/
