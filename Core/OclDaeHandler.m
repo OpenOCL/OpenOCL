@@ -3,9 +3,15 @@ classdef OclDaeHandler < handle
   properties
     ode
     dae
+    
+    statesOrder
   end
   
   methods
+    
+    function self = OclDaeHandler(statesOrder)
+      self.statesOrder = statesOrder;
+    end
   
      function setODE(self,id,eq)
       if ~isfield(self.ode,id)
@@ -21,11 +27,16 @@ classdef OclDaeHandler < handle
       self.alg = [self.alg;Variable.getValueAsColumn(eq)];
     end
     
-    function ode = getOde(self, nx)
+    function r = getOde(self, nx)
       
-      ode = struct2cell(self.ode);
-      ode = vertcat(ode{:});
-      if length(ode) ~= nx
+      r = cell(length(self.statesOrder),1);
+      for k=1:length(self.statesOrder)
+        id = self.statesOrder{k};
+        r{k} = self.ode.(id);
+      end
+      r = vertcat(r{:});
+      
+      if length(r) ~= nx
         oclException(['Number of ode equations does not match ',...
                       'number of state variables.']);
       end

@@ -102,6 +102,8 @@ classdef OclSystem < handle
 
       svh = OclSysvarsHandler();
       self.fh.vars(svh);
+      
+      self.statesOrder = svh.statesOrder;
 
       sx = svh.statesStruct.size();
       sz = svh.algVarsStruct.size();

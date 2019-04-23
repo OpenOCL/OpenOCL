@@ -8,6 +8,8 @@ classdef OclSysvarsHandler < handle
     
     bounds
     parameterBounds
+    
+    statesOrder = {}
   end
   
   methods
@@ -26,10 +28,12 @@ classdef OclSysvarsHandler < handle
 
       id = p.Results.id;
 
-      self.ode.(id) = [];
       self.statesStruct.add(id, p.Results.s);
       self.bounds.(id).lower = p.Results.lb;
       self.bounds.(id).upper = p.Results.ub;
+      
+      self.statesOrder{end+1} = id;
+      
     end
     function addAlgVar(self,id,varargin)
       % addAlgVar(id)
