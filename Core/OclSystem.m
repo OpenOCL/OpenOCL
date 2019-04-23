@@ -16,8 +16,8 @@ classdef OclSystem < handle
 
     thisInitialConditions
 
-    systemFun
-    icFun
+    systemfun
+    icfun
   end
 
   properties (Access = private)
@@ -100,18 +100,19 @@ classdef OclSystem < handle
 
     function setup(self)
 
-      self.fh.vars(self);
+      svh = OclSysvarsHandler();
+      self.fh.vars(svh);
 
-      sx = self.statesStruct.size();
-      sz = self.algVarsStruct.size();
-      su = self.controlsStruct.size();
-      sp = self.parametersStruct.size();
+      sx = svh.statesStruct.size();
+      sz = svh.algVarsStruct.size();
+      su = svh.controlsStruct.size();
+      sp = svh.parametersStruct.size();
 
       fhEq = @(self,varargin)self.getEquations(varargin{:});
-      self.systemFun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
+      self.systemfun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
 
       fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
-      self.icFun = OclFunction(self, fhIC, {sx,sp},1);
+      self.icfun = OclFunction(self, fhIC, {sx,sp},1);
     end
 
     function setupVariables(varargin)
@@ -174,75 +175,7 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
 
-    function addState(self,id,varargin)
-      % addState(id)
-      % addState(id,s)
-      % addState(id,s,lb=lb,lb=ub)
-
-      p = inputParser;
-      p.addRequired('id', @ischar);
-      p.addOptional('s', 1, @isnumeric);
-      p.addParameter('lb', -inf, @isnumeric);
-      p.addParameter('ub', inf, @isnumeric);
-      p.parse(id,varargin{:});
-
-      id = p.Results.id;
-
-      self.ode.(id) = [];
-      self.statesStruct.add(id, p.Results.s);
-      self.bounds.(id).lower = p.Results.lb;
-      self.bounds.(id).upper = p.Results.ub;
-    end
-    function addAlgVar(self,id,varargin)
-      % addAlgVar(id)
-      % addAlgVar(id,s)
-      % addAlgVar(id,s,lb=lb,ub=ub)
-      p = inputParser;
-      p.addRequired('id', @ischar);
-      p.addOptional('s', 1, @isnumeric);
-      p.addParameter('lb', -inf, @isnumeric);
-      p.addParameter('ub', inf, @isnumeric);
-      p.parse(id,varargin{:});
-
-      id = p.Results.id;
-
-      self.algVarsStruct.add(id, p.Results.s);
-      self.bounds.(id).lower = p.Results.lb;
-      self.bounds.(id).upper = p.Results.ub;
-    end
-    function addControl(self,id,varargin)
-      % addControl(id)
-      % addControl(id,s)
-      % addControl(id,s,lb=lb,ub=ub)
-      p = inputParser;
-      p.addRequired('id', @ischar);
-      p.addOptional('s', 1, @isnumeric);
-      p.addParameter('lb', -inf, @isnumeric);
-      p.addParameter('ub', inf, @isnumeric);
-      p.parse(id,varargin{:});
-
-      id = p.Results.id;
-
-      self.controlsStruct.add(id,p.Results.s);
-      self.bounds.(id).lower = p.Results.lb;
-      self.bounds.(id).upper = p.Results.ub;
-    end
-    function addParameter(self,id,varargin)
-      % addParameter(id)
-      % addParameter(id,s)
-      % addParameter(id,s,defaultValue)
-      p = inputParser;
-      p.addRequired('id', @ischar);
-      p.addOptional('s', 1, @isnumeric);
-      p.addParameter('default', 0, @isnumeric);
-      p.parse(id,varargin{:});
-
-      id = p.Results.id;
-
-      self.parametersStruct.add(id,p.Results.s);
-      self.parameterBounds.(id).lower = p.Results.default;
-      self.parameterBounds.(id).upper = p.Results.default;
-    end
+    
 
     function setODE(self,id,eq)
       if ~isfield(self.ode,id)

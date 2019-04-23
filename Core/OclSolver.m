@@ -1,10 +1,11 @@
 function solver = OclSolver(T, system, ocp, options, varargin)
   % OclSolver(T, system, ocp, options, H_norm)
-  % OclSolver(T, phase, options)
-  % OclSolver(T, phaseList, options)
+  % OclSolver(phase, options)
+  % OclSolver(phaseList, options)
+  % OclSolver(T, @varsfun, @daefun, @ocpfuns... , options)
   preparationTic = tic;
   
-  ocpHandler = OclOcpHandler(T,system,ocp,options,varargin{:});
+  ocpHandler = OclPhaseHandler(phaseList,options);
   ocpHandler.setup();
   
   N = options.nlp.controlIntervals;

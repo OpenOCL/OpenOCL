@@ -1,6 +1,10 @@
 
 classdef OclPhaseHandler < handle
   properties (Access = public)
+    
+    phaseList
+    
+    
     pathCostsFun
     arrivalCostsFun
     boundaryConditionsFun
@@ -18,15 +22,12 @@ classdef OclPhaseHandler < handle
   end
   
   properties(Access = private)
-    ocp    
-    system
     nlpVarsStruct
   end
 
   methods
-    function self = OclPhaseHandler(T,system,ocp,options,H_norm)
-      self.ocp = ocp;
-      self.system = system;
+    function self = OclPhaseHandler(phaseList,options)
+      self.phaseList = phaseList;
       self.options = options;
       
       N = options.nlp.controlIntervals;
@@ -70,6 +71,14 @@ classdef OclPhaseHandler < handle
     
     function setup(self)
       % variable sizes
+      
+      
+      for k=1:self.numPhases
+        
+        phase = self.phaseList{k};
+        
+        
+      end
       
       self.system.setup();
       

@@ -13,6 +13,13 @@ classdef OclPhase < handle
     pathconfun
     boundaryfun
     discretefun
+    
+    nx
+    nz
+    nu
+    np
+    
+    systemfun
   end
   
   methods
@@ -125,6 +132,16 @@ classdef OclPhase < handle
       self.pathconfun = pathconstraintsfun;
       self.boundaryfun = boundaryconditionsfun;
       self.discretefun = discretecostsfun;
+      
+      system = OclSystem(varsfun, daefun);
+      system.setup()
+      
+      self.nx = system.nx();
+      self.nz = system.nz();
+      self.nu = system.nu();
+      self.np = system.np();
+      
+      self.systemfun = system.systemFun;
       
     end
     
