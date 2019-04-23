@@ -149,20 +149,11 @@ classdef OclSystem < handle
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
 
-      self.fh.eq(self,x,z,u,p);
+      daehandler = OclDaeHandler();
+      self.fh.eq(daehandler,x,z,u,p);
 
-      ode = struct2cell(self.ode);
-      ode = vertcat(ode{:});
-      alg = self.alg;
-
-      if length(alg) ~= self.nz
-        oclException(['Number of algebraic equations does not match ',...
-                      'number of algebraic variables.']);
-      end
-      if length(ode) ~= self.nx
-        oclException(['Number of ode equations does not match ',...
-                      'number of state variables.']);
-      end
+      ode = daehandler.getOde(self.nx);
+      alg = daehandler.getAlg(self.nz);
     end
 
     function ic = getInitialConditions(self,states,parameters)
@@ -173,22 +164,6 @@ classdef OclSystem < handle
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
           'In initial condition are only equality constraints allowed.');
-    end
-
-    
-
-    function setODE(self,id,eq)
-      if ~isfield(self.ode,id)
-        oclException(['State ', id, ' does not exist.']);
-      end
-      if ~isempty(self.ode.(id))
-        oclException(['Ode for var ', id, ' already defined']);
-      end
-      self.ode.(id) = Variable.getValueAsColumn(eq);
-    end
-
-    function setAlgEquation(self,eq)
-      self.alg = [self.alg;Variable.getValueAsColumn(eq)];
     end
 
     function setInitialCondition(self,eq)
