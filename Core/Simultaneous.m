@@ -23,6 +23,7 @@ classdef Simultaneous < handle
     nu
     np
     nit
+    nq    % number of phases
     
     igBoundsAll
     igBounds0
@@ -33,16 +34,17 @@ classdef Simultaneous < handle
   end
   
   methods
-    function self = Simultaneous(system,ocpHandler,integrator,N,options)
+    function self = Simultaneous(system,phaseHandler,integrator,N,options)
       
       self.system = system;
-      self.ocpHandler = ocpHandler;
+      self.ocpHandler = phaseHandler;
       self.N = N;
       self.options = options;
       self.nx = prod(system.statesStruct.size());
       self.ni = prod(integrator.varsStruct.size());
       self.nu = prod(system.controlsStruct.size());
       self.np = prod(system.parametersStruct.size());
+      self.nq = phaseHandler.nq;
       
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.

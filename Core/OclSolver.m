@@ -1,5 +1,7 @@
 function solver = OclSolver(T, system, ocp, options, varargin)
-  % OclSolver(T, system, ocp, options)
+  % OclSolver(T, system, ocp, options, H_norm)
+  % OclSolver(T, phase, options)
+  % OclSolver(T, phaseList, options)
   preparationTic = tic;
   
   ocpHandler = OclOcpHandler(T,system,ocp,options,varargin{:});

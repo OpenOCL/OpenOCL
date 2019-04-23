@@ -8,7 +8,6 @@ classdef OclOCP < handle
   methods(Access = public)
     function self = OclOCP(varargin)
       % OclOCP(pathCostsFH,arrivalCostsFH,pathConstraintsFH,discreteCostsFH)
-      % OclOCP(__,'T',integrationEnd)
       
       defFhPC = @(varargin)[];
       defFhAC = @(varargin)[];
