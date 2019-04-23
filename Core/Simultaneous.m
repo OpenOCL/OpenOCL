@@ -1,5 +1,5 @@
 classdef Simultaneous < handle
-  %COLLOCATION Collocation discretization of OCP to NLP
+  %SIMULTANEOUS Collocation discretization of OCP to NLP
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
   properties
@@ -60,9 +60,9 @@ classdef Simultaneous < handle
       self.varsStruct = self.getVarsStruct(phaseHandler);
       
       self.timesStruct = OclStructure();
-      self.timesStruct.addRepeated({'states','integrator','controls'},...
-                                   {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
-      self.timesStruct.add('states',OclMatrix([1,1]));
+      self.timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
+                                   {OclMatrix([1,1]), OclMatrix([self.nit,1]), OclMatrix([1,1])}, self.N);
+      self.timesStruct.add('states', OclMatrix([1,1]));
 
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);

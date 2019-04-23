@@ -1,5 +1,5 @@
 
-classdef OclOcpHandler < handle
+classdef OclPhaseHandler < handle
   properties (Access = public)
     pathCostsFun
     arrivalCostsFun
@@ -24,7 +24,7 @@ classdef OclOcpHandler < handle
   end
 
   methods
-    function self = OclOcpHandler(T,system,ocp,options,H_norm)
+    function self = OclPhaseHandler(T,system,ocp,options,H_norm)
       self.ocp = ocp;
       self.system = system;
       self.options = options;
