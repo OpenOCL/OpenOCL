@@ -1,13 +1,30 @@
 classdef Simultaneous < handle
-  %SIMULTANEOUS Collocation discretization of OCP to NLP
+  %SIMULTANEOUS Direct collocation discretization of OCP to NLP
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
   properties
-    nlpFun
     varsStruct
-    timesStruct
+    nlpFun   
+
     
+  end
+  
+  properties(Access = private)
+    numPhases
     phaseList
+    
+    igBoundsAll
+    igBounds0
+    igBoundsF
+    
+    initialBounds
+    endBounds
+    bounds
+    
+    igParameters
+    
+    integratorMaps
+    pathconstraintsMaps
     
     integratorFun
     nv
@@ -16,36 +33,16 @@ classdef Simultaneous < handle
     
     integratorMap
     pathconstraintsMap
-    
-    initialBounds
-    endBounds
-    bounds
-    
-  end
-  
-  properties(Access = private)
-    numPhases
-    
-    igBoundsAll
-    igBounds0
-    igBoundsF
-    
-    igParameters
-    
-    integratorMaps
-    pathconstraintsMaps
-    
   end
   
   methods
-    function self = Simultaneous(phaseList, integratorList, options)
+    function self = Simultaneous(phaseList, options)
       
       self.phaseList = phaseList;
       self.options = options;
-      
       self.numPhases = length(phaseList);
-           
-      self.varsStruct = self.getVarsStruct(phaseList);
+      
+      self.varsStruct = self.getVarsStruct();
       
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
@@ -53,7 +50,6 @@ classdef Simultaneous < handle
       self.igBoundsAll = struct;
       self.igBounds0 = struct;
       self.igBoundsF = struct;
-      
       self.igParameters = struct;
       
       self.integratorMaps = cell(self.numPhases,1);
@@ -61,19 +57,11 @@ classdef Simultaneous < handle
       
       for k=1:self.numPhases
         phase = phaseList{k};
-        integrator = integratorList{k};
         
-        integratorfun = integrator.attach(phase.daefun);
-        
-        self.integratorMaps{k} = CasadiMapFunction(integratorfun,phase.N);
+        self.integratorMaps{k} = CasadiMapFunction(phase.integrator.integratorfun, phase.N);
         self.pathconstraintsMaps{k} = CasadiMapFunction(phase.pathconfun, phase.N-1);
-        
-        nlp.integratorMap = CasadiMapFunction(nlp.integratorFun,N);
-        nlp.pathconstraintsMap = CasadiMapFunction(ocpHandler.pathConstraintsFun, N-1);
-        
+
       end
-      
-      
     end
     
     function varsStruct = getVarsStruct(~, phaseHandler)
@@ -82,13 +70,11 @@ classdef Simultaneous < handle
       phaseStruct = [];
       
       for k=1:phaseHandler.numPhases
-        
         phase = phaseHandler.get(k);
-        
         phaseStruct = OclStructure();
         phaseStruct.addRepeated({'states','integrator','controls','parameters','h'}, ...
                             {phase.statesStruct, ...
-                             phase.integrator.varsStruct, ...
+                             phase.integratorStruct, ...
                              phase.controlsStruct, ...
                              phase.parametersStruct, ...
                              OclMatrix([1,1])}, phase.N);
@@ -96,8 +82,6 @@ classdef Simultaneous < handle
 
         varsStruct.add('phase', phaseStruct);
       end
-      
-
       if phaseHandler.numPhases == 1
         varsStruct = phaseStruct;
       end
@@ -111,7 +95,6 @@ classdef Simultaneous < handle
       self.timesStruct.add('states', OclMatrix([1,1]));
       
     end
-    
     
     function setParameter(self,id,varargin)
       self.initialBounds = OclBound(id, varargin{:});
@@ -213,8 +196,6 @@ classdef Simultaneous < handle
         igFlat.get(id).set(self.igParameters.(id));
       end
       
-
-      
       initialGuess.set(igFlat.value());
       
       % ig for timesteps
@@ -233,50 +214,57 @@ classdef Simultaneous < handle
       lowerBounds = Variable.create(boundsStruct,-inf);
       upperBounds = Variable.create(boundsStruct,inf);
       
-      % system bounds
-      names = fieldnames(self.system.bounds);
+      % phase bounds
+      for k=1:self.numPhases
+        
+        phase = self.phaseList{k};
+        
+        phase_lb = lowerBounds.get('phases', k);
+        phase_ub = lowerBounds.get('phases', k);
+        
+        names = fieldnames(phase.bounds);
+        for i=1:length(names)
+          id = names{i};
+          phase_lb.get(id).set(phase.bounds.(id).lower);
+          phase_ub.get(id).set(phase.bounds.(id).upper);
+        end
+        
+        names = fieldnames(phase.parameterBounds);
+        for i=1:length(names)
+          id = names{i};
+          lb = phase_lb.get(id);
+          ub = phase_ub.get(id);
+          lb(:,:,1).set(self.system.parameterBounds.(id).lower);
+          ub(:,:,1).set(self.system.parameterBounds.(id).upper);
+        end
+        
+      end
+
+      % nlp bounds
+      names = fieldnames(self.bounds);
       for i=1:length(names)
         id = names{i};
-        lowerBounds.get(id).set(self.system.bounds.(id).lower);
-        upperBounds.get(id).set(self.system.bounds.(id).upper);
+        lowerBounds.get(id).set(self.bounds.(id).lower);
+        upperBounds.get(id).set(self.bounds.(id).upper);
       end
       
-      % system parameter bounds
-      names = fieldnames(self.system.parameterBounds);
+      names = fieldnames(self.initialBounds);
       for i=1:length(names)
         id = names{i};
         lb = lowerBounds.get(id);
         ub = upperBounds.get(id);
-        lb(:,:,1).set(self.system.parameterBounds.(id).lower);
-        ub(:,:,1).set(self.system.parameterBounds.(id).upper);
-      end
-      
-      % solver bounds
-      names = fieldnames(self.ocpHandler.bounds);
-      for i=1:length(names)
-        id = names{i};
-        lowerBounds.get(id).set(self.ocpHandler.bounds.(id).lower);
-        upperBounds.get(id).set(self.ocpHandler.bounds.(id).upper);
-      end
-      
-      % initial bounds
-      names = fieldnames(self.ocpHandler.initialBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,1).set(self.ocpHandler.initialBounds.(id).lower);
-        ub(:,:,1).set(self.ocpHandler.initialBounds.(id).upper);
+        lb(:,:,1).set(self.initialBounds.(id).lower);
+        ub(:,:,1).set(self.initialBounds.(id).upper);
       end
       
       % end bounds
-      names = fieldnames(self.ocpHandler.endBounds);
+      names = fieldnames(self.endBounds);
       for i=1:length(names)
         id = names{i};
         lb = lowerBounds.get(id);
         ub = upperBounds.get(id);
-        lb(:,:,end).set(self.ocpHandler.endBounds.(id).lower);
-        ub(:,:,end).set(self.ocpHandler.endBounds.(id).upper);
+        lb(:,:,end).set(self.endBounds.(id).lower);
+        ub(:,:,end).set(self.endBounds.(id).upper);
       end
       
       lowerBounds = lowerBounds.value;

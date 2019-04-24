@@ -3,7 +3,7 @@ classdef OclPhase < handle
   properties
     T
     H_norm
-    d
+    integrator
     
     pathcostfun
     arrivalcostfun
@@ -12,8 +12,7 @@ classdef OclPhase < handle
     discretefun
     
     bounds
-    initialBounds
-    endBounds
+    parameterBounds
     
     nx
     nz
@@ -49,7 +48,7 @@ classdef OclPhase < handle
       p.addOptional('discretecosts_opt', [], @oclIsFunHandleOrEmpty);
       
       p.addOptional('N_opt', [], @isnumeric);
-      p.addOptional('d_opt', [], @isnumeric);
+      p.addOptional('integrator_opt', [], @isnumeric);
       
       p.addParameter('varsfun', empty_fh, @oclIsFunHandle);
       p.addParameter('daefun', empty_fh, @oclIsFunHandle);
@@ -61,7 +60,7 @@ classdef OclPhase < handle
       p.addParameter('discretecosts', empty_fh, @oclIsFunHandle);
       
       p.addParameter('N', 30, @isnumeric);
-      p.addParameter('d', 3, @isnumeric);
+      p.addParameter('integrator', OclCollocation(3), @(self)isa(self, 'OclCollocation'));
       p.parse(varargin{:});
       
       varsfh = p.Results.varsfun_opt;
@@ -104,9 +103,9 @@ classdef OclPhase < handle
         N = p.Results.N;
       end
       
-      d = p.Results.d_opt;
-      if isempty(d)
-        d = p.Results.d;
+      integrator = p.Results.integrator_opt;
+      if isempty(integrator)
+        integrator = p.Results.integrator;
       end
       
       T = p.Results.T;
@@ -131,9 +130,6 @@ classdef OclPhase < handle
         end
       end
       
-      oclAssert(isscalar(d) && isreal(d));
-      self.d = d;
-      
       self.pathcostfh = pathcostsfh;
       self.arrivalcostfh = arrivalcostsfh;
       self.pathconfh = pathconstraintsfh;
@@ -154,6 +150,10 @@ classdef OclPhase < handle
       sp = system.parametersStruct.size();
       
       self.systemfun = system.systemfun;
+      
+      self.integrator = integrator;
+      
+      
       
       fhPC = @(self,varargin) self.getPathCosts(varargin{:});
       self.pathcostfun = OclFunction(self, fhPC, {sx,sz,su,sp}, 1);

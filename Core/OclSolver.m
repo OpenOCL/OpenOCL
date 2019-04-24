@@ -41,22 +41,15 @@ function solver = OclSolver(T, system, ocp, options, varargin)
       oclError('Dimension of T does not match the number of control intervals.')
     end
     
+    integrator = OclCollocation(d);
+    
     phase = OclPhase(T, system.fh.vars, system.fh.eq, ocp.fh.pathcosts, ...
                      ocp.fh.arrivalcosts, ocp.fh.pathconstraints, ...
-                     ocp.fh.boundaryconditions, ocp.fh.discretecosts, H_norm, d);
+                     ocp.fh.boundaryconditions, ocp.fh.discretecosts, H_norm, integrator);
     phaseList{1} = phase;
   end
   
-  
-  integratorList = cell(length(phaseList),1);
-  
-  for k=1:length(phaseList)
-    
-    integratorList{k} = CollocationIntegrator(options.nlp.collocationOrder);
-    
-  end
-  
-  nlp = Simultaneous(phaseList,integratorList,options);
+  nlp = Simultaneous(phaseList,options);
   
   phaseHandler.setNlpVarsStruct(nlp.varsStruct);
   integrator.pathCostsFun = phaseHandler.pathCostsFun;
