@@ -183,7 +183,7 @@ classdef Simultaneous < handle
       end
       
       % ig for parameters
-      names = fieldnames(self.system.parameterBounds);
+      names = fieldnames(self.parameterBounds);
       for i=1:length(names)
         id = names{i};
         val = mean([self.system.parameterBounds.(id).lower,self.system.parameterBounds.(id).upper]);
@@ -222,6 +222,16 @@ classdef Simultaneous < handle
         phase_lb = lowerBounds.get('phases', k);
         phase_ub = lowerBounds.get('phases', k);
         
+        % timestep bounds
+        if isempty(phase.T)
+          phase_lb.get('h').set(Simultaneous.h_lower);
+          phase_ub.get('h').set(inf);
+        else
+          phase_lb.get('h').set(phase.H_norm * phase.T);
+          phase_ub.get('h').set(phase.H_norm * phase.T);
+        end
+        
+        % variables bounds
         names = fieldnames(phase.bounds);
         for i=1:length(names)
           id = names{i};
@@ -229,13 +239,14 @@ classdef Simultaneous < handle
           phase_ub.get(id).set(phase.bounds.(id).upper);
         end
         
+        % parameters bounds
         names = fieldnames(phase.parameterBounds);
         for i=1:length(names)
           id = names{i};
           lb = phase_lb.get(id);
           ub = phase_ub.get(id);
-          lb(:,:,1).set(self.system.parameterBounds.(id).lower);
-          ub(:,:,1).set(self.system.parameterBounds.(id).upper);
+          lb(:,:,1).set(phase.parameterBounds.(id).lower);
+          ub(:,:,1).set(phase.parameterBounds.(id).upper);
         end
         
       end
@@ -272,7 +283,6 @@ classdef Simultaneous < handle
       
     end
     
-    
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLP(self, nlpVars)
       
       numStatesOfLastPhase = self.phaseList{self.numPhases}.nx;
@@ -288,14 +298,14 @@ classdef Simultaneous < handle
       for k=1:self.numPhases
         
         phase = self.phaseList{k};
-        phaseVars = nlpVars(varIndex:varIndex+phase.numVars);
+        phaseVars = nlpVars(varIndex:varIndex + phase.numVars);
         
-        [phaseCosts,phaseConstraints,phaseConstraints_LB,phaseConstraints_UB, times, x0, p0] = getPhaseEquations(phase,phaseVars);
-        [bc,bc_lb,bc_ub] = phase.boundaryfun.evaluate(x0, xF, p0);
+        [phaseCosts,phaseConstraints,phaseConstraints_LB,phaseConstraints_UB, times, x0, p0] = getPhaseEquations(phase, phaseVars);
+        [bc, bc_lb, bc_ub] = phase.boundaryfun.evaluate(x0, xF, p0);
         
-        constraints{k} = [phaseConstraints;bc];
-        constraints_LB{k} = [phaseConstraints_LB;bc_lb];
-        constraints_UB{k} = [phaseConstraints_UB;bc_ub];
+        constraints{k} = [phaseConstraints; bc];
+        constraints_LB{k} = [phaseConstraints_LB; bc_lb];
+        constraints_UB{k} = [phaseConstraints_UB; bc_ub];
         
         costs = costs + phaseCosts;
         
