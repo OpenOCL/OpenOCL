@@ -2,7 +2,7 @@ classdef OclDaeHandler < handle
   
   properties
     ode
-    dae
+    alg
     
     statesOrder
   end

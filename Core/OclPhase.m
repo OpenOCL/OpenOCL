@@ -104,11 +104,11 @@ classdef OclPhase < handle
       T = p.Results.T;
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
-        ['Invalid value for parameter T.', oclReadDocsStr()] );
+        ['Invalid value for parameter T.', oclDocMessage()] );
       self.T = T;
       
       oclAssert( (isscalar(N) || isnumeric(N)) && isreal(N), ...
-        ['Invalid value for parameter N.', oclReadDocsStr()] );
+        ['Invalid value for parameter N.', oclDocMessage()] );
       if iscalar(N)
         self.H_norm = repmat(1/N, 1, N);
       else

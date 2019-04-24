@@ -5,6 +5,11 @@ classdef OclSystem < handle
     algVarsStruct
     controlsStruct
     parametersStruct
+    
+    nx
+    nz
+    nu
+    np
 
     ode
     alg
@@ -18,6 +23,8 @@ classdef OclSystem < handle
 
     systemfun
     icfun
+    
+    statesOrder
   end
 
   properties (Access = private)
@@ -104,6 +111,8 @@ classdef OclSystem < handle
       self.fh.vars(svh);
       
       self.statesOrder = svh.statesOrder;
+      self.bounds = svh.bounds;
+      self.parameterBounds = svh.parameterBounds;
 
       sx = svh.statesStruct.size();
       sz = svh.algVarsStruct.size();
@@ -117,17 +126,6 @@ classdef OclSystem < handle
       self.icfun = OclFunction(self, fhIC, {sx,sp},1);
     end
 
-    function setupVariables(varargin)
-      error('Not Implemented.');
-    end
-    function setupEquations(varargin)
-      error('Not Implemented.');
-    end
-
-    function initialConditions(~,~,~)
-      % initialConditions(states,parameters)
-    end
-
     function simulationCallbackSetup(~)
       % simulationCallbackSetup()
     end
@@ -139,19 +137,12 @@ classdef OclSystem < handle
     function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
       % evaluate the system equations for the assigned variables
 
-      % reset alg and ode
-      self.alg = [];
-      names = fieldnames(self.ode);
-      for i=1:length(names)
-        self.ode.(names{i}) = [];
-      end
-
       x = Variable.create(self.statesStruct,states);
       z = Variable.create(self.algVarsStruct,algVars);
       u = Variable.create(self.controlsStruct,controls);
       p = Variable.create(self.parametersStruct,parameters);
 
-      daehandler = OclDaeHandler();
+      daehandler = OclDaeHandler(self.statesOrder);
       self.fh.eq(daehandler,x,z,u,p);
 
       ode = daehandler.getOde(self.nx);
@@ -166,10 +157,6 @@ classdef OclSystem < handle
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
           'In initial condition are only equality constraints allowed.');
-    end
-
-    function setInitialCondition(self,eq)
-      self.thisInitialConditions = [self.thisInitialConditions; Variable.getValueAsColumn(eq)];
     end
 
     function solutionCallback(self,times,solution)
