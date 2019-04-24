@@ -41,17 +41,12 @@ classdef Simultaneous < handle
   end
   
   methods
-    function self = Simultaneous(system,phaseList,options)
+    function self = Simultaneous(phaseList,options)
       
-      self.system = system;
       self.phaseList = phaseList;
       self.options = options;
       
-      self.nx = prod(system.statesStruct.size());
-      self.ni = prod(integrator.varsStruct.size());
-      self.nu = prod(system.controlsStruct.size());
-      self.np = prod(system.parametersStruct.size());
-      self.numPhases = phaseList.numPhases;
+      self.numPhases = length(phaseList);
       
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
@@ -281,9 +276,8 @@ classdef Simultaneous < handle
     
     function [costs,constraints,constraints_LB,constraints_UB,times] = getNLP(self, nlpVars)
       
-      lastPhaseNumStates = self.phaseHandler.get(self.numPhases).nx;
-      
-      xF = nlpVars(self.totalVars-lastPhaseNumStates:self.totalVars);
+      numStatesOfLastPhase = self.phaseList{self.numPhases}.nx;
+      xF = nlpVars(self.totalVars-numStatesOfLastPhase:self.totalVars);
       
       costs = 0;
       
@@ -294,11 +288,11 @@ classdef Simultaneous < handle
       varIndex = 1;
       for k=1:self.numPhases
         
-        phase = self.phaseHandler.get(k);
-        phaseVars(varIndex:varIndex+phase.numVars);
+        phase = self.phaseList{k};
+        phaseVars = nlpVars(varIndex:varIndex+phase.numVars);
         
         [phaseCosts,phaseConstraints,phaseConstraints_LB,phaseConstraints_UB, times, x0, p0] = getPhaseEquations(phase,phaseVars);
-        [bc,bc_lb,bc_ub] = phase.ocpHandler.boundaryConditionsFun.evaluate(x0, xF, p0);
+        [bc,bc_lb,bc_ub] = phase.boundaryfun.evaluate(x0, xF, p0);
         
         constraints{k} = [phaseConstraints;bc];
         constraints_LB{k} = [phaseConstraints_LB;bc_lb];
@@ -341,8 +335,8 @@ classdef Simultaneous < handle
       pcf_lb = [];
       pcf_ub = [];
       if phase.options.path_constraints_at_boundary
-        [pc0, pc0_lb, pc0_ub] = phase.ocpHandler.pathConstraintsFun.evaluate(X(:,1), P(:,1));
-        [pcf,pcf_lb,pcf_ub] = phase.ocpHandler.pathConstraintsFun.evaluate(X(:,end), P(:,end));
+        [pc0, pc0_lb, pc0_ub] = phase.ocpHandler.pathconfun.evaluate(X(:,1), P(:,1));
+        [pcf,pcf_lb,pcf_ub] = phase.ocpHandler.pathconfun.evaluate(X(:,end), P(:,end));
       end         
       
       T0 = [0, cumsum(H(:,1:end-1))];
@@ -355,9 +349,9 @@ classdef Simultaneous < handle
       h_eq_lb = [];
       h_eq_ub = [];
       
-      if isempty(phase.ocpHandler.T)
+      if isempty(phase.T)
         % normalized timesteps (sum of timesteps is 1)
-        H_norm = phase.ocpHandler.H_norm;
+        H_norm = phase.H_norm;
         
         % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
         H_ratio = H_norm(1:end-1)./H_norm(2:end);
