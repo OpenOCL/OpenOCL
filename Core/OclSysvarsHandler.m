@@ -9,10 +9,21 @@ classdef OclSysvarsHandler < handle
     bounds
     parameterBounds
     
-    statesOrder = {}
+    statesOrder
   end
   
   methods
+    
+    function self = OclSysvarsHandler()
+      self.statesOrder = {};
+      self.statesStruct = OclStructure();
+      self.algVarsStruct = OclStructure();
+      self.parametersStruct = OclStructure();
+      self.controlsStruct = OclStructure();
+      
+      self.bounds = struct;
+      self.parameterBounds = struct;
+    end
     
     function addState(self,id,varargin)
       % addState(id)

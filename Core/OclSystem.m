@@ -5,11 +5,6 @@ classdef OclSystem < handle
     algVarsStruct
     controlsStruct
     parametersStruct
-    
-    nx
-    nz
-    nu
-    np
 
     ode
     alg

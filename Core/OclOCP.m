@@ -55,10 +55,10 @@ classdef OclOCP < handle
       end
       
       self.fh.pathCosts = pathcostsfun;
-      self.fh.arrivalCosts = arrivalcostsfun;
-      self.fh.pathConstraints = pathconstraintsfun;
-      self.fh.boundaryConditions = boundaryconditionsfun;
-      self.fh.discreteCosts = discretecostsfun;
+      self.fh.arrivalcosts = arrivalcostsfun;
+      self.fh.pathconstraints = pathconstraintsfun;
+      self.fh.boundaryconditions = boundaryconditionsfun;
+      self.fh.discretecosts = discretecostsfun;
 
       if nargin==1 && (isa(self.fh.pathCosts,'OclSystem') || isa(self.fh.pathCosts,'System'))
         oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');

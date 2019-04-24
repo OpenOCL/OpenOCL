@@ -3,6 +3,7 @@ classdef OclPhaseHandler < handle
   properties (Access = public)
     
     phaseList
+    numPhases
     
     
     pathCostsFun
@@ -30,43 +31,22 @@ classdef OclPhaseHandler < handle
       self.phaseList = phaseList;
       self.options = options;
       
-      N = options.nlp.controlIntervals;
-      
       self.bounds = struct;
       self.initialBounds = struct;
       self.endBounds = struct;
       
-      if nargin < 5
-        H_norm = repmat(1/N,1,N);
-      end
+      self.numPhases = length(phaseList);
       
-      if length(T) == 1
-        % T = final time
-        h = T/N;
-        self.setBounds('h',h);
-        self.T = T;
-        self.H_norm = H_norm;
-      elseif length(T) == N+1
-        % T = N+1 timepoints at states
-        h = (T(2:N+1)-T(1:N));
-        self.setBounds('h',h);
-        self.T = T(end);
-        self.H_norm = H_norm;
-      elseif length(T) == N
-        % T = N timesteps
-        h = T;
-        self.setBounds('h',h);
-        self.T = sum(h);
-        self.H_norm = H_norm;
-      elseif isempty(T)
-        % T = [] free end time
-        self.T = [];
-        self.H_norm = H_norm;
-        self.setBounds('h',0.001,inf);
-      else
-        oclError('Dimension of T does not match the number of control intervals.')
+      for k=1:self.numPhases
+        phase = phaseList{k};
+        oclAssert(isempty(phase.T) || isscalar(phase.T), oclArgError('T') );
+        
+        if isscalar(T)
+          phase.setBounds('h', phase.H_norm * T);
+        else
+          phase.setBounds('h',1e-6, inf);
+        end
       end
-      
     end
     
     function setup(self)
