@@ -11,6 +11,10 @@ classdef OclPhase < handle
     boundaryfun
     discretefun
     
+    bounds
+    initialBounds
+    endBounds
+    
     nx
     nz
     nu
@@ -59,7 +63,6 @@ classdef OclPhase < handle
       p.addParameter('N', 30, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
       p.parse(varargin{:});
-      
       
       varsfh = p.Results.varsfun_opt;
       if isempty(varsfh)
@@ -166,6 +169,10 @@ classdef OclPhase < handle
       
 %       fhDiscrete = @(self,varargin)self.getPathConstraints(varargin{:});
 %       self.discretefun = OclFunction(self, fhDiscrete, {}, 1);
+
+      self.bounds = system.bounds;
+      self.parameterBounds = system.parameterBounds;
+
     end
     
     function r = getPathCosts(self,x,z,u,p)

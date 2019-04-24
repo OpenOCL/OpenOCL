@@ -16,6 +16,11 @@ classdef Simultaneous < handle
     
     integratorMap
     pathconstraintsMap
+    
+    initialBounds
+    endBounds
+    bounds
+    
   end
   
   properties(Access = private)
@@ -75,7 +80,6 @@ classdef Simultaneous < handle
       
     end
     
-    
     function varsStruct = getVarsStruct(~, phaseHandler)
       
       varsStruct = OclStructure();
@@ -101,33 +105,31 @@ classdef Simultaneous < handle
       if phaseHandler.numPhases == 1
         varsStruct = phaseStruct;
       end
-      
-      
     end
     
     function setParameter(self,id,varargin)
-      self.ocpHandler.setInitialBounds(id,varargin{:});
+      self.initialBounds = OclBound(id, varargin{:});
       self.igParameters.(id) = mean([varargin{:}]);
     end
     
     function setBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setBounds(id,varargin{:})
+      self.bounds = OclBounds(id, varargin{:});
       self.igBoundsAll.(id) = mean([varargin{:}]);
     end
     
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setInitialBounds(id,varargin{:});
+      self.initialBounds = OclBounds(id, varargin{:});
       self.igBounds0.(id) = mean([varargin{:}]);
     end
     
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      self.ocpHandler.setEndBounds(id,varargin{:})
+      self.endBounds = OclBounds(id, varargin{:});
       self.igBoundsF.(id) = mean([varargin{:}]);
     end    
     
