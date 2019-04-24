@@ -44,18 +44,9 @@ classdef Simultaneous < handle
       self.options = options;
       
       self.numPhases = length(phaseList);
-      
-      % N control interval which each have states, integrator vars,
-      % controls, parameters, and timesteps.
-      % Ends with a single state.
-      self.nv = self.numPhases*(N*self.nx + N*self.ni + N*self.nu + N*self.np + N) + self.nx;
-      
-      self.integratorFun = integrator.integratorFun;
-      
+           
       self.varsStruct = self.getVarsStruct(phaseList);
       
-
-
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
       
@@ -64,7 +55,6 @@ classdef Simultaneous < handle
       self.igBoundsF = struct;
       
       self.igParameters = struct;
-      
       
       self.integratorMaps = cell(self.numPhases,1);
       self.pathconstraintsMaps = cell(self.numPhases,1);
@@ -328,6 +318,12 @@ classdef Simultaneous < handle
     end
     
     function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = getPhaseEquations(phase,phaseVars)
+      
+      
+      % N control interval which each have states, integrator vars,
+      % controls, parameters, and timesteps.
+      % Ends with a single state.
+      nv = N*phase.nx + N*phase.ni + N*phase.nu + N*phase.np + N + phase.nx;
       
       % number of variables in one control interval
       % + 1 for the timestep

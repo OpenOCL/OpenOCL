@@ -47,17 +47,20 @@ function solver = OclSolver(T, system, ocp, options, varargin)
     phaseList{1} = phase;
   end
   
-  phaseHandler = OclPhaseHandler(phaseList,options);
-  phaseHandler.setup();
   
-  N = options.nlp.controlIntervals;
-  integrator = CollocationIntegrator(system,options.nlp.collocationOrder);
-  nlp = Simultaneous(system,phaseHandler,integrator,N,options);
+  integratorList = cell(length(phaseList),1);
+  
+  for k=1:length(phaseList)
+    
+    integratorList{k} = CollocationIntegrator(options.nlp.collocationOrder);
+    
+  end
+  
+  nlp = Simultaneous(phaseList,integratorList,options);
   
   phaseHandler.setNlpVarsStruct(nlp.varsStruct);
   integrator.pathCostsFun = phaseHandler.pathCostsFun;
   nlp.ocpHandler = phaseHandler;
-
   
   ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
   system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);

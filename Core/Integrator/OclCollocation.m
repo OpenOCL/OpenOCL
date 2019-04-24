@@ -10,12 +10,14 @@
 % Copyright (C) 2011-2014 Greg Horn
 % Under GNU Lesser General Public License
 
-classdef CollocationIntegrator < handle
+classdef OclCollocation < handle
   
   properties
-    system
-    integratorFun
-    pathCostsFun
+    integratorfun
+    
+    daefun
+    pathcostfun
+    
     varsStruct
     nx
     nz
@@ -30,37 +32,38 @@ classdef CollocationIntegrator < handle
     order
   end
   
-  
   methods
     
-    function self = CollocationIntegrator(system,order)
+    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, order)
       
-      self.system = system;
-      self.nx = prod(system.statesStruct.size());
-      self.nz = prod(system.algVarsStruct.size());
+      self.nx = nx;
+      self.nz = nz;
       self.nt = order;
+      self.daefun = daefun;
       
       self.order = order;
-      self.tau_root = collocationPoints(order);
+      self.tau_root = OclCollocation.colpoints(order);
       [self.C,self.D,self.B] = self.getCoefficients(order);
       
       self.varsStruct = OclStructure();
-      self.varsStruct.addRepeated({'states','algVars'},...
-                                  {self.system.statesStruct,self.system.algVarsStruct}, order);
+      self.varsStruct.addRepeated({'states', 'algVars'},...
+                                  {statesStruct, algVarsStruct}, order);
       
-      sx = system.statesStruct.size();
+      sx = statesStruct.size();
       si = self.varsStruct.size();
-      su = system.controlsStruct.size();
-      sp = system.parametersStruct.size();
+      su = [nu 1];
+      sp = [np 1];
       st = [1,1];
       
-      fh = @(self,varargin)self.getIntegrator(varargin{:});
-      self.integratorFun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);
+      fh = @(self,varargin)self.integratorEquations(varargin{:});
+      self.integratorfun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);
                                                   
     end
 
-    function [statesEnd, AlgVarsEnd, costs, equations, times] = getIntegrator(self,statesBegin,integratorVars,...
-                                                                    controls,startTime,h,parameters)                                                                  
+    function [statesEnd, AlgVarsEnd, costs, equations, times] = ...
+          integratorEquations(self, statesBegin, integratorVars, ...
+          controls, startTime, h, parameters)              
+      
       equations = cell(self.order,1);
       J = 0;
       
@@ -83,7 +86,7 @@ classdef CollocationIntegrator < handle
         end
 
         % Append collocation equations
-        [ode,alg] = self.system.systemFun.evaluate(integratorVars(j_states), ...
+        [ode,alg] = self.daefun.evaluate(integratorVars(j_states), ...
                                                    integratorVars(j_algVars), ...
                                                    controls,parameters);
                                                  
@@ -93,7 +96,7 @@ classdef CollocationIntegrator < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.pathCostsFun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = self.pathcostfun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 
@@ -142,6 +145,22 @@ classdef CollocationIntegrator < handle
       end
     end
     
+  end
+  
+  methods (Static)
+    function [ times ] = colpoints( d )
+      if d == 2
+        times = [0 0.33333333333333333333333333333333, 1.0];
+      elseif d == 3
+        times = [0 0.15505102572168222296866701981344, 0.64494897427831787695140519645065, 1.0];
+      elseif d == 4
+        times = [0 0.088587959512704206321842548277345, 0.4094668644407346569380479195388, 0.7876594617608470016989485884551, 1.0];
+      elseif d == 5
+        times = [0 0.057104196114518224192124762339517, 0.27684301363812369167760607524542, 0.5835904323689168338162858162832, 0.86024013565621926247217743366491, 1.0];
+      else
+        error('Only collocation order between 2 and 5 is supported.');
+      end
+    end
   end
   
 end
