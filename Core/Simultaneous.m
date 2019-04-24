@@ -7,7 +7,7 @@ classdef Simultaneous < handle
     varsStruct
     timesStruct
     
-    phaseHandler
+    phaseList
     
     integratorFun
     nv
@@ -36,17 +36,17 @@ classdef Simultaneous < handle
   end
   
   methods
-    function self = Simultaneous(system,phaseHandler,options)
+    function self = Simultaneous(system,phaseList,options)
       
       self.system = system;
-      self.phaseHandler = phaseHandler;
+      self.phaseList = phaseList;
       self.options = options;
       
       self.nx = prod(system.statesStruct.size());
       self.ni = prod(integrator.varsStruct.size());
       self.nu = prod(system.controlsStruct.size());
       self.np = prod(system.parametersStruct.size());
-      self.numPhases = phaseHandler.numPhases;
+      self.numPhases = phaseList.numPhases;
       
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
@@ -57,7 +57,7 @@ classdef Simultaneous < handle
       
       self.integratorFun = integrator.integratorFun;
       
-      self.varsStruct = self.getVarsStruct(phaseHandler);
+      self.varsStruct = self.getVarsStruct(phaseList);
       
       self.timesStruct = OclStructure();
       self.timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
