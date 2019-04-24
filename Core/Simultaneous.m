@@ -24,12 +24,6 @@ classdef Simultaneous < handle
   end
   
   properties(Access = private)
-    N
-    nx
-    ni
-    nu
-    np
-    nit
     numPhases
     
     igBoundsAll
@@ -38,10 +32,13 @@ classdef Simultaneous < handle
     
     igParameters
     
+    integratorMaps
+    pathconstraintsMaps
+    
   end
   
   methods
-    function self = Simultaneous(phaseList,options)
+    function self = Simultaneous(phaseList, integratorList, options)
       
       self.phaseList = phaseList;
       self.options = options;
@@ -53,16 +50,11 @@ classdef Simultaneous < handle
       % Ends with a single state.
       self.nv = self.numPhases*(N*self.nx + N*self.ni + N*self.nu + N*self.np + N) + self.nx;
       
-      self.nit = integrator.nt; % number of integrator timepoints
-      
       self.integratorFun = integrator.integratorFun;
       
       self.varsStruct = self.getVarsStruct(phaseList);
       
-      self.timesStruct = OclStructure();
-      self.timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
-                                   {OclMatrix([1,1]), OclMatrix([self.nit,1]), OclMatrix([1,1])}, self.N);
-      self.timesStruct.add('states', OclMatrix([1,1]));
+
 
       fh = @(self,varargin)self.getNLPFun(varargin{:});
       self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
@@ -72,6 +64,25 @@ classdef Simultaneous < handle
       self.igBoundsF = struct;
       
       self.igParameters = struct;
+      
+      
+      self.integratorMaps = cell(self.numPhases,1);
+      self.pathconstraintsMaps = cell(self.numPhases,1);
+      
+      for k=1:self.numPhases
+        phase = phaseList{k};
+        integrator = integratorList{k};
+        
+        integratorfun = integrator.attach(phase.daefun);
+        
+        self.integratorMaps{k} = CasadiMapFunction(integratorfun,phase.N);
+        self.pathconstraintsMaps{k} = CasadiMapFunction(phase.pathconfun, phase.N-1);
+        
+        nlp.integratorMap = CasadiMapFunction(nlp.integratorFun,N);
+        nlp.pathconstraintsMap = CasadiMapFunction(ocpHandler.pathConstraintsFun, N-1);
+        
+      end
+      
       
     end
     
@@ -101,6 +112,16 @@ classdef Simultaneous < handle
         varsStruct = phaseStruct;
       end
     end
+    
+    function getTimeStruct(self, nit, N)
+      
+      self.timesStruct = OclStructure();
+      self.timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
+                                   {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
+      self.timesStruct.add('states', OclMatrix([1,1]));
+      
+    end
+    
     
     function setParameter(self,id,varargin)
       self.initialBounds = OclBound(id, varargin{:});

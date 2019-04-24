@@ -3,6 +3,7 @@ function solver = OclSolver(T, system, ocp, options, varargin)
   % OclSolver(phase, options)
   % OclSolver(phaseList, options)
   % OclSolver(T, @varsfun, @daefun, @ocpfuns... , options)
+  % OclSolver(phaseList, integratorList, options)
   preparationTic = tic;
   
   phaseList = {};
