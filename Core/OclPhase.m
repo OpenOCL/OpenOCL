@@ -12,6 +12,8 @@ classdef OclPhase < handle
     discretefun
     
     bounds
+    bounds0
+    boundsF
     parameterBounds
     
     nx
@@ -153,8 +155,6 @@ classdef OclPhase < handle
       
       self.integrator = integrator;
       
-      
-      
       fhPC = @(self,varargin) self.getPathCosts(varargin{:});
       self.pathcostfun = OclFunction(self, fhPC, {sx,sz,su,sp}, 1);
       
@@ -173,6 +173,24 @@ classdef OclPhase < handle
       self.bounds = system.bounds;
       self.parameterBounds = system.parameterBounds;
 
+    end
+    
+    function setBounds(self,id,varargin)
+      % setInitialBounds(id,value)
+      % setInitialBounds(id,lower,upper)
+      self.bounds = OclBounds(id, varargin{:});
+    end
+    
+    function setInitialBounds(self,id,varargin)
+      % setInitialBounds(id,value)
+      % setInitialBounds(id,lower,upper)
+      self.bounds0 = OclBounds(id, varargin{:});
+    end
+    
+    function setEndBounds(self,id,varargin)
+      % setInitialBounds(id,value)
+      % setInitialBounds(id,lower,upper)
+      self.boundsF = OclBounds(id, varargin{:});
     end
     
     function r = getPathCosts(self,x,z,u,p)

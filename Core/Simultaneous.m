@@ -4,30 +4,21 @@ classdef Simultaneous < handle
   
   properties
     varsStruct
-    nlpFun   
-
-    
+    nlpFun
   end
   
   properties(Access = private)
     numPhases
     phaseList
     
-    igBoundsAll
-    igBounds0
-    igBoundsF
-    
     initialBounds
     endBounds
     bounds
-    
-    igParameters
     
     integratorMaps
     pathconstraintsMaps
     
     integratorFun
-    nv
     system
     options
     
@@ -44,13 +35,15 @@ classdef Simultaneous < handle
       
       self.varsStruct = self.getVarsStruct();
       
-      fh = @(self,varargin)self.getNLPFun(varargin{:});
-      self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
+      nv = 0;
+      for k=1:self.numPhases
+        phase = phaseList{k};
+        N = length(phase.H_norm);
+        nv = nv + N*phase.nx + N*phase.integrator.ni + N*phase.nu + N*phase.np + N + phase.nx;
+      end
       
-      self.igBoundsAll = struct;
-      self.igBounds0 = struct;
-      self.igBoundsF = struct;
-      self.igParameters = struct;
+      fh = @(self,varargin)self.getNLPFun(varargin{:});
+      self.nlpFun = OclFunction(self,fh,{[nv,1]},5);
       
       self.integratorMaps = cell(self.numPhases,1);
       self.pathconstraintsMaps = cell(self.numPhases,1);
@@ -87,13 +80,11 @@ classdef Simultaneous < handle
       end
     end
     
-    function getTimeStruct(self, nit, N)
-      
-      self.timesStruct = OclStructure();
-      self.timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
+    function timesStruct = getTimeStruct(~, nit, N)
+      timesStruct = OclStructure();
+      timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
                                    {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
-      self.timesStruct.add('states', OclMatrix([1,1]));
-      
+      timesStruct.add('states', OclMatrix([1,1]));
     end
     
     function setParameter(self,id,varargin)
@@ -105,107 +96,100 @@ classdef Simultaneous < handle
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.bounds = OclBounds(id, varargin{:});
-      self.igBoundsAll.(id) = mean([varargin{:}]);
     end
     
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.initialBounds = OclBounds(id, varargin{:});
-      self.igBounds0.(id) = mean([varargin{:}]);
     end
     
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
       self.endBounds = OclBounds(id, varargin{:});
-      self.igBoundsF.(id) = mean([varargin{:}]);
     end    
-    
-    function setInitialGuess0(self, id, value)
-      self.igBounds0.(id) = value;
-    end
-    
-    function setInitialGuessF(self, id, value)
-      self.igBoundsF.(id) = value;
-    end
-    
-    function setInitialGuess(self, id, value)
-      self.igBoundsAll.(id) = value;
-    end
     
     function ig = ig(self)
       ig = self.getInitialGuess();
     end
     
-    function initialGuess = getInitialGuess(self)
-      
-      initialGuess = Variable.create(self.varsStruct,0);
-      igFlat = Variable.create(self.varsStruct.flat(),0);
-      
-      % apply initial guesses from bounds
-      
-      % ig general (set everywhere)
-      names = fieldnames(self.igBoundsAll);
-      for i=1:length(names)
-        id = names{i};
-        igFlat.get(id).set(self.igBoundsAll.(id));
-      end
-      
-      % ig at end
-      names = fieldnames(self.igBoundsF);
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igId(:,:,end).set(self.igBoundsF.(id));
-      end
-      
-      % ig at start
-      names = fieldnames(self.igBounds0);
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igId(:,:,1).set(self.igBounds0.(id));
-      end
-
-      % linearily interpolate guess
-      names = igFlat.children();
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igStart = igId(:,:,1).value;
-        igEnd = igId(:,:,end).value;
-        s = igId.size();
-        gridpoints = reshape(linspace(0, 1, s(3)),1,1,s(3));
-        gridpoints = repmat(gridpoints,s(1),s(2));
-        interpolated = igStart + gridpoints.*(igEnd-igStart);
-        igFlat.get(id).set(interpolated);
-      end
-      
-      % ig for parameters
-      names = fieldnames(self.parameterBounds);
-      for i=1:length(names)
-        id = names{i};
-        val = mean([self.system.parameterBounds.(id).lower,self.system.parameterBounds.(id).upper]);
-        igFlat.get(id).set(val);
-      end
-      
-      names = fieldnames(self.igParameters);
-      for i=1:length(names)
-        id = names{i};
-        igFlat.get(id).set(self.igParameters.(id));
-      end
-      
-      initialGuess.set(igFlat.value());
-      
-      % ig for timesteps
-      if isempty(self.ocpHandler.T)
-        H = self.ocpHandler.H_norm;
+    function guess = igFromBounds(~, bounds)
+      % Averages the bounds to get an initial guess value.
+      % Makes sure no nan values are produced, defaults to 0.
+      guess = (bounds.lower + bounds.upper)/2;
+      if isnan(guess) && ~isinf(bounds.lower)
+        guess = bounds.lower;
+      elseif isnan(guess) && ~isinf(bounds.upper)
+        guess = bounds.upper;
       else
-        H = self.ocpHandler.H_norm.*self.ocpHandler.T;
+        guess = 0;
       end
-      initialGuess.get('h').set(H);
+    end
+    
+    function ig = getInitialGuess(self, ...
+          varsStruct, phaseList)
+      % creates an initial guess from the information that we have about
+      % bounds, phases etc.
       
+      ig = Variable.create(varsStruct,0);
+      
+      for k=1:length(phaseList)
+        
+        phase = phaseList{k};
+        igPhase = ig.get('phases', k);
+        
+        names = fieldnames(phase.bounds);
+        for l=1:length(names)
+          id = names{l};
+          igPhase.get(id).set(self.igFromBounds(phase.bounds.(id)));
+        end
+        
+        names = fieldnames(phase.bounds0);
+        for l=1:length(names)
+          id = names{l};
+          igPhase.get(id).set(self.igFromBounds(phase.bounds0.(id)));
+        end
+        
+        names = fieldnames(phase.boundsF);
+        for l=1:length(names)
+          id = names{l};
+          igPhase.get(id).set(self.igFromBounds(phase.boundsF.(id)));
+        end
+
+        % linearily interpolate guess
+        phaseStruct = varsStruct.get('phases',k).flat();
+        phaseFlat = Variable.create(phaseStruct.flat(), igPhase.value);
+        
+        names = igPhase.children();
+        for i=1:length(names)
+          id = names{i};
+          igId = phaseFlat.get(id);
+          igStart = igId(:,:,1).value;
+          igEnd = igId(:,:,end).value;
+          s = igId.size();
+          gridpoints = reshape(linspace(0, 1, s(3)), 1, 1, s(3));
+          gridpoints = repmat(gridpoints, s(1), s(2));
+          interpolated = igStart + gridpoints.*(igEnd-igStart);
+          phaseFlat.get(id).set(interpolated);
+        end
+        igPhase.set(phaseFlat.value);
+        
+        names = fieldnames(phase.parameterBounds);
+        for i=1:length(names)
+          id = names{i};
+          igPhase.get(id).set(self.igFromBounds(phase.parameterBounds.(id)));
+        end
+        
+        % ig for timesteps
+        if isempty(phase.T)
+          H = self.ocpHandler.H_norm;
+        else
+          H = self.ocpHandler.H_norm.*self.ocpHandler.T;
+        end
+        igPhase.get('h').set(H);
+      
+      end
     end
     
     function [lowerBounds,upperBounds] = getNlpBounds(self)
@@ -321,7 +305,7 @@ classdef Simultaneous < handle
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
       % Ends with a single state.
-      nv = N*phase.nx + N*phase.ni + N*phase.nu + N*phase.np + N + phase.nx;
+      nv_phase = N*phase.nx + N*phase.ni + N*phase.nu + N*phase.np + N + phase.nx;
       
       % number of variables in one control interval
       % + 1 for the timestep
@@ -330,11 +314,11 @@ classdef Simultaneous < handle
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
       % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nx-1)', 1:nci:phase.nv, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.ni-1)', phase.nx+1:nci:phase.nv, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nu-1)', phase.nx+phase.ni+1:nci:phase.nv, 'UniformOutput', false));
-      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.np-1)', phase.nx+phase.ni+phase.nu+1:nci:phase.nv, 'UniformOutput', false));
-      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', phase.nx+phase.ni+phase.nu+phase.np+1:nci:phase.nv, 'UniformOutput', false));
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.ni-1)', phase.nx+1:nci:nv_phase, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nu-1)', phase.nx+phase.ni+1:nci:nv_phase, 'UniformOutput', false));
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.np-1)', phase.nx+phase.ni+phase.nu+1:nci:nv_phase, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', phase.nx+phase.ni+phase.nu+phase.np+1:nci:nv_phase, 'UniformOutput', false));
       
       X = reshape(phaseVars(X_indizes), phase.nx, phase.N+1);
       I = reshape(phaseVars(I_indizes), phase.ni, phase.N);
