@@ -33,7 +33,7 @@ classdef Simultaneous < handle
       self.options = options;
       self.numPhases = length(phaseList);
       
-      self.varsStruct = self.getVarsStruct();
+      self.varsStruct = self.getVarsStruct(phaseList);
       
       nv = 0;
       for k=1:self.numPhases
@@ -57,25 +57,25 @@ classdef Simultaneous < handle
       end
     end
     
-    function varsStruct = getVarsStruct(~, phaseHandler)
+    function varsStruct = getVarsStruct(~, phaseList)
       
       varsStruct = OclStructure();
       phaseStruct = [];
       
-      for k=1:phaseHandler.numPhases
-        phase = phaseHandler.get(k);
+      for k=1:length(phaseList)
+        phase = phaseList{k};
         phaseStruct = OclStructure();
         phaseStruct.addRepeated({'states','integrator','controls','parameters','h'}, ...
-                            {phase.statesStruct, ...
-                             phase.integratorStruct, ...
-                             phase.controlsStruct, ...
-                             phase.parametersStruct, ...
-                             OclMatrix([1,1])}, phase.N);
-        phaseStruct.add('states', phase.statesStruct);
+                            {phase.states, ...
+                             phase.integrator.vars, ...
+                             phase.controls, ...
+                             phase.parameters, ...
+                             OclMatrix([1,1])}, length(phase.H_norm));
+        phaseStruct.add('states', phase.states);
 
         varsStruct.add('phase', phaseStruct);
       end
-      if phaseHandler.numPhases == 1
+      if length(phaseList) == 1
         varsStruct = phaseStruct;
       end
     end

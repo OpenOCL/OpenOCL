@@ -18,7 +18,7 @@ classdef OclCollocation < handle
     daefun
     pathcostfun
     
-    varsStruct
+    vars
     nx
     nz
     nt
@@ -45,12 +45,12 @@ classdef OclCollocation < handle
       self.tau_root = OclCollocation.colpoints(order);
       [self.C,self.D,self.B] = self.getCoefficients(order);
       
-      self.varsStruct = OclStructure();
-      self.varsStruct.addRepeated({'states', 'algVars'},...
-                                  {statesStruct, algVarsStruct}, order);
+      self.vars = OclStructure();
+      self.vars.addRepeated({'states', 'algVars'},...
+                            {statesStruct, algVarsStruct}, order);
       
       sx = statesStruct.size();
-      si = self.varsStruct.size();
+      si = self.vars.size();
       su = [nu 1];
       sp = [np 1];
       st = [1,1];

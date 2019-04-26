@@ -22,6 +22,11 @@ classdef OclPhase < handle
     np
     
     daefun
+
+    states
+    algvars
+    controls
+    parameters
   end
   
   properties (Access = private)
@@ -30,11 +35,6 @@ classdef OclPhase < handle
     pathconfh
     boundaryfh
     pathcostDfh
-    
-    states
-    algvars
-    controls
-    parameters
   end
   
   methods
@@ -127,7 +127,7 @@ classdef OclPhase < handle
         self.H_norm = repmat(1/N, 1, N);
       else
         self.H_norm = N;
-        if sum(self.H_norm) ~= 1
+        if abs(sum(self.H_norm)-1) > eps 
           self.H_norm = self.H_norm/sum(self.H_norm);
           oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
                       'N either be a scalar value or a normalized vector with the length ', ...
