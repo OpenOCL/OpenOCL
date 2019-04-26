@@ -1,29 +1,17 @@
 classdef OclSystem < handle
 
   properties
-    statesStruct
-    algVarsStruct
-    controlsStruct
-    parametersStruct
-
-    ode
-    alg
-
     fh
-
-    bounds
-    parameterBounds
 
     thisInitialConditions
 
     systemfun
     icfun
-    
-    statesOrder
   end
 
   properties (Access = private)
     odeVar
+    sysvars
   end
 
   methods
@@ -73,31 +61,46 @@ classdef OclSystem < handle
 
       self.fh.cb = p.Results.cbfun;
       self.fh.cbsetup = p.Results.cbsetupfun;
-
-      self.statesStruct     = OclStructure();
-      self.algVarsStruct    = OclStructure();
-      self.controlsStruct   = OclStructure();
-      self.parametersStruct = OclStructure();
-
-      self.bounds = struct;
-      self.parameterBounds = struct;
-      self.ode = struct;
+    end
+    
+    function r = states(self)
+      r = self.sysvars.states;
+    end
+    function r = algvars(self)
+      r = self.sysvars.algvars;
+    end
+    function r = controls(self)
+      r = self.sysvars.controls;
+    end
+    function r = parameters(self)
+      r = self.sysvars.parameters;
+    end
+    function r = bounds(self)
+      r = self.sysvars.bounds;
+    end
+    
+    function r = parameterBounds(self)
+      r = self.sysvars.parameterBounds;
+    end
+    
+    function r = statesOrder(self)
+      r = self.sysvars.statesOrder;
     end
 
     function r = nx(self)
-      r = prod(self.statesStruct.size());
+      r = prod(self.states.size());
     end
 
     function r = nz(self)
-      r = prod(self.algVarsStruct.size());
+      r = prod(self.algvars.size());
     end
 
     function r = nu(self)
-      r = prod(self.controlsStruct.size());
+      r = prod(self.controls.size());
     end
 
     function r = np(self)
-      r = prod(self.parametersStruct.size());
+      r = prod(self.parameters.size());
     end
 
     function setup(self)
@@ -105,14 +108,12 @@ classdef OclSystem < handle
       svh = OclSysvarsHandler();
       self.fh.vars(svh);
       
-      self.statesOrder = svh.statesOrder;
-      self.bounds = svh.bounds;
-      self.parameterBounds = svh.parameterBounds;
+      self.sysvars = svh.getSysvars();
 
-      sx = svh.statesStruct.size();
-      sz = svh.algVarsStruct.size();
-      su = svh.controlsStruct.size();
-      sp = svh.parametersStruct.size();
+      sx = self.states().size();
+      sz = self.algvars().size();
+      su = self.controls().size();
+      sp = self.parameters().size();
 
       fhEq = @(self,varargin)self.getEquations(varargin{:});
       self.systemfun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
@@ -129,25 +130,25 @@ classdef OclSystem < handle
       % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
     end
 
-    function [ode,alg] = getEquations(self,states,algVars,controls,parameters)
+    function [ode,alg] = getEquations(self,x,z,u,p)
       % evaluate the system equations for the assigned variables
 
-      x = Variable.create(self.statesStruct,states);
-      z = Variable.create(self.algVarsStruct,algVars);
-      u = Variable.create(self.controlsStruct,controls);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
 
-      daehandler = OclDaeHandler(self.statesOrder);
+      daehandler = OclDaeHandler();
       self.fh.eq(daehandler,x,z,u,p);
 
-      ode = daehandler.getOde(self.nx);
+      ode = daehandler.getOde(self.nx, self.statesOrder);
       alg = daehandler.getAlg(self.nz);
     end
 
-    function ic = getInitialConditions(self,states,parameters)
+    function ic = getInitialConditions(self,x,p)
       icHandler = OclConstraint(self);
-      x = Variable.create(self.statesStruct,states);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = Variable.create(self.statesStruct,x);
+      p = Variable.create(self.parametersStruct,p);
       self.fh.ic(icHandler,x,p)
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...

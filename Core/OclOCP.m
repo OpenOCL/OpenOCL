@@ -2,7 +2,11 @@ classdef OclOCP < handle
   %OCLOCP Class for defining Optimal Control Problems
 
   properties (Access = public)
-    fh % function handles
+    pathcosts
+    arrivalcosts
+    pathconstraints
+    boundaryconditions
+    discretecosts
   end
   
   methods(Access = public)
@@ -54,15 +58,11 @@ classdef OclOCP < handle
         discretecostsfun = p.Results.discretecosts;
       end
       
-      self.fh.pathCosts = pathcostsfun;
-      self.fh.arrivalcosts = arrivalcostsfun;
-      self.fh.pathconstraints = pathconstraintsfun;
-      self.fh.boundaryconditions = boundaryconditionsfun;
-      self.fh.discretecosts = discretecostsfun;
-
-      if nargin==1 && (isa(self.fh.pathCosts,'OclSystem') || isa(self.fh.pathCosts,'System'))
-        oclDeprecation('Passing a system to the constructor of OclOCP is deprecated.');
-      end
+      self.pathcosts = pathcostsfun;
+      self.arrivalcosts = arrivalcostsfun;
+      self.pathconstraints = pathconstraintsfun;
+      self.boundaryconditions = boundaryconditionsfun;
+      self.discretecosts = discretecostsfun;
     end
   end
 end

@@ -3,21 +3,16 @@ classdef OclDaeHandler < handle
   properties
     ode
     alg
-    
-    statesOrder
   end
   
   methods
     
-    function self = OclDaeHandler(statesOrder)
-      self.statesOrder = statesOrder;
+    function self = OclDaeHandler()
+      self.ode = struct;
     end
   
      function setODE(self,id,eq)
-      if ~isfield(self.ode,id)
-        oclException(['State ', id, ' does not exist.']);
-      end
-      if ~isempty(self.ode.(id))
+      if isfield(self.ode, id)
         oclException(['Ode for var ', id, ' already defined']);
       end
       self.ode.(id) = Variable.getValueAsColumn(eq);
@@ -27,18 +22,26 @@ classdef OclDaeHandler < handle
       self.alg = [self.alg;Variable.getValueAsColumn(eq)];
     end
     
-    function r = getOde(self, nx)
-      
-      r = cell(length(self.statesOrder),1);
-      for k=1:length(self.statesOrder)
-        id = self.statesOrder{k};
+    function r = getOde(self, nx, statesOrder)
+
+      r = cell(length(statesOrder),1);
+      for k=1:length(statesOrder)
+        id = statesOrder{k};
+        if ~isfield(self.ode,id)
+          oclException(['Ode for state ', id, ' not defined.']);
+        end
         r{k} = self.ode.(id);
+        self.ode = rmfield(self.ode, id);
       end
       r = vertcat(r{:});
       
       if length(r) ~= nx
         oclException(['Number of ode equations does not match ',...
                       'number of state variables.']);
+      end
+      
+      if numel(fieldnames(self.ode)) > 0
+        oclException(['ODE for variables defined that do not exist.']);
       end
       
     end

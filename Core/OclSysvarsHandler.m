@@ -1,10 +1,10 @@
 classdef OclSysvarsHandler < handle
   
-  properties
-    statesStruct
-    algVarsStruct
-    parametersStruct
-    controlsStruct
+  properties (Access = private)
+    states
+    algvars
+    parameters
+    controls
     
     bounds
     parameterBounds
@@ -16,13 +16,24 @@ classdef OclSysvarsHandler < handle
     
     function self = OclSysvarsHandler()
       self.statesOrder = {};
-      self.statesStruct = OclStructure();
-      self.algVarsStruct = OclStructure();
-      self.parametersStruct = OclStructure();
-      self.controlsStruct = OclStructure();
-      
+      self.states = OclStructure();
+      self.algvars = OclStructure();
+      self.controls = OclStructure();
+      self.parameters = OclStructure();
+            
       self.bounds = struct;
       self.parameterBounds = struct;
+    end
+    
+    function s = getSysvars(self)
+      s = struct;
+      s.states = self.states;
+      s.algvars = self.algvars;
+      s.controls = self.controls;
+      s.parameters = self.parameters;
+      s.statesOrder = self.statesOrder;
+      s.bounds = self.bounds;
+      s.parameterBounds = self.parameterBounds;
     end
     
     function addState(self,id,varargin)
@@ -39,7 +50,7 @@ classdef OclSysvarsHandler < handle
 
       id = p.Results.id;
 
-      self.statesStruct.add(id, p.Results.s);
+      self.states.add(id, p.Results.s);
       self.bounds.(id).lower = p.Results.lb;
       self.bounds.(id).upper = p.Results.ub;
       
@@ -59,7 +70,7 @@ classdef OclSysvarsHandler < handle
 
       id = p.Results.id;
 
-      self.algVarsStruct.add(id, p.Results.s);
+      self.algvars.add(id, p.Results.s);
       self.bounds.(id).lower = p.Results.lb;
       self.bounds.(id).upper = p.Results.ub;
     end
@@ -76,7 +87,7 @@ classdef OclSysvarsHandler < handle
 
       id = p.Results.id;
 
-      self.controlsStruct.add(id,p.Results.s);
+      self.controls.add(id,p.Results.s);
       self.bounds.(id).lower = p.Results.lb;
       self.bounds.(id).upper = p.Results.ub;
     end
@@ -92,7 +103,7 @@ classdef OclSysvarsHandler < handle
 
       id = p.Results.id;
 
-      self.parametersStruct.add(id,p.Results.s);
+      self.parameters.add(id,p.Results.s);
       self.parameterBounds.(id).lower = p.Results.default;
       self.parameterBounds.(id).upper = p.Results.default;
     end
