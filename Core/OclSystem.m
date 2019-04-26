@@ -1,7 +1,12 @@
 classdef OclSystem < handle
 
   properties
-    fh
+    varsfh
+    daefh
+    icfh
+    cbfh
+    cbsetupfh
+    
 
     thisInitialConditions
 
@@ -44,9 +49,9 @@ classdef OclSystem < handle
         varsfun = p.Results.varsfun;
       end
 
-      eqfun = p.Results.eqfunOpt;
-      if isempty(eqfun)
-        eqfun = p.Results.eqfun;
+      daefun = p.Results.eqfunOpt;
+      if isempty(daefun)
+        daefun = p.Results.eqfun;
       end
 
       icfun = p.Results.icfunOpt;
@@ -54,13 +59,28 @@ classdef OclSystem < handle
         icfun = p.Results.icfun;
       end
 
-      self.fh = struct;
-      self.fh.vars = varsfun;
-      self.fh.eq = eqfun;
-      self.fh.ic = icfun;
+      self.varsfh = varsfun;
+      self.daefh = daefun;
+      self.icfh = icfun;
 
-      self.fh.cb = p.Results.cbfun;
-      self.fh.cbsetup = p.Results.cbsetupfun;
+      self.cbfh = p.Results.cbfun;
+      self.cbsetupfh = p.Results.cbsetupfun;
+      
+      svh = OclSysvarsHandler();
+      self.varsfh(svh);
+      
+      self.sysvars = svh.getSysvars();
+
+      sx = self.states().size();
+      sz = self.algvars().size();
+      su = self.controls().size();
+      sp = self.parameters().size();
+
+      fhEq = @(self,varargin)self.getEquations(varargin{:});
+      self.systemfun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
+
+      fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
+      self.icfun = OclFunction(self, fhIC, {sx,sp},1);
     end
     
     function r = states(self)
@@ -102,26 +122,7 @@ classdef OclSystem < handle
     function r = np(self)
       r = prod(self.parameters.size());
     end
-
-    function setup(self)
-
-      svh = OclSysvarsHandler();
-      self.fh.vars(svh);
-      
-      self.sysvars = svh.getSysvars();
-
-      sx = self.states().size();
-      sz = self.algvars().size();
-      su = self.controls().size();
-      sp = self.parameters().size();
-
-      fhEq = @(self,varargin)self.getEquations(varargin{:});
-      self.systemfun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
-
-      fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
-      self.icfun = OclFunction(self, fhIC, {sx,sp},1);
-    end
-
+    
     function simulationCallbackSetup(~)
       % simulationCallbackSetup()
     end
@@ -139,7 +140,7 @@ classdef OclSystem < handle
       p = Variable.create(self.parameters,p);
 
       daehandler = OclDaeHandler();
-      self.fh.eq(daehandler,x,z,u,p);
+      self.daefh(daehandler,x,z,u,p);
 
       ode = daehandler.getOde(self.nx, self.statesOrder);
       alg = daehandler.getAlg(self.nz);

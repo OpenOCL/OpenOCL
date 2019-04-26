@@ -36,8 +36,8 @@ classdef OclCollocation < handle
     
     function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, order)
       
-      self.nx = nx;
-      self.nz = nz;
+      self.nx = prod(statesStruct.size());
+      self.nz = prod(algVarsStruct.size());
       self.nt = order;
       self.daefun = daefun;
       

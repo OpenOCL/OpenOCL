@@ -9,7 +9,7 @@ classdef OclPhase < handle
     arrivalcostfun
     pathconfun
     boundaryfun
-    discretefun
+    pathcostdfun
     
     bounds
     bounds0
@@ -29,7 +29,12 @@ classdef OclPhase < handle
     arrivalcostfh
     pathconfh
     boundaryfh
-    discretefh
+    pathcostDfh
+    
+    states
+    algvars
+    controls
+    parameters
   end
   
   methods
@@ -47,7 +52,7 @@ classdef OclPhase < handle
       p.addOptional('arrivalcosts_opt', [], @oclIsFunHandleOrEmpty);
       p.addOptional('pathconstraints_opt', [], @oclIsFunHandleOrEmpty);
       p.addOptional('boundaryconditions_opt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('discretecosts_opt', [], @oclIsFunHandleOrEmpty);
+      p.addOptional('pathcostsD_opt', [], @oclIsFunHandleOrEmpty);
       
       p.addOptional('N_opt', [], @isnumeric);
       p.addOptional('integrator_opt', [], @isnumeric);
@@ -59,10 +64,10 @@ classdef OclPhase < handle
       p.addParameter('arrivalcosts', empty_fh, @oclIsFunHandle);
       p.addParameter('pathconstraints', empty_fh, @oclIsFunHandle);
       p.addParameter('boundaryconditions', empty_fh, @oclIsFunHandle);
-      p.addParameter('discretecosts', empty_fh, @oclIsFunHandle);
+      p.addParameter('pathcostsD', empty_fh, @oclIsFunHandle);
       
       p.addParameter('N', 30, @isnumeric);
-      p.addParameter('integrator', OclCollocation(3), @(self)isa(self, 'OclCollocation'));
+      p.addParameter('integrator', [], @(self)isempty(self)||isa(self, 'OclCollocation'));
       p.parse(varargin{:});
       
       varsfh = p.Results.varsfun_opt;
@@ -95,9 +100,9 @@ classdef OclPhase < handle
         boundaryconditionsfh = p.Results.boundaryconditions;
       end
       
-      discretecostsfh = p.Results.discretecosts_opt;
-      if isempty(discretecostsfh)
-        discretecostsfh = p.Results.discretecosts;
+      pathcostDfh = p.Results.pathcostsD_opt;
+      if isempty(pathcostDfh)
+        pathcostDfh = p.Results.pathcostsD;
       end
       
       N = p.Results.N_opt;
@@ -136,23 +141,30 @@ classdef OclPhase < handle
       self.arrivalcostfh = arrivalcostsfh;
       self.pathconfh = pathconstraintsfh;
       self.boundaryfh = boundaryconditionsfh;
-      self.discretefh = discretecostsfh;
+      self.pathcostDfh = pathcostDfh;
       
       system = OclSystem(varsfh, daefh);
-      system.setup()
       
       self.nx = system.nx();
       self.nz = system.nz();
       self.nu = system.nu();
       self.np = system.np();
       
-      sx = system.statesStruct.size();
-      sz = system.algVarsStruct.size();
-      su = system.controlsStruct.size();
-      sp = system.parametersStruct.size();
+      self.states = system.states();
+      self.algvars = system.algvars();
+      self.controls = system.controls();
+      self.parameters = system.parameters();
+      
+      sx = self.states.size();
+      sz = self.algvars.size();
+      su = self.controls.size();
+      sp = self.parameters.size();
       
       self.systemfun = system.systemfun;
       
+      if isempty(integrator)
+        integrator = OclCollocation(system.states(), system.algvars, self.nu, self.np, system.systemfun, 3);
+      end
       self.integrator = integrator;
       
       fhPC = @(self,varargin) self.getPathCosts(varargin{:});
@@ -167,8 +179,8 @@ classdef OclPhase < handle
       fhPConst = @(self,varargin)self.getPathConstraints(varargin{:});
       self.pathconfun = OclFunction(self, fhPConst, {sx,sp}, 3);
       
-%       fhDiscrete = @(self,varargin)self.getPathConstraints(varargin{:});
-%       self.discretefun = OclFunction(self, fhDiscrete, {}, 1);
+      fhPCD = @(self,varargin) self.getPathCostsD(varargin{:});
+      self.pathcostdfun = OclFunction(self, fhPCD, {sx,sz,su,sp}, 1);
 
       self.bounds = system.bounds;
       self.parameterBounds = system.parameterBounds;
@@ -194,38 +206,34 @@ classdef OclPhase < handle
     end
     
     function r = getPathCosts(self,x,z,u,p)
-      pcHandler = OclCost(self.ocp);
+      pcHandler = OclCost();
       
-      if self.options.controls_regularization
-        pcHandler.add(self.options.controls_regularization_value*(u.'*u));
-      end
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
       
-      x = Variable.create(self.system.statesStruct,x);
-      z = Variable.create(self.system.algVarsStruct,z);
-      u = Variable.create(self.system.controlsStruct,u);
-      p = Variable.create(self.system.parametersStruct,p);
-      
-      self.pathcosts(pcHandler,x,z,u,p);
+      self.pathcostfh(pcHandler,x,z,u,p);
       
       r = pcHandler.value;
     end
     
     function r = getArrivalCosts(self,x,p)
-      acHandler = OclCost(self.ocp);
-      x = Variable.create(self.system.statesStruct,x);
-      p = Variable.create(self.system.parametersStruct,p);
+      acHandler = OclCost();
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
       
-      self.arrivalcosts(acHandler,x,p);
+      self.arrivalcostfh(acHandler,x,p);
       
       r = acHandler.value;
     end
     
     function [val,lb,ub] = getPathConstraints(self,x,p)
-      pathConstraintHandler = OclConstraint(self.ocp);
-      x = Variable.create(self.system.statesStruct,x);
-      p = Variable.create(self.system.parametersStruct,p);
+      pathConstraintHandler = OclConstraint();
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
       
-      self.pathconstraints(pathConstraintHandler,x,p);
+      self.pathconfh(pathConstraintHandler,x,p);
       
       val = pathConstraintHandler.values;
       lb = pathConstraintHandler.lowerBounds;
@@ -233,25 +241,29 @@ classdef OclPhase < handle
     end
     
     function [val,lb,ub] = getBoundaryConditions(self,x0,xF,p)
-      bcHandler = OclConstraint(self.ocp);
-      x0 = Variable.create(self.system.statesStruct,x0);
-      xF = Variable.create(self.system.statesStruct,xF);
-      p = Variable.create(self.system.parametersStruct,p);
+      bcHandler = OclConstraint();
+      x0 = Variable.create(self.states,x0);
+      xF = Variable.create(self.states,xF);
+      p = Variable.create(self.parameters,p);
       
-      self.boundaryconditions(bcHandler,x0,xF,p);
+      self.boundaryfh(bcHandler,x0,xF,p);
       
       val = bcHandler.values;
       lb = bcHandler.lowerBounds;
       ub = bcHandler.upperBounds;
     end
     
-    function r = getDiscreteCosts(self,v)
-      dcHandler = OclCost(self.ocp);
-      v = Variable.create(self.nlpVarsStruct,v);
+    function r = getPathCostsD(self,x,z,u,p)
+      pcHandler = OclCost();
       
-      self.discretecosts(dcHandler,v);
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
       
-      r = dcHandler.value;
+      self.pathcostDfh(pcHandler,x,z,u,p);
+      
+      r = pcHandler.value;
     end
     
   end

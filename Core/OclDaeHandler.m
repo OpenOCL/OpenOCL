@@ -9,6 +9,7 @@ classdef OclDaeHandler < handle
     
     function self = OclDaeHandler()
       self.ode = struct;
+      self.alg = [];
     end
   
      function setODE(self,id,eq)
@@ -43,20 +44,14 @@ classdef OclDaeHandler < handle
       if numel(fieldnames(self.ode)) > 0
         oclException(['ODE for variables defined that do not exist.']);
       end
-      
     end
     
     function alg = getAlg(self, nz)
-      
       alg = self.alg;
       if length(alg) ~= nz
         oclException(['Number of algebraic equations does not match ',...
                       'number of algebraic variables.']);
       end
     end
-    
-    
   end
-
-
 end
