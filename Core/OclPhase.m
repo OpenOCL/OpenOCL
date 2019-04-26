@@ -55,7 +55,7 @@ classdef OclPhase < handle
       p.addOptional('pathcostsD_opt', [], @oclIsFunHandleOrEmpty);
       
       p.addOptional('N_opt', [], @isnumeric);
-      p.addOptional('integrator_opt', [], @isnumeric);
+      p.addOptional('integrator_opt', [], @(self)isempty(self)||isa(self, 'OclCollocation'));
       
       p.addParameter('varsfun', empty_fh, @oclIsFunHandle);
       p.addParameter('daefun', empty_fh, @oclIsFunHandle);

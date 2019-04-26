@@ -1,4 +1,4 @@
-function solver = OclSolver(T, system, ocp, options, varargin)
+function solver = OclSolver(varargin)
   % OclSolver(T, system, ocp, options, H_norm)
   % OclSolver(phase, options)
   % OclSolver(phaseList, options)
@@ -8,7 +8,7 @@ function solver = OclSolver(T, system, ocp, options, varargin)
   
   phaseList = {};
   
-  if isnumeric(varargin{1}) && isa(varargin{1}, 'OclSystem')
+  if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
     % OclSolver(T, system, ocp, options, H_norm)
     T = varargin{1};
     system = varargin{2};
@@ -41,11 +41,11 @@ function solver = OclSolver(T, system, ocp, options, varargin)
       oclError('Dimension of T does not match the number of control intervals.')
     end
     
-    integrator = OclCollocation(d);
+    integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, system.daefh, d);
     
-    phase = OclPhase(T, system.fh.vars, system.fh.eq, ocp.fh.pathcosts, ...
-                     ocp.fh.arrivalcosts, ocp.fh.pathconstraints, ...
-                     ocp.fh.boundaryconditions, ocp.fh.discretecosts, H_norm, integrator);
+    phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcosts, ...
+                     ocp.arrivalcosts, ocp.pathconstraints, ...
+                     ocp.boundaryconditions, ocp.discretecosts, H_norm, integrator);
     phaseList{1} = phase;
   end
   
