@@ -33,7 +33,7 @@ function [nFails] = runTests(testExamples,saveLog,suffix)
   tests{end+1}.name = 'VarStructure'; tests{end}.file = 'testVarStructure';
   tests{end+1}.name = 'OclFunction';  tests{end}.file = 'testOclFunction';
   tests{end+1}.name = 'OclSystem';    tests{end}.file = 'testOclSystem';
-  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'testOclOCP';
+  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'testOclPhase';
   tests{end+1}.name = 'Integrator';   tests{end}.file = 'testOclIntegrator';
   
   if testExamples

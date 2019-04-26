@@ -21,7 +21,7 @@ classdef OclPhase < handle
     nu
     np
     
-    systemfun
+    daefun
   end
   
   properties (Access = private)
@@ -160,10 +160,10 @@ classdef OclPhase < handle
       su = self.controls.size();
       sp = self.parameters.size();
       
-      self.systemfun = system.systemfun;
+      self.daefun = system.daefun;
       
       if isempty(integrator)
-        integrator = OclCollocation(system.states(), system.algvars, self.nu, self.np, system.systemfun, 3);
+        integrator = OclCollocation(system.states(), system.algvars, self.nu, self.np, self.daefun, 3);
       end
       self.integrator = integrator;
       

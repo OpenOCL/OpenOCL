@@ -10,7 +10,7 @@ classdef OclSystem < handle
 
     thisInitialConditions
 
-    systemfun
+    daefun
     icfun
   end
 
@@ -77,7 +77,7 @@ classdef OclSystem < handle
       sp = self.parameters().size();
 
       fhEq = @(self,varargin)self.getEquations(varargin{:});
-      self.systemfun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
+      self.daefun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
 
       fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
       self.icfun = OclFunction(self, fhIC, {sx,sp},1);
