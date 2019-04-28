@@ -38,7 +38,7 @@ function [sol,times,ocl] = mainCartPole
   oclPlot(times.states, sol.states.theta)
   legend({'force [10*N]','position [m]','velocity [m/s]','theta [rad]'})
   xlabel('time [s]');
-
+  
   animateCartPole(sol,times);
 
 end
