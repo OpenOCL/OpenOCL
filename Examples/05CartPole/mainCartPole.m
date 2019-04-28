@@ -44,61 +44,50 @@ function [sol,times,ocl] = mainCartPole
   Theta = sol.states.theta.value;
   T = times.states.value;
   
-  animData{1}.type = OclPlotTypes.plot;
-  animData{1}.style = 'k';
-  animData{1}.LineWidth = 1.5;
-  animData{1}.Xdata = [-pmax pmax];
-  animData{1}.Ydata = [0 0];
-  
-  animData{2}.type = OclPlotTypes.plot;
-  animData{2}.style = 'k';
-  animData{2}.LineWidth = 1.5;
-  animData{2}.Xdata = [-pmax -pmax];
-  animData{2}.Ydata = [0 0];
-  
-  animData{3}.type = OclPlotTypes.plot;
-  animData{3}.style = 'k';
-  animData{3}.LineWidth = 1.5;
-  animData{3}.Xdata = [pmax pmax];
-  animData{3}.Ydata = [-0.1 0.1];
+  c = cartpole_conf();
   
   % time counter text
-  animData{4}.type = OclPlotTypes.text;
-  animData{4}.style = 'k';
-  animData{4}.LineWidth = 1.5;
-  animData{4}.Xdata = -0.3;
-  animData{4}.Ydata = l+0.4;
-  animData{4}.String = for_each(T, @(el) sprintf('%.2f s', el));
-  animData{4}.FontSize = 15;
+  animData{1}.type = OclPlotTypes.text;
+  animData{1}.style = 'k';
+  animData{1}.LineWidth = 1.5;
+  animData{1}.Xdata = -0.3;
+  animData{1}.Ydata = c.l+0.4;
+  animData{1}.String = for_each(T, @(el) sprintf('%.2f s', el));
+  animData{1}.FontSize = 15;
   
   % cart position
-  animData{4}.type = OclPlotTypes.text;
-  animData{4}.style = 'ks';
-  animData{4}.LineWidth = 1.5;
-  animData{4}.Xdata = X(1,:);
-  animData{4}.MarkerSize = 10;
+  animData{2}.type = OclPlotTypes.text;
+  animData{2}.style = 'ks';
+  animData{2}.LineWidth = 1.5;
+  animData{2}.Xdata = X(1,:);
+  animData{2}.MarkerSize = 10;
   
   % pole
-  animData{4}.type = OclPlotTypes.text;
-  animData{4}.color = [38,124,185]/255;
-  animData{4}.LineWidth = 2;
-  animData{4}.Xdata = for_each(zap(P, Theta), @(p,theta) [p, p-l*sin(theta)]);
-  animData{4}.Ydata = for_each(zap(P, Theta), @(p,theta) [0, l*cos(theta)]);
+  animData{3}.type = OclPlotTypes.text;
+  animData{3}.color = [38,124,185]/255;
+  animData{3}.LineWidth = 2;
+  animData{3}.Xdata = for_each(zap(P, Theta), @(p,theta) [p, p-c.l*sin(theta)]);
+  animData{3}.Ydata = for_each(zap(P, Theta), @(p,theta) [0, c.l*cos(theta)]);
   
   % bob
   animData{4}.type = OclPlotTypes.text;
   animData{4}.style = 'o';
   animData{4}.color = [170,85,0]/255;
   animData{4}.LineWidth = 3;
-  animData{4}.Xdata = for_each(zap(P, Theta), @(p,theta) p-l*sin(theta) );
-  animData{4}.Ydata = for_each(zap(P, Theta), @(p,theta) l*cos(theta) );
+  animData{4}.Xdata = for_each(zap(P, Theta), @(p,theta) p-c.l*sin(theta) );
+  animData{4}.Ydata = for_each(zap(P, Theta), @(p,theta) c.l*cos(theta) );
   animData{4}.MarkerSize = 10;
   
-  
-  oclAnimation()
-  
-  animateCartPole(sol,times);
+  oclAnimation(animData)
 
+end
+
+function r = cartpole_conf()
+  r = struct;
+  r.g = 9.8;
+  r.cm = 1.0;   % cart mass
+  r.pm = 0.1;   % pole mass
+  r.l = 1;      % pole length
 end
 
 function varsfun(sh)
@@ -115,20 +104,20 @@ end
 
 function eqfun(sh,x,~,u,~)
 
-  g = 9.8;
-  cm = 1.0;
-  pm = 0.1;
-  phl = 0.5; % pole half length
+  c = cartpole_conf();
+  
+  l = 1;
+  phl = l/2;      % pole half length (center of mass)
 
-  m = cm+pm;
-  pml = pm*phl; % pole mass length
+  m = c.cm+c.pm;  % total mass
+  pml = c.pm*phl;   % pole mass length
 
   ctheta = cos(x.theta);
   stheta = sin(x.theta);
 
-  domega = (g*stheta + ...
+  domega = (c.g*stheta + ...
             ctheta * (-u.F-pml*x.omega^2*stheta) / m) / ...
-            (phl * (4.0 / 3.0 - pm * ctheta^2 / m));
+            (phl * (4.0 / 3.0 - c.pm * ctheta^2 / m));
 
   a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
 
