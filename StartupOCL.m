@@ -52,6 +52,7 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Core','Variables'))
   addpath(fullfile(oclPath,'Core','Variables','Variable'))
   addpath(fullfile(oclPath,'Core','utils'))
+  addpath(fullfile(oclPath,'Core','plot'))
 
   addpath(fullfile(oclPath,'Examples'))
   addpath(fullfile(oclPath,'Examples','01VanDerPol'))
