@@ -50,7 +50,8 @@ classdef Simultaneous < handle
       
       for k=1:self.numPhases
         phase = phaseList{k};
-        
+        phase.integrator.integratorfun = CasadiFunction(phase.integrator.integratorfun);
+        phase.pathconfun = CasadiFunction(phase.pathconfun);
         self.integratorMaps{k} = CasadiMapFunction(phase.integrator.integratorfun, phase.N);
         self.pathconstraintsMaps{k} = CasadiMapFunction(phase.pathconfun, phase.N-1);
 
@@ -299,7 +300,7 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = getPhaseEquations(phase,phaseVars)
+    function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = getPhaseEquations(phase, phaseVars, integratorFunction)
       
       
       % N control interval which each have states, integrator vars,
@@ -324,7 +325,7 @@ classdef Simultaneous < handle
       I = reshape(phaseVars(I_indizes), phase.ni, phase.N);
       U = reshape(phaseVars(U_indizes), phase.nu, phase.N);
       P = reshape(phaseVars(P_indizes), phase.np, phase.N);
-      H = reshape(phaseVars(H_indizes), 1      , phase.N);
+      H = reshape(phaseVars(H_indizes), 1       , phase.N);
       
       % path constraints on first and last state
       pc0 = [];

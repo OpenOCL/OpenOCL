@@ -22,6 +22,8 @@ classdef OclCollocation < handle
     nx
     nz
     nt
+    
+    ni
   end
   
   properties(Access = private)
@@ -34,12 +36,13 @@ classdef OclCollocation < handle
   
   methods
     
-    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, order)
+    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, pathcostfun, order)
       
       self.nx = prod(statesStruct.size());
       self.nz = prod(algVarsStruct.size());
       self.nt = order;
       self.daefun = daefun;
+      self.pathcostfun = pathcostfun;
       
       self.order = order;
       self.tau_root = OclCollocation.colpoints(order);
@@ -54,6 +57,8 @@ classdef OclCollocation < handle
       su = [nu 1];
       sp = [np 1];
       st = [1,1];
+      
+      self.ni = prod(si);
       
       fh = @(self,varargin)self.integratorEquations(varargin{:});
       self.integratorfun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);

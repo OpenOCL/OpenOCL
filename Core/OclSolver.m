@@ -41,7 +41,10 @@ function solver = OclSolver(varargin)
       oclError('Dimension of T does not match the number of control intervals.')
     end
     
-    integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, system.daefh, d);
+    fhPC = @(self,varargin) getPathCosts(s, varargin{:});
+    pathcostfun = OclFunction(fhPC, {system.states,system.algvars,system.controls,system.parameters}, 1);
+    
+    integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, system.daefun, d);
     
     phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcosts, ...
                      ocp.arrivalcosts, ocp.pathconstraints, ...
@@ -54,13 +57,6 @@ function solver = OclSolver(varargin)
   phaseHandler.setNlpVarsStruct(nlp.varsStruct);
   integrator.pathCostsFun = phaseHandler.pathCostsFun;
   nlp.ocpHandler = phaseHandler;
-  
-  ocpHandler.pathConstraintsFun     = CasadiFunction(ocpHandler.pathConstraintsFun);
-  system.systemFun                  = CasadiFunction(system.systemFun,false,options.system_casadi_mx);
-  nlp.integratorFun                 = CasadiFunction(nlp.integratorFun,false,options.system_casadi_mx);
-  
-  nlp.integratorMap = CasadiMapFunction(nlp.integratorFun,N);
-  nlp.pathconstraintsMap = CasadiMapFunction(ocpHandler.pathConstraintsFun, N-1);
     
   if strcmp(options.solverInterface,'casadi')
     preparationTime = toc(preparationTic);

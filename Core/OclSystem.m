@@ -9,9 +9,6 @@ classdef OclSystem < handle
     
 
     thisInitialConditions
-
-    daefun
-    icfun
   end
 
   properties (Access = private)
@@ -75,12 +72,6 @@ classdef OclSystem < handle
       sz = self.algvars().size();
       su = self.controls().size();
       sp = self.parameters().size();
-
-      fhEq = @(self,varargin)self.getEquations(varargin{:});
-      self.daefun = OclFunction(self, fhEq, {sx,sz,su,sp},2);
-
-      fhIC = @(self,varargin)self.getInitialConditions(varargin{:});
-      self.icfun = OclFunction(self, fhIC, {sx,sp},1);
     end
     
     function r = states(self)
@@ -131,7 +122,7 @@ classdef OclSystem < handle
       % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
     end
 
-    function [ode,alg] = getEquations(self,x,z,u,p)
+    function [ode,alg] = daefun(self,x,z,u,p)
       % evaluate the system equations for the assigned variables
 
       x = Variable.create(self.states,x);
@@ -146,7 +137,7 @@ classdef OclSystem < handle
       alg = daehandler.getAlg(self.nz);
     end
 
-    function ic = getInitialConditions(self,x,p)
+    function ic = icfun(self,x,p)
       icHandler = OclConstraint(self);
       x = Variable.create(self.statesStruct,x);
       p = Variable.create(self.parametersStruct,p);
@@ -172,7 +163,7 @@ classdef OclSystem < handle
     end
 
     function callSimulationCallbackSetup(self)
-      self.fh.cbsetup();
+      self.cbsetup();
     end
 
     function u = callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)

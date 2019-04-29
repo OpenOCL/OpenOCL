@@ -1,4 +1,4 @@
-classdef CasadiNLPSolver < NLPSolver
+classdef CasadiSolver < NLPSolver
   
   properties (Access = private)
     nlpData
@@ -7,14 +7,7 @@ classdef CasadiNLPSolver < NLPSolver
   
   methods
     
-    function self = CasadiNLPSolver(nlp,options)
-      
-      self.nlp = nlp;
-      self.options = options;
-      self.nlpData = self.construct(nlp,options);
-    end
-    
-    function nlpData = construct(self,nlp,options)
+    function self = CasadiSolver(system, phaseList,options)
       
       constructTotalTic = tic;
       
@@ -24,6 +17,16 @@ classdef CasadiNLPSolver < NLPSolver
       else
         vars = casadi.SX.sym('v', nlp.nv,1);
       end
+      
+      x = expr('x', system.nx);
+      z = expr('u', system.nz);
+      u = expr('z', system.nu);
+      p = expr('p', system.np);
+
+      system_expr = system.daefun(x,z,u,p);
+      system_fun = casadi.Function('sys', {x,z,u,p}, {system_expr});
+      
+      integrator_expr = 
 
       % call nlp function
       [costs,constraints,constraints_LB,constraints_UB,~] = nlp.nlpFun.evaluate(vars);
@@ -34,7 +37,6 @@ classdef CasadiNLPSolver < NLPSolver
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = [];
-      
       
       opts = self.options.nlp.casadi;
       if isfield(self.options.nlp,self.options.nlp.solver)

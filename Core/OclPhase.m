@@ -166,25 +166,14 @@ classdef OclPhase < handle
         integrator = OclCollocation(system.states(), system.algvars, self.nu, self.np, self.daefun, 3);
       end
       self.integrator = integrator;
-      
-      fhPC = @(self,varargin) self.getPathCosts(varargin{:});
-      self.pathcostfun = OclFunction(self, fhPC, {sx,sz,su,sp}, 1);
-      
-      fhAC = @(self,varargin) self.getArrivalCosts(varargin{:});
-      self.arrivalcostfun = OclFunction(self, fhAC, {sx,sp}, 1);
-      
-      fhBC = @(self,varargin)self.getBoundaryConditions(varargin{:});
-      self.boundaryfun = OclFunction(self, fhBC, {sx,sx,sp}, 3);
-      
-      fhPConst = @(self,varargin)self.getPathConstraints(varargin{:});
-      self.pathconfun = OclFunction(self, fhPConst, {sx,sp}, 3);
-      
-      fhPCD = @(self,varargin) self.getPathCostsD(varargin{:});
-      self.pathcostdfun = OclFunction(self, fhPCD, {sx,sz,su,sp}, 1);
 
       self.bounds = system.bounds;
       self.parameterBounds = system.parameterBounds;
 
+    end
+
+    function r = N(self)
+      r = length(self.H_norm);
     end
     
     function setBounds(self,id,varargin)
