@@ -13,7 +13,6 @@
 classdef OclCollocation < handle
   
   properties
-    integratorfun
     
     daefun
     pathcostfun
@@ -60,14 +59,12 @@ classdef OclCollocation < handle
       
       self.ni = prod(si);
       
-      fh = @(self,varargin)self.integratorEquations(varargin{:});
-      self.integratorfun = OclFunction(self, fh, {sx,si,su,st,st,sp}, 5);
                                                   
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = ...
-          integratorEquations(self, statesBegin, integratorVars, ...
-          controls, startTime, h, parameters)              
+          integratorfun(self, statesBegin, integratorVars, ...
+          controls, startTime, h, parameters, daefun, pathcostfun)              
       
       equations = cell(self.order,1);
       J = 0;
@@ -91,9 +88,9 @@ classdef OclCollocation < handle
         end
 
         % Append collocation equations
-        [ode,alg] = self.daefun.evaluate(integratorVars(j_states), ...
-                                                   integratorVars(j_algVars), ...
-                                                   controls,parameters);
+        [ode,alg] = daefun(integratorVars(j_states), ...
+                           integratorVars(j_algVars), ...
+                           controls,parameters);
                                                  
         equations{j} = [h*ode-xp; alg];
 
@@ -101,7 +98,7 @@ classdef OclCollocation < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.pathcostfun.evaluate(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = pathcostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 

@@ -8,7 +8,6 @@ classdef Simultaneous < handle
   end
   
   properties(Access = private)
-    numPhases
     phaseList
     
     initialBounds
@@ -31,7 +30,6 @@ classdef Simultaneous < handle
       
       self.phaseList = phaseList;
       self.options = options;
-      self.numPhases = length(phaseList);
       
       self.varsStruct = self.getVarsStruct(phaseList);
       
@@ -268,21 +266,30 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times] = getNLP(self, nlpVars)
+    function [costs,constraints,constraints_LB,constraints_UB,times] = nlpfun(~, phaseList, nlpVars)
       
-      numStatesOfLastPhase = self.phaseList{self.numPhases}.nx;
-      xF = nlpVars(self.totalVars-numStatesOfLastPhase:self.totalVars);
+      numPhases = length(phaseList);
+      
+      nv = 0;
+      for k=1:numPhases
+        phase = phaseList{k};
+        N = length(phase.H_norm);
+        nv = nv + N*phase.nx + N*phase.integrator.ni + N*phase.nu + N*phase.np + N + phase.nx;
+      end
+      
+      numStatesOfLastPhase = phaseList{numPhases}.nx;
+      xF = nlpVars(nv-numStatesOfLastPhase:nv);
       
       costs = 0;
       
-      constraints = cell(self.numPhases,1);
-      constraints_LB = cell(self.numPhases,1);
-      constraints_UB = cell(self.numPhases,1);
+      constraints = cell(numPhases,1);
+      constraints_LB = cell(numPhases,1);
+      constraints_UB = cell(numPhases,1);
       
       varIndex = 1;
-      for k=1:self.numPhases
+      for k=1:numPhases
         
-        phase = self.phaseList{k};
+        phase = phaseList{k};
         phaseVars = nlpVars(varIndex:varIndex + phase.numVars);
         
         [phaseCosts,phaseConstraints,phaseConstraints_LB,phaseConstraints_UB, times, x0, p0] = getPhaseEquations(phase, phaseVars);
@@ -300,32 +307,35 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = getPhaseEquations(phase, phaseVars, integratorFunction)
+    function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = ...
+        simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
+                     arrivalcost_fun, pathcon_fun, pathcon_map, pathcostd_map, options)
       
+      N = length(H_norm);
       
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
       % Ends with a single state.
-      nv_phase = N*phase.nx + N*phase.ni + N*phase.nu + N*phase.np + N + phase.nx;
+      nv_phase = N*nx + N*ni + N*nu + N*np + N + nx;
       
       % number of variables in one control interval
       % + 1 for the timestep
-      nci = phase.nx+phase.ni+phase.nu+phase.np+1;
+      nci = nx+ni+nu+np+1;
       
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
       % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.ni-1)', phase.nx+1:nci:nv_phase, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.nu-1)', phase.nx+phase.ni+1:nci:nv_phase, 'UniformOutput', false));
-      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+phase.np-1)', phase.nx+phase.ni+phase.nu+1:nci:nv_phase, 'UniformOutput', false));
-      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', phase.nx+phase.ni+phase.nu+phase.np+1:nci:nv_phase, 'UniformOutput', false));
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv_phase, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv_phase, 'UniformOutput', false));
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv_phase, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv_phase, 'UniformOutput', false));
       
-      X = reshape(phaseVars(X_indizes), phase.nx, phase.N+1);
-      I = reshape(phaseVars(I_indizes), phase.ni, phase.N);
-      U = reshape(phaseVars(U_indizes), phase.nu, phase.N);
-      P = reshape(phaseVars(P_indizes), phase.np, phase.N);
-      H = reshape(phaseVars(H_indizes), 1       , phase.N);
+      X = reshape(phaseVars(X_indizes), nx, N+1);
+      I = reshape(phaseVars(I_indizes), ni, N);
+      U = reshape(phaseVars(U_indizes), nu, N);
+      P = reshape(phaseVars(P_indizes), np, N);
+      H = reshape(phaseVars(H_indizes), 1 , N);
       
       % path constraints on first and last state
       pc0 = [];
@@ -334,52 +344,52 @@ classdef Simultaneous < handle
       pcf = [];
       pcf_lb = [];
       pcf_ub = [];
-      if phase.options.path_constraints_at_boundary
-        [pc0, pc0_lb, pc0_ub] = phase.ocpHandler.pathconfun.evaluate(X(:,1), P(:,1));
-        [pcf,pcf_lb,pcf_ub] = phase.ocpHandler.pathconfun.evaluate(X(:,end), P(:,end));
+      if options.path_constraints_at_boundary
+        [pc0, pc0_lb, pc0_ub] = pathcon_fun(X(:,1), P(:,1));
+        [pcf,pcf_lb,pcf_ub] = pathcon_fun(X(:,end), P(:,end));
       end         
       
       T0 = [0, cumsum(H(:,1:end-1))];
       
-      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = phase.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, P);
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = phase.pathconstraintsMap.evaluate(X(:,2:end-1), P(:,2:end));
+      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = integrator_map(X(:,1:end-1), I, U, T0, H, P);
+      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = pathcon_map(X(:,2:end-1), P(:,2:end));
+      
+       % discrete path cost
+      costD = pathcostd_map(X,P); 
                 
       % timestep constraints
       h_eq = [];
       h_eq_lb = [];
       h_eq_ub = [];
       
-      if isempty(phase.T)
-        % normalized timesteps (sum of timesteps is 1)
-        H_norm = phase.H_norm;
-        
+      if isempty(T)      
         % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
         H_ratio = H_norm(1:end-1)./H_norm(2:end);
         h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
-        h_eq_lb = zeros(1, phase.N-1);
-        h_eq_ub = zeros(1, phase.N-1);
+        h_eq_lb = zeros(1, N-1);
+        h_eq_ub = zeros(1, N-1);
       end
       
       % Parameter constraints 
       % p0=p1=p2=p3 ...
       p_eq = P(:,2:end)-P(:,1:end-1);
-      p_eq_lb = zeros(phase.np, phase.N-1);
-      p_eq_ub = zeros(phase.np, phase.N-1);
+      p_eq_lb = zeros(np, N-1);
+      p_eq_ub = zeros(np, N-1);
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:phase.N-1);  continuity(:,1:phase.N-1);  pc_eq_arr;  h_eq;     p_eq];
-      shooting_eq_lb = [zeros(phase.ni,phase.N-1);   zeros(phase.nx,phase.N-1);   pc_lb_arr;  h_eq_lb;  p_eq_lb];
-      shooting_eq_ub = [zeros(phase.ni,phase.N-1);   zeros(phase.nx,phase.N-1);   pc_ub_arr;  h_eq_ub;  p_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pc_eq_arr;  h_eq;     p_eq];
+      shooting_eq_lb = [zeros(ni,N-1);   zeros(nx,N-1);   pc_lb_arr;  h_eq_lb;  p_eq_lb];
+      shooting_eq_ub = [zeros(ni,N-1);   zeros(nx,N-1);   pc_ub_arr;  h_eq_ub;  p_eq_ub];
       
       % reshape shooting equations to column vector, append final integrator and
       % continuity equations
-      shooting_eq    = [shooting_eq(:);    int_eq_arr(:,phase.N); continuity(:,phase.N)];
-      shooting_eq_lb = [shooting_eq_lb(:); zeros(phase.ni,1);     zeros(phase.nx,1)    ];
-      shooting_eq_ub = [shooting_eq_ub(:); zeros(phase.ni,1);     zeros(phase.nx,1)    ];
+      shooting_eq    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N)];
+      shooting_eq_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1)    ];
+      shooting_eq_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1)    ];
       
       % collect all constraints
       constraints = vertcat(pc0, shooting_eq, pcf);
@@ -387,10 +397,7 @@ classdef Simultaneous < handle
       constraints_UB = vertcat(pc0_ub, shooting_eq_ub, pcf_ub);
       
       % terminal cost
-      costf = phase.ocpHandler.arrivalCostsFun.evaluate(X(:,end),P(:,end));
-      
-      % discrete cost
-      costD = phase.ocpHandler.discreteCostsFun.evaluate(phaseVars); 
+      costf = arrivalcost_fun(X(:,end),P(:,end));
       
       % sum all costs
       costs = sum(cost_arr) + costf + costD;
