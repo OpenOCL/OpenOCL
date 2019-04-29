@@ -48,7 +48,6 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'CasadiLibrary'))
 
   addpath(fullfile(oclPath,'Core'))
-  addpath(fullfile(oclPath,'Core','Integrator'))
   addpath(fullfile(oclPath,'Core','Variables'))
   addpath(fullfile(oclPath,'Core','Variables','Variable'))
   addpath(fullfile(oclPath,'Core','utils'))
