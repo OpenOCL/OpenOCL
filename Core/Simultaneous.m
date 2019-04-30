@@ -307,10 +307,11 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times,x0,p0] = ...
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
         simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
-                     arrivalcost_fun, pathcon_fun, pathcon_map, pathcostd_map, options)
+                     pathcost_fun, pathcon_fun)
       
+      % number of control intervals
       N = length(H_norm);
       
       % N control interval which each have states, integrator vars,
@@ -336,26 +337,19 @@ classdef Simultaneous < handle
       U = reshape(phaseVars(U_indizes), nu, N);
       P = reshape(phaseVars(P_indizes), np, N);
       H = reshape(phaseVars(H_indizes), 1 , N);
-      
-      % path constraints on first and last state
-      pc0 = [];
-      pc0_lb = [];
-      pc0_ub = [];
-      pcf = [];
-      pcf_lb = [];
-      pcf_ub = [];
-      if options.path_constraints_at_boundary
-        [pc0, pc0_lb, pc0_ub] = pathcon_fun(X(:,1), P(:,1));
-        [pcf,pcf_lb,pcf_ub] = pathcon_fun(X(:,end), P(:,end));
-      end         
+          
+      pcon = cell(N,1);
+      pcon_lb = cell(N,1);
+      pcon_ub = cell(N,1);
+      pcost = 0;
+      for k=1:N
+        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N, X(:,k), P(:,k));
+        pcost = pcost + pathcost_fun(k, N, X(:,k), P(:,k));
+      end       
       
       T0 = [0, cumsum(H(:,1:end-1))];
       
       [xend_arr, ~, cost_arr, int_eq_arr, int_times] = integrator_map(X(:,1:end-1), I, U, T0, H, P);
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = pathcon_map(X(:,2:end-1), P(:,2:end));
-      
-       % discrete path cost
-      costD = pathcostd_map(X,P); 
                 
       % timestep constraints
       h_eq = [];
@@ -381,26 +375,18 @@ classdef Simultaneous < handle
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pc_eq_arr;  h_eq;     p_eq];
-      shooting_eq_lb = [zeros(ni,N-1);   zeros(nx,N-1);   pc_lb_arr;  h_eq_lb;  p_eq_lb];
-      shooting_eq_ub = [zeros(ni,N-1);   zeros(nx,N-1);   pc_ub_arr;  h_eq_ub;  p_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon;     h_eq;     p_eq];
+      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb;  h_eq_lb;  p_eq_lb];
+      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub;  h_eq_ub;  p_eq_ub];
       
-      % reshape shooting equations to column vector, append final integrator and
+      % reshape shooting equations to column vector, append integrator and
       % continuity equations
-      shooting_eq    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N)];
-      shooting_eq_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1)    ];
-      shooting_eq_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1)    ];
-      
-      % collect all constraints
-      constraints = vertcat(pc0, shooting_eq, pcf);
-      constraints_LB = vertcat(pc0_lb, shooting_eq_lb, pcf_lb);
-      constraints_UB = vertcat(pc0_ub, shooting_eq_ub, pcf_ub);
-      
-      % terminal cost
-      costf = arrivalcost_fun(X(:,end),P(:,end));
-      
+      constraints    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N)];
+      constraints_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1)    ];
+      constraints_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1)    ];
+
       % sum all costs
-      costs = sum(cost_arr) + costf + costD;
+      costs = sum(cost_arr) + pcost;
       
       % times
       times = [T0; int_times; T0];
