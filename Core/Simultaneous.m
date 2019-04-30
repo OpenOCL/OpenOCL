@@ -266,47 +266,6 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times] = nlpfun(~, phaseList, nlpVars)
-      
-      numPhases = length(phaseList);
-      
-      nv = 0;
-      for k=1:numPhases
-        phase = phaseList{k};
-        N = length(phase.H_norm);
-        nv = nv + N*phase.nx + N*phase.integrator.ni + N*phase.nu + N*phase.np + N + phase.nx;
-      end
-      
-      numStatesOfLastPhase = phaseList{numPhases}.nx;
-      xF = nlpVars(nv-numStatesOfLastPhase:nv);
-      
-      costs = 0;
-      
-      constraints = cell(numPhases,1);
-      constraints_LB = cell(numPhases,1);
-      constraints_UB = cell(numPhases,1);
-      
-      varIndex = 1;
-      for k=1:numPhases
-        
-        phase = phaseList{k};
-        phaseVars = nlpVars(varIndex:varIndex + phase.numVars);
-        
-        [phaseCosts,phaseConstraints,phaseConstraints_LB,phaseConstraints_UB, times, x0, p0] = getPhaseEquations(phase, phaseVars);
-        [bc, bc_lb, bc_ub] = phase.boundaryfun.evaluate(x0, xF, p0);
-        
-        constraints{k} = [phaseConstraints; bc];
-        constraints_LB{k} = [phaseConstraints_LB; bc_lb];
-        constraints_UB{k} = [phaseConstraints_UB; bc_ub];
-        
-        costs = costs + phaseCosts;
-        
-        varIndex = varIndex + phase.numVars;
-        xF = x0;
-      end
-      
-    end
-    
     function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
         simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
                      pathcost_fun, pathcon_fun)
