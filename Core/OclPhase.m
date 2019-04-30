@@ -5,11 +5,11 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    pathcostfun
-    arrivalcostfun
+    varsfun
+    daefun
+    lagrangecostfun
     pathconfun
-    boundaryfun
-    pathcostdfun
+    pathcostfun
     
     bounds
     bounds0
@@ -20,8 +20,7 @@ classdef OclPhase < handle
     nz
     nu
     np
-    
-    daefun
+
 
     states
     algvars
