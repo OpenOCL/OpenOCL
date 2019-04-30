@@ -4,9 +4,11 @@ function r = PendulumSystem()
   r.varsfun = @varsfun;
   r.eqfun = @eqfun;
   r.icfun = @icfun;
-  r.simcallbacksetup = @simcallbacksetup;
   r.simcallback = @simcallback;
-
+  
+  fig = figure('units','normalized');
+  set(fig,'Color','white')
+  fig.OuterPosition = fig.InnerPosition;
 end
 
 function varsfun(sh)
@@ -46,10 +48,6 @@ function icfun(sys,x,p)
   sys.add(dot(p,v));
 end
 
-function simcallbacksetup(~)
-  figure;
-end
-
 function simcallback(x,~,~,t0,t1,param)
   p = x.p.value;
   l = param.l.value;
@@ -59,9 +57,11 @@ function simcallback(x,~,~,t0,t1,param)
   hold on
   plot([0,p(1)],[0,p(2)],'-k', 'LineWidth', 4)
   plot(p(1),p(2),'ok', 'MarkerSize', 22, 'MarkerFaceColor','r')
-  xlim([-l,l])
-  ylim([-l,l])
 
+  xlim([-2.1,2.1])
+  ylim([-1,1])
+  daspect([1 1 1])
+  
   pause(dt.value);
   hold off
 end

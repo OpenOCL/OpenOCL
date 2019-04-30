@@ -4,7 +4,7 @@ function [vars,times,ocl] = mainPendulum
   options.nlp.controlIntervals = 50;
 
   s = PendulumSystem;
-  system = OclSystem(s.varsfun, s.eqfun, s.icfun, 'cbsetupfun', s.simcallbacksetup, 'cbfun', s.simcallback);
+  system = OclSystem(s.varsfun, s.eqfun, s.icfun, 'cbfun', s.simcallback);
   ocp = OclOCP(@pathcosts);
 
   ocl = OclSolver([], system, ocp, options);
@@ -33,7 +33,6 @@ function [vars,times,ocl] = mainPendulum
 
   [solution,times] = ocl.solve(vars);
 
-  figure
   ocl.solutionCallback(times,solution);
 
 end

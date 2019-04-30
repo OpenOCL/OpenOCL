@@ -98,7 +98,7 @@ function [solution,times,ocl] = mainRaceCar
   axis equal;xlabel('x[m]');ylabel('y[m]');
 
   % Show Animation
-  animateRaceCar(times.states.value,solution,x_road,y_center,y_min,y_max)
+  animateRaceCar(times.states.value,solution,x_road,y_center,y_min,y_max,true)
 
 end
 

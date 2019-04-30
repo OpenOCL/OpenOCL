@@ -26,7 +26,7 @@ function [sol,times,ocl] = mainCartPole
 
   % Run solver to obtain solution
   [sol,times] = ocl.solve(ocl.ig());
-
+ope
   % visualize solution
   figure; hold on; grid on;
   oclStairs(times.controls, sol.controls.F/10.)
