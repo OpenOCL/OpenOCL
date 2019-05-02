@@ -4,6 +4,9 @@ classdef OclPhase < handle
     T
     H_norm
     integrator
+    
+    pathcostsfun
+    pathconfun
 
     bounds
     bounds0
@@ -22,13 +25,12 @@ classdef OclPhase < handle
   end
   
   properties (Access = private)
-    pathcostfh
-    pathconfh
+
   end
   
   methods
     
-    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh)
+    function self = OclPhase(T, H_norm, integrator, pathcostsfun, pathconfun)
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -51,11 +53,13 @@ classdef OclPhase < handle
       end
       
       self.integrator = integrator;
-      self.pathcostfh = pathcostsfh;
-      self.pathconfh = pathconfh;
+      self.pathcostsfun = pathcostsfun;
+      self.pathconfun = pathconfun;
       
       self.nx = integrator.nx;
       self.nz = integrator.nz;
+      self.nu = integrator.nu;
+      self.np = integrator.np;
     end
 
     function r = N(self)

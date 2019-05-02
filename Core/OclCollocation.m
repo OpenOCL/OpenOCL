@@ -20,6 +20,8 @@ classdef OclCollocation < handle
     vars
     nx
     nz
+    nu
+    np
     nt
     
     ni
@@ -38,7 +40,9 @@ classdef OclCollocation < handle
     function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, lagrangecostsfh, order)
       
       self.nx = prod(statesStruct.size());
+      self.nu = nu;
       self.nz = prod(algVarsStruct.size());
+      self.np = np;
       self.nt = order;
       self.daefun = daefun;
       self.lagrangecostsfh = lagrangecostsfh;
@@ -51,12 +55,7 @@ classdef OclCollocation < handle
       self.vars.addRepeated({'states', 'algVars'},...
                             {statesStruct, algVarsStruct}, order);
       
-      sx = statesStruct.size();
       si = self.vars.size();
-      su = [nu 1];
-      sp = [np 1];
-      st = [1,1];
-      
       self.ni = prod(si);
       
                                                   
@@ -64,7 +63,7 @@ classdef OclCollocation < handle
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = ...
           integratorfun(self, statesBegin, integratorVars, ...
-          controls, startTime, h, parameters, daefun, pathcostfun)              
+          controls, startTime, h, parameters)              
       
       equations = cell(self.order,1);
       J = 0;
@@ -88,7 +87,7 @@ classdef OclCollocation < handle
         end
 
         % Append collocation equations
-        [ode,alg] = daefun(integratorVars(j_states), ...
+        [ode,alg] = self.daefun(integratorVars(j_states), ...
                            integratorVars(j_algVars), ...
                            controls,parameters);
                                                  
@@ -98,7 +97,7 @@ classdef OclCollocation < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = pathcostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = self.lagrangecostsfh(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 

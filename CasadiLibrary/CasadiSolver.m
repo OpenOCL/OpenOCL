@@ -38,13 +38,13 @@ classdef CasadiSolver < handle
         h = expr('h');
         
         % integration
-        dae_expr = phase.daefun(x,z,u,p);
-        dae_fun = casadi.Function('sys', {x,z,u,p}, {dae_expr});
-        
-        lagrangecost_expr = phase.lagrangecostfun(x,z,u,p);
-        lagrangecost_fun = casadi.Function('pcost', {x,z,u,p}, {lagrangecost_expr});
+%         dae_expr = phase.daefun(x,z,u,p);
+%         dae_fun = casadi.Function('sys', {x,z,u,p}, {dae_expr});
+%         
+%         lagrangecost_expr = phase.lagrangecostfun(x,z,u,p);
+%         lagrangecost_fun = casadi.Function('pcost', {x,z,u,p}, {lagrangecost_expr});
 
-        integrator_expr = phase.integratorfun(x, vi, u, t0, h, p, dae_fun, lagrangecost_fun);
+        integrator_expr = phase.integrator.integratorfun(x, vi, u, t0, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,t0,h,p}, {integrator_expr});
         
         integrator_map = integrator_fun.map(phase.N,'openmp');

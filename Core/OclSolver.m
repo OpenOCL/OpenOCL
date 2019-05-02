@@ -52,7 +52,7 @@ classdef OclSolver < handle
           oclError('Dimension of T does not match the number of control intervals.')
         end
         
-        integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, @system.daefun, @ocp.lagrangecostsfun, d);
+        integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, @system.daefun, @ocp.lagrangecostfun, d);
         phase = OclPhase(T, H_norm, integrator, @ocp.pathcostsfun, @ocp.pathconfun);
 
         phaseList{1} = phase;
@@ -60,10 +60,6 @@ classdef OclSolver < handle
       
       
       solver = CasadiSolver(phaseList, options);
-
-      phaseHandler.setNlpVarsStruct(nlp.varsStruct);
-      integrator.pathCostsFun = phaseHandler.pathCostsFun;
-      nlp.ocpHandler = phaseHandler;
 
       if strcmp(options.solverInterface,'casadi')
         preparationTime = toc(preparationTic);
