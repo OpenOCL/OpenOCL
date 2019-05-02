@@ -13,9 +13,9 @@ classdef CasadiSolver < handle
       
       % create variables as casadi symbolics
       if options.nlp_casadi_mx
-        vars = casadi.MX.sym('v', nlp.nv,1);
+        expr = @casadi.MX.sym;
       else
-        vars = casadi.SX.sym('v', nlp.nv,1);
+        expr = @casadi.SX.sym;
       end
       
       xf = [];

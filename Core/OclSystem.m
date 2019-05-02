@@ -57,6 +57,9 @@ classdef OclSystem < handle
 
       self.cbfh = p.Results.cbfun;
       self.cbsetupfh = p.Results.cbsetupfun;
+      
+      self.sysvars = self.varsfun();
+
     end
     
     function r = states(self)
@@ -109,7 +112,7 @@ classdef OclSystem < handle
     
     function sysvars = varsfun(self)
       
-      OclSysvarsHandler svh;
+      svh = OclSysvarsHandler;
       self.varsfh(svh);
       sysvars = svh.getSysvars();
     end

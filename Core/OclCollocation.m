@@ -15,7 +15,7 @@ classdef OclCollocation < handle
   properties
     
     daefun
-    pathcostfun
+    lagrangecostsfh
     
     vars
     nx
@@ -35,13 +35,13 @@ classdef OclCollocation < handle
   
   methods
     
-    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, pathcostfun, order)
+    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, lagrangecostsfh, order)
       
       self.nx = prod(statesStruct.size());
       self.nz = prod(algVarsStruct.size());
       self.nt = order;
       self.daefun = daefun;
-      self.pathcostfun = pathcostfun;
+      self.lagrangecostsfh = lagrangecostsfh;
       
       self.order = order;
       self.tau_root = OclCollocation.colpoints(order);

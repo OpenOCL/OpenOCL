@@ -14,8 +14,7 @@ classdef OclPhase < handle
     nz
     nu
     np
-
-
+    
     states
     algvars
     controls
@@ -23,7 +22,6 @@ classdef OclPhase < handle
   end
   
   properties (Access = private)
-    lagrangecostfh
     pathcostfh
     pathconfh
   end
@@ -53,9 +51,11 @@ classdef OclPhase < handle
       end
       
       self.integrator = integrator;
-      self.lagrangecostfh = lagrangecostsfh;
       self.pathcostfh = pathcostsfh;
       self.pathconfh = pathconfh;
+      
+      self.nx = integrator.nx;
+      self.nz = integrator.nz;
     end
 
     function r = N(self)
@@ -78,42 +78,6 @@ classdef OclPhase < handle
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.boundsF = OclBounds(id, varargin{:});
-    end
-    
-    function r = lagrangecostfun(self,x,z,u,p)
-      pcHandler = OclCost();
-      
-      x = Variable.create(self.states,x);
-      z = Variable.create(self.algvars,z);
-      u = Variable.create(self.controls,u);
-      p = Variable.create(self.parameters,p);
-      
-      self.pathcostfh(pcHandler,x,z,u,p);
-      
-      r = pcHandler.value;
-    end
-    
-    function r = pathcostfun(self,k,N,x,p)
-      pcHandler = OclCost();
-      
-      x = Variable.create(self.states,x);
-      p = Variable.create(self.parameters,p);
-      
-      self.pathcostfh(pcHandler,k,N,x,p);
-      
-      r = pcHandler.value;
-    end
-    
-    function [val,lb,ub] = pathconfun(self,k,N,x,p)
-      pathConstraintHandler = OclConstraint();
-      x = Variable.create(self.states,x);
-      p = Variable.create(self.parameters,p);
-      
-      self.pathconfh(pathConstraintHandler,k,N,x,p);
-      
-      val = pathConstraintHandler.values;
-      lb = pathConstraintHandler.lowerBounds;
-      ub = pathConstraintHandler.upperBounds;
     end
     
   end
