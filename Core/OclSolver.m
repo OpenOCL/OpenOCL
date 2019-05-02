@@ -40,15 +40,13 @@ function solver = OclSolver(varargin)
     else
       oclError('Dimension of T does not match the number of control intervals.')
     end
-    
-    fhPC = @(self,varargin) getPathCosts(s, varargin{:});
-    pathcostfun = OclFunction(fhPC, {system.states,system.algvars,system.controls,system.parameters}, 1);
-    
+      
     integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, system.daefun, d);
     
-    phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcosts, ...
-                     ocp.arrivalcosts, ocp.pathconstraints, ...
-                     ocp.boundaryconditions, ocp.discretecosts, H_norm, integrator);
+    phase = OclPhase(T, system.varsfh, system.daefh, ocp.lagrangecosts, ...
+                     ocp.pathcosts, ocp.pathconstraints, ...
+                     H_norm, integrator);
+    
     phaseList{1} = phase;
   end
   

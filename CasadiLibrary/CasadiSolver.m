@@ -38,20 +38,20 @@ classdef CasadiSolver < NLPSolver
         h = expr('h');
         
         % integration
-        system_expr = phase.daefun(x,z,u,p);
-        system_fun = casadi.Function('sys', {x,z,u,p}, {system_expr});
+        dae_expr = phase.daefun(x,z,u,p);
+        dae_fun = casadi.Function('sys', {x,z,u,p}, {dae_expr});
         
-        systemcost_expr = phase.systemcostfun(x,z,u,p);
-        systemcost_fun = casadi.Function('pcost', {x,z,u,p}, {systemcost_expr});
+        lagrangecost_expr = phase.lagrangecostfun(x,z,u,p);
+        lagrangecost_fun = casadi.Function('pcost', {x,z,u,p}, {lagrangecost_expr});
 
-        integrator_expr = phase.integratorfun(x, vi, u, t0, h, p, system_fun, systemcost_fun);
+        integrator_expr = phase.integratorfun(x, vi, u, t0, h, p, dae_fun, lagrangecost_fun);
         integrator_fun = casadi.Function('sys', {x,vi,u,t0,h,p}, {integrator_expr});
         
         integrator_map = integrator_fun.map(phase.N,'openmp');
         
         % cost        
-        pathcost_fun = @phase.pathcostfun;
-        pathcon_fun = @phase.pathconfun;
+        pathcost_fun = @(k,N,x,p)phase.pathcostfun(k,N,x,p);
+        pathcon_fun = @(k,N,x,p)phase.pathconfun(k,N,x,p);
         
         [costs,constraints,constraints_LB,constraints_UB,~] = simultaneous( ...
             H_norm, T, ...
