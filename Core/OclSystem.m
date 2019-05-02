@@ -7,7 +7,6 @@ classdef OclSystem < handle
     cbfh
     cbsetupfh
     
-
     thisInitialConditions
   end
 
@@ -62,16 +61,6 @@ classdef OclSystem < handle
 
       self.cbfh = p.Results.cbfun;
       self.cbsetupfh = p.Results.cbsetupfun;
-      
-      svh = OclSysvarsHandler();
-      self.varsfh(svh);
-      
-      self.sysvars = svh.getSysvars();
-
-      sx = self.states().size();
-      sz = self.algvars().size();
-      su = self.controls().size();
-      sp = self.parameters().size();
     end
     
     function r = states(self)
@@ -121,6 +110,13 @@ classdef OclSystem < handle
     function simulationCallback(varargin)
       % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
     end
+    
+    function sysvars = varsfun(self)
+      
+      OclSysvarsHandler svh;
+      self.varsfh(svh);
+      sysvars = svh.getSysvars();
+    end
 
     function [ode,alg] = daefun(self,x,z,u,p)
       % evaluate the system equations for the assigned variables
@@ -163,7 +159,7 @@ classdef OclSystem < handle
     end
 
     function callSimulationCallbackSetup(self)
-      self.cbsetup();
+      self.cbsetupfh();
     end
 
     function u = callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)

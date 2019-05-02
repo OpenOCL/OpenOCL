@@ -2,61 +2,9 @@ classdef Simultaneous < handle
   %SIMULTANEOUS Direct collocation discretization of OCP to NLP
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
-  properties
-    varsStruct
-    nlpFun
-  end
-  
-  properties(Access = private)
-    phaseList
+  methods (Static)
     
-    initialBounds
-    endBounds
-    bounds
-    
-    integratorMaps
-    pathconstraintsMaps
-    
-    integratorFun
-    system
-    options
-    
-    integratorMap
-    pathconstraintsMap
-  end
-  
-  methods
-    function self = Simultaneous(phaseList, options)
-      
-      self.phaseList = phaseList;
-      self.options = options;
-      
-      self.varsStruct = self.getVarsStruct(phaseList);
-      
-      nv = 0;
-      for k=1:self.numPhases
-        phase = phaseList{k};
-        N = length(phase.H_norm);
-        nv = nv + N*phase.nx + N*phase.integrator.ni + N*phase.nu + N*phase.np + N + phase.nx;
-      end
-      
-      fh = @(self,varargin)self.getNLPFun(varargin{:});
-      self.nlpFun = OclFunction(self,fh,{[nv,1]},5);
-      
-      self.integratorMaps = cell(self.numPhases,1);
-      self.pathconstraintsMaps = cell(self.numPhases,1);
-      
-      for k=1:self.numPhases
-        phase = phaseList{k};
-        phase.integrator.integratorfun = CasadiFunction(phase.integrator.integratorfun);
-        phase.pathconfun = CasadiFunction(phase.pathconfun);
-        self.integratorMaps{k} = CasadiMapFunction(phase.integrator.integratorfun, phase.N);
-        self.pathconstraintsMaps{k} = CasadiMapFunction(phase.pathconfun, phase.N-1);
-
-      end
-    end
-    
-    function varsStruct = getVarsStruct(~, phaseList)
+    function varsStruct = vars(phaseList)
       
       varsStruct = OclStructure();
       phaseStruct = [];
@@ -79,35 +27,13 @@ classdef Simultaneous < handle
       end
     end
     
-    function timesStruct = getTimeStruct(~, nit, N)
+    function timesStruct = times(nit, N)
       timesStruct = OclStructure();
       timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
                                    {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
       timesStruct.add('states', OclMatrix([1,1]));
     end
     
-    function setParameter(self,id,varargin)
-      self.initialBounds = OclBound(id, varargin{:});
-      self.igParameters.(id) = mean([varargin{:}]);
-    end
-    
-    function setBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.bounds = OclBounds(id, varargin{:});
-    end
-    
-    function setInitialBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.initialBounds = OclBounds(id, varargin{:});
-    end
-    
-    function setEndBounds(self,id,varargin)
-      % setEndBounds(id,value)
-      % setEndBounds(id,lower,upper)
-      self.endBounds = OclBounds(id, varargin{:});
-    end    
     
     function ig = ig(self)
       ig = self.getInitialGuess();
@@ -126,8 +52,7 @@ classdef Simultaneous < handle
       end
     end
     
-    function ig = getInitialGuess(self, ...
-          varsStruct, phaseList)
+    function ig = getInitialGuess(varsStruct, phaseList, H_norm, T)
       % creates an initial guess from the information that we have about
       % bounds, phases etc.
       
@@ -141,19 +66,19 @@ classdef Simultaneous < handle
         names = fieldnames(phase.bounds);
         for l=1:length(names)
           id = names{l};
-          igPhase.get(id).set(self.igFromBounds(phase.bounds.(id)));
+          igPhase.get(id).set(Simultaneous.igFromBounds(phase.bounds.(id)));
         end
         
         names = fieldnames(phase.bounds0);
         for l=1:length(names)
           id = names{l};
-          igPhase.get(id).set(self.igFromBounds(phase.bounds0.(id)));
+          igPhase.get(id).set(Simultaneous.igFromBounds(phase.bounds0.(id)));
         end
         
         names = fieldnames(phase.boundsF);
         for l=1:length(names)
           id = names{l};
-          igPhase.get(id).set(self.igFromBounds(phase.boundsF.(id)));
+          igPhase.get(id).set(Simultaneous.igFromBounds(phase.boundsF.(id)));
         end
 
         % linearily interpolate guess
@@ -177,30 +102,30 @@ classdef Simultaneous < handle
         names = fieldnames(phase.parameterBounds);
         for i=1:length(names)
           id = names{i};
-          igPhase.get(id).set(self.igFromBounds(phase.parameterBounds.(id)));
+          igPhase.get(id).set(Simultaneous.igFromBounds(phase.parameterBounds.(id)));
         end
         
         % ig for timesteps
         if isempty(phase.T)
-          H = self.ocpHandler.H_norm;
+          H = H_norm;
         else
-          H = self.ocpHandler.H_norm.*self.ocpHandler.T;
+          H = H_norm.*T;
         end
         igPhase.get('h').set(H);
       
       end
     end
     
-    function [lowerBounds,upperBounds] = getNlpBounds(self)
+    function [lowerBounds,upperBounds] = getNlpBounds(varsStruct, phaseList, bounds,initialBounds, endBounds)
       
-      boundsStruct = self.varsStruct.flat();
+      boundsStruct = varsStruct.flat();
       lowerBounds = Variable.create(boundsStruct,-inf);
       upperBounds = Variable.create(boundsStruct,inf);
       
       % phase bounds
-      for k=1:self.numPhases
+      for k=1:length(phaseList)
         
-        phase = self.phaseList{k};
+        phase = phaseList{k};
         
         phase_lb = lowerBounds.get('phases', k);
         phase_ub = lowerBounds.get('phases', k);
@@ -235,30 +160,30 @@ classdef Simultaneous < handle
       end
 
       % nlp bounds
-      names = fieldnames(self.bounds);
+      names = fieldnames(bounds);
       for i=1:length(names)
         id = names{i};
-        lowerBounds.get(id).set(self.bounds.(id).lower);
-        upperBounds.get(id).set(self.bounds.(id).upper);
+        lowerBounds.get(id).set(bounds.(id).lower);
+        upperBounds.get(id).set(bounds.(id).upper);
       end
       
-      names = fieldnames(self.initialBounds);
+      names = fieldnames(initialBounds);
       for i=1:length(names)
         id = names{i};
         lb = lowerBounds.get(id);
         ub = upperBounds.get(id);
-        lb(:,:,1).set(self.initialBounds.(id).lower);
-        ub(:,:,1).set(self.initialBounds.(id).upper);
+        lb(:,:,1).set(initialBounds.(id).lower);
+        ub(:,:,1).set(initialBounds.(id).upper);
       end
       
       % end bounds
-      names = fieldnames(self.endBounds);
+      names = fieldnames(endBounds);
       for i=1:length(names)
         id = names{i};
         lb = lowerBounds.get(id);
         ub = upperBounds.get(id);
-        lb(:,:,end).set(self.endBounds.(id).lower);
-        ub(:,:,end).set(self.endBounds.(id).upper);
+        lb(:,:,end).set(endBounds.(id).lower);
+        ub(:,:,end).set(endBounds.(id).upper);
       end
       
       lowerBounds = lowerBounds.value;

@@ -4,7 +4,7 @@ classdef OclPhase < handle
     T
     H_norm
     integrator
-    
+
     bounds
     bounds0
     boundsF
@@ -14,8 +14,7 @@ classdef OclPhase < handle
     nz
     nu
     np
-    
-    daefun
+
 
     states
     algvars

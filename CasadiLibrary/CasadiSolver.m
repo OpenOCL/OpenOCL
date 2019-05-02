@@ -1,4 +1,4 @@
-classdef CasadiSolver < NLPSolver
+classdef CasadiSolver < handle
   
   properties (Access = private)
     nlpData
@@ -7,7 +7,7 @@ classdef CasadiSolver < NLPSolver
   
   methods
     
-    function self = CasadiSolver(system, phaseList, connectionList, options)
+    function self = CasadiSolver(phaseList, options)
       
       constructTotalTic = tic;
       
@@ -22,18 +22,18 @@ classdef CasadiSolver < NLPSolver
       for k=1:length(phaseList)
         phase = phaseList{k};
         
-        if k >= 2
-          xf = expr('x', system.nx);
-          x0 = expr('x', system.nx);
-          connection_fun = connectionList{k-1};
-          conection_eq = connection_fun(xf,x0);
-        end
+%         if k >= 2
+%           xf = expr('x', system.nx);
+%           x0 = expr('x', system.nx);
+%           connection_fun = connectionList{k-1};
+%           conection_eq = connection_fun(xf,x0);
+%         end
         
-        x = expr('x', system.nx);
-        z = expr('u', system.nz);
-        u = expr('z', system.nu);
-        p = expr('p', system.np);
-        vi = expr('vi', integrator.ni);
+        x = expr('x', phase.nx);
+        z = expr('u', phase.nz);
+        u = expr('z', phase.nu);
+        p = expr('p', phase.np);
+        vi = expr('vi', phase.integrator.ni);
         t0 = expr('t0');
         h = expr('h');
         
