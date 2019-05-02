@@ -52,10 +52,8 @@ classdef OclSolver < handle
           oclError('Dimension of T does not match the number of control intervals.')
         end
         
-        integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, @system.daefun, @ocp.lagrangecostfun, d);
-        phase = OclPhase(T, system.varsfh, system.daefh, ocp.lagrangecosts, ...
-                     ocp.pathcosts, ocp.pathconstraints, ...
-                     H_norm, integrator);
+        integrator = OclCollocation(system.states, system.algvars, system.nu, system.np, @system.daefun, @ocp.lagrangecostsfh, d);
+        phase = OclPhase(T, H_norm, integrator, @ocp.pathcostsffh, @ocp.pathconfh);
 
         phaseList{1} = phase;
       end

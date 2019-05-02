@@ -22,22 +22,18 @@ classdef OclSystem < handle
       % OclSystem(fhVarSetup,fhEquationSetup)
       % OclSystem(fhVarSetup,fhEquationSetup,fhInitialCondition)
 
-      defFhVars = @(varargin)[];
-      defFhEq = @(varargin)[];
-      defFhIC = @(varargin)[];
-      defFhCB = @(varargin)[];
-      defFhCBS = @(varargin)[];
+      emptyfh = @(varargin)[];
 
       p = inputParser;
       p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
       p.addOptional('eqfunOpt', [], @oclIsFunHandleOrEmpty);
       p.addOptional('icfunOpt', [], @oclIsFunHandleOrEmpty);
 
-      p.addParameter('varsfun', defFhVars, @oclIsFunHandle);
-      p.addParameter('eqfun', defFhEq, @oclIsFunHandle);
-      p.addParameter('icfun', defFhIC, @oclIsFunHandle);
-      p.addParameter('cbfun', defFhCB, @oclIsFunHandle);
-      p.addParameter('cbsetupfun', defFhCBS, @oclIsFunHandle);
+      p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
+      p.addParameter('eqfun', emptyfh, @oclIsFunHandle);
+      p.addParameter('icfun', emptyfh, @oclIsFunHandle);
+      p.addParameter('cbfun', emptyfh, @oclIsFunHandle);
+      p.addParameter('cbsetupfun', emptyfh, @oclIsFunHandle);
       p.parse(varargin{:});
 
       varsfun = p.Results.varsfunOpt;

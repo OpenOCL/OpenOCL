@@ -30,80 +30,18 @@ classdef OclPhase < handle
   
   methods
     
-    function self = OclPhase(varargin)
-      
-      empty_fh = @(varargin)[];
-      
-      p = inputParser;
-      p.addRequired('T', @isnumeric);
-      p.addOptional('varsfun_opt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('daefun_opt', [], @oclIsFunHandleOrEmpty);
-      
-      p.addOptional('lagrangecosts_opt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('pathcosts_opt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('pathconstraints_opt', [], @oclIsFunHandleOrEmpty);
-      
-      p.addOptional('N_opt', [], @isnumeric);
-      p.addOptional('integrator_opt', [], @(self)isempty(self)||isa(self, 'OclCollocation'));
-      
-      p.addParameter('varsfun', empty_fh, @oclIsFunHandle);
-      p.addParameter('daefun', empty_fh, @oclIsFunHandle);
-      
-      p.addParameter('lagrangecosts', empty_fh, @oclIsFunHandle);
-      p.addParameter('pathcosts', empty_fh, @oclIsFunHandle);
-      p.addParameter('pathconstraints', empty_fh, @oclIsFunHandle);
-      
-      p.addParameter('N', 30, @isnumeric);
-      p.addParameter('integrator', [], @(self)isempty(self)||isa(self, 'OclCollocation'));
-      p.parse(varargin{:});
-      
-      varsfh = p.Results.varsfun_opt;
-      if isempty(varsfh)
-        varsfh = p.Results.varsfun;
-      end
-      
-      daefh = p.Results.daefun_opt;
-      if isempty(daefh)
-        daefh = p.Results.daefun;
-      end
-      
-      lagrangecostsfh = p.Results.lagrangecosts_opt;
-      if isempty(lagrangecostsfh)
-        lagrangecostsfh = p.Results.lagrangecosts;
-      end
-      
-      pathcostsfh = p.Results.pathcosts_opt;
-      if isempty(pathcostsfh)
-        pathcostsfh = p.Results.pathcosts;
-      end
-      
-      pathconstraintsfh = p.Results.pathconstraints_opt;
-      if isempty(pathconstraintsfh)
-        pathconstraintsfh = p.Results.pathconstraints;
-      end
-      
-      N = p.Results.N_opt;
-      if isempty(N)
-        N = p.Results.N;
-      end
-      
-      integrator = p.Results.integrator_opt;
-      if isempty(integrator)
-        integrator = p.Results.integrator;
-      end
-      
-      T = p.Results.T;
+    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh)
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
       self.T = T;
       
-      oclAssert( (isscalar(N) || isnumeric(N)) && isreal(N), ...
+      oclAssert( (isscalar(H_norm) || isnumeric(H_norm)) && isreal(H_norm), ...
         ['Invalid value for parameter N.', oclDocMessage()] );
-      if isscalar(N)
-        self.H_norm = repmat(1/N, 1, N);
+      if isscalar(H_norm)
+        self.H_norm = repmat(1/H_norm, 1, H_norm);
       else
-        self.H_norm = N;
+        self.H_norm = H_norm;
         if abs(sum(self.H_norm)-1) > eps 
           self.H_norm = self.H_norm/sum(self.H_norm);
           oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
@@ -114,37 +52,10 @@ classdef OclPhase < handle
         end
       end
       
+      self.integrator = integrator;
       self.lagrangecostfh = lagrangecostsfh;
       self.pathcostfh = pathcostsfh;
-      self.pathconfh = pathconstraintsfh;
-      
-      system = OclSystem(varsfh, daefh);
-      
-      self.nx = system.nx();
-      self.nz = system.nz();
-      self.nu = system.nu();
-      self.np = system.np();
-      
-      self.states = system.states();
-      self.algvars = system.algvars();
-      self.controls = system.controls();
-      self.parameters = system.parameters();
-      
-      sx = self.states.size();
-      sz = self.algvars.size();
-      su = self.controls.size();
-      sp = self.parameters.size();
-      
-      self.daefun = system.daefun;
-      
-      if isempty(integrator)
-        integrator = OclCollocation(system.states(), system.algvars, self.nu, self.np, self.daefun, 3);
-      end
-      self.integrator = integrator;
-
-      self.bounds = system.bounds;
-      self.parameterBounds = system.parameterBounds;
-
+      self.pathconfh = pathconfh;
     end
 
     function r = N(self)
