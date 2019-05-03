@@ -20,7 +20,7 @@ classdef Simultaneous < handle
                              OclMatrix([1,1])}, length(phase.H_norm));
         phaseStruct.add('states', phase.states);
 
-        varsStruct.add('phase', phaseStruct);
+        varsStruct.add('phases', phaseStruct);
       end
       if length(phaseList) == 1
         varsStruct = phaseStruct;
@@ -52,7 +52,7 @@ classdef Simultaneous < handle
       end
     end
     
-    function ig = getInitialGuess(varsStruct, phaseList, H_norm, T)
+    function ig = getInitialGuess(varsStruct, phaseList)
       % creates an initial guess from the information that we have about
       % bounds, phases etc.
       
@@ -107,87 +107,88 @@ classdef Simultaneous < handle
         
         % ig for timesteps
         if isempty(phase.T)
-          H = H_norm;
+          H = phase.H_norm;
         else
-          H = H_norm.*T;
+          H = phase.H_norm.*phase.T;
         end
         igPhase.get('h').set(H);
       
       end
     end
     
-    function [lowerBounds,upperBounds] = getNlpBounds(varsStruct, phaseList, bounds, initialBounds, endBounds)
+    function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
       
-      boundsStruct = varsStruct.flat();
-      lowerBounds = Variable.create(boundsStruct,-inf);
-      upperBounds = Variable.create(boundsStruct,inf);
+      lowerBounds = cell(length(phaseList), 1);
+      upperBounds = cell(length(phaseList), 1);
       
-      % phase bounds
       for k=1:length(phaseList)
         
         phase = phaseList{k};
+        [nv_phase,~] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
         
-        phase_lb = lowerBounds.get('phases', k);
-        phase_ub = lowerBounds.get('phases', k);
-        
-        % timestep bounds
-        if isempty(phase.T)
-          phase_lb.get('h').set(Simultaneous.h_lower);
-          phase_ub.get('h').set(inf);
-        else
-          phase_lb.get('h').set(phase.H_norm * phase.T);
-          phase_ub.get('h').set(phase.H_norm * phase.T);
-        end
-        
-        % variables bounds
-        names = fieldnames(phase.bounds);
-        for i=1:length(names)
-          id = names{i};
-          phase_lb.get(id).set(phase.bounds.(id).lower);
-          phase_ub.get(id).set(phase.bounds.(id).upper);
-        end
-        
-        % parameters bounds
-        names = fieldnames(phase.parameterBounds);
-        for i=1:length(names)
-          id = names{i};
-          lb = phase_lb.get(id);
-          ub = phase_ub.get(id);
-          lb(:,:,1).set(phase.parameterBounds.(id).lower);
-          ub(:,:,1).set(phase.parameterBounds.(id).upper);
-        end
-        
-      end
+        lb_phase = -inf * ones(nv_phase,1);
+        ub_phase = inf * ones(nv_phase,1);
 
-      % nlp bounds
-      names = fieldnames(bounds);
-      for i=1:length(names)
-        id = names{i};
-        lowerBounds.get(id).set(bounds.(id).lower);
-        upperBounds.get(id).set(bounds.(id).upper);
+        % number of variables in one control interval
+        % + 1 for the timestep
+        nci = nx+ni+nu+np+1;
+
+        % Finds indizes of the variables in the NlpVars array.
+        % cellfun is similar to python list comprehension 
+        % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
+        X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
+        I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv_phase, 'UniformOutput', false));
+        U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv_phase, 'UniformOutput', false));
+        P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv_phase, 'UniformOutput', false));
+        H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv_phase, 'UniformOutput', false));
+        
+        % states
+        for m=size(X_indizes,2)
+          lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
+          ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
+        end
+        
+        lb_phase(X_indizes(:,1)) = phase.stateBounds0.lower;
+        ub_phase(X_indizes(:,1)) = phase.stateBounds0.upper;
+        
+        lb_phase(X_indizes(:,end)) = phase.stateBoundsF.lower;
+        ub_phase(X_indizes(:,end)) = phase.stateBoundsF.upper;
+        
+        % integrator bounds
+        for m=size(I_indizes,2)
+          lb_phase(I_indizes(:,m)) = phase.integrator.stateBounds.lower;
+          ub_phase(I_indizes(:,m)) = phase.integrator.stateBounds.lower;
+        end
+        
+        for m=size(I_indizes,2)
+          lb_phase(I_indizes(:,m)) = phase.integrator.algvarBounds.lower;
+          ub_phase(I_indizes(:,m)) = phase.integrator.algvarBounds.lower;
+        end
+        
+        % controls
+        for m=size(U_indizes,2)
+          lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
+          ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
+        end
+        
+        % parameters
+        for m=size(P_indizes,2)
+          lb_phase(P_indizes(:,m)) = phase.parameterBounds.lower;
+          ub_phase(P_indizes(:,m)) = phase.parameterBounds.upper;
+        end
+        
+        % timesteps
+        if isempty(phase.T)
+          lb_phase(H_indizes) = Simultaneous.h_min;
+        else
+          lb_phase(H_indizes) = phase.H_norm * phase.T;
+          ub_phase(H_indizes) = phase.H_norm * phase.T;
+        end
+        lowerBounds{k} = lb_phase;
+        upperBounds{k} = ub_phase;
       end
-      
-      names = fieldnames(initialBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,1).set(initialBounds.(id).lower);
-        ub(:,:,1).set(initialBounds.(id).upper);
-      end
-      
-      % end bounds
-      names = fieldnames(endBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,end).set(endBounds.(id).lower);
-        ub(:,:,end).set(endBounds.(id).upper);
-      end
-      
-      lowerBounds = lowerBounds.value;
-      upperBounds = upperBounds.value;
+      lowerBounds = vertcat(lowerBounds{:});
+      upperBounds = vertcat(upperBounds{:});
       
     end
     

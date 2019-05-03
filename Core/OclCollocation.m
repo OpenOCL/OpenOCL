@@ -22,6 +22,9 @@ classdef OclCollocation < handle
     daefun
     lagrangecostsfh
     
+    stateBounds
+    algvarBounds
+    
     vars
     nx
     nz
@@ -63,12 +66,41 @@ classdef OclCollocation < handle
       [self.C,self.D,self.B] = self.getCoefficients(order);
       
       self.vars = OclStructure();
-      self.vars.addRepeated({'states', 'algVars'},...
+      self.vars.addRepeated({'states', 'algvars'},...
                             {states, algvars}, order);
       
       si = self.vars.size();
       self.ni = prod(si);
+      
+      self.stateBounds.lower = -inf*ones(self.nx, order);
+      self.stateBounds.upper = inf*ones(self.nx, order);
                                       
+    end
+    
+    function setStateBounds(self,id,varargin)
+      x_lb = OclVariable.create(self.vars.get('states'), self.stateBounds.lower);
+      x_ub = OclVariable.create(self.vars.get('states'), self.stateBounds.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      x_lb.get(id).set(bounds.id, bounds.lower);
+      x_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.stateBounds.lower = x_lb.value;
+      self.stateBounds.upper = x_ub.value;
+    end
+    
+    function setAlgvarBounds(self,id,varargin)
+      z_lb = OclVariable.create(self.vars.get('algvars'), self.algvarBounds.lower);
+      z_ub = OclVariable.create(self.vars.get('algvars'), self.algvarBounds.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      z_lb.get(id).set(bounds.id, bounds.lower);
+      z_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.algvarBounds.lower = z_lb.value;
+      self.algvarBounds.upper = z_ub.value;
     end
     
     function r = lagrangecostfun(self,x,z,u,p)

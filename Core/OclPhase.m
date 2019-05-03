@@ -9,9 +9,12 @@ classdef OclPhase < handle
     pathcostsfh
     pathconfh
 
-    bounds
-    bounds0
-    boundsF
+    stateBounds
+    stateBounds0
+    stateBoundsF
+    
+    algvarBounds
+    controlBounds
     parameterBounds
     
     nx
@@ -73,22 +76,28 @@ classdef OclPhase < handle
       r = length(self.H_norm);
     end
     
-    function setBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.bounds = OclBounds(id, varargin{:});
+    function setStateBounds(self,id,varargin)
+      self.stateBounds = OclBounds(id, varargin{:});
     end
     
-    function setInitialBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.bounds0 = OclBounds(id, varargin{:});
+    function setInitialStateBounds(self,id,varargin)
+      self.stateBounds0 = OclBounds(id, varargin{:});
     end
     
-    function setEndBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.boundsF = OclBounds(id, varargin{:});
+    function setEndStateBounds(self,id,varargin)
+      self.stateBoundsF = OclBounds(id, varargin{:});
+    end
+    
+    function setAlgvarBounds(self,id,varargin)
+      self.algvarBounds = OclBounds(id, varargin{:});
+    end
+    
+    function setParameterBounds(self,id,varargin)
+      self.parameterBounds = OclBounds(id, varargin{:});
+    end
+    
+    function setControlBounds(self,id,varargin)
+      self.controlBounds = OclBounds(id, varargin{:});
     end
     
     function r = pathcostfun(self,k,N,x,p)

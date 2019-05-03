@@ -5,6 +5,10 @@ classdef OclSolver < handle
     initialBounds
     endBounds
     igParameters
+    
+    solver
+    varsStruct
+    phaseList
   end
 
   methods
@@ -15,8 +19,6 @@ classdef OclSolver < handle
       % OclSolver(phaseList, options)
       % OclSolver(T, @varsfun, @daefun, @ocpfuns... , options)
       % OclSolver(phaseList, integratorList, options)
-      preparationTic = tic;
-
       phaseList = {};
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
@@ -61,20 +63,17 @@ classdef OclSolver < handle
         phaseList{1} = phase;
       end
       
-      
-      solver = CasadiSolver(phaseList, options);
-
-      if strcmp(options.solverInterface,'casadi')
-        preparationTime = toc(preparationTic);
-        solver = CasadiNLPSolver(nlp,options);
-        solver.timeMeasures.preparation = preparationTime;
-      else
-        error('Solver interface not implemented.')
-      end 
+      self.solver = CasadiSolver(phaseList, options);
+      self.varsStruct = Simultaneous.vars(phaseList);
+      self.phaseList = phaseList;
     end
     
     function solve(self,ig)
       self.solver.solve(ig);
+    end
+    
+    function ig = getInitialGuess(self)
+      ig = Simultaneous.getInitialGuess(self.varsStruct, self.phaseList);
     end
     
     function setParameter(self,id,varargin)
