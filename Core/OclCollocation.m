@@ -71,8 +71,7 @@ classdef OclCollocation < handle
       si = self.vars.size();
       self.ni = prod(si);
       
-      self.integratorBounds.lower = -inf*ones(self.ni, 1);
-      self.integratorBounds.upper = inf*ones(self.ni, 1);
+      self.integratorBounds = OclBounds(-inf * ones(self.ni, 1), inf * ones(self.ni, 1));
                                       
     end
     
@@ -80,7 +79,7 @@ classdef OclCollocation < handle
       x_lb = OclVariable.create(self.vars, self.integratorBounds.lower);
       x_ub = OclVariable.create(self.vars, self.integratorBounds.upper);
       
-      bounds = OclBounds(id, varargin{:});
+      bounds = OclBounds(varargin{:});
       
       x_lb.get('states').get(id).set(bounds.id, bounds.lower);
       x_ub.get('states').get(id).set(bounds.id, bounds.upper);
@@ -93,7 +92,7 @@ classdef OclCollocation < handle
       lb = OclVariable.create(self.vars, self.integratorBounds.lower);
       ub = OclVariable.create(self.vars, self.integratorBounds.upper);
       
-      bounds = OclBounds(id, varargin{:});
+      bounds = OclBounds(varargin{:});
       
       lb.get('algvars').get(id).set(bounds.id, bounds.lower);
       ub.get('algvars').get(id).set(bounds.id, bounds.upper);

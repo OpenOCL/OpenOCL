@@ -68,12 +68,13 @@ classdef OclSolver < handle
       self.phaseList = phaseList;
     end
     
-    function solve(self,ig)
-      self.solver.solve(ig);
+    function [outVars,times,objective,constraints] = solve(self,ig)
+      [outVars,times,objective,constraints] = self.solver.solve(ig);
     end
     
     function ig = getInitialGuess(self)
-      ig = Simultaneous.getInitialGuess(self.varsStruct, self.phaseList);
+      ig = Simultaneous.getInitialGuess(self.phaseList);
+      ig = Variable.create(self.varsStruct, ig);
     end
     
     function setParameter(self,id,varargin)

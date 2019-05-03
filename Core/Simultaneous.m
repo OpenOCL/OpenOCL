@@ -39,24 +39,39 @@ classdef Simultaneous < handle
       ig = self.getInitialGuess();
     end
     
-    function guess = igFromBounds(~, bounds)
+    function guess = igFromBounds(bounds)
       % Averages the bounds to get an initial guess value.
       % Makes sure no nan values are produced, defaults to 0.
-      guess = (bounds.lower + bounds.upper)/2;
-      if isnan(guess) && ~isinf(bounds.lower)
-        guess = bounds.lower;
-      elseif isnan(guess) && ~isinf(bounds.upper)
-        guess = bounds.upper;
-      else
-        guess = 0;
-      end
+      
+      lowVal  = bounds.lower;
+      upVal   = bounds.upper;
+      
+      guess = (lowVal + upVal) / 2;
+      
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(upVal);
+      guess(indizes) = lowVal(indizes);
+      
+      % set to upperBounds of lowerBoudns are inf
+      indizes = isinf(lowVal);
+      guess(indizes) = upVal(indizes);
+      
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lowVal) & isinf(upVal);
+      guess(indizes) = 0;
+      
     end
     
     function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv)
 
+      nx = phase.nx;
+      ni = phase.integrator.ni;
+      nu = phase.nu;
+      np = phase.np;
+      
       % number of variables in one control interval
       % + 1 for the timestep
-      nci = phase.nx+phase.ni+phase.nu+phase.np+1;
+      nci = nx+ni+nu+np+1;
 
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
@@ -76,18 +91,18 @@ classdef Simultaneous < handle
       for k=1:length(phaseList)
         
         phase = phaseList{k};
-        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.ni, phase.nu, phase.np);
+        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
         
         lb_phase = -inf * ones(nv_phase,1);
         ub_phase = inf * ones(nv_phase,1);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv_phase);
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
         
         % states
-        for m=size(X_indizes,2)
-          lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
-          ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
-        end
+%         for m=size(X_indizes,2)
+%           lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
+%           ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
+%         end
         
         lb_phase(X_indizes(:,1)) = phase.stateBounds0.lower;
         ub_phase(X_indizes(:,1)) = phase.stateBounds0.upper;
@@ -128,7 +143,7 @@ classdef Simultaneous < handle
       
     end
     
-    function ig = getInitialGuess(varsStruct, phaseList)
+    function ig = getInitialGuess(phaseList)
       % creates an initial guess from the information that we have about
       % bounds, phases etc.
       
@@ -137,16 +152,16 @@ classdef Simultaneous < handle
       for k=1:length(phaseList)
         
         phase = phaseList{k};
-        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.ni, phase.nu, phase.np);
+        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv_phase);
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
         
         ig_phase = 0 * ones(nv_phase,1);
         
         % states
-        for m=size(X_indizes,2)
-          ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
-        end
+%         for m=size(X_indizes,2)
+%           ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
+%         end
         
         ig_phase(X_indizes(:,1)) = Simultaneous.igFromBounds(phase.stateBounds0);
         ig_phase(X_indizes(:,end)) = Simultaneous.igFromBounds(phase.stateBoundsF);
@@ -155,24 +170,6 @@ classdef Simultaneous < handle
         for m=size(I_indizes,2)
           ig_phase(I_indizes(:,m)) = Simultaneous.igFromBounds(phase.integrator.integratorBounds);
         end
-
-        % linearily interpolate guess
-        phaseStruct = varsStruct.get('phases',k).flat();
-        phaseFlat = Variable.create(phaseStruct.flat(), igPhase.value);
-        
-        names = igPhase.children();
-        for i=1:length(names)
-          id = names{i};
-          igId = phaseFlat.get(id);
-          igStart = igId(:,:,1).value;
-          igEnd = igId(:,:,end).value;
-          s = igId.size();
-          gridpoints = reshape(linspace(0, 1, s(3)), 1, 1, s(3));
-          gridpoints = repmat(gridpoints, s(1), s(2));
-          interpolated = igStart + gridpoints.*(igEnd-igStart);
-          phaseFlat.get(id).set(interpolated);
-        end
-        igPhase.set(phaseFlat.value);
         
         % controls
         for m=size(U_indizes,2)
@@ -207,10 +204,17 @@ classdef Simultaneous < handle
     end
     
     function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-        simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
-                     pathcost_fun, pathcon_fun)
+        simultaneous(phase, phaseVars, integrator_map)
       
-
+      H_norm = phase.H_norm;
+      T = phase.T;
+      nx = phase.nx;
+      ni = phase.integrator.ni;
+      nu = phase.nu;
+      np = phase.np;
+      pathcost_fun = @phase.pathcostfun;
+      pathcon_fun = @phase.pathconfun;
+                   
       [nv_phase,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
       [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
       

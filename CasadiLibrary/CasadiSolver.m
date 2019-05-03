@@ -1,6 +1,7 @@
 classdef CasadiSolver < handle
   
   properties (Access = private)
+    phaseList
     nlpData
     options
     timeMeasures
@@ -47,17 +48,10 @@ classdef CasadiSolver < handle
         
         integrator_map = integrator_fun.map(phase.N,'openmp');
         
-        % cost        
-        pathcost_fun = @(k,N,x,p)phase.pathcostfun(k,N,x,p);
-        pathcon_fun = @(k,N,x,p)phase.pathconfun(k,N,x,p);
-        
         nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
         v = expr('v', nv_phase);
-        
-        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous( ...
-            phase.H_norm, phase.T, ...
-            phase.nx, phase.integrator.ni, phase.nu, phase.np, v, integrator_map, ...
-            pathcost_fun, pathcon_fun);
+          
+        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v, integrator_map);
         
       end
       
@@ -88,6 +82,7 @@ classdef CasadiSolver < handle
       timeMeasures.constructTotal = toc(constructTotalTic);
       timeMeasures.constructSolver = constructSolverTime;
       
+      self.phaseList = phaseList;
       self.nlpData = nlpData;
       self.options = options;
       self.timeMeasures = timeMeasures;
@@ -100,7 +95,7 @@ classdef CasadiSolver < handle
       
       v0 = initialGuess.value;
       
-      [lbv,ubv] = self.nlp.getNlpBounds();
+      [lbv,ubv] = Simultaneous.getNlpBounds(self.phaseList);
  
       args = struct;
       args.lbg = self.nlpData.constraints_LB;
