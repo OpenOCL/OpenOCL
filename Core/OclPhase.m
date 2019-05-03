@@ -5,8 +5,9 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    pathcostsfun
-    pathconfun
+    lagrangecostsfun
+    pathcostsfh
+    pathconfh
 
     bounds
     bounds0
@@ -30,7 +31,7 @@ classdef OclPhase < handle
   
   methods
     
-    function self = OclPhase(T, H_norm, integrator, pathcostsfun, pathconfun)
+    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh, states, algvars, controls, parameters)
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -53,13 +54,19 @@ classdef OclPhase < handle
       end
       
       self.integrator = integrator;
-      self.pathcostsfun = pathcostsfun;
-      self.pathconfun = pathconfun;
+      self.pathcostsfh = pathcostsfh;
+      self.pathconfh = pathconfh;
+      self.lagrangecostsfun = @integrator.lagrangecostsfun;
       
       self.nx = integrator.nx;
       self.nz = integrator.nz;
       self.nu = integrator.nu;
       self.np = integrator.np;
+      
+      self.states = states;
+      self.algvars = algvars;
+      self.controls = controls;
+      self.parameters = parameters;
     end
 
     function r = N(self)
@@ -82,6 +89,29 @@ classdef OclPhase < handle
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
       self.boundsF = OclBounds(id, varargin{:});
+    end
+    
+    function r = pathcostsfun(self,k,N,x,p)
+      pcHandler = OclCost();
+      
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
+      
+      self.pathcostsfh(pcHandler,k,N,x,p);
+      
+      r = pcHandler.value;
+    end
+    
+    function [val,lb,ub] = pathconfun(self,k,N,x,p)
+      pathConstraintHandler = OclConstraint();
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
+      
+      self.pathconfh(pathConstraintHandler,k,N,x,p);
+      
+      val = pathConstraintHandler.values;
+      lb = pathConstraintHandler.lowerBounds;
+      ub = pathConstraintHandler.upperBounds;
     end
     
   end

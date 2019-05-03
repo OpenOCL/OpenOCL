@@ -14,6 +14,11 @@ classdef OclCollocation < handle
   
   properties
     
+    states
+    algvars
+    controls
+    parameters
+    
     daefun
     lagrangecostsfh
     
@@ -37,13 +42,19 @@ classdef OclCollocation < handle
   
   methods
     
-    function self = OclCollocation(statesStruct, algVarsStruct, nu, np, daefun, lagrangecostsfh, order)
+    function self = OclCollocation(states, algvars, controls, parameters, daefun, lagrangecostsfh, order)
       
-      self.nx = prod(statesStruct.size());
-      self.nu = nu;
-      self.nz = prod(algVarsStruct.size());
-      self.np = np;
+      self.states = states;
+      self.algvars = algvars;
+      self.controls = controls;
+      self.parameters = parameters;
+      
+      self.nx = prod(states.size());
+      self.nz = prod(algvars.size());
+      self.nu = prod(controls.size());
+      self.np = prod(parameters.size());
       self.nt = order;
+      
       self.daefun = daefun;
       self.lagrangecostsfh = lagrangecostsfh;
       
@@ -53,12 +64,24 @@ classdef OclCollocation < handle
       
       self.vars = OclStructure();
       self.vars.addRepeated({'states', 'algVars'},...
-                            {statesStruct, algVarsStruct}, order);
+                            {states, algvars}, order);
       
       si = self.vars.size();
       self.ni = prod(si);
+                                      
+    end
+    
+    function r = lagrangecostfun(self,x,z,u,p)
+      pcHandler = OclCost();
       
-                                                  
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
+      
+      self.lagrangecostsfh(pcHandler,x,z,u,p);
+      
+      r = pcHandler.value;
     end
 
     function [statesEnd, AlgVarsEnd, costs, equations, times] = ...
@@ -97,7 +120,7 @@ classdef OclCollocation < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.lagrangecostsfh(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = self.lagrangecostsfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 
