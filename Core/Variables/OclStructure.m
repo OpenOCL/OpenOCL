@@ -13,6 +13,10 @@ classdef OclStructure < handle
       self.children = struct;
       self.len = 0;
     end
+    
+    function r = getNames(self)
+      r = fieldnames(self.children);
+    end
 
     function add(self,id,in2)
       % add(id)

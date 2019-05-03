@@ -83,12 +83,18 @@ classdef OclSolver < handle
     
     function setBounds(self,id,varargin)
       % setBounds(id,value)
-      % setBounds(id,lower,upper)     
+      % setBounds(id,lower,upper)
       if length(self.phaseList) == 1
+        
         % check if id is a state, control, algvar or parameter
-        names = self.phaseList{1}.states.getNames();
-        if 
+        if oclFieldnamesContain(self.phaseList{1}.states.getNames(), id)
           self.phaseList{1}.setStateBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.phaseList{1}.algvars.getNames(), id)
+          self.phaseList{1}.setAlgvarBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.phaseList{1}.controls.getNames(), id)
+          self.phaseList{1}.setControlBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.phaseList{1}.parameters.getNames(), id)
+          self.phaseList{1}.setParameterBounds(id, varargin{:});
         end
         
       else
