@@ -46,12 +46,12 @@ classdef CasadiSolver < handle
         [statesEnd, costs, equations, rel_times] = phase.integrator.integratorfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, costs, equations, rel_times});
         
-        integrator_map = integrator_fun.map(phase.N,'openmp');
+        phase.integratormap = integrator_fun.map(phase.N,'openmp');
         
         nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
         v = expr('v', nv_phase);
           
-        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v, integrator_map);
+        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v);
         
       end
       
@@ -88,12 +88,10 @@ classdef CasadiSolver < handle
       self.timeMeasures = timeMeasures;
     end
     
-    function [outVars,times,objective,constraints] = solve(self,initialGuess)
+    function [outVars,times,objective,constraints] = solve(self,v0)
       % solve(initialGuess)
       
       solveTotalTic = tic;
-      
-      v0 = initialGuess.value;
       
       [lbv,ubv] = Simultaneous.getNlpBounds(self.phaseList);
  
@@ -114,18 +112,16 @@ classdef CasadiSolver < handle
         oclWarning('Solver was interrupted by user.');
       end
       
-      solution = sol.x.full();
+      outVars = sol.x.full();
+      
       
       nlpFunEvalTic = tic;
       if nargout > 1
-        [objective,constraints,~,~,times] = self.nlp.nlpFun.evaluate(solution);
+        [objective,constraints,~,~,times] =Simultaneous.simultaneous(self.phaseList{1}, outVars);
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
-      
-      times = Variable.createNumeric(self.nlp.timesStruct,full(times));
 
-      initialGuess.set(solution);
-      outVars = initialGuess;
+      times = times.full();
       
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
       self.timeMeasures.solveCasadi     = solveCasadiTime;

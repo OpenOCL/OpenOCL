@@ -76,26 +76,26 @@ classdef OclCollocation < handle
     end
     
     function setStateBounds(self,id,varargin)
-      x_lb = OclVariable.create(self.vars, self.integratorBounds.lower);
-      x_ub = OclVariable.create(self.vars, self.integratorBounds.upper);
+      x_lb = Variable.create(self.vars, self.integratorBounds.lower);
+      x_ub = Variable.create(self.vars, self.integratorBounds.upper);
       
       bounds = OclBounds(varargin{:});
       
-      x_lb.get('states').get(id).set(bounds.id, bounds.lower);
-      x_ub.get('states').get(id).set(bounds.id, bounds.upper);
+      x_lb.get('states').get(id).set(bounds.lower);
+      x_ub.get('states').get(id).set(bounds.upper);
       
       self.integratorBounds.lower = x_lb.value;
       self.integratorBounds.upper = x_ub.value;
     end
     
     function setAlgvarBounds(self,id,varargin)
-      lb = OclVariable.create(self.vars, self.integratorBounds.lower);
-      ub = OclVariable.create(self.vars, self.integratorBounds.upper);
+      lb = Variable.create(self.vars, self.integratorBounds.lower);
+      ub = Variable.create(self.vars, self.integratorBounds.upper);
       
       bounds = OclBounds(varargin{:});
       
-      lb.get('algvars').get(id).set(bounds.id, bounds.lower);
-      ub.get('algvars').get(id).set(bounds.id, bounds.upper);
+      lb.get('algvars').get(id).set(bounds.lower);
+      ub.get('algvars').get(id).set(bounds.upper);
       
       self.integratorBounds.lower = lb.value;
       self.integratorBounds.upper = ub.value;

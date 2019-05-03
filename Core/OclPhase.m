@@ -8,6 +8,8 @@ classdef OclPhase < handle
     lagrangecostsfun
     pathcostsfh
     pathconfh
+    
+    integratormap
 
     stateBounds0
     stateBoundsF
@@ -96,8 +98,8 @@ classdef OclPhase < handle
     end
     
     function setEndStateBounds(self,id,varargin)
-      xF_lb = OclVariable.create(self.states, self.stateBoundsF.lower);
-      xF_ub = OclVariable.create(self.states, self.stateBoundsF.upper);
+      xF_lb = Variable.create(self.states, self.stateBoundsF.lower);
+      xF_ub = Variable.create(self.states, self.stateBoundsF.upper);
       
       bounds = OclBounds(varargin{:});
       
@@ -113,8 +115,8 @@ classdef OclPhase < handle
     end
     
     function setControlBounds(self,id,varargin)
-      u_lb = OclVariable.create(self.controls, self.controlBounds.lower);
-      u_ub = OclVariable.create(self.controls, self.controlBounds.upper);
+      u_lb = Variable.create(self.controls, self.controlBounds.lower);
+      u_ub = Variable.create(self.controls, self.controlBounds.upper);
       
       bounds = OclBounds(varargin{:});
       
@@ -126,13 +128,13 @@ classdef OclPhase < handle
     end
     
     function setParameterBounds(self,id,varargin)
-      p_lb = OclVariable.create(self.parameters, self.parameterBounds.lower);
-      p_ub = OclVariable.create(self.parameters, self.parameterBounds.upper);
+      p_lb = Variable.create(self.parameters, self.parameterBounds.lower);
+      p_ub = Variable.create(self.parameters, self.parameterBounds.upper);
       
       bounds = OclBounds(varargin{:});
       
-      p_lb.get(id).set(bounds.id, bounds.lower);
-      p_ub.get(id).set(bounds.id, bounds.upper);
+      p_lb.get(id).set(bounds.lower);
+      p_ub.get(id).set(bounds.upper);
       
       self.parameterBounds.lower = p_lb.value;
       self.parameterBounds.upper = p_ub.value;

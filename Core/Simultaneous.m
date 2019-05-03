@@ -2,6 +2,10 @@ classdef Simultaneous < handle
   %SIMULTANEOUS Direct collocation discretization of OCP to NLP
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
+  properties (Constant)
+    h_min = 0.02;
+  end
+  
   methods (Static)
     
     function varsStruct = vars(phaseList)
@@ -19,6 +23,7 @@ classdef Simultaneous < handle
                              phase.parameters, ...
                              OclMatrix([1,1])}, length(phase.H_norm));
         phaseStruct.add('states', phase.states);
+        phaseStruct.add('parameters', phase.parameters);
 
         varsStruct.add('phases', phaseStruct);
       end
@@ -62,7 +67,7 @@ classdef Simultaneous < handle
       
     end
     
-    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv)
+    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, N)
 
       nx = phase.nx;
       ni = phase.integrator.ni;
@@ -76,11 +81,13 @@ classdef Simultaneous < handle
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
       % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv, 'UniformOutput', false));
-      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv, 'UniformOutput', false));
-      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv, 'UniformOutput', false));
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', (0:N)*nci+1, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', (0:N-1)*nci+nx+1, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', (0:N-1)*nci+nx+ni+1, 'UniformOutput', false));
+      
+      p_start = [(0:N-1)*nci+nx+ni+nu+1, (N)*nci+nx+1];
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
     end
         
     function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
@@ -91,12 +98,12 @@ classdef Simultaneous < handle
       for k=1:length(phaseList)
         
         phase = phaseList{k};
-        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+        [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
         
         lb_phase = -inf * ones(nv_phase,1);
         ub_phase = inf * ones(nv_phase,1);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
         
         % states
 %         for m=size(X_indizes,2)
@@ -152,9 +159,9 @@ classdef Simultaneous < handle
       for k=1:length(phaseList)
         
         phase = phaseList{k};
-        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+        [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
         
         ig_phase = 0 * ones(nv_phase,1);
         
@@ -200,11 +207,10 @@ classdef Simultaneous < handle
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
       % Ends with a single state.
-      nv_phase = N*nx + N*ni + N*nu + N*np + N + nx;
+      nv_phase = N*nx + N*ni + N*nu + N*np + N + nx + np;
     end
     
-    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-        simultaneous(phase, phaseVars, integrator_map)
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = simultaneous(phase, phaseVars)
       
       H_norm = phase.H_norm;
       T = phase.T;
@@ -216,19 +222,20 @@ classdef Simultaneous < handle
       pathcon_fun = @phase.pathconfun;
                    
       [nv_phase,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
       
       X = reshape(phaseVars(X_indizes), nx, N+1);
       I = reshape(phaseVars(I_indizes), ni, N);
       U = reshape(phaseVars(U_indizes), nu, N);
-      P = reshape(phaseVars(P_indizes), np, N);
+      P = reshape(phaseVars(P_indizes), np, N+1);
       H = reshape(phaseVars(H_indizes), 1 , N);
-          
-      pcon = cell(1,N);
-      pcon_lb = cell(1,N);
-      pcon_ub = cell(1,N);
+      
+      % path constraints
+      pcon = cell(1,N+1);
+      pcon_lb = cell(1,N+1);
+      pcon_ub = cell(1,N+1);
       pcost = 0;
-      for k=1:N
+      for k=2:N+1
         [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N, X(:,k), P(:,k));
         pcost = pcost + pathcost_fun(k, N, X(:,k), P(:,k));
       end    
@@ -237,9 +244,15 @@ classdef Simultaneous < handle
       pcon_lb = horzcat(pcon_lb{:});
       pcon_ub = horzcat(pcon_ub{:});
       
+      if isempty(pcon)
+        pcon = double.empty(0,N+1);
+        pcon_lb = double.empty(0,N+1);
+        pcon_ub = double.empty(0,N+1);
+      end
+      
       T0 = [0, cumsum(H(:,1:end-1))];
       
-      [xend_arr, cost_arr, int_eq_arr, int_times] = integrator_map(X(:,1:end-1), I, U, H, P);
+      [xend_arr, cost_arr, int_eq_arr, int_times] = phase.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
       
       for k=1:size(int_times,1)
         int_times(k,:) = T0 + int_times(k,:);
@@ -261,23 +274,23 @@ classdef Simultaneous < handle
       % Parameter constraints 
       % p0=p1=p2=p3 ...
       p_eq = P(:,2:end)-P(:,1:end-1);
-      p_eq_lb = zeros(np, N-1);
-      p_eq_ub = zeros(np, N-1);
+      p_eq_lb = zeros(np, N);
+      p_eq_ub = zeros(np, N);
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon;     h_eq;     p_eq];
-      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb;  h_eq_lb;  p_eq_lb];
-      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub;  h_eq_ub;  p_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon(:,1:N-1);     h_eq;     p_eq(:,1:N-1)];
+      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb(:,1:N-1);  h_eq_lb;  p_eq_lb(:,1:N-1)];
+      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub(:,1:N-1);  h_eq_ub;  p_eq_ub(:,1:N-1)];
       
-      % reshape shooting equations to column vector, append integrator and
+      % reshape shooting equations to column vector, append lastintegrator and
       % continuity equations
-      constraints    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N)];
-      constraints_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1)    ];
-      constraints_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1)    ];
+      constraints    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pcon(:,N);       p_eq(:,N)    ];
+      constraints_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pcon_lb(:,N);    p_eq_lb(:,N) ];
+      constraints_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pcon_ub(:,N);    p_eq_ub(:,N) ];
 
       % sum all costs
       costs = sum(cost_arr) + pcost;

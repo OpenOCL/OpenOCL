@@ -69,7 +69,11 @@ classdef OclSolver < handle
     end
     
     function [outVars,times,objective,constraints] = solve(self,ig)
-      [outVars,times,objective,constraints] = self.solver.solve(ig);
+      [outVars,times,objective,constraints] = self.solver.solve(ig.value);
+      outVars = Variable.create(self.varsStruct, outVars);
+      
+      timesStruct = Simultaneous.times(self.phaseList{1}.integrator.nt, length(self.phaseList{1}.H_norm));
+      times = Variable.createNumeric(timesStruct, full(times));
     end
     
     function ig = getInitialGuess(self)

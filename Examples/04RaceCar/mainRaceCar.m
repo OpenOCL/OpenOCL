@@ -10,7 +10,7 @@ function [solution,times,ocl] = mainRaceCar
   options.controls_regularization_value = 1e-3;
 
   system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('arrivalcosts', @arrivalcosts, 'pathconstraints', @pathconstraints);
+  ocp = OclOCP('pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
 
   ocl = OclSolver([],system,ocp,options);
 
@@ -136,11 +136,13 @@ function eqfun(sh,x,z,u,p)
   sh.setODE('time', 1);
 end
 
-function arrivalcosts(ch,x,p)
-  ch.add(x.time);
+function pathcosts(ch,k,N,x,p)
+  if k==N
+    ch.add(x.time);
+  end
 end
 
-function pathconstraints(ch,x,p)
+function pathconstraints(ch,k,N,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 
