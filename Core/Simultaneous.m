@@ -52,70 +52,22 @@ classdef Simultaneous < handle
       end
     end
     
-    function ig = getInitialGuess(varsStruct, phaseList)
-      % creates an initial guess from the information that we have about
-      % bounds, phases etc.
-      
-      ig = Variable.create(varsStruct,0);
-      
-      for k=1:length(phaseList)
-        
-        phase = phaseList{k};
-        igPhase = ig.get('phases', k);
-        
-        names = fieldnames(phase.bounds);
-        for l=1:length(names)
-          id = names{l};
-          igPhase.get(id).set(Simultaneous.igFromBounds(phase.bounds.(id)));
-        end
-        
-        names = fieldnames(phase.bounds0);
-        for l=1:length(names)
-          id = names{l};
-          igPhase.get(id).set(Simultaneous.igFromBounds(phase.bounds0.(id)));
-        end
-        
-        names = fieldnames(phase.boundsF);
-        for l=1:length(names)
-          id = names{l};
-          igPhase.get(id).set(Simultaneous.igFromBounds(phase.boundsF.(id)));
-        end
+    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv)
 
-        % linearily interpolate guess
-        phaseStruct = varsStruct.get('phases',k).flat();
-        phaseFlat = Variable.create(phaseStruct.flat(), igPhase.value);
-        
-        names = igPhase.children();
-        for i=1:length(names)
-          id = names{i};
-          igId = phaseFlat.get(id);
-          igStart = igId(:,:,1).value;
-          igEnd = igId(:,:,end).value;
-          s = igId.size();
-          gridpoints = reshape(linspace(0, 1, s(3)), 1, 1, s(3));
-          gridpoints = repmat(gridpoints, s(1), s(2));
-          interpolated = igStart + gridpoints.*(igEnd-igStart);
-          phaseFlat.get(id).set(interpolated);
-        end
-        igPhase.set(phaseFlat.value);
-        
-        names = fieldnames(phase.parameterBounds);
-        for i=1:length(names)
-          id = names{i};
-          igPhase.get(id).set(Simultaneous.igFromBounds(phase.parameterBounds.(id)));
-        end
-        
-        % ig for timesteps
-        if isempty(phase.T)
-          H = phase.H_norm;
-        else
-          H = phase.H_norm.*phase.T;
-        end
-        igPhase.get('h').set(H);
-      
-      end
+      % number of variables in one control interval
+      % + 1 for the timestep
+      nci = phase.nx+phase.ni+phase.nu+phase.np+1;
+
+      % Finds indizes of the variables in the NlpVars array.
+      % cellfun is similar to python list comprehension 
+      % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv, 'UniformOutput', false));
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv, 'UniformOutput', false));
     end
-    
+        
     function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
       
       lowerBounds = cell(length(phaseList), 1);
@@ -124,23 +76,12 @@ classdef Simultaneous < handle
       for k=1:length(phaseList)
         
         phase = phaseList{k};
-        [nv_phase,~] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
+        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.ni, phase.nu, phase.np);
         
         lb_phase = -inf * ones(nv_phase,1);
         ub_phase = inf * ones(nv_phase,1);
 
-        % number of variables in one control interval
-        % + 1 for the timestep
-        nci = nx+ni+nu+np+1;
-
-        % Finds indizes of the variables in the NlpVars array.
-        % cellfun is similar to python list comprehension 
-        % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-        X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
-        I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv_phase, 'UniformOutput', false));
-        U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv_phase, 'UniformOutput', false));
-        P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv_phase, 'UniformOutput', false));
-        H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv_phase, 'UniformOutput', false));
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv_phase);
         
         % states
         for m=size(X_indizes,2)
@@ -156,13 +97,8 @@ classdef Simultaneous < handle
         
         % integrator bounds
         for m=size(I_indizes,2)
-          lb_phase(I_indizes(:,m)) = phase.integrator.stateBounds.lower;
-          ub_phase(I_indizes(:,m)) = phase.integrator.stateBounds.lower;
-        end
-        
-        for m=size(I_indizes,2)
-          lb_phase(I_indizes(:,m)) = phase.integrator.algvarBounds.lower;
-          ub_phase(I_indizes(:,m)) = phase.integrator.algvarBounds.lower;
+          lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
+          ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
         end
         
         % controls
@@ -192,6 +128,74 @@ classdef Simultaneous < handle
       
     end
     
+    function ig = getInitialGuess(varsStruct, phaseList)
+      % creates an initial guess from the information that we have about
+      % bounds, phases etc.
+      
+      ig = cell(length(phaseList), 1);
+      
+      for k=1:length(phaseList)
+        
+        phase = phaseList{k};
+        [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.ni, phase.nu, phase.np);
+
+        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, nv_phase);
+        
+        ig_phase = 0 * ones(nv_phase,1);
+        
+        % states
+        for m=size(X_indizes,2)
+          ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
+        end
+        
+        ig_phase(X_indizes(:,1)) = Simultaneous.igFromBounds(phase.stateBounds0);
+        ig_phase(X_indizes(:,end)) = Simultaneous.igFromBounds(phase.stateBoundsF);
+        
+        % integrator bounds
+        for m=size(I_indizes,2)
+          ig_phase(I_indizes(:,m)) = Simultaneous.igFromBounds(phase.integrator.integratorBounds);
+        end
+
+        % linearily interpolate guess
+        phaseStruct = varsStruct.get('phases',k).flat();
+        phaseFlat = Variable.create(phaseStruct.flat(), igPhase.value);
+        
+        names = igPhase.children();
+        for i=1:length(names)
+          id = names{i};
+          igId = phaseFlat.get(id);
+          igStart = igId(:,:,1).value;
+          igEnd = igId(:,:,end).value;
+          s = igId.size();
+          gridpoints = reshape(linspace(0, 1, s(3)), 1, 1, s(3));
+          gridpoints = repmat(gridpoints, s(1), s(2));
+          interpolated = igStart + gridpoints.*(igEnd-igStart);
+          phaseFlat.get(id).set(interpolated);
+        end
+        igPhase.set(phaseFlat.value);
+        
+        % controls
+        for m=size(U_indizes,2)
+          ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
+        end
+        
+        % parameters
+        for m=size(P_indizes,2)
+          ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
+        end
+        
+        % timesteps
+        if isempty(phase.T)
+          ig_phase(H_indizes) = phase.H_norm;
+        else
+          ig_phase(H_indizes) = phase.H_norm * phase.T;
+        end
+        ig{k} = ig_phase;
+        
+      end
+      ig = vertcat(ig{:});
+    end
+    
     function [nv_phase,N] = nvars(H_norm, nx, ni, nu, np)
       % number of control intervals
       N = length(H_norm);
@@ -208,19 +212,7 @@ classdef Simultaneous < handle
       
 
       [nv_phase,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
-      
-      % number of variables in one control interval
-      % + 1 for the timestep
-      nci = nx+ni+nu+np+1;
-      
-      % Finds indizes of the variables in the NlpVars array.
-      % cellfun is similar to python list comprehension 
-      % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', 1:nci:nv_phase, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', nx+1:nci:nv_phase, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', nx+ni+1:nci:nv_phase, 'UniformOutput', false));
-      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', nx+ni+nu+1:nci:nv_phase, 'UniformOutput', false));
-      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', nx+ni+nu+np+1:nci:nv_phase, 'UniformOutput', false));
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, nv_phase);
       
       X = reshape(phaseVars(X_indizes), nx, N+1);
       I = reshape(phaseVars(I_indizes), ni, N);

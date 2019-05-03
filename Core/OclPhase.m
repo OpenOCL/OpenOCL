@@ -84,13 +84,13 @@ classdef OclPhase < handle
     end
     
     function setInitialStateBounds(self,id,varargin)
-      x0_lb = OclVariable.create(self.states, self.stateBounds0.lower);
-      x0_ub = OclVariable.create(self.states, self.stateBounds0.upper);
+      x0_lb = Variable.create(self.states, self.stateBounds0.lower);
+      x0_ub = Variable.create(self.states, self.stateBounds0.upper);
       
       bounds = OclBounds(id, varargin{:});
       
-      x0_lb.get(id).set(bounds.id, bounds.lower);
-      x0_ub.get(id).set(bounds.id, bounds.upper);
+      x0_lb.get(bounds.id).set(bounds.lower);
+      x0_ub.get(bounds.id).set(bounds.upper);
       
       self.stateBounds0.lower = x0_lb.value;
       self.stateBounds0.upper = x0_ub.value;
@@ -102,8 +102,8 @@ classdef OclPhase < handle
       
       bounds = OclBounds(id, varargin{:});
       
-      xF_lb.get(id).set(bounds.id, bounds.lower);
-      xF_ub.get(id).set(bounds.id, bounds.upper);
+      xF_lb.get(bounds.id).set(bounds.lower);
+      xF_ub.get(bounds.id).set(bounds.upper);
       
       self.stateBoundsF.lower = xF_lb.value;
       self.stateBoundsF.upper = xF_ub.value;
@@ -119,8 +119,8 @@ classdef OclPhase < handle
       
       bounds = OclBounds(id, varargin{:});
       
-      u_lb.get(id).set(bounds.id, bounds.lower);
-      u_ub.get(id).set(bounds.id, bounds.upper);
+      u_lb.get(bounds.id).set(bounds.lower);
+      u_ub.get(bounds.id).set(bounds.upper);
       
       self.controlBounds.lower = u_lb.value;
       self.controlBounds.upper = u_ub.value;

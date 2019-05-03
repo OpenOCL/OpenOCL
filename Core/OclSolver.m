@@ -77,8 +77,11 @@ classdef OclSolver < handle
     end
     
     function setParameter(self,id,varargin)
-      self.initialBounds = OclBound(id, varargin{:});
-      self.igParameters.(id) = mean([varargin{:}]);
+      if length(self.phaseList) == 1
+        self.phaseList{1}.setParameterBounds(id, varargin{:});
+      else
+        oclError('For multiphase problems, set the bounds to the phases directlly.')
+      end
     end
     
     function setBounds(self,id,varargin)
@@ -98,7 +101,7 @@ classdef OclSolver < handle
         end
         
       else
-        oclError('For multiphase problems, set the bounds to the phases directlly.')
+        oclError('For multiphase problems, set the bounds to the phases directly.')
       end
     end
     
@@ -108,7 +111,7 @@ classdef OclSolver < handle
       if length(self.phaseList) == 1
         self.phaseList{1}.setInitialStateBounds(id, varargin{:});
       else
-        oclError('For multiphase problems, set the bounds to the phases directlly.')
+        oclError('For multiphase problems, set the bounds to the phases directly.')
       end
     end
     
