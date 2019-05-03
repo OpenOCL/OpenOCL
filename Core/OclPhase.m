@@ -91,7 +91,7 @@ classdef OclPhase < handle
       self.boundsF = OclBounds(id, varargin{:});
     end
     
-    function r = pathcostsfun(self,k,N,x,p)
+    function r = pathcostfun(self,k,N,x,p)
       pcHandler = OclCost();
       
       x = Variable.create(self.states,x);

@@ -84,19 +84,19 @@ classdef OclCollocation < handle
       r = pcHandler.value;
     end
 
-    function [statesEnd, AlgVarsEnd, costs, equations, times] = ...
+    function [statesEnd, costs, equations, rel_times] = ...
           integratorfun(self, statesBegin, integratorVars, ...
-          controls, startTime, h, parameters)              
+          controls, h, parameters)              
       
       equations = cell(self.order,1);
       J = 0;
       
       % Loop over collocation points
       statesEnd = self.D(1)*statesBegin;
-      times = cell(self.order,1);
+      rel_times = cell(self.order,1);
       for j=1:self.order
         
-        times{j} = startTime + self.tau_root(j+1) * h;
+        rel_times{j} = self.tau_root(j+1) * h;
         
         j_vars = (j-1)*(self.nx+self.nz);
         j_states = j_vars+1:j_vars+self.nx;
@@ -120,14 +120,13 @@ classdef OclCollocation < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.lagrangecostsfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = self.lagrangecostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 
-      AlgVarsEnd = integratorVars(j_algVars);
       costs = J;
       equations = vertcat(equations{:});
-      times = vertcat(times{:});
+      rel_times = vertcat(rel_times{:});
     end
   end
 

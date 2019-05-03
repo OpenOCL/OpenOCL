@@ -3,6 +3,7 @@ classdef CasadiSolver < handle
   properties (Access = private)
     nlpData
     options
+    timeMeasures
   end
   
   methods
@@ -18,7 +19,6 @@ classdef CasadiSolver < handle
         expr = @casadi.SX.sym;
       end
       
-      xf = [];
       for k=1:length(phaseList)
         phase = phaseList{k};
         
@@ -30,11 +30,9 @@ classdef CasadiSolver < handle
 %         end
         
         x = expr('x', phase.nx);
-        z = expr('u', phase.nz);
         u = expr('z', phase.nu);
         p = expr('p', phase.np);
         vi = expr('vi', phase.integrator.ni);
-        t0 = expr('t0');
         h = expr('h');
         
         % integration
@@ -44,8 +42,8 @@ classdef CasadiSolver < handle
 %         lagrangecost_expr = phase.lagrangecostfun(x,z,u,p);
 %         lagrangecost_fun = casadi.Function('pcost', {x,z,u,p}, {lagrangecost_expr});
 
-        integrator_expr = phase.integrator.integratorfun(x, vi, u, t0, h, p);
-        integrator_fun = casadi.Function('sys', {x,vi,u,t0,h,p}, {integrator_expr});
+        [statesEnd, costs, equations, rel_times] = phase.integrator.integratorfun(x, vi, u, h, p);
+        integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, costs, equations, rel_times});
         
         integrator_map = integrator_fun.map(phase.N,'openmp');
         
@@ -53,27 +51,30 @@ classdef CasadiSolver < handle
         pathcost_fun = @(k,N,x,p)phase.pathcostfun(k,N,x,p);
         pathcon_fun = @(k,N,x,p)phase.pathconfun(k,N,x,p);
         
-        [costs,constraints,constraints_LB,constraints_UB,~] = simultaneous( ...
-            H_norm, T, ...
-            xp, ni, nz, nu, np, integrator_map, ...
+        nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+        v = expr('v', nv_phase);
+        
+        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous( ...
+            phase.H_norm, phase.T, ...
+            phase.nx, phase.integrator.ni, phase.nu, phase.np, v, integrator_map, ...
             pathcost_fun, pathcon_fun);
         
       end
       
       % get struct with nlp for casadi
       casadiNLP = struct;
-      casadiNLP.x = vars;
+      casadiNLP.x = v;
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = [];
       
-      opts = self.options.nlp.casadi;
-      if isfield(self.options.nlp,self.options.nlp.solver)
-        opts.(self.options.nlp.solver) = self.options.nlp.(self.options.nlp.solver);
+      opts = options.nlp.casadi;
+      if isfield(options.nlp,options.nlp.solver)
+        opts.(options.nlp.solver) = options.nlp.(options.nlp.solver);
       end
       
       constructSolverTic = tic;
-      casadiSolver = casadi.nlpsol('my_solver', self.options.nlp.solver,... 
+      casadiSolver = casadi.nlpsol('my_solver', options.nlp.solver,... 
                                    casadiNLP, opts);
 
       constructSolverTime = toc(constructSolverTic);
@@ -83,8 +84,13 @@ classdef CasadiSolver < handle
       nlpData.constraints_LB = constraints_LB;
       nlpData.constraints_UB = constraints_UB;
       nlpData.solver = casadiSolver;
-      self.timeMeasures.constructTotal = toc(constructTotalTic);
-      self.timeMeasures.constructSolver = constructSolverTime;
+      
+      timeMeasures.constructTotal = toc(constructTotalTic);
+      timeMeasures.constructSolver = constructSolverTime;
+      
+      self.nlpData = nlpData;
+      self.options = options;
+      self.timeMeasures = timeMeasures;
     end
     
     function [outVars,times,objective,constraints] = solve(self,initialGuess)

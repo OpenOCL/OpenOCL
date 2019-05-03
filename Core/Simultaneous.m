@@ -116,7 +116,7 @@ classdef Simultaneous < handle
       end
     end
     
-    function [lowerBounds,upperBounds] = getNlpBounds(varsStruct, phaseList, bounds,initialBounds, endBounds)
+    function [lowerBounds,upperBounds] = getNlpBounds(varsStruct, phaseList, bounds, initialBounds, endBounds)
       
       boundsStruct = varsStruct.flat();
       lowerBounds = Variable.create(boundsStruct,-inf);
@@ -191,10 +191,7 @@ classdef Simultaneous < handle
       
     end
     
-    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-        simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
-                     pathcost_fun, pathcon_fun)
-      
+    function [nv_phase,N] = nvars(H_norm, nx, ni, nu, np)
       % number of control intervals
       N = length(H_norm);
       
@@ -202,6 +199,14 @@ classdef Simultaneous < handle
       % controls, parameters, and timesteps.
       % Ends with a single state.
       nv_phase = N*nx + N*ni + N*nu + N*np + N + nx;
+    end
+    
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
+        simultaneous(H_norm, T, nx, ni, nu, np, phaseVars, integrator_map, ...
+                     pathcost_fun, pathcon_fun)
+      
+
+      [nv_phase,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
       
       % number of variables in one control interval
       % + 1 for the timestep
@@ -222,18 +227,26 @@ classdef Simultaneous < handle
       P = reshape(phaseVars(P_indizes), np, N);
       H = reshape(phaseVars(H_indizes), 1 , N);
           
-      pcon = cell(N,1);
-      pcon_lb = cell(N,1);
-      pcon_ub = cell(N,1);
+      pcon = cell(1,N);
+      pcon_lb = cell(1,N);
+      pcon_ub = cell(1,N);
       pcost = 0;
       for k=1:N
         [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N, X(:,k), P(:,k));
         pcost = pcost + pathcost_fun(k, N, X(:,k), P(:,k));
-      end       
+      end    
+      
+      pcon = horzcat(pcon{:});
+      pcon_lb = horzcat(pcon_lb{:});
+      pcon_ub = horzcat(pcon_ub{:});
       
       T0 = [0, cumsum(H(:,1:end-1))];
       
-      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = integrator_map(X(:,1:end-1), I, U, T0, H, P);
+      [xend_arr, cost_arr, int_eq_arr, int_times] = integrator_map(X(:,1:end-1), I, U, H, P);
+      
+      for k=1:size(int_times,1)
+        int_times(k,:) = T0 + int_times(k,:);
+      end
                 
       % timestep constraints
       h_eq = [];
