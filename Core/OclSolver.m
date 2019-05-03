@@ -82,21 +82,38 @@ classdef OclSolver < handle
     end
     
     function setBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.bounds = OclBounds(id, varargin{:});
+      % setBounds(id,value)
+      % setBounds(id,lower,upper)     
+      if length(self.phaseList) == 1
+        % check if id is a state, control, algvar or parameter
+        names = self.phaseList{1}.states.getNames();
+        if 
+          self.phaseList{1}.setStateBounds(id, varargin{:});
+        end
+        
+      else
+        oclError('For multiphase problems, set the bounds to the phases directlly.')
+      end
     end
     
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      self.initialBounds = OclBounds(id, varargin{:});
+      if length(self.phaseList) == 1
+        self.phaseList{1}.setInitialStateBounds(id, varargin{:});
+      else
+        oclError('For multiphase problems, set the bounds to the phases directlly.')
+      end
     end
     
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      self.endBounds = OclBounds(id, varargin{:});
+      if length(self.phaseList) == 1
+        self.phaseList{1}.setEndStateBounds(id, varargin{:});
+      else
+        oclError('For multiphase problems, set the bounds to the phases directlly.')
+      end
     end   
     
   end

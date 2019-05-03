@@ -9,11 +9,8 @@ classdef OclPhase < handle
     pathcostsfh
     pathconfh
 
-    stateBounds
     stateBounds0
     stateBoundsF
-    
-    algvarBounds
     controlBounds
     parameterBounds
     
@@ -70,6 +67,12 @@ classdef OclPhase < handle
       self.algvars = algvars;
       self.controls = controls;
       self.parameters = parameters;
+      
+      self.stateBounds0.lower = -inf * ones(self.nx, 1);
+      self.stateBounds0.upper = inf * ones(self.nx, 1);
+      
+      self.stateBoundsF.lower = -inf * ones(self.nx, 1);
+      self.stateBoundsF.upper = inf * ones(self.nx, 1);
     end
 
     function r = N(self)
@@ -77,27 +80,63 @@ classdef OclPhase < handle
     end
     
     function setStateBounds(self,id,varargin)
-      self.stateBounds = OclBounds(id, varargin{:});
+      self.integrator.setStateBounds(id,varargin{:});
     end
     
     function setInitialStateBounds(self,id,varargin)
-      self.stateBounds0 = OclBounds(id, varargin{:});
+      x0_lb = OclVariable.create(self.states, self.stateBounds0.lower);
+      x0_ub = OclVariable.create(self.states, self.stateBounds0.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      x0_lb.get(id).set(bounds.id, bounds.lower);
+      x0_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.stateBounds0.lower = x0_lb.value;
+      self.stateBounds0.upper = x0_ub.value;
     end
     
     function setEndStateBounds(self,id,varargin)
-      self.stateBoundsF = OclBounds(id, varargin{:});
+      xF_lb = OclVariable.create(self.states, self.stateBoundsF.lower);
+      xF_ub = OclVariable.create(self.states, self.stateBoundsF.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      xF_lb.get(id).set(bounds.id, bounds.lower);
+      xF_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.stateBoundsF.lower = xF_lb.value;
+      self.stateBoundsF.upper = xF_ub.value;
     end
     
     function setAlgvarBounds(self,id,varargin)
-      self.algvarBounds = OclBounds(id, varargin{:});
-    end
-    
-    function setParameterBounds(self,id,varargin)
-      self.parameterBounds = OclBounds(id, varargin{:});
+      self.integrator.setAlgvarBounds(id,varargin{:});
     end
     
     function setControlBounds(self,id,varargin)
-      self.controlBounds = OclBounds(id, varargin{:});
+      u_lb = OclVariable.create(self.controls, self.controlBounds.lower);
+      u_ub = OclVariable.create(self.controls, self.controlBounds.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      u_lb.get(id).set(bounds.id, bounds.lower);
+      u_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.controlBounds.lower = u_lb.value;
+      self.controlBounds.upper = u_ub.value;
+    end
+    
+    function setParameterBounds(self,id,varargin)
+      p_lb = OclVariable.create(self.parameters, self.parameterBounds.lower);
+      p_ub = OclVariable.create(self.parameters, self.parameterBounds.upper);
+      
+      bounds = OclBounds(id, varargin{:});
+      
+      p_lb.get(id).set(bounds.id, bounds.lower);
+      p_ub.get(id).set(bounds.id, bounds.upper);
+      
+      self.parameterBounds.lower = p_lb.value;
+      self.parameterBounds.upper = p_ub.value;
     end
     
     function r = pathcostfun(self,k,N,x,p)
