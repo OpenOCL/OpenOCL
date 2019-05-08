@@ -4,22 +4,18 @@ function testOclIntegrator
 s = OclSystem(@linearVars,@linearEq);
 
 d = 2;
-integ = OclCollocation(s.states, s.algvars, s.nu, s.np, s.daefun, d);
+integ = OclCollocation(s.states, s.algvars, s.controls, s.parameters, @s.daefun, @(varargin)0, d, ...
+                       s.stateBounds, s.algvarBounds);
 
 N = 60;
 T = 1;
 h = T/N;
 
-t0 = 0;
-tf = t0 + h;
 xsym = casadi.SX.sym('x',s.nx);
 xisym = casadi.SX.sym('xi',s.nx*d);
 usym = casadi.SX.sym('u',s.nu);
 
-pcFun = OclFunction(s,@(varargin)0,{[s.nx*d,1],[],[1,1],[1,1],[1,1],[]},1);
-integ.pathcostfun = pcFun;
-
-[~, ~, ~, equations, ~] = integ.integratorfun.evaluate(xsym,xisym,usym,t0,h,[]);
+[~, ~, equations, ~] = integ.integratorfun(xsym,xisym,usym,h,[]);
 
 nlp    = struct('x', vertcat(xsym,xisym,usym), 'f', 0, 'g', equations);
 
