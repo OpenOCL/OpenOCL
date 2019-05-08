@@ -9,7 +9,7 @@ function [solution,times,ocl] = mainRaceCar
   options.controls_regularization_value = 1e-3;
 
   system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('lagrangecosts', @lagrangecosts, 'pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
+  ocp = OclOCP('pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
 
   ocl = OclSolver([],system,ocp,options);
 
@@ -133,10 +133,6 @@ function eqfun(sh,x,~,u,p)
   sh.setODE('Fy', u.dFy);
   
   sh.setODE('time', 1);
-end
-
-function lagrangecosts(ch,x,z,u,p)
-  ch.add(1e-5*(u.'*u));
 end
 
 function pathcosts(ch,k,N,x,p)

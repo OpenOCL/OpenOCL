@@ -2,14 +2,14 @@ function testOclPhase
 
 % ocp empty test
 ocp = OclPhase(1, @emptyVars, @emptyEq);
-assertEqual(ocp.pathcostfun.evaluate([],[],[],[]),0);
-assertEqual(ocp.arrivalcostfun.evaluate([],[]),0);
+assertEqual(ocp.pathcostfun([],[],[],[]),0);
+assertEqual(ocp.arrivalcostfun([],[]),0);
 
-[val,lb,ub] = ocp.pathconfun.evaluate([],[]);
+[val,lb,ub] = ocp.pathconfun([],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
-[val,lb,ub] = ocp.boundaryfun.evaluate([],[],[]);
+[val,lb,ub] = ocp.boundaryfun([],[],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);

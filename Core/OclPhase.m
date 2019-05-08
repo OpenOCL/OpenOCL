@@ -36,44 +36,91 @@ classdef OclPhase < handle
   
   methods
     
-    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh, ...
-                             states, algvars, controls, parameters, ...
-                             stateBounds, controlBounds, parameterBounds)
+    function self = OclPhase(T, varargin)
+      
+      emptyfh = @(varargin)[];
+      
+      p = inputParser;
+      p.addOptional('varsOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('daeOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('lagrangecostsOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('pathcostsOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('pathconstraintsOpt',[],@oclIsFunHandleOrEmpty);
+      
+      p.addParameter('vars',emptyfh,@oclIsFunHandle);
+      p.addParameter('dae',emptyfh,@oclIsFunHandle);
+      p.addParameter('lagrangecosts',emptyfh,@oclIsFunHandle);
+      p.addParameter('pathcosts',emptyfh,@oclIsFunHandle);
+      p.addParameter('pathconstraints',emptyfh,@oclIsFunHandle);
+      p.addParameter('N', 50, @isnumeric);
+      p.addParameter('d', 3, @isnumeric);
+      p.parse(varargin{:});
+      
+      varsfhInput = p.Results.varsOpt;
+      if isempty(varsfhInput)
+        varsfhInput = p.Results.vars;
+      end
+      
+      daefhInput = p.Results.daeOpt;
+      if isempty(daefhInput)
+        daefhInput = p.Results.dae;
+      end
+      
+      lagrangecostsfhInput = p.Results.lagrangecostsOpt;
+      if isempty(lagrangecostsfhInput)
+        lagrangecostsfhInput = p.Results.lagrangecosts;
+      end
+      
+      pathcostsfhInput = p.Results.pathcostsOpt;
+      if isempty(pathcostsfhInput)
+        pathcostsfhInput = p.Results.pathcosts;
+      end
+      
+      pathconfhInput = p.Results.pathconstraintsOpt;
+      if isempty(pathconfhInput)
+        pathconfhInput = p.Results.pathconstraints;
+      end
+      
+      H_normInput = p.Results.N;
+      dInput = p.Results.d;
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
       self.T = T;
       
-      oclAssert( (isscalar(H_norm) || isnumeric(H_norm)) && isreal(H_norm), ...
+      oclAssert( (isscalar(H_normInput) || isnumeric(H_normInput)) && isreal(H_normInput), ...
         ['Invalid value for parameter N.', oclDocMessage()] );
-      if isscalar(H_norm)
-        self.H_norm = repmat(1/H_norm, 1, H_norm);
-      else
-        self.H_norm = H_norm;
-        if abs(sum(self.H_norm)-1) > eps 
-          self.H_norm = self.H_norm/sum(self.H_norm);
-          oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
-                      'N either be a scalar value or a normalized vector with the length ', ...
-                      'of the number of control interval. Check the documentation of N. ', ...
-                      'Make sure the timesteps sum up to 1, and contain the relative ', ...
-                      'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
-        end
+      if isscalar(H_normInput)
+        H_normInput = repmat(1/H_normInput, 1, H_normInput);
+      elseif abs(sum(H_normInput)-1) > 1e-6 
+        H_normInput = H_normInput/sum(H_normInput);
+        oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
+                    'N either be a scalar value or a normalized vector with the length ', ...
+                    'of the number of control interval. Check the documentation of N. ', ...
+                    'Make sure the timesteps sum up to 1, and contain the relative ', ...
+                    'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
       end
       
-      self.integrator = integrator;
-      self.pathcostsfh = pathcostsfh;
-      self.pathconfh = pathconfh;
-      self.lagrangecostsfun = @integrator.lagrangecostsfun;
+      system = OclSystem(varsfhInput, daefhInput);
+      colocation = OclCollocation(system.states, system.algvars, system.controls, ...
+                                  system.parameters, @system.daefun, lagrangecostsfhInput, dInput, ...
+                                  system.stateBounds, system.algvarBounds);
       
-      self.nx = integrator.nx;
-      self.nz = integrator.nz;
-      self.nu = integrator.nu;
-      self.np = integrator.np;
+      self.H_norm = H_normInput;
+      self.integrator = colocation;
+      self.pathcostsfh = pathcostsfhInput;
+      self.pathconfh = pathconfhInput;
+      self.lagrangecostsfun = @colocation.lagrangecostsfun;
       
-      self.states = states;
-      self.algvars = algvars;
-      self.controls = controls;
-      self.parameters = parameters;
+      self.nx = colocation.nx;
+      self.nz = colocation.nz;
+      self.nu = colocation.nu;
+      self.np = colocation.np;
+      
+      self.states = system.states;
+      self.algvars = system.algvars;
+      self.controls = system.controls;
+      self.parameters = system.parameters;
       
       self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.stateBounds0 = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
@@ -81,22 +128,22 @@ classdef OclPhase < handle
       self.controlBounds = OclBounds(-inf * ones(self.nu, 1), inf * ones(self.nu, 1));
       self.parameterBounds = OclBounds(-inf * ones(self.np, 1), inf * ones(self.np, 1));
       
-      names = fieldnames(stateBounds);
+      names = fieldnames(system.stateBounds);
       for k=1:length(names)
         id = names{k};
-        self.setStateBounds(id, stateBounds.(id).lower, stateBounds.(id).upper);
+        self.setStateBounds(id, system.stateBounds.(id).lower, system.stateBounds.(id).upper);
       end
       
-      names = fieldnames(controlBounds);
+      names = fieldnames(system.controlBounds);
       for k=1:length(names)
         id = names{k};
-        self.setControlBounds(id, controlBounds.(id).lower, controlBounds.(id).upper);
+        self.setControlBounds(id, system.controlBounds.(id).lower, system.controlBounds.(id).upper);
       end
       
-      names = fieldnames(parameterBounds);
+      names = fieldnames(system.parameterBounds);
       for k=1:length(names)
         id = names{k};
-        self.setParameterBounds(id, parameterBounds.(id).lower, parameterBounds.(id).upper);
+        self.setParameterBounds(id, system.parameterBounds.(id).lower, system.parameterBounds.(id).upper);
       end
       
     end
