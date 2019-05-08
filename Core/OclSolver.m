@@ -59,7 +59,8 @@ classdef OclSolver < handle
             system.stateBounds, system.algvarBounds);
           
         phase = OclPhase(T, H_norm, integrator, ocp.pathcostsfh, ocp.pathconfh, ...
-            system.states, system.algvars, system.controls, system.parameters);
+            system.states, system.algvars, system.controls, system.parameters, ...
+            system.controlBounds, system.parameterBounds);
 
         phaseList{1} = phase;
       end

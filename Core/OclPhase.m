@@ -33,7 +33,9 @@ classdef OclPhase < handle
   
   methods
     
-    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh, states, algvars, controls, parameters)
+    function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh, ...
+                             states, algvars, controls, parameters, ...
+                             controlBounds, parameterBounds)
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -74,6 +76,19 @@ classdef OclPhase < handle
       self.stateBoundsF = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.controlBounds = OclBounds(-inf * ones(self.nu, 1), inf * ones(self.nu, 1));
       self.parameterBounds = OclBounds(-inf * ones(self.np, 1), inf * ones(self.np, 1));
+      
+      names = fieldnames(controlBounds);
+      for k=1:length(names)
+        id = names{k};
+        self.setControlBounds(id, controlBounds.(id).lower, controlBounds.(id).upper);
+      end
+      
+      names = fieldnames(parameterBounds);
+      for k=1:length(names)
+        id = names{k};
+        self.setParameterBounds(id, parameterBounds.(id).lower, parameterBounds.(id).upper);
+      end
+      
     end
 
     function r = N(self)
