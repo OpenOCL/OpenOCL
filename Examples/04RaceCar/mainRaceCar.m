@@ -113,8 +113,8 @@ function varsfun(sh)
   
   sh.addState('time');  % time [s]
 
-  sh.addControl('dFx');  % Force x[N]
-  sh.addControl('dFy');  % Force y[N]
+  sh.addControl('dFx', 'lb', -1, 'ub', 1);  % Force x[N]
+  sh.addControl('dFy', 'lb', -1, 'ub', 1);  % Force y[N]
 
   sh.addParameter('m');           % mass [kg]
   sh.addParameter('A');           % section area car [m^2]
@@ -125,7 +125,7 @@ function varsfun(sh)
   sh.addParameter('Fmax');        % maximal force on the car [N]
 end
 
-function eqfun(sh,x,z,u,p)
+function eqfun(sh,x,~,u,p)
   sh.setODE( 'x', x.vx);
   sh.setODE('vx', 1/p.m*x.Fx - 0.5*p.rho*p.cd*p.A*x.vx^2);
   sh.setODE( 'y', x.vy);
@@ -137,7 +137,7 @@ function eqfun(sh,x,z,u,p)
 end
 
 function pathcosts(ch,k,N,x,p)
-  if k==N
+  if k==N+1
     ch.add(x.time);
   end
 end

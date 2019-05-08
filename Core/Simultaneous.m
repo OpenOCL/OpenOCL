@@ -3,7 +3,7 @@ classdef Simultaneous < handle
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
   properties (Constant)
-    h_min = 0.02;
+    h_min = 0.001;
   end
   
   methods (Static)
@@ -174,17 +174,17 @@ classdef Simultaneous < handle
         ig_phase(X_indizes(:,end)) = Simultaneous.igFromBounds(phase.stateBoundsF);
         
         % integrator bounds
-        for m=size(I_indizes,2)
+        for m=1:size(I_indizes,2)
           ig_phase(I_indizes(:,m)) = Simultaneous.igFromBounds(phase.integrator.integratorBounds);
         end
         
         % controls
-        for m=size(U_indizes,2)
+        for m=1:size(U_indizes,2)
           ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
         end
         
         % parameters
-        for m=size(P_indizes,2)
+        for m=1:size(P_indizes,2)
           ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
         end
         
@@ -235,7 +235,7 @@ classdef Simultaneous < handle
       pcon_lb = cell(1,N+1);
       pcon_ub = cell(1,N+1);
       pcost = 0;
-      for k=2:N+1
+      for k=1:N+1
         [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N, X(:,k), P(:,k));
         pcost = pcost + pathcost_fun(k, N, X(:,k), P(:,k));
       end    
@@ -282,15 +282,15 @@ classdef Simultaneous < handle
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon(:,1:N-1);     h_eq;     p_eq(:,1:N-1)];
-      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb(:,1:N-1);  h_eq_lb;  p_eq_lb(:,1:N-1)];
-      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub(:,1:N-1);  h_eq_ub;  p_eq_ub(:,1:N-1)];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon(:,2:N);     h_eq;     p_eq(:,1:N-1)];
+      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb(:,2:N);  h_eq_lb;  p_eq_lb(:,1:N-1)];
+      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub(:,2:N);  h_eq_ub;  p_eq_ub(:,1:N-1)];
       
       % reshape shooting equations to column vector, append lastintegrator and
       % continuity equations
-      constraints    = [shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pcon(:,N);       p_eq(:,N)    ];
-      constraints_lb = [shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pcon_lb(:,N);    p_eq_lb(:,N) ];
-      constraints_ub = [shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pcon_ub(:,N);    p_eq_ub(:,N) ];
+      constraints    = [pcon(:,1);      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pcon(:,N+1);       p_eq(:,N)    ];
+      constraints_lb = [pcon_lb(:,1);   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pcon_lb(:,N+1);    p_eq_lb(:,N) ];
+      constraints_ub = [pcon_ub(:,1);   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pcon_ub(:,N+1);    p_eq_ub(:,N) ];
 
       % sum all costs
       costs = sum(cost_arr) + pcost;

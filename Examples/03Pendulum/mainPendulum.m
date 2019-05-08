@@ -38,7 +38,7 @@ function [vars,times,ocl] = mainPendulum
 
 end
 
-function pathcosts(ch,~,~,controls,~,~,~)
+function pathcosts(ch,~,~,controls,~)
   F  = controls.F;
   ch.add( 1e-3 * F^2 );
 end

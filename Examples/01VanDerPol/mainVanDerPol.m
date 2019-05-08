@@ -52,7 +52,7 @@ function daefun(daeh,x,~,u,~)
   daeh.setODE('y', x.x);
 end
 
-function lagrangecosts(ch,x,~,u,p)
+function lagrangecosts(ch,x,~,u,~)
   ch.add( x.x^2 );
   ch.add( x.y^2 );
   ch.add( u.F^2 );
