@@ -106,10 +106,10 @@ classdef Simultaneous < handle
         [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
         
         % states
-%         for m=size(X_indizes,2)
-%           lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
-%           ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
-%         end
+        for m=1:size(X_indizes,2)
+          lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
+          ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
+        end
         
         lb_phase(X_indizes(:,1)) = phase.stateBounds0.lower;
         ub_phase(X_indizes(:,1)) = phase.stateBounds0.upper;

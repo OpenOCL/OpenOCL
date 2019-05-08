@@ -3,14 +3,13 @@ function [solution,times,ocl] = mainRaceCar
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
   CONTROL_INTERVALS = 50;     % control discretization
-  MAX_TIME = 20;              % [s]
 
   options = OclOptions();
   options.nlp.controlIntervals = CONTROL_INTERVALS;
   options.controls_regularization_value = 1e-3;
 
   system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
+  ocp = OclOCP('lagrangecosts', @lagrangecosts, 'pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
 
   ocl = OclSolver([],system,ocp,options);
 
@@ -30,8 +29,6 @@ function [solution,times,ocl] = mainRaceCar
   ocl.setParameter('Vmax', Vmax);
   ocl.setParameter('Fmax', Fmax);
   ocl.setParameter('road_bound', road_bound);
-  
-  ocl.setBounds('time', 0, MAX_TIME);
 
   ocl.setInitialBounds( 'x',   0.0);
   ocl.setInitialBounds('vx',   0.0);
@@ -111,7 +108,7 @@ function varsfun(sh)
   sh.addState('Fx');  % Force x[N]
   sh.addState('Fy');  % Force y[N]
   
-  sh.addState('time');  % time [s]
+  sh.addState('time', 'lb', 0, 'ub', 20);  % time [s]
 
   sh.addControl('dFx', 'lb', -1, 'ub', 1);  % Force x[N]
   sh.addControl('dFy', 'lb', -1, 'ub', 1);  % Force y[N]
@@ -134,6 +131,10 @@ function eqfun(sh,x,~,u,p)
   sh.setODE('Fy', u.dFy);
   
   sh.setODE('time', 1);
+end
+
+function lagrangecosts(ch,x,z,u,p)
+  ch.add(1e-5*(u.'*u));
 end
 
 function pathcosts(ch,k,N,x,p)

@@ -10,6 +10,9 @@ classdef OclPhase < handle
     pathconfh
     
     integratormap
+    
+    
+    stateBounds
 
     stateBounds0
     stateBoundsF
@@ -35,7 +38,7 @@ classdef OclPhase < handle
     
     function self = OclPhase(T, H_norm, integrator, pathcostsfh, pathconfh, ...
                              states, algvars, controls, parameters, ...
-                             controlBounds, parameterBounds)
+                             stateBounds, controlBounds, parameterBounds)
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -72,10 +75,17 @@ classdef OclPhase < handle
       self.controls = controls;
       self.parameters = parameters;
       
+      self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.stateBounds0 = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.stateBoundsF = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.controlBounds = OclBounds(-inf * ones(self.nu, 1), inf * ones(self.nu, 1));
       self.parameterBounds = OclBounds(-inf * ones(self.np, 1), inf * ones(self.np, 1));
+      
+      names = fieldnames(stateBounds);
+      for k=1:length(names)
+        id = names{k};
+        self.setStateBounds(id, stateBounds.(id).lower, stateBounds.(id).upper);
+      end
       
       names = fieldnames(controlBounds);
       for k=1:length(names)
@@ -96,7 +106,19 @@ classdef OclPhase < handle
     end
     
     function setStateBounds(self,id,varargin)
+      
       self.integrator.setStateBounds(id,varargin{:});
+      
+      x_lb = Variable.create(self.states, self.stateBounds.lower);
+      x_ub = Variable.create(self.states, self.stateBounds.upper);
+      
+      bounds = OclBounds(varargin{:});
+      
+      x_lb.get(id).set(bounds.lower);
+      x_ub.get(id).set(bounds.upper);
+      
+      self.stateBounds.lower = x_lb.value;
+      self.stateBounds.upper = x_ub.value;
     end
     
     function setInitialStateBounds(self,id,varargin)
