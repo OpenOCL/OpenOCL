@@ -129,21 +129,6 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
 
-    function solutionCallback(self,times,solution)
-      sN = size(solution.states);
-      N = sN(3);
-      
-      t = times.states;
-
-      for k=1:N-1
-        x = solution.states(:,:,k+1);
-        z = solution.integrator(:,:,k).algvars;
-        u =  solution.controls(:,:,k);
-        p = solution.parameters(:,:,k);
-        self.cbfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
-      end
-    end
-
     function callSimulationCallbackSetup(self)
       self.cbsetupfh();
     end

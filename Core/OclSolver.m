@@ -9,6 +9,8 @@ classdef OclSolver < handle
     solver
     varsStruct
     phaseList
+    
+    cbfh
   end
 
   methods
@@ -58,6 +60,8 @@ classdef OclSolver < handle
         
         phase = OclPhase(T, system.varsfh, system.daefh, ocp.lagrangecostsfh, ...
                          ocp.pathcostsfh, ocp.pathconfh, 'N', H_norm, 'd', d);
+                       
+        self.cbfh = system.cbfh;
 
         phaseList{1} = phase;
       end
@@ -65,6 +69,8 @@ classdef OclSolver < handle
       self.solver = CasadiSolver(phaseList, options);
       self.varsStruct = Simultaneous.vars(phaseList);
       self.phaseList = phaseList;
+      
+      
     end
     
     function [outVars,times,objective,constraints] = solve(self,ig)
@@ -86,6 +92,21 @@ classdef OclSolver < handle
     function ig = getInitialGuess(self)
       ig = Simultaneous.getInitialGuess(self.phaseList);
       ig = Variable.create(self.varsStruct, ig);
+    end
+    
+    function solutionCallback(self,times,solution)
+      sN = size(solution.states);
+      N = sN(3);
+      
+      t = times.states;
+
+      for k=1:N-1
+        x = solution.states(:,:,k+1);
+        z = solution.integrator(:,:,k).algvars;
+        u =  solution.controls(:,:,k);
+        p = solution.parameters(:,:,k);
+        self.cbfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+      end
     end
     
     function setParameter(self,id,varargin)
