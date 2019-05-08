@@ -5,7 +5,7 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    lagrangecostsfun
+    lagrangecostfun
     pathcostsfh
     pathconfh
     
@@ -110,7 +110,7 @@ classdef OclPhase < handle
       self.integrator = colocation;
       self.pathcostsfh = pathcostsfhInput;
       self.pathconfh = pathconfhInput;
-      self.lagrangecostsfun = @colocation.lagrangecostsfun;
+      self.lagrangecostfun = @colocation.lagrangecostfun;
       
       self.nx = colocation.nx;
       self.nz = colocation.nz;

@@ -1,33 +1,27 @@
 function testOclPhase
 
 % ocp empty test
-ocp = OclPhase(1, @emptyVars, @emptyEq);
-assertEqual(ocp.pathcostfun([],[],[],[]),0);
-assertEqual(ocp.arrivalcostfun([],[]),0);
+ocp = OclPhase(1, @emptyVars, @emptyDae);
+assertEqual(ocp.lagrangecostfun([],[],[],[]),0);
+assertEqual(ocp.pathcostfun(1,10,[],[]),0);
 
-[val,lb,ub] = ocp.pathconfun([],[]);
-assertEqual(val,[]);
-assertEqual(lb,[]);
-assertEqual(ub,[]);
-[val,lb,ub] = ocp.boundaryfun([],[],[]);
+[val,lb,ub] = ocp.pathconfun(1,10,[],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % ocp valid test
-ocp = OclPhase(1, @validVars, @validEq, ...
-                  @validPathCosts, @validArrivalCosts, @validPathConstraints, ...
-                  @validBoundaryConditions, @validDiscreteCosts);
-N = 2;
+ocp = OclPhase(1, @validVars, @validDae, ...
+                  @validLagrangeCosts, @validPathCosts, @validPathConstraints);
 
-c = ocp.pathcostfun.evaluate(ones(ocp.nx,1),ones(ocp.nz,1),ones(ocp.nu,1),ones(ocp.np,1));
+c = ocp.lagrangecostfun(ones(ocp.nx,1),ones(ocp.nz,1),ones(ocp.nu,1),ones(ocp.np,1));
 assertEqual(c,26+1e-3*12);
 
-c = ocp.arrivalcostfun.evaluate(ones(ocp.nx,1),ones(ocp.np,1));
+c = ocp.pathcostfun(5,5,ones(ocp.nx,1),ones(ocp.np,1));
 assertEqual(c, -1);
 
 % path constraints in the form of : -inf <= val <= 0 or 0 <= val <= 0
-[val,lb,ub] = ocp.pathconfun.evaluate(ones(ocp.nx,1),ones(ocp.np,1));
+[val,lb,ub] = ocp.pathconfun(2,5,ones(ocp.nx,1),ones(ocp.np,1));
 % ub all zero
 assertEqual(ub,zeros(36,1));
 % lb either zero for eq or -inf for ineq
@@ -36,120 +30,113 @@ assertEqual(lb,[-inf,-inf,0,0,-inf,-inf,-inf*ones(1,5),0,-inf*ones(1,12),-inf*on
 assertEqual(val,[0,0,0,0,0,-1,2,2,2,2,2,0,-3*ones(1,12),zeros(1,12)].');
 
 % bc
-[val,lb,ub] = ocp.boundaryfun.evaluate(2*ones(ocp.nx,1),3*ones(ocp.nx,1),ones(ocp.np,1));
+[val,lb,ub] = ocp.pathconfun(1,5,2*ones(ocp.nx,1),ones(ocp.np,1));
 assertEqual(ub,zeros(3,1));
 assertEqual(lb,[0,-inf,-inf].');
 assertEqual(val,[-1,1,-4].');
-
-c = ocp.pathcostdfun.evaluate(ones(ocp.nx,1),ones(ocp.nz,1),ones(ocp.nu,1),ones(ocp.np,1));
-assertEqual(c, ocp.nx+ocp.nz+ocp.nu+ocp.np);
   
 end
 
 function emptyVars(self)    
 end
 
-function emptyEq(self,x,z,u,p)     
+function emptyDae(self,x,z,u,p)     
 end
 
-function validVars(self)
-  self.addState('a');
-  self.addState('b',1);
-  self.addState('c',7);
-  self.addState('d',[1,1]);
-  self.addState('e',[1,4]);
-  self.addState('f',[5,1]);
-  self.addState('g',[3,4]);
+function validVars(svh)
+  svh.addState('a');
+  svh.addState('b',1);
+  svh.addState('c',7);
+  svh.addState('d',[1,1]);
+  svh.addState('e',[1,4]);
+  svh.addState('f',[5,1]);
+  svh.addState('g',[3,4]);
 
-  self.addState('ttt')
+  svh.addState('ttt')
 
-  self.addControl('a'); % same as state!? (conflict bounds in Simultaneous)
-  self.addControl('h',1);
-  self.addControl('i',7);
-  self.addControl('j',[1,1]);
-  self.addControl('k',[1,4]);
-  self.addControl('l',[5,1]);
-  self.addControl('m',[3,4]);
+  svh.addControl('a'); % same as state!? (conflict bounds in Simultaneous)
+  svh.addControl('h',1);
+  svh.addControl('i',7);
+  svh.addControl('j',[1,1]);
+  svh.addControl('k',[1,4]);
+  svh.addControl('l',[5,1]);
+  svh.addControl('m',[3,4]);
 
-  self.addAlgVar('n');
-  self.addAlgVar('o',1);
-  self.addAlgVar('p',7);
-  self.addAlgVar('q',[1,1]);
-  self.addAlgVar('r',[1,4]);
-  self.addAlgVar('s',[5,1]);
-  self.addAlgVar('t',[3,4]);
+  svh.addAlgVar('n');
+  svh.addAlgVar('o',1);
+  svh.addAlgVar('p',7);
+  svh.addAlgVar('q',[1,1]);
+  svh.addAlgVar('r',[1,4]);
+  svh.addAlgVar('s',[5,1]);
+  svh.addAlgVar('t',[3,4]);
 
-  self.addParameter('u');
-  self.addParameter('v',1);
-  self.addParameter('w',7);
-  self.addParameter('x',[1,1]);
-  self.addParameter('y',[1,4]);
-  self.addParameter('z',[5,1]);
-  self.addParameter('aa',[3,4]);
+  svh.addParameter('u');
+  svh.addParameter('v',1);
+  svh.addParameter('w',7);
+  svh.addParameter('x',[1,1]);
+  svh.addParameter('y',[1,4]);
+  svh.addParameter('z',[5,1]);
+  svh.addParameter('aa',[3,4]);
 end
-function validEq(self,x,z,u,p)
 
-  self.setODE('g',p.aa+z.t);
-  self.setODE('b',z.n);
-  self.setODE('a',p.u);
-  self.setODE('d',x.a+x.b*z.o+p.u*p.x);
-  self.setODE('c',z.p);
-  self.setODE('f',z.s);
-  self.setODE('e',u.k);
+function validDae(daeh,x,z,u,p)
 
-  self.setODE('ttt',1);
+  daeh.setODE('g',p.aa+z.t);
+  daeh.setODE('b',z.n);
+  daeh.setODE('a',p.u);
+  daeh.setODE('d',x.a+x.b*z.o+p.u*p.x);
+  daeh.setODE('c',z.p);
+  daeh.setODE('f',z.s);
+  daeh.setODE('e',u.k);
+
+  daeh.setODE('ttt',1);
 
   % 31x1
-  self.setAlgEquation(reshape(p.y,4,1));
-  self.setAlgEquation(reshape(z.t,12,1));
-  self.setAlgEquation(reshape(x.g,12,1)+[u.a,u.h,u.j,4,5,6,z.n,z.q,p.u,10,11,12].');
-  self.setAlgEquation(p.y(:,1:3,:));
+  daeh.setAlgEquation(reshape(p.y,4,1));
+  daeh.setAlgEquation(reshape(z.t,12,1));
+  daeh.setAlgEquation(reshape(x.g,12,1)+[u.a,u.h,u.j,4,5,6,z.n,z.q,p.u,10,11,12].');
+  daeh.setAlgEquation(p.y(:,1:3,:));
 end
 
-function validPathCosts(self,x,z,u,p)
-  self.add(x.a); % 1
-  self.add(x.c.'*x.c); % 7
-  self.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+1); % 1e-3*12+26
-  self.add(0); % 0 ([]) or () ? invalid!
-  self.add(-1); % -1
+function validLagrangeCosts(ch,x,z,u,p)
+  ch.add(x.a); % 1
+  ch.add(x.c.'*x.c); % 7
+  ch.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+1); % 1e-3*12+26
+  ch.add(0); % 0 ([]) or () ? invalid!
+  ch.add(-1); % -1
 end
 
-function validArrivalCosts(self,xf,p)
-  self.add(xf.d);
-  self.add(0);
-  self.add(-1);
-  self.add(-1*p.v*1);
+function validPathCosts(ch,k,N,x,p)
+  ch.add(x.d);
+  ch.add(0);
+  ch.add(-1);
+  ch.add(-1*p.v*1);
 end
 
-function validPathConstraints(self,x,p)
+function validPathConstraints(ch,k,N,x,p)
+  if k == 1
+    ch.add(x.a,'==',3);
+    ch.add(x.a,'>=',3*1);
+    ch.add(x.b,'<=',3+3);
+  else
+    % scalar with constant
+    ch.add(x.a,'<=',1);
+    ch.add(x.a,'>=',1);
+    ch.add(x.a,'==',1);
+    ch.add(1,'==',x.a);
+    ch.add(1,'>=',x.a);
+    ch.add(1,'<=',x.ttt+p.aa(1,1,1));
 
-  % scalar with constant
-  self.add(x.a,'<=',1);
-  self.add(x.a,'>=',1);
-  self.add(x.a,'==',1);
-  self.add(1,'==',x.a);
-  self.add(1,'>=',x.a);
-  self.add(1,'<=',x.ttt+p.aa(1,1,1));
+    % vector with vector
+    ch.add(x.f,'>=',2+ones(5,1));
 
-  % vector with vector
-  self.add(x.f,'>=',2+ones(5,1));
+    % scalar with scalar
+    ch.add(x.d,'==',x.b);
 
-  % scalar with scalar
-  self.add(x.d,'==',x.b);
+    % matrix 3x4 with scalar
+    ch.add(x.g,'<=',4);
 
-  % matrix 3x4 with scalar
-  self.add(x.g,'<=',4);
-
-  % matrix with matrix 3x4
-  self.add(x.g,'<=',p.aa);
-end
-
-function validBoundaryConditions(self,x0,xf,p)
-  self.add(x0.a,'==',xf.a);
-  self.add(x0.a,'>=',xf.a*p.x);
-  self.add(x0.b,'<=',xf.a+xf.a);
-end
-
-function validDiscreteCosts(self,x,z,u,p)
-  self.add(sum(x)+sum(z)+sum(u)+sum(p));
+    % matrix with matrix 3x4
+    ch.add(x.g,'<=',p.aa);
+  end
 end

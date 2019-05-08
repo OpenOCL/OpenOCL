@@ -36,20 +36,22 @@ classdef OclSolver < handle
         else
           H_norm = repmat(1/N,1,N);
         end
-
+    
+        % for compatibility with older versions
         if length(T) == 1
           % T = final time
         elseif length(T) == N+1
           % T = N+1 timepoints at states
+          OclDeprecation('Setting of multiple timepoints is deprecated, use the discretization parameter N instead.');
           H_norm = (T(2:N+1)-T(1:N))/ T(end);
           T = T(end);
         elseif length(T) == N
           % T = N timesteps
+          OclDeprecation('Setting of multiple timesteps is deprecated, use the discretization parameter N instead.');
           H_norm = T/sum(T);
           T = sum(T);
         elseif isempty(T)
           % T = [] free end time
-          T = [];
         else
           oclError('Dimension of T does not match the number of control intervals.')
         end
