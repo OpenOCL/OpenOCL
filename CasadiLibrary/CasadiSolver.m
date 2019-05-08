@@ -120,7 +120,7 @@ classdef CasadiSolver < handle
       
       nlpFunEvalTic = tic;
       if nargout > 1
-        [objective,constraints,~,~,times] =Simultaneous.simultaneous(self.phaseList{1}, outVars);
+        [objective,constraints,~,~,times] = Simultaneous.simultaneous(self.phaseList{1}, outVars);
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
 

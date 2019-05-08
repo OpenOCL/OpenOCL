@@ -136,11 +136,9 @@ classdef Simultaneous < handle
           ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
         end
         
-        % parameters
-        for m=1:size(P_indizes,2)
-          lb_phase(P_indizes(:,m)) = phase.parameterBounds.lower;
-          ub_phase(P_indizes(:,m)) = phase.parameterBounds.upper;
-        end
+        % parameters (only set the initial parameters)
+        lb_phase(P_indizes(:,1)) = phase.parameterBounds.lower;
+        ub_phase(P_indizes(:,1)) = phase.parameterBounds.upper;
         
         % timesteps
         if isempty(phase.T)
@@ -173,9 +171,9 @@ classdef Simultaneous < handle
         ig_phase = 0 * ones(nv_phase,1);
         
         % states
-%         for m=size(X_indizes,2)
-%           ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
-%         end
+        for m=1:size(X_indizes,2)
+          ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
+        end
         
         ig_phase(X_indizes(:,1)) = Simultaneous.igFromBounds(phase.stateBounds0);
         ig_phase(X_indizes(:,end)) = Simultaneous.igFromBounds(phase.stateBoundsF);
@@ -227,8 +225,8 @@ classdef Simultaneous < handle
       np = phase.np;
       pathcost_fun = @phase.pathcostfun;
       pathcon_fun = @phase.pathconfun;
-                   
-      [nv_phase,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
+
+      [nvars,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
       [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
       
       X = reshape(phaseVars(X_indizes), nx, N+1);
@@ -251,19 +249,14 @@ classdef Simultaneous < handle
       pcon_lb = horzcat(pcon_lb{:});
       pcon_ub = horzcat(pcon_ub{:});
       
+      % fix dimensions of empty path constraints
       if isempty(pcon)
         pcon = double.empty(0,N+1);
         pcon_lb = double.empty(0,N+1);
         pcon_ub = double.empty(0,N+1);
       end
       
-      T0 = [0, cumsum(H(:,1:end-1))];
-      
       [xend_arr, cost_arr, int_eq_arr, int_times] = phase.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
-      
-      for k=1:size(int_times,1)
-        int_times(k,:) = T0 + int_times(k,:);
-      end
                 
       % timestep constraints
       h_eq = [];
@@ -302,7 +295,11 @@ classdef Simultaneous < handle
       % sum all costs
       costs = sum(cost_arr) + pcost;
       
-      % times
+      % times output
+      T0 = [0, cumsum(H(:,1:end-1))];
+      for k=1:size(int_times,1)
+        int_times(k,:) = T0 + int_times(k,:);
+      end
       times = [T0; int_times; T0];
       times = [times(:); T0(end)+H(end)];
       
