@@ -23,6 +23,8 @@ classdef OclCollocation < handle
     lagrangecostsfh
     
     integratorBounds
+    stateBounds
+    algvarBounds
     
     vars
     nx
@@ -73,6 +75,8 @@ classdef OclCollocation < handle
       self.ni = prod(si);
       
       self.integratorBounds = OclBounds(-inf * ones(self.ni, 1), inf * ones(self.ni, 1));
+      self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
+      self.algvarBounds = OclBounds(-inf * ones(self.nz, 1), inf * ones(self.nz, 1));
       
       names = fieldnames(stateBounds);
       for k=1:length(names)
@@ -88,48 +92,9 @@ classdef OclCollocation < handle
                                       
     end
     
-    function setStateBounds(self,id,varargin)
-      x_lb = Variable.create(self.vars, self.integratorBounds.lower);
-      x_ub = Variable.create(self.vars, self.integratorBounds.upper);
-      
-      bounds = OclBounds(varargin{:});
-      
-      x_lb.get('states').get(id).set(bounds.lower);
-      x_ub.get('states').get(id).set(bounds.upper);
-      
-      self.integratorBounds.lower = x_lb.value;
-      self.integratorBounds.upper = x_ub.value;
-    end
-    
-    function setAlgvarBounds(self,id,varargin)
-      lb = Variable.create(self.vars, self.integratorBounds.lower);
-      ub = Variable.create(self.vars, self.integratorBounds.upper);
-      
-      bounds = OclBounds(varargin{:});
-      
-      lb.get('algvars').get(id).set(bounds.lower);
-      ub.get('algvars').get(id).set(bounds.upper);
-      
-      self.integratorBounds.lower = lb.value;
-      self.integratorBounds.upper = ub.value;
-    end
-    
-    function r = lagrangecostfun(self,x,z,u,p)
-      pcHandler = OclCost();
-      
-      x = Variable.create(self.states,x);
-      z = Variable.create(self.algvars,z);
-      u = Variable.create(self.controls,u);
-      p = Variable.create(self.parameters,p);
-      
-      self.lagrangecostsfh(pcHandler,x,z,u,p);
-      
-      r = pcHandler.value;
-    end
-
     function [statesEnd, costs, equations, rel_times] = ...
           integratorfun(self, statesBegin, integratorVars, ...
-          controls, h, parameters)              
+                        controls, h, parameters)              
       
       equations = cell(self.order,1);
       J = 0;
@@ -170,6 +135,52 @@ classdef OclCollocation < handle
       costs = J;
       equations = vertcat(equations{:});
       rel_times = vertcat(rel_times{:});
+    end
+    
+    function r = getInitialGuess(self, stateGuess, algvarGuess)
+      ig = Variable.create(self.vars, 0);
+      ig.states.set(stateGuess);
+      ig.algvars.set(algvarGuess);
+      r = ig.value;
+    end
+    
+    function setStateBounds(self,id,varargin)
+      x_lb = Variable.create(self.vars, self.integratorBounds.lower);
+      x_ub = Variable.create(self.vars, self.integratorBounds.upper);
+      
+      bounds = OclBounds(varargin{:});
+      
+      x_lb.get('states').get(id).set(bounds.lower);
+      x_ub.get('states').get(id).set(bounds.upper);
+      
+      self.integratorBounds.lower = x_lb.value;
+      self.integratorBounds.upper = x_ub.value;
+    end
+    
+    function setAlgvarBounds(self,id,varargin)
+      lb = Variable.create(self.vars, self.integratorBounds.lower);
+      ub = Variable.create(self.vars, self.integratorBounds.upper);
+      
+      bounds = OclBounds(varargin{:});
+      
+      lb.get('algvars').get(id).set(bounds.lower);
+      ub.get('algvars').get(id).set(bounds.upper);
+      
+      self.integratorBounds.lower = lb.value;
+      self.integratorBounds.upper = ub.value;
+    end
+    
+    function r = lagrangecostfun(self,x,z,u,p)
+      pcHandler = OclCost();
+      
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
+      
+      self.lagrangecostsfh(pcHandler,x,z,u,p);
+      
+      r = pcHandler.value;
     end
   end
 

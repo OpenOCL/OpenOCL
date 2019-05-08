@@ -175,12 +175,20 @@ classdef Simultaneous < handle
           ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
         end
         
-        ig_phase(X_indizes(:,1)) = Simultaneous.igFromBounds(phase.stateBounds0);
-        ig_phase(X_indizes(:,end)) = Simultaneous.igFromBounds(phase.stateBoundsF);
+        igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
+        igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
+        
+        ig_phase(X_indizes(:,1)) = igx0;
+        ig_phase(X_indizes(:,end)) = igxF;
         
         % integrator bounds
-        for m=1:size(I_indizes,2)
-          ig_phase(I_indizes(:,m)) = Simultaneous.igFromBounds(phase.integrator.integratorBounds);
+        algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);
+        gridpoints = reshape( linspace(0,1,N), 1, 1, N);
+        gridpoints = repmat(gridpoints, phase.nx, 1);
+        
+        for m=1:N
+          xGuessInterp = igx0 + gridpoints.*(igxF-igx0);
+          ig_phase(I_indizes(:,m)) = integrator.getInitialGuess(xGuessInterp, algVarsGuess);
         end
         
         % controls
