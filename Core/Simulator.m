@@ -22,26 +22,23 @@ classdef Simulator < handle
         self.options = options;
       end
 
-      system.setup();
-
       self.integrator = CasadiIntegrator(system);
       self.system = system;
-      self.system.systemFun = CasadiFunction(self.system.systemFun);
     end
 
     function controlsVec = getControlsVec(self,N)
         controlsVecStruct  = OclStructure();
-        controlsVecStruct.addRepeated({'u'},{self.system.controlsStruct},N);
+        controlsVecStruct.addRepeated({'u'},{self.system.controls},N);
         controlsVec = Variable.create(controlsVecStruct,0);
         controlsVec = controlsVec.u;
     end
 
     function states = getStates(self)
-      states = Variable.create(self.system.statesStruct,0);
+      states = Variable.create(self.system.states,0);
     end
 
     function states = getParameters(self)
-      states = Variable.create(self.system.parametersStruct,0);
+      states = Variable.create(self.system.parameters,0);
     end
 
     function [statesVec,algVarsVec,controlsVec] = simulate(self,initialStates,times,varargin)
@@ -65,10 +62,10 @@ classdef Simulator < handle
       end
 
       statesVecStruct = OclStructure();
-      statesVecStruct.addRepeated({'x'},{self.system.statesStruct},N+1);
+      statesVecStruct.addRepeated({'x'},{self.system.states},N+1);
 
       algVarsVecStruct = OclStructure();
-      algVarsVecStruct.addRepeated({'z'},{self.system.algVarsStruct},N);
+      algVarsVecStruct.addRepeated({'z'},{self.system.algvars},N);
 
       statesVec = Variable.create(statesVecStruct,0);
       statesVec = statesVec.x;
@@ -119,8 +116,8 @@ classdef Simulator < handle
       xSymb  = casadi.SX.sym('x',size(x));
       zSymb  = casadi.SX.sym('z',size(z));
 
-      ic = self.system.getInitialConditions(xSymb,p);
-      [~,alg] = self.system.systemFun.evaluate(xSymb,zSymb,u,p);
+      ic = self.system.icfun(xSymb,p);
+      [~,alg] = self.system.daefun(xSymb,zSymb,u,p);
 
       z = ones(size(z)) * rand;
 

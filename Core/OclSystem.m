@@ -120,10 +120,10 @@ classdef OclSystem < handle
     end
 
     function ic = icfun(self,x,p)
-      icHandler = OclConstraint(self);
-      x = Variable.create(self.statesStruct,x);
-      p = Variable.create(self.parametersStruct,p);
-      self.fh.ic(icHandler,x,p)
+      icHandler = OclConstraint();
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
+      self.icfh(icHandler,x,p)
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
           'In initial condition are only equality constraints allowed.');
@@ -140,7 +140,7 @@ classdef OclSystem < handle
         z = solution.integrator(:,:,k).algvars;
         u =  solution.controls(:,:,k);
         p = solution.parameters(:,:,k);
-        self.fh.cb(x,z,u,t(:,:,k),t(:,:,k+1),p);
+        self.cbfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
       end
     end
 
@@ -149,15 +149,15 @@ classdef OclSystem < handle
     end
 
     function u = callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)
-      x = Variable.create(self.statesStruct,states);
-      z = Variable.create(self.algVarsStruct,algVars);
-      u = Variable.create(self.controlsStruct,controls);
-      p = Variable.create(self.parametersStruct,parameters);
+      x = Variable.create(self.states,states);
+      z = Variable.create(self.algvars,algVars);
+      u = Variable.create(self.controls,controls);
+      p = Variable.create(self.parameters,parameters);
 
       t0 = Variable.Matrix(timesBegin);
       t1 = Variable.Matrix(timesEnd);
 
-      self.fh.cb(x,z,u,t0,t1,p);
+      self.cbfh(x,z,u,t0,t1,p);
       u = Variable.getValueAsColumn(u);
     end
 
