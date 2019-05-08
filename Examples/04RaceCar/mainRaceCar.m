@@ -30,6 +30,8 @@ function [solution,times,ocl] = mainRaceCar
   ocl.setParameter('Fmax', Fmax);
   ocl.setParameter('road_bound', road_bound);
 
+  ocl.setInitialBounds('time', 0);
+  
   ocl.setInitialBounds( 'x',   0.0);
   ocl.setInitialBounds('vx',   0.0);
   ocl.setInitialBounds( 'y',   0.0);

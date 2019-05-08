@@ -89,6 +89,11 @@ classdef Simultaneous < handle
       P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
     end
+    
+    function bounds = mergeLowerBounds(oldBounds, newBounds)
+
+      bounds = max(oldBounds, newBounds);
+    end
         
     function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
       
@@ -111,11 +116,13 @@ classdef Simultaneous < handle
           ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
         end
         
-        lb_phase(X_indizes(:,1)) = phase.stateBounds0.lower;
-        ub_phase(X_indizes(:,1)) = phase.stateBounds0.upper;
+        % Merge the two vectors of bound values for lower bounds and upper bounds.
+        % Bound values can only get narrower, e.g. higher for lower bounds.
+        lb_phase(X_indizes(:,1)) = max(phase.stateBounds.lower,phase.stateBounds0.lower);
+        ub_phase(X_indizes(:,1)) = min(phase.stateBounds.upper,phase.stateBounds0.upper);
         
-        lb_phase(X_indizes(:,end)) = phase.stateBoundsF.lower;
-        ub_phase(X_indizes(:,end)) = phase.stateBoundsF.upper;
+        lb_phase(X_indizes(:,end)) = max(phase.stateBounds.lower,phase.stateBoundsF.lower);
+        ub_phase(X_indizes(:,end)) = min(phase.stateBounds.upper,phase.stateBoundsF.upper);
         
         % integrator bounds
         for m=1:size(I_indizes,2)
