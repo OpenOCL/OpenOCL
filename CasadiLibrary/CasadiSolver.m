@@ -1,10 +1,13 @@
 classdef CasadiSolver < handle
   
+  properties
+    timeMeasures
+  end
+  
   properties (Access = private)
     phaseList
     nlpData
     options
-    timeMeasures
   end
   
   methods

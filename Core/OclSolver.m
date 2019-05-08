@@ -75,6 +75,14 @@ classdef OclSolver < handle
       times = Variable.createNumeric(timesStruct, full(times));
     end
     
+    function r = timeMeasures(self)
+      r = self.solver.timeMeasures;
+    end
+    
+    function ig = ig(self)
+      ig = self.getInitialGuess();
+    end
+    
     function ig = getInitialGuess(self)
       ig = Simultaneous.getInitialGuess(self.phaseList);
       ig = Variable.create(self.varsStruct, ig);
