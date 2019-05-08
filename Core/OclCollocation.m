@@ -44,7 +44,8 @@ classdef OclCollocation < handle
   
   methods
     
-    function self = OclCollocation(states, algvars, controls, parameters, daefun, lagrangecostsfh, order)
+    function self = OclCollocation(states, algvars, controls, parameters, daefun, lagrangecostsfh, order, ...
+                                   stateBounds, algvarBounds)
       
       self.states = states;
       self.algvars = algvars;
@@ -72,6 +73,18 @@ classdef OclCollocation < handle
       self.ni = prod(si);
       
       self.integratorBounds = OclBounds(-inf * ones(self.ni, 1), inf * ones(self.ni, 1));
+      
+      names = fieldnames(stateBounds);
+      for k=1:length(names)
+        id = names{k};
+        self.setStateBounds(id, stateBounds.(id).lower, stateBounds.(id).upper);
+      end
+      
+      names = fieldnames(algvarBounds);
+      for k=1:length(names)
+        id = names{k};
+        self.setAlgvarBounds(id, algvarBounds.(id).lower, algvarBounds.(id).upper);
+      end
                                       
     end
     

@@ -55,7 +55,8 @@ classdef OclSolver < handle
         end
         
         integrator = OclCollocation(system.states, system.algvars, system.controls, ...
-            system.parameters, @system.daefun, ocp.lagrangecostsfh, d);
+            system.parameters, @system.daefun, ocp.lagrangecostsfh, d, ...
+            system.stateBounds, system.algvarBounds);
           
         phase = OclPhase(T, H_norm, integrator, ocp.pathcostsfh, ocp.pathconfh, ...
             system.states, system.algvars, system.controls, system.parameters);

@@ -8,11 +8,17 @@ classdef OclSystem < handle
     cbsetupfh
     
     thisInitialConditions
-  end
-
-  properties (Access = private)
-    odeVar
-    sysvars
+    
+    states
+    algvars
+    controls
+    parameters
+    stateBounds
+    algvarBounds
+    controlBounds
+    parameterBounds
+    
+    statesOrder
   end
 
   methods
@@ -58,32 +64,20 @@ classdef OclSystem < handle
       self.cbfh = p.Results.cbfun;
       self.cbsetupfh = p.Results.cbsetupfun;
       
-      self.sysvars = self.varsfun();
+      svh = OclSysvarsHandler;
+      self.varsfh(svh);
+      
+      self.states = svh.states;
+      self.algvars = svh.algvars;
+      self.controls = svh.controls;
+      self.parameters = svh.parameters;
+      self.stateBounds = svh.stateBounds;
+      self.algvarBounds = svh.algvarBounds;
+      self.controlBounds = svh.controlBounds;
+      self.parameterBounds = svh.parameterBounds;
+      
+      self.statesOrder = svh.statesOrder;
 
-    end
-    
-    function r = states(self)
-      r = self.sysvars.states;
-    end
-    function r = algvars(self)
-      r = self.sysvars.algvars;
-    end
-    function r = controls(self)
-      r = self.sysvars.controls;
-    end
-    function r = parameters(self)
-      r = self.sysvars.parameters;
-    end
-    function r = bounds(self)
-      r = self.sysvars.bounds;
-    end
-    
-    function r = parameterBounds(self)
-      r = self.sysvars.parameterBounds;
-    end
-    
-    function r = statesOrder(self)
-      r = self.sysvars.statesOrder;
     end
 
     function r = nx(self)
@@ -108,13 +102,6 @@ classdef OclSystem < handle
 
     function simulationCallback(varargin)
       % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
-    end
-    
-    function sysvars = varsfun(self)
-      
-      svh = OclSysvarsHandler;
-      self.varsfh(svh);
-      sysvars = svh.getSysvars();
     end
 
     function [ode,alg] = daefun(self,x,z,u,p)
@@ -149,11 +136,11 @@ classdef OclSystem < handle
       t = times.states;
 
       for k=1:N-1
-        states = solution.states(:,:,k+1);
-        algVars = solution.integrator(:,:,k).algVars;
-        controls =  solution.controls(:,:,k);
-        parameters = solution.parameters(:,:,k);
-        self.fh.cb(states,algVars,controls,t(:,:,k),t(:,:,k+1),parameters);
+        x = solution.states(:,:,k+1);
+        z = solution.integrator(:,:,k).algvars;
+        u =  solution.controls(:,:,k);
+        p = solution.parameters(:,:,k);
+        self.fh.cb(x,z,u,t(:,:,k),t(:,:,k+1),p);
       end
     end
 

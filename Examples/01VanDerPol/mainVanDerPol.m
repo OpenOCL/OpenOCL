@@ -10,8 +10,8 @@ function [solution,times,ocl] = mainVanDerPol
   options.nlp.ipopt.linear_solver = 'mumps';
   options.nlp.solver = 'ipopt';
 
-  system = OclSystem(@varsfun,@eqfun);
-  ocp = OclOCP(@pathcosts);
+  system = OclSystem(@varsfun,@daefun);
+  ocp = OclOCP(@lagrangecosts);
 
   ocl = OclSolver(END_TIME,system,ocp,options);
 
@@ -37,29 +37,22 @@ function [solution,times,ocl] = mainVanDerPol
 
 end
 
-function varsfun(sh)
-  % sysVars(systemHandler)
-  %   Define system variables
-
+function varsfun(svh)
   % Scalar x:  -0.25 <= x <= inf
   % Scalar y: unbounded
-  sh.addState('x', 'lb', -0.25, 'ub', inf);
-  sh.addState('y');
+  svh.addState('x', 'lb', -0.25, 'ub', inf);
+  svh.addState('y');
 
   % Scalar u: -1 <= F <= 1
-  sh.addControl('F', 'lb', -1, 'ub', 1);
+  svh.addControl('F', 'lb', -1, 'ub', 1);
 end
 
-function eqfun(sh,x,~,u,~)
-  % sysEq(systemHandler,states,algVars,controls,parameters)
-  %   Defines differential equations
-  sh.setODE('x',(1-x.y^2)*x.x - x.y + u.F);
-  sh.setODE('y',x.x);
+function daefun(daeh,x,~,u,~)
+  daeh.setODE('x', (1-x.y^2)*x.x - x.y + u.F);
+  daeh.setODE('y', x.x);
 end
 
-function pathcosts(ch,x,~,u,p)
-  % pathCosts(costHandler,states,algVars,controls,time,endTime,parameters)
-  %   Defines lagrange (intermediate) cost terms.
+function lagrangecosts(ch,x,~,u,p)
   ch.add( x.x^2 );
   ch.add( x.y^2 );
   ch.add( u.F^2 );

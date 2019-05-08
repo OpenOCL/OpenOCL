@@ -4,8 +4,8 @@ function [sol,times,ocl] = mainCartPole
   options.nlp.controlIntervals = 50;
   options.nlp.collocationOrder = 3;
 
-  system = OclSystem('varsfun',@varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('arrivalcosts', @arrivalcosts);
+  system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
+  ocp = OclOCP('pathcosts', @pathcosts);
   
   ocl = OclSolver([], system, ocp, options);
 
@@ -25,7 +25,7 @@ function [sol,times,ocl] = mainCartPole
   ocl.setEndBounds('omega', 0);
 
   % Run solver to obtain solution
-  [sol,times] = ocl.solve(ocl.ig());
+  [sol,times] = ocl.solve(ocl.getInitialGuess());
 
   % visualize solution
   figure; hold on; grid on;
@@ -83,6 +83,8 @@ function eqfun(sh,x,~,u,~)
   
 end
 
-function arrivalcosts(self,x,p)
-  self.add( x.time );
+function pathcosts(self,k,N,x,p)
+  if k == N+1
+    self.add( x.time );
+  end
 end

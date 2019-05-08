@@ -118,19 +118,19 @@ classdef Simultaneous < handle
         ub_phase(X_indizes(:,end)) = phase.stateBoundsF.upper;
         
         % integrator bounds
-        for m=size(I_indizes,2)
+        for m=1:size(I_indizes,2)
           lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
           ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
         end
         
         % controls
-        for m=size(U_indizes,2)
+        for m=1:size(U_indizes,2)
           lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
           ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
         end
         
         % parameters
-        for m=size(P_indizes,2)
+        for m=1:size(P_indizes,2)
           lb_phase(P_indizes(:,m)) = phase.parameterBounds.lower;
           ub_phase(P_indizes(:,m)) = phase.parameterBounds.upper;
         end
