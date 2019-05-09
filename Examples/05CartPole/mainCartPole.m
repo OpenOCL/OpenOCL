@@ -1,8 +1,8 @@
 function [sol,times,ocl] = mainCartPole  
 
   options = OclOptions();
-  options.nlp.controlIntervals = 50;
-  options.nlp.collocationOrder = 3;
+  options.nlp.controlIntervals = 40;
+  options.nlp.collocationOrder = 2;
 
   system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
   ocp = OclOCP('pathcosts', @pathcosts);
@@ -52,7 +52,7 @@ function varsfun(sh)
   
   sh.addState('time', 'lb', 0, 'ub', 20);
 
-  sh.addControl('F', 'lb', -20, 'ub', 20);
+  sh.addControl('F', 'lb', -12, 'ub', 12);
 end
 
 function eqfun(sh,x,~,u,~)

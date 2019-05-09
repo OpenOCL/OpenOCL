@@ -39,7 +39,6 @@ classdef Simultaneous < handle
       timesStruct.add('states', OclMatrix([1,1]));
     end
     
-    
     function ig = ig(self)
       ig = self.getInitialGuess();
     end
@@ -88,11 +87,6 @@ classdef Simultaneous < handle
       p_start = [(0:N-1)*nci+nx+ni+nu+1, (N)*nci+nx+1];
       P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
-    end
-    
-    function bounds = mergeLowerBounds(oldBounds, newBounds)
-
-      bounds = max(oldBounds, newBounds);
     end
         
     function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
@@ -170,25 +164,21 @@ classdef Simultaneous < handle
         
         ig_phase = 0 * ones(nv_phase,1);
         
-        % states
-        for m=1:size(X_indizes,2)
-          ig_phase(X_indizes(:,m)) = Simultaneous.igFromBounds(phase.stateBounds);
-        end
-        
         igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
         igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
         
         ig_phase(X_indizes(:,1)) = igx0;
         ig_phase(X_indizes(:,end)) = igxF;
         
-        % integrator bounds
-        algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);
-        gridpoints = reshape( linspace(0,1,N), 1, 1, N);
-        gridpoints = repmat(gridpoints, phase.nx, 1);
         
+        algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
         for m=1:N
-          xGuessInterp = igx0 + gridpoints.*(igxF-igx0);
-          ig_phase(I_indizes(:,m)) = integrator.getInitialGuess(xGuessInterp, algVarsGuess);
+          xGuessInterp = igx0 + (m-1)/N.*(igxF-igx0);
+          % integrator variables
+          ig_phase(I_indizes(:,m)) = phase.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
+          
+          % states
+          ig_phase(X_indizes(:,m)) = xGuessInterp;
         end
         
         % controls
@@ -302,6 +292,10 @@ classdef Simultaneous < handle
 
       % sum all costs
       costs = sum(cost_arr) + pcost;
+      
+      % regularization on U
+      Uvec = U(:);
+      costs = costs + 1e-6*(Uvec'*Uvec);
       
       % times output
       T0 = [0, cumsum(H(:,1:end-1))];
