@@ -135,13 +135,13 @@ function eqfun(sh,x,~,u,p)
   sh.setODE('time', 1);
 end
 
-function pathcosts(ch,k,N,x,p)
-  if k==N+1
+function pathcosts(ch,k,K,x,p)
+  if k==K
     ch.add(x.time);
   end
 end
 
-function pathconstraints(ch,k,N,x,p)
+function pathconstraints(ch,k,K,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 
@@ -150,8 +150,8 @@ function pathconstraints(ch,k,N,x,p)
 
   % road bounds
   y_center = sin(x.x);
-  y_max = y_center + p.road_bound;
-  y_min = y_center - p.road_bound;
+  y_max = y_center + 0.5*p.road_bound;
+  y_min = y_center - 0.5*p.road_bound;
   ch.add(x.y,'<=',y_max);
   ch.add(x.y,'>=',y_min);
 end

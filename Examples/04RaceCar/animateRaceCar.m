@@ -6,7 +6,7 @@ y_car = solution.states.y.value;
 
 %% Initialize animation
 figure('units','normalized');hold on;grid on;
-car = plot(x_car(1),y_car(1),'Marker','o','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',30);
+car = plot(x_car(1),y_car(1),'Marker','pentagram','MarkerEdgeColor','k','MarkerFaceColor','y','MarkerSize',15);
 carLine = plot(x_car(1),y_car(1),'Color','b','LineWidth',3);
 plot(x_road,y_center,'Color','k','LineWidth',1,'LineStyle','--');
 plot(x_road,y_min   ,'Color','k','LineWidth',2.0,'LineStyle','-');

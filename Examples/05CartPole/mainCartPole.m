@@ -50,7 +50,7 @@ function varsfun(sh)
   sh.addState('v');
   sh.addState('omega');
   
-  sh.addState('time', 'lb', 0, 'ub', 20);
+  sh.addState('time', 'lb', 0, 'ub', 10);
 
   sh.addControl('F', 'lb', -12, 'ub', 12);
 end
@@ -83,8 +83,8 @@ function eqfun(sh,x,~,u,~)
   
 end
 
-function pathcosts(self,k,N,x,p)
-  if k == N+1
+function pathcosts(self,k,K,x,p)
+  if k == K
     self.add( x.time );
   end
 end

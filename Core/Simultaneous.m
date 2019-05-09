@@ -239,8 +239,8 @@ classdef Simultaneous < handle
       pcon_ub = cell(1,N+1);
       pcost = 0;
       for k=1:N+1
-        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N, X(:,k), P(:,k));
-        pcost = pcost + pathcost_fun(k, N, X(:,k), P(:,k));
+        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N+1, X(:,k), P(:,k));
+        pcost = pcost + pathcost_fun(k, N+1, X(:,k), P(:,k));
       end    
       
       pcon = horzcat(pcon{:});

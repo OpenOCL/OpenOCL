@@ -37,65 +37,17 @@ o1 = ocl.timeMeasures;
 
 % test ball and beam example problem
 [sol,~,ocl] = mainBallAndBeam;
-assert(all(abs(sol.controls.tau.value - ...
-  [-20.0000
-  -20.0000
-  -16.3269
-  -13.5240
-  -11.3542
-  -9.6721
-  -8.3999
-  -7.4967
-  -6.9423
-  -6.7264
-  -6.8350
-  -7.2311
-  -7.1171
-  -5.8267
-  -4.5955
-  -3.3285
-  -2.1695
-  -1.5100
-  -1.3162
-  -0.9894
-  -0.5946
-  -0.1785
-  0.2309
-  0.6172
-  0.9673
-  1.2678
-  1.3287
-  1.1185
-  1.0929
-  1.0568
-  0.9386
-  0.7573
-  0.5338
-  0.2886
-  0.0392
-  -0.1990
-  -0.4131
-  -0.5917
-  -0.7259
-  -0.8091
-  -0.8382
-  -0.8138
-  -0.7396
-  -0.6221
-  -0.4698
-  -0.2925
-  -0.1010
-  0.0934
-  0.2796
-  0.4469]) < 1e-3 ), 'Ball and beam problem Test failed.');
+assertAlmostEqual(sol.controls.tau(1:5:end).value, ...
+                  [-20;-9.67180946278377;-6.83499933773107;-3.3277726553036;-0.594240414712151;1.26802912244169;0.938453275453379;-0.199369534081799;-0.838286223053903;-0.292251460119773], ...
+                  'Ball and beam problem Test failed.');
 
 o2 = ocl.timeMeasures;
 
 
 % test race car problem
 [sol,~,ocl] = mainRaceCar;
-assertAlmostEqual(sol.controls.dFx(1,:,1:10:end).value,...
-      [-0.00554603;0.548809;0.0892633;0.322054;0.362561],...
+assertAlmostEqual(sol.controls.dFx(1,:,1:5:end).value,...
+      [-0.0101362795430379;-0.999999558480492;0.319856962019424;-0.764994370307151;0.7697294885374;-0.126456278919074;0.580563346802815;-0.661025508901183;0.999998743528033;-0.9999996584554],...
       'Solve RaceCar Test failed.');
 
 o3 = ocl.timeMeasures;
@@ -112,7 +64,7 @@ o4.simulationTest = toc(simTic);
 
 % test cart pole
 [sol,~,ocl] = mainCartPole;
-res = sol.states.theta(:,:,1:10:end).value;
-truth = [3.14159;2.0802;1.11827;0.264782;-0.523718;4.00847e-17];
+res = sol.states.theta(:,:,1:5:end).value;
+truth = [3.14159265358979;3.43004332636167;3.8605250812409;3.55175774943157;2.52345691486727;1.48648519772981;0.885695638925426;0.31564404730662;0];
 assertAlmostEqual(res, truth, 'Cart pole test failed.');
 o5 = ocl.timeMeasures;
