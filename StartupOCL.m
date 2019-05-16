@@ -62,22 +62,35 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Test'))
 
   % check if casadi is working
-  casadiFound = findCasadi();
-  if casadiFound == 0
-    disp('You have set-up an individual casadi installation.')
-  elseif casadiFound == 2
-    error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
+  casadiFound = checkCasadi();
+  if casadiFound
+    disp(['You have set-up an individual casadi installation. ', ...
+          'We will use it, but we can not guarantee that it is ', ...
+          ' comapttible with OpenOCL. In doubt remove all casadi ', ...
+          'installations from your path'])
   elseif casadiFound == 1 && exist(fullfile(oclPath,'Lib'),'dir')
     % try binaries in Lib
     addpath(fullfile(oclPath,'Lib'))
-    casadiFound = findCasadi();
-    if casadiFound == 1
-      error('Casadi installation not found. Please setup casadi 3.3.');
-    elseif casadiFound == 2
-      error('Casadi installation in the path found but does not work properly. Try restarting Matlab.');
+    casadiFound = checkCasadi();
+  end
+  
+  if ~casadiFound && ~verLessThan('matlab','9.0.1')
+    % > Matlab 2016a
+    % install casadi into Lib folder 
+    if ispc
+      % win
+      archive_destination = fullfile(oclPath, 'Workspace','casadi.zip');
+      websave(archive_destination, 'https://github.com/casadi/casadi/releases/download/3.4.5/casadi-windows-matlabR2016a-v3.4.5.zip');
+      unzip(archive_destination, fullfile(oclPath,'Lib'))
+      addpath(fullfile(oclPath,'Lib'))
+    elseif isunix
+      % Linux
+      archive_destination = fullfile(oclPath, 'Workspace', 'casadi.tar.gz');
+      websave(archive_destination, 'https://github.com/casadi/casadi/releases/download/3.4.5/casadi-linux-matlabR2014b-v3.4.5.tar.gz');
+    else
+      
     end
-  else
-    error('Casadi installation not found. Please setup casadi 3.3.');
+    
   end
 
   % remove properties function in Variable.m for Octave which gives a
@@ -124,15 +137,18 @@ function StartupOCL(in)
   
 end
 
-function r = findCasadi()
-  r = 0;  % found and working.
+function r = checkCasadi()
+  r = true;  % found and working.
   try
     casadi.SX.sym('x');
   catch e
     if strcmp(e.identifier,'MATLAB:undefinedVarOrClass') || strcmp(e.identifier,'Octave:undefined-function')
-      r = 1;  % not found.
+      r = false;  % not found.
     else
-      r = 2;  % found but not working.
+      oclError(['Casadi installation in the path found but does not', ...
+                'work properly. Try restarting Matlab. Remove all ', ...
+                'casadi installations from you path, OpenOCL will ', ...
+                ' then install the correct casadi version for you.']);
     end
   end
 end
