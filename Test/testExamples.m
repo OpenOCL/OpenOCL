@@ -43,7 +43,6 @@ assertAlmostEqual(sol.controls.tau(1:5:end).value, ...
 
 o2 = ocl.timeMeasures;
 
-
 % test race car problem
 [sol,~,ocl] = mainRaceCar;
 assertAlmostEqual(sol.controls.dFx(1,:,1:5:end).value,...
@@ -60,7 +59,6 @@ assertAlmostEqual(statesVec.p(1,:,1:10:41).value, ...
                   'PendulumSim Test failed.');
 o4 = struct;
 o4.simulationTest = toc(simTic);
-
 
 % test cart pole
 [sol,~,ocl] = mainCartPole;

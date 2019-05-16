@@ -17,14 +17,20 @@ classdef OclSolver < handle
     
     function self = OclSolver(varargin)
       % OclSolver(T, system, ocp, options, H_norm)
-      % OclSolver(phase, options)
       % OclSolver(phaseList, options)
-      % OclSolver(T, @varsfun, @daefun, @ocpfuns... , options)
+      % OclSolver(T, 'vars', @varsfun, 'dae', @daefun, 
+      %           'lagrangecost', @lagrangefun, 
+      %           'pathcosts', @pathcostfun, 
+      %           'pathconstraints', @pathconstraintsfun, options)
       % OclSolver(phaseList, integratorList, options)
       phaseList = {};
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
+        
+        oclDeprecation(['This way of creating the solver ', ...
+                        'is deprecated. It will be removed from version 5.0.']);
+        
         T = varargin{1};
         system = varargin{2};
         ocp = varargin{3};
@@ -64,6 +70,26 @@ classdef OclSolver < handle
         self.cbfh = system.cbfh;
 
         phaseList{1} = phase;
+      elseif nargin >= 1 && isscalar(varargin{1})
+        p = inputParser;
+        p.addRequired('T', @(el)isscalar(el) && isnumeric(el));
+        p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
+        p.addOptional('daefunOpt', [], @oclIsFunHandleOrEmpty);
+        
+        p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
+        p.addParameter('daefun', emptyfh, @oclIsFunHandle);
+        
+        p.parse(varargin{:});
+      else
+        
+        p = inputParser;
+        p.addOptional('phasesOpt', [], @(el) isempty(el) || iscell(el) || isa(el, 'OclPhase') );
+        p.addOptional('optOpt', [], @(el) isempty(el) || isstruct(el) || isa(el, 'OclOptions') );
+        
+        p.addParameter('phases', emptyfh, @(el) iscell(el) || isa(el, 'OclPhase'));
+        p.addParameter('opt', emptyfh, @(el) isstruct(el) || isa(el, 'OclOptions'));
+        p.parse(varargin{:});
+        
       end
       
       self.solver = CasadiSolver(phaseList, options);

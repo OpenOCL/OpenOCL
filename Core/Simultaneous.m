@@ -35,7 +35,7 @@ classdef Simultaneous < handle
     function timesStruct = times(nit, N)
       timesStruct = OclStructure();
       timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
-                                   {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
+                              {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
       timesStruct.add('states', OclMatrix([1,1]));
     end
     
@@ -169,7 +169,6 @@ classdef Simultaneous < handle
         
         ig_phase(X_indizes(:,1)) = igx0;
         ig_phase(X_indizes(:,end)) = igxF;
-        
         
         algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
         for m=1:N
