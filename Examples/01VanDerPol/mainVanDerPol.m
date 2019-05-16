@@ -1,30 +1,30 @@
-function [solution,times,ocl] = mainVanDerPol
+function [solution,times,solver] = mainVanDerPol
 
   END_TIME = 10;              % horizon length (seconds)
   CONTROL_INTERVALS = 30;     % control discretization
 
   % Get and set solver options
-  options = OclOptions();
+  options = ocl.Options();
   options.nlp.controlIntervals = CONTROL_INTERVALS;
   options.nlp.collocationOrder = 3;
   options.nlp.ipopt.linear_solver = 'mumps';
   options.nlp.solver = 'ipopt';
 
-  system = OclSystem(@varsfun,@eqfun);
-  ocp = OclOCP(@pathcosts);
+  system = ocl.System(@varsfun,@eqfun);
+  ocp = ocl.OCP(@pathcosts);
 
-  ocl = OclSolver(END_TIME,system,ocp,options);
+  solver = ocl.Solver(END_TIME,system,ocp,options);
 
   % intial state bounds
-  ocl.setInitialBounds('x',     0);
-  ocl.setInitialBounds('y',     1);
+  solver.setInitialBounds('x',     0);
+  solver.setInitialBounds('y',     1);
 
   % Get and set initial guess
-  initialGuess = ocl.getInitialGuess();
+  initialGuess = solver.getInitialGuess();
   initialGuess.states.x.set(-0.2);
 
   % Run solver to obtain solution
-  [solution,times] = ocl.solve(initialGuess);
+  [solution,times] = solver.solve(initialGuess);
 
   % plot solution
   figure
