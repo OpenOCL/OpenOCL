@@ -1,40 +1,40 @@
-function [vars,times,ocl] = mainPendulum
+function [vars,times,solver] = mainPendulum
 
-  options = OclOptions;
+  options = ocl.Options;
   options.nlp.controlIntervals = 50;
 
   s = PendulumSystem;
-  system = OclSystem(s.varsfun, s.eqfun, s.icfun, 'cbsetupfun', s.simcallbacksetup, 'cbfun', s.simcallback);
-  ocp = OclOCP(@pathcosts);
+  system = ocl.System(s.varsfun, s.eqfun, s.icfun, 'cbsetupfun', s.simcallbacksetup, 'cbfun', s.simcallback);
+  ocp = ocl.OCP(@pathcosts);
 
-  ocl = OclSolver([], system, ocp, options);
+  solver = ocl.Solver([], system, ocp, options);
 
-  ocl.setBounds('time',  0, 15);
+  solver.setBounds('time',  0, 15);
   
-  ocl.setBounds('p',       -[3;3], [3;3]);
-  ocl.setBounds('v',       -[3;3], [3;3]);
-  ocl.setBounds('F',       -25, 25);
-  ocl.setBounds('lambda',  -50, 50);
-  ocl.setBounds('m',       1);
-  ocl.setBounds('l',       1);
+  solver.setBounds('p',       -[3;3], [3;3]);
+  solver.setBounds('v',       -[3;3], [3;3]);
+  solver.setBounds('F',       -25, 25);
+  solver.setBounds('lambda',  -50, 50);
+  solver.setBounds('m',       1);
+  solver.setBounds('l',       1);
 
-  ocl.setInitialBounds('p', [0;-1],[0;-1]);
-  ocl.setInitialBounds('v', [0.5;0]);
+  solver.setInitialBounds('p', [0;-1],[0;-1]);
+  solver.setInitialBounds('v', [0.5;0]);
   
-  ocl.setInitialBounds('time', 0);
+  solver.setInitialBounds('time', 0);
 
-  ocl.setEndBounds('p',     [0,1]);
-  ocl.setEndBounds('v',     [-1;-1], [1;1]);
+  solver.setEndBounds('p',     [0,1]);
+  solver.setEndBounds('v',     [-1;-1], [1;1]);
 
-  vars = ocl.getInitialGuess();
+  vars = solver.getInitialGuess();
   vars.states.p.set([0;-1]);
   vars.states.v.set([0.1;0]);
   vars.controls.F.set(-10);
 
-  [solution,times] = ocl.solve(vars);
+  [solution,times] = solver.solve(vars);
 
   figure
-  ocl.solutionCallback(times,solution);
+  solver.solutionCallback(times,solution);
 
 end
 

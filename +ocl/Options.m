@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function r = oclIsTestRun()
-  global testRun
-  r = ~isempty(testRun) && testRun;
+function r = Options(varargin)
+  ocl.checkStartup()
+  r = OclOptions(varargin{:});
 end
