@@ -9,6 +9,8 @@ function StartupOCL(in)
   % inputs:
   %   workingDirLocation - path to location where the working directory 
   %                        should be created.
+  
+  disp('Running OpenOCL setup procedure.')
 
   oclPath  = fileparts(which('StartupOCL'));
 
