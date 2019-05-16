@@ -63,27 +63,29 @@ function StartupOCL(in)
 
   % check if casadi is working
   casadiFound = checkCasadi();
-  if casadiFound
-    disp(['You have set-up an individual casadi installation. ', ...
-          'We will use it, but we can not guarantee that it is ', ...
-          ' comapttible with OpenOCL. In doubt remove all casadi ', ...
-          'installations from your path'])
-  elseif ~casadiFound && exist(fullfile(oclPath,'Lib'),'dir')
+  if ~casadiFound && exist(fullfile(oclPath,'Lib'),'dir')
     % try binaries in Lib
     addpath(fullfile(oclPath,'Lib'))
     casadiFound = checkCasadi();
+  elseif casadiFound && ~exist(fullfile(oclPath,'Lib'),'dir')
+    disp(' ')
+    disp('You have set-up an individual casadi installation. ')
+    disp('We will use it, but we can not guarantee that it is ')
+    disp('comapttible with OpenOCL. In doubt remove all casadi ')
+    disp('installations from your path ')
+    disp(' ')
   end
   
   % install casadi into Lib folder 
   if ~casadiFound && ispc && ~verLessThan('matlab','9.0.1')
     % Windows, >Matlab 2016a
-    fprintf(2,'\nUser input required! Please read below:\n')
+    fprintf(2,'\Your input is required! Please read below:\n')
     archive_destination = fullfile(oclPath, 'Workspace','casadi-win.zip');
     url = 'https://github.com/casadi/casadi/releases/download/3.4.5/casadi-windows-matlabR2016a-v3.4.5.zip';
     m=input(['\n', 'Dear User, if you continue, CasADi will be downloaded from \n', url, ' \n', ...
              'and saved to the Workspace folder. The archive will be extracted \n', ...
              'to the Lib folder. This will take a few minutes. \n\n', ...
-             'Do you agree and would you like to continue? Type Y or y [enter] to continue: '],'s');
+             'Do you agree and would you like to continue? \nType Y or y [enter] to continue: '],'s');
            
     if ~strcmp(m, 'y') && ~strcmp(m, 'Y')
       oclError('You did not agree to download CasADi. Either run StartupOCL again or set-up CasADi manually.');
@@ -97,13 +99,13 @@ function StartupOCL(in)
     
   elseif ~casadiFound && isunix&& ~verLessThan('matlab','9.0.1')
     % Linux, >Matlab 2016a
-    fprintf(2,'\nUser input required! Please read below:\n')
+    fprintf(2,'\Your input is required! Please read below:\n')
     archive_destination = fullfile(oclPath, 'Workspace', 'casadi-linux.tar.gz');
     url = 'https://github.com/casadi/casadi/releases/download/3.4.5/casadi-linux-matlabR2014b-v3.4.5.tar.gz';
     m=input(['\n', 'Dear User, if you continue, CasADi will be downloaded from \n', url, ' \n', ...
              'and saved to the Workspace folder. The archive will be extracted \n', ...
              'to the Lib folder. This will take a few minutes. \n\n', ...
-             'Do you agree and would you like to continue? Type Y or y [enter] to continue: '],'s');
+             'Do you agree and would you like to continue? \nType Y or y [enter] to continue: '],'s');
            
     if ~strcmp(m, 'y') && ~strcmp(m, 'Y')
       oclError('You did not agree to download CasADi. Either run StartupOCL again or set-up CasADi manually.');
@@ -119,10 +121,8 @@ function StartupOCL(in)
   end
   
   casadiFound = checkCasadi();
-  if casadiFound
-    oclInfo('CasADi is up and running!');
-  else
-    oclError('Sorry could not install CasADi for you. Got to https://web.casadi.org/get/ and setup CasADi.');
+  if ~casadiFound
+    oclError('Sorry could not install CasADi for you. Go to https://web.casadi.org/get/ and setup CasADi.');
   end
     
 
