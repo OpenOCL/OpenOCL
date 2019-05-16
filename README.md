@@ -11,7 +11,7 @@ If you would like to participate in the project, you are very welcome!
 ## Models
 
 * airborne wind energy: https://openawe.github.io/
-* robotics: https://github.com/JonasKoenemann/openocl_models (very experimental)
+* robotics: https://github.com/jkoendev/openocl_models (very experimental)
 
 ## Publications
 
