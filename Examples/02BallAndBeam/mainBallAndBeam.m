@@ -3,7 +3,6 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-
 function [vars,times,solver] = mainBallAndBeam
 % Title: Ball and beam problem
 %  Authors: Jonas Koenneman & Giovanni Licitra

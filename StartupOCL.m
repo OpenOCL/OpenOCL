@@ -104,7 +104,7 @@ function StartupOCL(in)
     unzip(archive_destination, fullfile(oclPath,'Lib'))
     addpath(fullfile(oclPath,'Lib'));
 
-  elseif ~casadiFound && isunix&& ~verLessThan('matlab','8.4')
+  elseif ~casadiFound && isunix && ~ismac && ~verLessThan('matlab','8.4')
     % Linux, >Matlab 2014b
     fprintf(2,'\nYour input is required! Please read below:\n')
     archive_destination = fullfile(oclPath, 'Workspace', 'casadi-linux.tar.gz');
