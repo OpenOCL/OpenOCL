@@ -82,7 +82,7 @@ function StartupOCL(in)
   end
 
   % install casadi into Lib folder
-  if ~casadiFound && ispc && ~verLessThan('matlab','9.0.1')
+  if ~casadiFound && ispc && ~verLessThan('matlab','9.0')
     % Windows, >Matlab 2016a
     fprintf(2,'\nYour input is required! Please read below:\n')
     archive_destination = fullfile(oclPath, 'Workspace','casadi-win.zip');
@@ -104,7 +104,7 @@ function StartupOCL(in)
     unzip(archive_destination, fullfile(oclPath,'Lib'))
     addpath(fullfile(oclPath,'Lib'));
 
-  elseif ~casadiFound && isunix && ~ismac && ~verLessThan('matlab','8.4')
+  elseif ~casadiFound && isunix && ~ismac && ~verLessThan('matlab','8.3')
     % Linux, >Matlab 2014b
     fprintf(2,'\nYour input is required! Please read below:\n')
     archive_destination = fullfile(oclPath, 'Workspace', 'casadi-linux.tar.gz');
