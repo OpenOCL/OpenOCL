@@ -2,8 +2,8 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function varargout = mainCartPole(varargin)
+function varargout = pendulum(varargin)
   ocl.checkStartup()
   varargout = cell(nargout,1);
-  [varargout{:}] = mainCartPole(varargin{:});
+  [varargout{:}] = mainPendulum(varargin{:});
 end

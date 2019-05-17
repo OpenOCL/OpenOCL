@@ -1,6 +1,11 @@
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Copyright 2015-2018 Jonas Koennemanm, Giovanni Licitra
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
 % This file defines the system and optimal control problem
 % for the Ball and Beam example.
-
+%
 function bb = BallAndBeam()
   % Returns a struct with the parameters (configuration)
   % and the function handles to the system and ocp functions.
