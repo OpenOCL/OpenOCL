@@ -37,4 +37,12 @@
 % * ocl.plot
 % * ocl.stairs
 %
+%% Copyright notice
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+% Get the license text from:
+%  <a href="https://openocl.org/bsd-3-clause/">https://openocl.org/bsd-3-clause/</a>
 
+function ocl
+  StartupOCL
