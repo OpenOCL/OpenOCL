@@ -8,6 +8,7 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 
 ```m
 ocl.examples.cartpole
+open mainCartPole
 ```
 
 ## Contribute
