@@ -4,6 +4,12 @@
 
 Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
 
+## Get started
+
+```m
+ocl.examples.cartpole
+```
+
 ## Contribute
 
 If you would like to participate in the project, you are very welcome!
