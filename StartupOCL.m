@@ -76,7 +76,7 @@ function StartupOCL(in)
     disp(' ')
     disp('You have set-up an individual casadi installation. ')
     disp('We will use it, but we can not guarantee that it is ')
-    disp('comapttible with OpenOCL. In doubt remove all casadi ')
+    disp('compatible with OpenOCL. In doubt remove all casadi ')
     disp('installations from your path ')
     disp(' ')
   end
