@@ -1,5 +1,5 @@
 %% OpenOCL Open Optimal Control Library
-% Software for solving optimal control, trajectory optimization, and
+% Software for optimal control, trajectory optimization, and
 % model predictive control.
 %
 % Web: <a href="https://openocl.org">https://openocl.org/</a>
