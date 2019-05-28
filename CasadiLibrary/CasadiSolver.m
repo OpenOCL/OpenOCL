@@ -12,7 +12,10 @@ classdef CasadiSolver < handle
   
   methods
     
-    function self = CasadiSolver(phaseList, options)
+    function self = CasadiSolver(phaseList, transitionList, options)
+      
+      oclAssert(length(phaseList)==length(transitionList)+1, ...
+                'You need to specify Np-1 transitions for Np phases.');
       
       constructTotalTic = tic;
       
