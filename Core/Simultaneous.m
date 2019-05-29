@@ -8,35 +8,24 @@ classdef Simultaneous < handle
   
   methods (Static)
     
-    function varsStruct = vars(phaseList)
+    function phase_vars_structure = vars(phase)
       
-      varsStruct = OclStructure();
-      phaseStruct = [];
-      
-      for k=1:length(phaseList)
-        phase = phaseList{k};
-        phaseStruct = OclStructure();
-        phaseStruct.addRepeated({'states','integrator','controls','parameters','h'}, ...
-                            {phase.states, ...
-                             phase.integrator.vars, ...
-                             phase.controls, ...
-                             phase.parameters, ...
-                             OclMatrix([1,1])}, length(phase.H_norm));
-        phaseStruct.add('states', phase.states);
-        phaseStruct.add('parameters', phase.parameters);
-
-        varsStruct.add('phases', phaseStruct);
-      end
-      if length(phaseList) == 1
-        varsStruct = phaseStruct;
-      end
+      phase_vars_structure = OclStructure();
+      phase_vars_structure.addRepeated({'states','integrator','controls','parameters','h'}, ...
+                          {phase.states, ...
+                           phase.integrator.vars, ...
+                           phase.controls, ...
+                           phase.parameters, ...
+                           OclMatrix([1,1])}, length(phase.H_norm));
+      phase_vars_structure.add('states', phase.states);
+      phase_vars_structure.add('parameters', phase.parameters);
     end
     
-    function timesStruct = times(nit, N)
-      timesStruct = OclStructure();
-      timesStruct.addRepeated({'states', 'integrator', 'controls'}, ...
-                              {OclMatrix([1,1]), OclMatrix([nit,1]), OclMatrix([1,1])}, N);
-      timesStruct.add('states', OclMatrix([1,1]));
+    function phase_time_struct = times(phase)
+      phase_time_struct = OclStructure();
+      phase_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
+                              {OclMatrix([1,1]), OclMatrix([phase.nit,1]), OclMatrix([1,1])}, length(phase.H_norm));
+      phase_time_struct.add('states', OclMatrix([1,1]));
     end
     
     function ig = ig(self)
@@ -66,8 +55,9 @@ classdef Simultaneous < handle
       
     end
     
-    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase, N)
+    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase)
 
+      N = length(phase.H_norm);
       nx = phase.nx;
       ni = phase.integrator.ni;
       nu = phase.nu;
@@ -89,117 +79,96 @@ classdef Simultaneous < handle
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
     end
         
-    function [lowerBounds,upperBounds] = getNlpBounds(phaseList)
+    function [lb_phase,ub_phase] = getNlpBounds(phase)
       
-      lowerBounds = cell(length(phaseList), 1);
-      upperBounds = cell(length(phaseList), 1);
-      
-      for k=1:length(phaseList)
-        
-        phase = phaseList{k};
-        [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
-        
-        lb_phase = -inf * ones(nv_phase,1);
-        ub_phase = inf * ones(nv_phase,1);
+      [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
-        
-        % states
-        for m=1:size(X_indizes,2)
-          lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
-          ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
-        end
-        
-        % Merge the two vectors of bound values for lower bounds and upper bounds.
-        % Bound values can only get narrower, e.g. higher for lower bounds.
-        lb_phase(X_indizes(:,1)) = max(phase.stateBounds.lower,phase.stateBounds0.lower);
-        ub_phase(X_indizes(:,1)) = min(phase.stateBounds.upper,phase.stateBounds0.upper);
-        
-        lb_phase(X_indizes(:,end)) = max(phase.stateBounds.lower,phase.stateBoundsF.lower);
-        ub_phase(X_indizes(:,end)) = min(phase.stateBounds.upper,phase.stateBoundsF.upper);
-        
-        % integrator bounds
-        for m=1:size(I_indizes,2)
-          lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
-          ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
-        end
-        
-        % controls
-        for m=1:size(U_indizes,2)
-          lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
-          ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
-        end
-        
-        % parameters (only set the initial parameters)
-        lb_phase(P_indizes(:,1)) = phase.parameterBounds.lower;
-        ub_phase(P_indizes(:,1)) = phase.parameterBounds.upper;
-        
-        % timesteps
-        if isempty(phase.T)
-          lb_phase(H_indizes) = Simultaneous.h_min;
-        else
-          lb_phase(H_indizes) = phase.H_norm * phase.T;
-          ub_phase(H_indizes) = phase.H_norm * phase.T;
-        end
-        lowerBounds{k} = lb_phase;
-        upperBounds{k} = ub_phase;
+      lb_phase = -inf * ones(nv_phase,1);
+      ub_phase = inf * ones(nv_phase,1);
+
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
+
+      % states
+      for m=1:size(X_indizes,2)
+        lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
+        ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
       end
-      lowerBounds = vertcat(lowerBounds{:});
-      upperBounds = vertcat(upperBounds{:});
-      
+
+      % Merge the two vectors of bound values for lower bounds and upper bounds.
+      % Bound values can only get narrower, e.g. higher for lower bounds.
+      lb_phase(X_indizes(:,1)) = max(phase.stateBounds.lower,phase.stateBounds0.lower);
+      ub_phase(X_indizes(:,1)) = min(phase.stateBounds.upper,phase.stateBounds0.upper);
+
+      lb_phase(X_indizes(:,end)) = max(phase.stateBounds.lower,phase.stateBoundsF.lower);
+      ub_phase(X_indizes(:,end)) = min(phase.stateBounds.upper,phase.stateBoundsF.upper);
+
+      % integrator bounds
+      for m=1:size(I_indizes,2)
+        lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
+        ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
+      end
+
+      % controls
+      for m=1:size(U_indizes,2)
+        lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
+        ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
+      end
+
+      % parameters (only set the initial parameters)
+      lb_phase(P_indizes(:,1)) = phase.parameterBounds.lower;
+      ub_phase(P_indizes(:,1)) = phase.parameterBounds.upper;
+
+      % timesteps
+      if isempty(phase.T)
+        lb_phase(H_indizes) = Simultaneous.h_min;
+      else
+        lb_phase(H_indizes) = phase.H_norm * phase.T;
+        ub_phase(H_indizes) = phase.H_norm * phase.T;
+      end
     end
     
-    function ig = getInitialGuess(phaseList)
+    function ig_phase = getInitialGuess(phase)
       % creates an initial guess from the information that we have about
-      % bounds, phases etc.
+      % bounds in the phase
       
-      ig = cell(length(phaseList), 1);
-      
-      for k=1:length(phaseList)
-        
-        phase = phaseList{k};
-        [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+      [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
-        [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
-        
-        ig_phase = 0 * ones(nv_phase,1);
-        
-        igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
-        igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
-        
-        ig_phase(X_indizes(:,1)) = igx0;
-        ig_phase(X_indizes(:,end)) = igxF;
-        
-        algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
-        for m=1:N
-          xGuessInterp = igx0 + (m-1)/N.*(igxF-igx0);
-          % integrator variables
-          ig_phase(I_indizes(:,m)) = phase.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
-          
-          % states
-          ig_phase(X_indizes(:,m)) = xGuessInterp;
-        end
-        
-        % controls
-        for m=1:size(U_indizes,2)
-          ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
-        end
-        
-        % parameters
-        for m=1:size(P_indizes,2)
-          ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
-        end
-        
-        % timesteps
-        if isempty(phase.T)
-          ig_phase(H_indizes) = phase.H_norm;
-        else
-          ig_phase(H_indizes) = phase.H_norm * phase.T;
-        end
-        ig{k} = ig_phase;
-        
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
+
+      ig_phase = 0 * ones(nv_phase,1);
+
+      igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
+      igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
+
+      ig_phase(X_indizes(:,1)) = igx0;
+      ig_phase(X_indizes(:,end)) = igxF;
+
+      algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
+      for m=1:N
+        xGuessInterp = igx0 + (m-1)/N.*(igxF-igx0);
+        % integrator variables
+        ig_phase(I_indizes(:,m)) = phase.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
+
+        % states
+        ig_phase(X_indizes(:,m)) = xGuessInterp;
       end
-      ig = vertcat(ig{:});
+
+      % controls
+      for m=1:size(U_indizes,2)
+        ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
+      end
+
+      % parameters
+      for m=1:size(P_indizes,2)
+        ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
+      end
+
+      % timesteps
+      if isempty(phase.T)
+        ig_phase(H_indizes) = phase.H_norm;
+      else
+        ig_phase(H_indizes) = phase.H_norm * phase.T;
+      end
     end
     
     function [nv_phase,N] = nvars(H_norm, nx, ni, nu, np)
@@ -223,7 +192,7 @@ classdef Simultaneous < handle
       pathcost_fun = @phase.pathcostfun;
       pathcon_fun = @phase.pathconfun;
 
-      [nvars,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
+      [~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
       [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
       
       X = reshape(phaseVars(X_indizes), nx, N+1);
