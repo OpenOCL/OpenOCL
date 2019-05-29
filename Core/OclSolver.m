@@ -121,6 +121,7 @@ classdef OclSolver < handle
     
     function [outVars,times,objective,constraints] = solve(self,ig)
       [outVars,times,objective,constraints] = self.solver.solve(ig.value);
+      
       oclWarningNotice()
     end
     
@@ -132,18 +133,19 @@ classdef OclSolver < handle
       ig = self.getInitialGuess();
     end
     
-    function igList = getInitialGuess(self)
-      igList = cell(length(self.phaseList),1);
-      for k=1:length(self.phaseList)
-        phase = self.phaseList{k};
+    function igAssignment = getInitialGuess(self)
+      
+      pl = self.phaseList;
+      
+      igList = cell(length(pl),1);
+      for k=1:length(pl)
+        phase = pl{k};
         varsStruct = Simultaneous.vars(phase);
         ig = Simultaneous.getInitialGuess(phase);
         igList{k} = Variable.create(varsStruct, ig);
       end
       
-      if length(self.phaseList) == 1
-        igList = igList{1};
-      end
+      igAssignment = OclAssignment(igList);
       
     end
     
