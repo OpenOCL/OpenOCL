@@ -119,8 +119,32 @@ classdef OclSolver < handle
       self.solver = solver;
     end
     
-    function [outVars,times,objective,constraints] = solve(self,ig)
-      [outVars,times,objective,constraints] = self.solver.solve(ig.value);
+    function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
+      
+      s = self.solver;
+      ph_list = self.phaseList;
+      
+      [sol,times,objective,constraints] = s.solve(ig.value);
+      
+      sol_list = cell(length(ph_list));
+      times_list = cell(length(ph_list));
+      obj_list = cell(length(ph_list));
+      con_list = cell(length(ph_list));
+      
+      for k=1:length(ph_list)
+        phase = ph_list{k};
+        vars_structure = Simultaneous.vars(phase);
+        times_structure = Simultaneous.times(phase);
+        sol_list{k} = Variable.create(vars_structure, sol{k});
+        times_list{k} = Variable.create(times_structure, times{k});
+        obj_list{k} = objective{k};
+        con_list{k} = constraints{k};
+      end
+      
+      sol_ass = OclAssignment(sol_list);
+      times_ass = OclAssignment(times_list);
+      objective_ass = OclAssignment(obj_list);
+      constraints_ass = OclAssignment(con_list);
       
       oclWarningNotice()
     end

@@ -94,17 +94,17 @@ classdef CasadiSolver < handle
       self.timeMeasures = timeMeasures;
     end
     
-    function [outVars,times,objective,constraints] = solve(self,v0)
+    function [sol,times,objective,constraints] = solve(self,v0)
       % solve(initialGuess)
       
       solveTotalTic = tic;
       
-      ph_list = self.phaseList;
+      pl = self.phaseList;
       
-      lbv = cell(length(ph_list),1);
-      ubv = cell(length(ph_list),1);
-      for k=1:length(ph_list)
-        [lbv_phase,ubv_phase] = Simultaneous.getNlpBounds(ph_list{k});
+      lbv = cell(length(pl),1);
+      ubv = cell(length(pl),1);
+      for k=1:length(pl)
+        [lbv_phase,ubv_phase] = Simultaneous.getNlpBounds(pl{k});
         lbv{k} = lbv_phase;
         ubv{k} = ubv_phase;
       end
@@ -129,15 +129,29 @@ classdef CasadiSolver < handle
         oclWarning('Solver was interrupted by user.');
       end
       
-      outVars = sol.x.full();
+      sol_values = sol.x.full();
+      
+      sol = cell(length(pl),1);
+      i = 1;
+      for k=1:length(pl)
+        phase = pl{k};
+        nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+        sol{k} = sol_values(i:i+nv_phase-1);
+        i = i + nv_phase;
+      end
       
       nlpFunEvalTic = tic;
-      if nargout > 1
-        [objective,constraints,~,~,times] = Simultaneous.simultaneous(self.phaseList{1}, outVars);
+      times = cell(length(pl),1);
+      objective = cell(length(pl),1);
+      constraints = cell(length(pl),1);
+      for k=1:length(pl)
+        phase = pl{k};
+        [objective{k},constraints{k},~,~,times{k}] = Simultaneous.simultaneous(phase, sol{k});
+        objective{k} = full(objective{k});
+        constraints{k} = full(constraints{k});
+        times{k} = full(times{k});
       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
-
-      times = times.full();
       
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
       self.timeMeasures.solveCasadi     = solveCasadiTime;

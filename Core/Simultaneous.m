@@ -24,7 +24,7 @@ classdef Simultaneous < handle
     function phase_time_struct = times(phase)
       phase_time_struct = OclStructure();
       phase_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
-                              {OclMatrix([1,1]), OclMatrix([phase.nit,1]), OclMatrix([1,1])}, length(phase.H_norm));
+                              {OclMatrix([1,1]), OclMatrix([phase.integrator.nt,1]), OclMatrix([1,1])}, length(phase.H_norm));
       phase_time_struct.add('states', OclMatrix([1,1]));
     end
     

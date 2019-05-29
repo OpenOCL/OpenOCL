@@ -13,10 +13,12 @@ classdef OclAssignment < handle
       
       vl = self.varsList;
       
-      if length(vl) == 1
-        [varargout{1:nargout}] = subsref(vl{1}, s);
-      elseif numel(s) == 1 && (strcmp(s.type,'()') || strcmp(s.type,'{}'))
-        [varargout{1:nargout}] = subsref(vl{s.subs{:}} ,s(2:end));
+      if (strcmp(s(1).type,'()') || strcmp(s(1).type,'{}'))
+        [varargout{1:nargout}] = subsref(vl{1}, s(2:end));
+      elseif length(vl) == 1
+        [varargout{1:nargout}] = subsref(vl{1} ,s);
+      else
+        oclError('Not supported.');
       end
       
     end
