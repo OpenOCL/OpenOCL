@@ -7,7 +7,6 @@ classdef OclSolver < handle
     igParameters
     
     solver
-    varsStruct
     phaseList
     
     cbfh
@@ -112,17 +111,17 @@ classdef OclSolver < handle
           options = p.Results.options;
         end
       end
-      self.solver = CasadiSolver(phaseList, transitionList, options);
-      self.varsStruct = Simultaneous.vars(phaseList);
+      
+      solver = CasadiSolver(phaseList, transitionList, options);
+      
+      % set instance variables
       self.phaseList = phaseList;
+      self.solver = solver;
     end
     
     function [outVars,times,objective,constraints] = solve(self,ig)
       [outVars,times,objective,constraints] = self.solver.solve(ig.value);
-      outVars = Variable.create(self.varsStruct, outVars);
-      
-      timesStruct = Simultaneous.times(self.phaseList{1}.integrator.nt, length(self.phaseList{1}.H_norm));
-      times = Variable.createNumeric(timesStruct, full(times));
+      oclWarningNotice()
     end
     
     function r = timeMeasures(self)
@@ -133,9 +132,19 @@ classdef OclSolver < handle
       ig = self.getInitialGuess();
     end
     
-    function ig = getInitialGuess(self)
-      ig = Simultaneous.getInitialGuess(self.phaseList);
-      ig = Variable.create(self.varsStruct, ig);
+    function igList = getInitialGuess(self)
+      igList = cell(length(self.phaseList),1);
+      for k=1:length(self.phaseList)
+        phase = self.phaseList{k};
+        varsStruct = Simultaneous.vars(phase);
+        ig = Simultaneous.getInitialGuess(phase);
+        igList{k} = Variable.create(varsStruct, ig);
+      end
+      
+      if length(self.phaseList) == 1
+        igList = igList{1};
+      end
+      
     end
     
     function solutionCallback(self,times,solution)

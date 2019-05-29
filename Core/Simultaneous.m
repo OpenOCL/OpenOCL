@@ -86,7 +86,7 @@ classdef Simultaneous < handle
       lb_phase = -inf * ones(nv_phase,1);
       ub_phase = inf * ones(nv_phase,1);
 
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
 
       % states
       for m=1:size(X_indizes,2)
@@ -133,7 +133,7 @@ classdef Simultaneous < handle
       
       [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
 
       ig_phase = 0 * ones(nv_phase,1);
 
@@ -193,7 +193,7 @@ classdef Simultaneous < handle
       pathcon_fun = @phase.pathconfun;
 
       [~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase, N);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
       
       X = reshape(phaseVars(X_indizes), nx, N+1);
       I = reshape(phaseVars(I_indizes), ni, N);

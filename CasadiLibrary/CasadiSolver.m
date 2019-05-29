@@ -99,7 +99,18 @@ classdef CasadiSolver < handle
       
       solveTotalTic = tic;
       
-      [lbv,ubv] = Simultaneous.getNlpBounds(self.phaseList);
+      ph_list = self.phaseList;
+      
+      lbv = cell(length(ph_list),1);
+      ubv = cell(length(ph_list),1);
+      for k=1:length(ph_list)
+        [lbv_phase,ubv_phase] = Simultaneous.getNlpBounds(ph_list{k});
+        lbv{k} = lbv_phase;
+        ubv{k} = ubv_phase;
+      end
+      
+      lbv = vertcat(lbv{:});
+      ubv = vertcat(ubv{:});
  
       args = struct;
       args.lbg = self.nlpData.constraints_LB;
@@ -120,7 +131,6 @@ classdef CasadiSolver < handle
       
       outVars = sol.x.full();
       
-      
       nlpFunEvalTic = tic;
       if nargout > 1
         [objective,constraints,~,~,times] = Simultaneous.simultaneous(self.phaseList{1}, outVars);
@@ -132,8 +142,6 @@ classdef CasadiSolver < handle
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
       self.timeMeasures.solveCasadi     = solveCasadiTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
-      
-      oclWarningNotice()
     end
   end
   
