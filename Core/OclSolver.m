@@ -124,7 +124,12 @@ classdef OclSolver < handle
       s = self.solver;
       ph_list = self.phaseList;
       
-      [sol,times,objective,constraints] = s.solve(ig.value);
+      ig_list = cell(length(ph_list),1);
+      for k=1:length(ph_list)
+        ig_list{k} = ig{k}.value;
+      end
+      
+      [sol,times,objective,constraints] = s.solve(ig_list);
       
       sol_list = cell(length(ph_list));
       times_list = cell(length(ph_list));

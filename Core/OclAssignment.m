@@ -14,7 +14,7 @@ classdef OclAssignment < handle
       vl = self.varsList;
       
       if (strcmp(s(1).type,'()') || strcmp(s(1).type,'{}'))
-        [varargout{1:nargout}] = subsref(vl{1}, s(2:end));
+        [varargout{1:nargout}] = subsref(vl{s(1).subs{:}}, s(2:end));
       elseif length(vl) == 1
         [varargout{1:nargout}] = subsref(vl{1} ,s);
       else

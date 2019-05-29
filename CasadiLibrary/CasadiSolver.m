@@ -26,6 +26,7 @@ classdef CasadiSolver < handle
         expr = @casadi.SX.sym;
       end
       
+      vars = cell(length(phaseList), 1);
       for k=1:length(phaseList)
         phase = phaseList{k};
         
@@ -55,11 +56,13 @@ classdef CasadiSolver < handle
         phase.integratormap = integrator_fun.map(phase.N,'openmp');
         
         nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
-        v = expr('v', nv_phase);
+        v_phase = expr('v', nv_phase);
           
-        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v);
-        
+        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v_phase);
+        vars{k} = v_phase;
       end
+      
+      v = vertcat(vars{:});
       
       % get struct with nlp for casadi
       casadiNLP = struct;
@@ -109,6 +112,7 @@ classdef CasadiSolver < handle
         ubv{k} = ubv_phase;
       end
       
+      v0 = vertcat(v0{:});
       lbv = vertcat(lbv{:});
       ubv = vertcat(ubv{:});
  

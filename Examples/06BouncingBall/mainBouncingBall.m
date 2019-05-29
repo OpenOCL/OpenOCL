@@ -19,19 +19,23 @@ function [sol,times,ocl] = mainBouncingBall
   % Run solver to obtain solution
   [sol,times] = ocl.solve(ocl.getInitialGuess());
 
-  % visualize solution
+  % phase 1
   figure; hold on; grid on;
-  oclStairs(times.controls, sol.controls.F/10.)
+  oclPlot(times{1}.states, sol{1}.states.s)
+  oclPlot(times{1}.states, sol{1}.states.v)
+  legend({'s','v'})
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.p)
+  
+  % phase 2
+  figure; hold on; grid on;
+  oclStairs(times{2}.controls, sol{2}.controls.F)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.v)
+  oclPlot(times{1}.states, sol{1}.states.s)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.theta)
-  legend({'force [10*N]','position [m]','velocity [m/s]','theta [rad]'})
+  oclPlot(times{1}.states, sol{1}.states.v)
   xlabel('time [s]');
-
-  animateCartPole(sol,times);
+  legend({'F','s','v'})
+  xlabel('time [s]');
 
 end
 
