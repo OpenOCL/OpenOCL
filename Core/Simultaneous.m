@@ -55,6 +55,16 @@ classdef Simultaneous < handle
       
     end
     
+    function x = first_state(phase,phaseVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
+      x = phaseVars(X_indizes(:,1));
+    end
+    
+    function x = last_state(phase,phaseVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
+      x = phaseVars(X_indizes(:,end));
+    end
+    
     function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase)
 
       N = length(phase.H_norm);

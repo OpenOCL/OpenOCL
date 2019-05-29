@@ -2,12 +2,13 @@ classdef CasadiSolver < handle
   
   properties
     timeMeasures
-  end
-  
-  properties (Access = private)
     phaseList
     nlpData
     options
+  end
+  
+  properties (Access = private)
+
   end
   
   methods
@@ -27,15 +28,15 @@ classdef CasadiSolver < handle
       end
       
       vars = cell(length(phaseList), 1);
+      costs = cell(length(phaseList), 1);
+      constraints = cell(length(phaseList), 1);
+      constraints_LB = cell(length(phaseList), 1);
+      constraints_UB = cell(length(phaseList), 1);
+      
+      v_phase = [];
+      
       for k=1:length(phaseList)
         phase = phaseList{k};
-        
-%         if k >= 2
-%           xf = expr('x', system.nx);
-%           x0 = expr('x', system.nx);
-%           connection_fun = connectionList{k-1};
-%           conection_eq = connection_fun(xf,x0);
-%         end
         
         x = expr('x', phase.nx);
         u = expr('z', phase.nu);
@@ -43,26 +44,48 @@ classdef CasadiSolver < handle
         vi = expr('vi', phase.integrator.ni);
         h = expr('h');
         
-        % integration
-%         dae_expr = phase.daefun(x,z,u,p);
-%         dae_fun = casadi.Function('sys', {x,z,u,p}, {dae_expr});
-%         
-%         lagrangecost_expr = phase.lagrangecostfun(x,z,u,p);
-%         lagrangecost_fun = casadi.Function('pcost', {x,z,u,p}, {lagrangecost_expr});
-
-        [statesEnd, costs, equations, rel_times] = phase.integrator.integratorfun(x, vi, u, h, p);
-        integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, costs, equations, rel_times});
+        [statesEnd, cost_integr, equations, rel_times] = phase.integrator.integratorfun(x, vi, u, h, p);
+        integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, cost_integr, equations, rel_times});
         
         phase.integratormap = integrator_fun.map(phase.N,'openmp');
         
         nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+        v_last_phase = v_phase;
         v_phase = expr('v', nv_phase);
           
-        [costs,constraints,constraints_LB,constraints_UB,~] = Simultaneous.simultaneous(phase, v_phase);
+        [costs_phase,constraints_phase,constraints_LB_phase,constraints_UB_phase,~] = Simultaneous.simultaneous(phase, v_phase);
+        
+        transition_eq = [];
+        transition_lb = [];
+        transition_ub = [];
+        if k >= 2
+          x0s = Simultaneous.first_state(phaseList{k}, v_phase);
+          xfs = Simultaneous.last_state(phaseList{k-1}, v_last_phase);
+          transition_fun = transitionList{k-1};
+          tansition_handler = OclConstraint();
+          
+          x0 = Variable.create(phaseList{k}.states, x0s);
+          xf = Variable.create(phaseList{k-1}.states, xfs);
+          
+          transition_fun(tansition_handler,x0,xf);
+          
+          transition_eq = tansition_handler.values;
+          transition_lb = tansition_handler.lowerBounds;
+          transition_ub = tansition_handler.upperBounds;
+        end
+        
         vars{k} = v_phase;
+        costs{k} = costs_phase;
+        constraints{k} = vertcat(transition_eq,constraints_phase);
+        constraints_LB{k} = vertcat(transition_lb,constraints_LB_phase);
+        constraints_UB{k} = vertcat(transition_ub,constraints_UB_phase);
       end
       
       v = vertcat(vars{:});
+      costs = sum([costs{:}]);
+      constraints = vertcat(constraints{:});
+      constraints_LB = vertcat(constraints_LB{:});
+      constraints_UB = vertcat(constraints_UB{:});
       
       % get struct with nlp for casadi
       casadiNLP = struct;
