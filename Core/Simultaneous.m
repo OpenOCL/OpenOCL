@@ -89,9 +89,9 @@ classdef Simultaneous < handle
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
     end
         
-    function [lb_phase,ub_phase] = getNlpBounds(phase)
+    function [lb_phase,ub_phase] = getBounds(phase)
       
-      [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+      [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
 
       lb_phase = -inf * ones(nv_phase,1);
       ub_phase = inf * ones(nv_phase,1);
@@ -272,8 +272,8 @@ classdef Simultaneous < handle
       costs = sum(cost_arr) + pcost;
       
       % regularization on U
-      Uvec = U(:);
-      costs = costs + 1e-6*(Uvec'*Uvec);
+%       Uvec = U(:);
+%       costs = costs + 1e-6*(Uvec'*Uvec);
       
       % times output
       T0 = [0, cumsum(H(:,1:end-1))];

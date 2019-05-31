@@ -58,6 +58,7 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Examples','03Pendulum'))
   addpath(fullfile(oclPath,'Examples','04RaceCar'))
   addpath(fullfile(oclPath,'Examples','05CartPole'))
+  addpath(fullfile(oclPath,'Examples','06BouncingBall'))
   addpath(fullfile(oclPath,'Test'))
 
   % check if casadi is working

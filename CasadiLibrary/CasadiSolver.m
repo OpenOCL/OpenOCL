@@ -38,20 +38,20 @@ classdef CasadiSolver < handle
       for k=1:length(phaseList)
         phase = phaseList{k};
         
-        x = expr('x', phase.nx);
-        u = expr('z', phase.nu);
-        p = expr('p', phase.np);
-        vi = expr('vi', phase.integrator.ni);
-        h = expr('h');
+        x = expr(['x','_ph',mat2str(k)], phase.nx);
+        vi = expr(['vi','_ph',mat2str(k)], phase.integrator.ni);
+        u = expr(['u','_ph',mat2str(k)], phase.nu);
+        h = expr(['h','_ph',mat2str(k)]);
+        p = expr(['p','_ph',mat2str(k)], phase.np);
         
         [statesEnd, cost_integr, equations, rel_times] = phase.integrator.integratorfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, cost_integr, equations, rel_times});
         
-        phase.integratormap = integrator_fun.map(phase.N,'openmp');
+        phase.integratormap = integrator_fun.map(phase.N,'serial');
         
         nv_phase = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
         v_last_phase = v_phase;
-        v_phase = expr('v', nv_phase);
+        v_phase = expr(['v','_ph',mat2str(k)], nv_phase);
           
         [costs_phase,constraints_phase,constraints_LB_phase,constraints_UB_phase,~] = Simultaneous.simultaneous(phase, v_phase);
         
@@ -130,7 +130,7 @@ classdef CasadiSolver < handle
       lbv = cell(length(pl),1);
       ubv = cell(length(pl),1);
       for k=1:length(pl)
-        [lbv_phase,ubv_phase] = Simultaneous.getNlpBounds(pl{k});
+        [lbv_phase,ubv_phase] = Simultaneous.getBounds(pl{k});
         lbv{k} = lbv_phase;
         ubv{k} = ubv_phase;
       end
