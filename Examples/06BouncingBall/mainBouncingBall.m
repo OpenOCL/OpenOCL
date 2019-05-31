@@ -1,6 +1,4 @@
 function [sol,times,ocl] = mainBouncingBall  
-
-  options = OclOptions();
   
   before_contact = OclPhase([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
   after_contact = OclPhase(1, @after_contact_vars, @after_contact_ode, ...
@@ -12,7 +10,7 @@ function [sol,times,ocl] = mainBouncingBall
   
   after_contact.setEndStateBounds('s', 1);
 
-  ocl = OclSolver({before_contact, after_contact}, {@phase_transition}, options);
+  ocl = OclSolver({before_contact, after_contact}, {@phase_transition});
 
   [sol,times] = ocl.solve(ocl.getInitialGuess());
 
