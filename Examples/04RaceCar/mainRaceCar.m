@@ -1,17 +1,22 @@
-function [solution,times,ocl] = mainRaceCar 
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Copyright 2015-2018 Jonas Koennemanm, Giovanni Licitra
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
+function [solution,times,solver] = mainRaceCar 
   % Title: Race Car Problem Example
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
   CONTROL_INTERVALS = 50;     % control discretization
 
-  options = OclOptions();
+  options = ocl.Options();
   options.nlp.controlIntervals = CONTROL_INTERVALS;
   options.controls_regularization_value = 1e-3;
 
-  system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('pathcosts', @pathcosts, 'pathconstraints', @pathconstraints);
+  system = ocl.System('varsfun', @varsfun, 'daefun', @daefun);
+  ocp = ocl.OCP('arrivalcosts', @arrivalcosts, 'pathconstraints', @pointconstraints);
 
-  ocl = OclSolver([],system,ocp,options);
+  solver = ocl.Solver([],system,ocp,options);
 
   % parameters
   m    = 1;         % mass [kg]
@@ -22,27 +27,27 @@ function [solution,times,ocl] = mainRaceCar
   Fmax   = 1;       % [N]
   road_bound = 0.4; % [m]
 
-  ocl.setParameter('m'   , m);
-  ocl.setParameter('A'   , A);
-  ocl.setParameter('cd'  , cd);
-  ocl.setParameter('rho' , rho);
-  ocl.setParameter('Vmax', Vmax);
-  ocl.setParameter('Fmax', Fmax);
-  ocl.setParameter('road_bound', road_bound);
-
-  ocl.setInitialBounds('time', 0);
+  solver.setParameter('m'   , m);
+  solver.setParameter('A'   , A);
+  solver.setParameter('cd'  , cd);
+  solver.setParameter('rho' , rho);
+  solver.setParameter('Vmax', Vmax);
+  solver.setParameter('Fmax', Fmax);
+  solver.setParameter('road_bound', road_bound);
   
-  ocl.setInitialBounds( 'x',   0.0);
-  ocl.setInitialBounds('vx',   0.0);
-  ocl.setInitialBounds( 'y',   0.0);
-  ocl.setInitialBounds('vy',   0.0);
+  solver.setBounds('time', 0, MAX_TIME);
 
-  ocl.setEndBounds( 'x',  2*pi);
-  ocl.setEndBounds('vx',  0.0 );
-  ocl.setEndBounds( 'y',  0.0 );
-  ocl.setEndBounds('vy',  0.0 );
+  solver.setInitialBounds( 'x',   0.0);
+  solver.setInitialBounds('vx',   0.0);
+  solver.setInitialBounds( 'y',   0.0);
+  solver.setInitialBounds('vy',   0.0);
 
-  initialGuess    = ocl.getInitialGuess();
+  solver.setEndBounds( 'x',  2*pi);
+  solver.setEndBounds('vx',  0.0 );
+  solver.setEndBounds( 'y',  0.0 );
+  solver.setEndBounds('vy',  0.0 );
+
+  initialGuess    = solver.getInitialGuess();
 
   % Initialize the middle lane
   N        = length(initialGuess.states.x.value);
@@ -52,7 +57,7 @@ function [solution,times,ocl] = mainRaceCar
   initialGuess.states.y.set(y_center);
 
   % Solve OCP
-  [solution,times] = ocl.solve(initialGuess);
+  [solution,times] = solver.solve(initialGuess);
 
   % Plot solution
   figure('units','normalized')
@@ -124,7 +129,7 @@ function varsfun(sh)
   sh.addParameter('Fmax');        % maximal force on the car [N]
 end
 
-function eqfun(sh,x,~,u,p)
+function daefun(sh,x,~,u,p)
   sh.setODE( 'x', x.vx);
   sh.setODE('vx', 1/p.m*x.Fx - 0.5*p.rho*p.cd*p.A*x.vx^2);
   sh.setODE( 'y', x.vy);
@@ -135,13 +140,13 @@ function eqfun(sh,x,~,u,p)
   sh.setODE('time', 1);
 end
 
-function pathcosts(ch,k,K,x,p)
+function pointcosts(ch,k,K,x,p)
   if k==K
     ch.add(x.time);
   end
 end
 
-function pathconstraints(ch,k,K,x,p)
+function pointconstraints(ch,k,K,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 

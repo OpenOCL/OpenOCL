@@ -1,31 +1,35 @@
-function [sol,times,ocl] = mainCartPole  
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
+function [sol,times,solver] = mainCartPole  
 
-  options = OclOptions();
-  options.nlp.controlIntervals = 40;
-  options.nlp.collocationOrder = 2;
+  options = ocl.Options();
+  options.nlp.controlIntervals = 50;
+  options.nlp.collocationOrder = 3;
 
-  system = OclSystem('varsfun', @varsfun, 'eqfun', @eqfun);
-  ocp = OclOCP('pathcosts', @pathcosts);
+  system = ocl.System('varsfun',@varsfun, 'eqfun', @daefun);
+  ocp = ocl.OCP('pointcosts', @pointcosts);
   
-  ocl = OclSolver([], system, ocp, options);
+  solver = ocl.Solver([], system, ocp, options);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
 
-  ocl.setInitialBounds('p', p0);
-  ocl.setInitialBounds('v', v0);
-  ocl.setInitialBounds('theta', theta0);
-  ocl.setInitialBounds('omega', omega0);
+  solver.setInitialBounds('p', p0);
+  solver.setInitialBounds('v', v0);
+  solver.setInitialBounds('theta', theta0);
+  solver.setInitialBounds('omega', omega0);
   
-  ocl.setInitialBounds('time', 0);
+  solver.setInitialBounds('time', 0);
 
-  ocl.setEndBounds('p', 0);
-  ocl.setEndBounds('v', 0);
-  ocl.setEndBounds('theta', 0);
-  ocl.setEndBounds('omega', 0);
+  solver.setEndBounds('p', 0);
+  solver.setEndBounds('v', 0);
+  solver.setEndBounds('theta', 0);
+  solver.setEndBounds('omega', 0);
 
   % Run solver to obtain solution
-  [sol,times] = ocl.solve(ocl.getInitialGuess());
+  [sol,times] = solver.solve(solver.ig());
 
   % visualize solution
   figure; hold on; grid on;
@@ -55,7 +59,7 @@ function varsfun(sh)
   sh.addControl('F', 'lb', -12, 'ub', 12);
 end
 
-function eqfun(sh,x,~,u,~)
+function daefun(sh,x,~,u,~)
 
   g = 9.8;
   cm = 1.0;
@@ -83,7 +87,7 @@ function eqfun(sh,x,~,u,~)
   
 end
 
-function pathcosts(self,k,K,x,p)
+function pointcosts(self,k,K,x,~)
   if k == K
     self.add( x.time );
   end

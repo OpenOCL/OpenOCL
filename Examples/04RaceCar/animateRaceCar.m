@@ -1,3 +1,8 @@
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Copyright 2015-2018 Jonas Koennemanm, Giovanni Licitra
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
 function animateRaceCar(time,solution,x_road,y_center,y_min,y_max)
 
 ts = time(2)-time(1);

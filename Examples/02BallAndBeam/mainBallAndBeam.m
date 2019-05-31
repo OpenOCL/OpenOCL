@@ -1,34 +1,39 @@
-function [vars,times,ocl] = mainBallAndBeam
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Copyright 2015-2018 Jonas Koennemanm, Giovanni Licitra
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
+function [vars,times,solver] = mainBallAndBeam
 % Title: Ball and beam problem
 %  Authors: Jonas Koenneman & Giovanni Licitra
 
-options = OclOptions();
+options = ocl.Options();
 options.nlp.controlIntervals = 50;
 
 bb = BallAndBeam();
-system = OclSystem(@bb.varsfun, @bb.eqfun);
-ocp = OclOCP(@bb.pathcosts);
+system = ocl.System(@bb.varsfun, @bb.eqfun);
+ocp = ocl.OCP(@bb.pathcosts);
 
-ocl = OclSolver([],system,ocp,options);
+solver = ocl.Solver([],system,ocp,options);
 
  % bound on time: 0 <= time <= 5
-ocl.setBounds('time', 0, 5);
+solver.setBounds('time', 0, 5);
 
 % set bounds for initial and endtime
-ocl.setInitialBounds('r'      , -0.8);
-ocl.setInitialBounds('dr'     , 0.3);
-ocl.setInitialBounds('theta'  , deg2rad(5));
-ocl.setInitialBounds('dtheta' , 0.0);
-ocl.setInitialBounds('time' , 0);
+solver.setInitialBounds('r'      , -0.8);
+solver.setInitialBounds('dr'     , 0.3);
+solver.setInitialBounds('theta'  , deg2rad(5));
+solver.setInitialBounds('dtheta' , 0.0);
+solver.setInitialBounds('time' , 0);
 
-ocl.setEndBounds('r'      , 0);
-ocl.setEndBounds('dr'     , 0);
-ocl.setEndBounds('theta'  , 0);
-ocl.setEndBounds('dtheta' , 0);
+solver.setEndBounds('r'      , 0);
+solver.setEndBounds('dr'     , 0);
+solver.setEndBounds('theta'  , 0);
+solver.setEndBounds('dtheta' , 0);
 
 % Solve OCP
-vars = ocl.getInitialGuess();
-[vars,times] = ocl.solve(vars);
+vars = solver.getInitialGuess();
+[vars,times] = solver.solve(vars);
 
 % Plot solution
 figure;

@@ -1,7 +1,13 @@
+% Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
+% Redistribution is permitted under the 3-Clause BSD License terms. Please
+% ensure the above copyright notice is visible in any derived work.
+%
+
 function [nFails] = runTests(testExamples,saveLog,suffix)
   % runTests()
   % runTests(testExamples)
   % runTests(1,1,'computername')
+  ocl.checkStartup()
   
   if nargin < 1
     testExamples = false;

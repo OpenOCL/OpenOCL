@@ -1,17 +1,25 @@
 # Open Optimal Control Library
-<img src="https://openocl.org/imgs/vdp.png" width="30%"> <img src="https://openocl.org/imgs/car.png" width="30%"> <img src="https://openocl.org/imgs/circ.png" width="30%">  
+<img src="https://openocl.org/imgs/cartpole.gif" width="30%"> <img src="https://openocl.org/imgs/car.png" width="30%"> <img src="https://openocl.org/imgs/circ.png" width="30%">  
 <img src="https://openocl.org/imgs/pend.png" width="30%"> <img src="https://openocl.org/imgs/ballbeam.png" width="30%"> <img src="https://openocl.org/imgs/lemn.png" width="30%">    
 
-The Open Optimal Control Library is a software toolbox for Matlab/Octave that facilitates modelling and formulation of (parametric) optimal control problems. It interfaces Ipopt [1] to numerically solve the optimal control problems and CasADi [2] to automatically calcuate the necessary derivatives by algorithmic differentiation.
+Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
 
-## Quick start
+## Get started
 
-Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, go through the [tutorial](https://openocl.org/tutorial/), and have a look [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
+```m
+help ocl
+ocl.examples.cartpole
+open mainCartPole
+```
+
+## Contribute
+
+If you would like to participate in the project, you are very welcome!
 
 ## Models
 
 * airborne wind energy: https://openawe.github.io/
-* robotics: https://github.com/JonasKoenemann/openocl_models (very experimental)
+* robotics: https://github.com/jkoendev/openocl_models (very experimental)
 
 ## Publications
 
@@ -43,30 +51,16 @@ Mathematical Programming Computation, In Press, 2018, Available at: http://casad
 
 ## Legal notice
 
-Please see license information in the LICENSE file in the github project.
+Please see license information in the LICENSE file in the github project. 
 
-Open Optimal Control Library
-Copyright (C) 2016-2019  Jonas Koenemann (Jonas.Koenemann [at] yahoo.de)
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+This program is distributed in the hope that it will be useful,   
+but WITHOUT ANY WARRANTY; without even the implied warranty of   
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 This project has received funding from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie grant agreement No 642682.
 
-Use without warranty.
+Use without warranty.  
 
-Jonas Koenemann  
-Jonas.Koenemann [at] yahoo.de
+info [at] openocl.org
 
 
