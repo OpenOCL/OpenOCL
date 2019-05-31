@@ -14,7 +14,6 @@ function [sol,times,ocl] = mainBouncingBall
 
   ocl = OclSolver({before_contact, after_contact}, {@phase_transition}, options);
 
-  % Run solver to obtain solution
   [sol,times] = ocl.solve(ocl.getInitialGuess());
 
   figure
@@ -28,7 +27,8 @@ function [sol,times,ocl] = mainBouncingBall
   oclPlot(times{1}.states, sol{1}.states.v)
   legend({'s','v'})
   xlabel('time [s]');
-  ylim([-5 11])
+  ylim([-5 3])
+  yticks(-5:3)
   title('phase 1')
   
   % phase 2
@@ -39,7 +39,8 @@ function [sol,times,ocl] = mainBouncingBall
   oclStairs(times{2}.states, [sol{2}.controls.F;sol{2}.controls.F(end)])
   legend({'s','v','F'})
   xlabel('time [s]');
-  ylim([-5 11])
+  ylim([-5 3])
+  yticks(-5:3)
   title('phase 2')
 
 end
@@ -62,7 +63,7 @@ end
 
 function after_contact_ode(sh,x,~,u,~)
   sh.setODE('s', x.v);
-  sh.setODE('v', -10+u.F);
+  sh.setODE('v', -10 + 10*u.F);
 end
 
 function after_contact_cost(ch,~,~,u,~)
