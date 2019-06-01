@@ -1,10 +1,10 @@
 ---
 name: Support
-about: Asking questions about usage
+about: Let us know if you need support in implementing your problem!
 title: ''
 labels: support
 assignees: ''
 
 ---
 
-Ask your questions here!
+
