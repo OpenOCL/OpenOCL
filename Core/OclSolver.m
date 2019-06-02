@@ -67,8 +67,8 @@ classdef OclSolver < handle
           oclError('Dimension of T does not match the number of control intervals.')
         end
         
-        phase = OclPhase(T, system.varsfh, system.daefh, ocp.lagrangecostsfh, ...
-                         ocp.pathcostsfh, ocp.pathconfh, 'N', H_norm, 'd', d);
+        phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
+                         ocp.pointcostsfh, ocp.pointconstraintsfh, 'N', H_norm, 'd', d);
                        
         self.cbfh = system.cbfh;
 

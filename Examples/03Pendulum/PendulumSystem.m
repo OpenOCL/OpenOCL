@@ -7,7 +7,7 @@ function r = PendulumSystem()
 
   r = struct;
   r.varsfun = @varsfun;
-  r.eqfun = @eqfun;
+  r.eqfun = @daefun;
   r.icfun = @icfun;
   r.simcallbacksetup = @simcallbacksetup;
   r.simcallback = @simcallback;
@@ -17,6 +17,7 @@ end
 function varsfun(sh)
   sh.addState('p', 2);
   sh.addState('v', 2);
+  sh.addState('time');
   
   sh.addControl('F');
   sh.addAlgVar('lambda');
@@ -25,12 +26,13 @@ function varsfun(sh)
   sh.addParameter('l');
 end
 
-function eqfun(sh,x,z,u,p)
+function daefun(sh,x,z,u,p)
 
   ddp = - 1/p.m * z.lambda*x.p - [0;9.81] + [u.F;0];
 
   sh.setODE('p',x.v);
   sh.setODE('v',ddp);
+  sh.setODE('time', 1);
 
   % The algebraic equation constraints the pendulum's mass to be on a circular
   % path if the initial conditions are satisfied.

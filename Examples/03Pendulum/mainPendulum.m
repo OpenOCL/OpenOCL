@@ -6,27 +6,26 @@
 function [vars,times,solver] = mainPendulum
 
   options = ocl.Options;
-  options.nlp.controlIntervals = 50;
+  options.nlp.controlIntervals = 40;
 
   s = PendulumSystem;
   system = ocl.System(s.varsfun, s.eqfun, s.icfun, 'cbsetupfun', s.simcallbacksetup, 'cbfun', s.simcallback);
-  ocp = ocl.OCP(@pathcosts);
+  ocp = ocl.OCP(@pathcosts, @pointcosts);
 
   solver = ocl.Solver([], system, ocp, options);
-
-  solver.setBounds('time',  0, 15);
   
-  solver.setBounds('p',       -[3;3], [3;3]);
+  solver.setBounds('time', 0, 15);
+  
+  solver.setBounds('p',       -[1;1], [1;1]);
   solver.setBounds('v',       -[3;3], [3;3]);
   solver.setBounds('F',       -25, 25);
   solver.setBounds('lambda',  -50, 50);
   solver.setBounds('m',       1);
   solver.setBounds('l',       1);
 
+  solver.setInitialBounds('time', 0);
   solver.setInitialBounds('p', [0;-1],[0;-1]);
   solver.setInitialBounds('v', [0.5;0]);
-  
-  solver.setInitialBounds('time', 0);
 
   solver.setEndBounds('p',     [0,1]);
   solver.setEndBounds('v',     [-1;-1], [1;1]);
@@ -43,7 +42,13 @@ function [vars,times,solver] = mainPendulum
 
 end
 
+function pointcosts(ch,k,K,x,~)
+  if k==K
+    ch.add(1e-6*x.time);
+  end
+end
+
 function pathcosts(ch,~,~,controls,~)
   F  = controls.F;
-  ch.add( 1e-2 * F^2 );
+  ch.add( F^2 );
 end

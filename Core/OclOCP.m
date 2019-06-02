@@ -6,9 +6,9 @@ classdef OclOCP < handle
   %OCLOCP Class for defining Optimal Control Problems
 
   properties (Access = public)
-    lagrangecostsfh
     pathcostsfh
-    pathconfh
+    pointcostsfh
+    pointconstraintsfh
   end
   
   methods(Access = public)
@@ -18,33 +18,33 @@ classdef OclOCP < handle
       emptyfh = @(varargin)[];
       
       p = inputParser;
-      p.addOptional('lagrangecostsOpt',[],@oclIsFunHandleOrEmpty);
       p.addOptional('pathcostsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('pathconstraintsOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('pointcostsOpt',[],@oclIsFunHandleOrEmpty);
+      p.addOptional('pointconstraintsOpt',[],@oclIsFunHandleOrEmpty);
       
-      p.addParameter('lagrangecosts',emptyfh,@oclIsFunHandle);
       p.addParameter('pathcosts',emptyfh,@oclIsFunHandle);
-      p.addParameter('pathconstraints',emptyfh,@oclIsFunHandle);
+      p.addParameter('pointcosts',emptyfh,@oclIsFunHandle);
+      p.addParameter('pointconstraints',emptyfh,@oclIsFunHandle);
       p.parse(varargin{:});
-      
-      lagrangecostsfh = p.Results.lagrangecostsOpt;
-      if isempty(lagrangecostsfh)
-        lagrangecostsfh = p.Results.lagrangecosts;
-      end
       
       pathcostsfh = p.Results.pathcostsOpt;
       if isempty(pathcostsfh)
         pathcostsfh = p.Results.pathcosts;
       end
       
-      pathconfh = p.Results.pathconstraintsOpt;
-      if isempty(pathconfh)
-        pathconfh = p.Results.pathconstraints;
+      pointcostsfh = p.Results.pointcostsOpt;
+      if isempty(pointcostsfh)
+        pointcostsfh = p.Results.pointcosts;
+      end
+      
+      pointconstraintsfh = p.Results.pointconstraintsOpt;
+      if isempty(pointconstraintsfh)
+        pointconstraintsfh = p.Results.pointconstraints;
       end
 
-      self.lagrangecostsfh = lagrangecostsfh;
       self.pathcostsfh = pathcostsfh;
-      self.pathconfh = pathconfh;
+      self.pointcostsfh = pointcostsfh;
+      self.pointconstraintsfh = pointconstraintsfh;
     end
 
   end
