@@ -71,15 +71,52 @@ function StartupOCL(in)
   if ~casadiFound 
     fprintf(2,'\nYour input is required! Please read below:\n')
     
-    if ispc && ~verLessThan('matlab','9.0')
-      % Windows, >Matlab 2016a
+    if ispc && verAtLeast('matlab','9.0')
+      % Windows, >=Matlab 2016a
       path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
       filename = 'casadi-windows-matlabR2016a-v3.4.5.zip';
       downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
-    elseif ~casadiFound && isunix && ~ismac && ~verLessThan('matlab','8.3')
-      % Linux, >Matlab 2014b
+    elseif ispc && verAtLeast('matlab','8.4')
+      % Windows, >=Matlab 2014b
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-windows-matlabR2014b-v3.4.5.zip';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    elseif ispc && verAtLeast('matlab','8.3')
+      % Windows, >=Matlab 2014a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-windows-matlabR2014a-v3.4.5.zip';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    elseif ispc && verAtLeast('matlab','8.1')
+      % Windows, >=Matlab 2013a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-windows-matlabR2013a-v3.4.5.zip';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    
+    elseif isunix && ~ismac && verAtLeast('matlab','8.4')
+      % Linux, >=Matlab 2014b
       path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
       filename = 'casadi-linux-matlabR2014b-v3.4.5.tar.gz';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    elseif isunix && ~ismac && verAtLeast('matlab','8.3')
+      % Linux, >=Matlab 2014a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-linux-matlabR2014a-v3.4.5.tar.gz';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    
+    elseif ismac && verAtLeast('matlab','8.5')
+      % Mac, >=Matlab 2015a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-osx-matlabR2015a-v3.4.5.tar.gz';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    elseif ismac && verAtLeast('matlab','8.4')
+      % Mac, >=Matlab 2015a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-osx-matlabR2014b-v3.4.5.tar.gz';
+      downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
+    elseif ismac && verAtLeast('matlab','8.3')
+      % Mac, >=Matlab 2015a
+      path = 'https://github.com/casadi/casadi/releases/download/3.4.5/';
+      filename = 'casadi-osx-matlabR2014a-v3.4.5.tar.gz';
       downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
     else
       oclInfo(['Could not set up CasADi for you system.', ...
@@ -201,4 +238,8 @@ function r = checkCasadiWorking()
               'casadi installations from your path. OpenOCL will ', ...
               'then install the correct casadi version for you.']);
   end
+end
+
+function r = verAtLeast(software, version_number)
+  r = ~verLessThan(software,version_number);
 end
