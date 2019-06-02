@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-function [o1,o2,o3,o4,o5] = testExamples
+function [o1,o2,o3,o4,o5] = examples
 
 % test basic example (VanDerPol)
 [sol,~,solver] = ocl.examples.vanderpol;

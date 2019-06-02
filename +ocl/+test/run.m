@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-function [nFails] = runTests(testExamples,saveLog,suffix)
+function [nFails] = run(testExamples,saveLog,suffix)
   % runTests()
   % runTests(testExamples)
   % runTests(1,1,'computername')
@@ -34,15 +34,15 @@ function [nFails] = runTests(testExamples,saveLog,suffix)
     error('Test directory not set. Run StartupOCL again.')
   end
   
-  tests{1}.name = 'Variable';         tests{end}.file = 'testVariable';
-  tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'testTreeVariable';
-  tests{end+1}.name = 'VarStructure'; tests{end}.file = 'testVarStructure';
-  tests{end+1}.name = 'OclSystem';    tests{end}.file = 'testOclSystem';
-  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'testOclPhase';
-  tests{end+1}.name = 'Integrator';   tests{end}.file = 'testOclIntegrator';
+  tests{1}.name = 'Variable';         tests{end}.file = 'ocl.test.testVariable';
+  tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'ocl.test.testTreeVariable';
+  tests{end+1}.name = 'VarStructure'; tests{end}.file = 'ocl.test.testVarStructure';
+  tests{end+1}.name = 'OclSystem';    tests{end}.file = 'ocl.test.testOclSystem';
+  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'ocl.test.testOclPhase';
+  tests{end+1}.name = 'Integrator';   tests{end}.file = 'ocl.test.testOclIntegrator';
   
   if testExamples
-    tests{end+1}.name = 'Example';      tests{end}.file = 'testExamples';
+    tests{end+1}.name = 'Examples';      tests{end}.file = 'ocl.test.examples';
   end
   
   NTests = length(tests);
