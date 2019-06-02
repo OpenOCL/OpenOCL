@@ -20,7 +20,7 @@ function [sol,times,ocl] = simBouncingBall
   figure
   spy(full(ocl.jacobian_pattern(sol)))
   
-  vw = VideoWriter('bouncingball.avi');
+  vw = VideoWriter(fullfile(getenv('OPENOCL_WORK'),'bouncingball.avi'));
   vw.FrameRate = 30;
   open(vw)
   fig = figure; 

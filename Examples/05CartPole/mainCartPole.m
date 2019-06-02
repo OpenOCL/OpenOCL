@@ -8,7 +8,7 @@ function [sol,times,solver] = mainCartPole
   options.nlp.controlIntervals = 50;
   options.nlp.collocationOrder = 3;
 
-  system = ocl.System('varsfun',@varsfun, 'eqfun', @daefun);
+  system = ocl.System('varsfun',@varsfun, 'daefun', @daefun);
   ocp = ocl.OCP('pointcosts', @pointcosts);
   
   solver = ocl.Solver([], system, ocp, options);

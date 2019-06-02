@@ -36,11 +36,11 @@ classdef OclSystem < handle
 
       p = inputParser;
       p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('eqfunOpt', [], @oclIsFunHandleOrEmpty);
+      p.addOptional('daefunOpt', [], @oclIsFunHandleOrEmpty);
       p.addOptional('icfunOpt', [], @oclIsFunHandleOrEmpty);
 
       p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
-      p.addParameter('eqfun', emptyfh, @oclIsFunHandle);
+      p.addParameter('daefun', emptyfh, @oclIsFunHandle);
       p.addParameter('icfun', emptyfh, @oclIsFunHandle);
       p.addParameter('cbfun', emptyfh, @oclIsFunHandle);
       p.addParameter('cbsetupfun', emptyfh, @oclIsFunHandle);
@@ -51,9 +51,9 @@ classdef OclSystem < handle
         varsfun = p.Results.varsfun;
       end
 
-      daefun = p.Results.eqfunOpt;
+      daefun = p.Results.daefunOpt;
       if isempty(daefun)
-        daefun = p.Results.eqfun;
+        daefun = p.Results.daefun;
       end
 
       icfun = p.Results.icfunOpt;

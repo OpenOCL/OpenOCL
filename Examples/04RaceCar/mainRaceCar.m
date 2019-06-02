@@ -7,6 +7,7 @@ function [solution,times,solver] = mainRaceCar
   % Title: Race Car Problem Example
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
+  MAX_TIME = 20;
   CONTROL_INTERVALS = 50;     % control discretization
 
   options = ocl.Options();
@@ -14,7 +15,7 @@ function [solution,times,solver] = mainRaceCar
   options.controls_regularization_value = 1e-3;
 
   system = ocl.System('varsfun', @varsfun, 'daefun', @daefun);
-  ocp = ocl.OCP('arrivalcosts', @arrivalcosts, 'pathconstraints', @pointconstraints);
+  ocp = ocl.OCP('pointcosts', @pointcosts, 'pointconstraints', @pointconstraints);
 
   solver = ocl.Solver([],system,ocp,options);
 
@@ -140,13 +141,13 @@ function daefun(sh,x,~,u,p)
   sh.setODE('time', 1);
 end
 
-function pointcosts(ch,k,K,x,p)
+function pointcosts(ch,k,K,x,~)
   if k==K
     ch.add(x.time);
   end
 end
 
-function pointconstraints(ch,k,K,x,p)
+function pointconstraints(ch,~,~,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 
