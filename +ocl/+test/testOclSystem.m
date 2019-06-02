@@ -6,46 +6,39 @@
 function testOclSystem
 
 s = OclSystem(@emptyVars,@emptyEq);
-s.setup();
 assertEqual(s.nx,0);
 assertEqual(s.nu,0);
 assertEqual(s.np,0);
 assertEqual(s.nz,0);
-assertEqual(s.systemFun.evaluate([],[],[],[]),[]);
+assertEqual(s.daefun([],[],[],[]),[]);
 
 s = OclSystem(@validVars, @validEq);
-s.setup();
 assertEqual(s.nx,32);
 assertEqual(s.nu,31);
 assertEqual(s.np,31);
 assertEqual(s.nz,31);
-[dx,alg] = s.systemFun.evaluate(ones(s.nx,1),ones(s.nz,1),ones(s.nu,1),ones(s.np,1));
+[dx,alg] = s.daefun(ones(s.nx,1),ones(s.nz,1),ones(s.nu,1),ones(s.np,1));
 assertEqual(dx,[1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1].')
 assertEqual(alg,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,5,6,7,2,2,2,11,12,13,1,1,1].')
 
 s = OclSystem(@missOdeVars,@missOdeEq);
-s.setup();
-fh = @(x,z,u,p) s.systemFun.evaluate(x,z,u,p);
+fh = @(x,z,u,p) s.daefun(x,z,u,p);
 assertException('ode', fh, zeros(s.nx,1), zeros(s.nz,1), zeros(s.nu,1), zeros(s.np,1));
 
 s = OclSystem(@doubleOdeVars,@doubleOdeEq);
-s.setup();
-fh = @(x,z,u,p) s.systemFun.evaluate(x,z,u,p);
+fh = @(x,z,u,p) s.daefun(x,z,u,p);
 assertException('ode', fh, zeros(s.nx,1), zeros(s.nz,1), zeros(s.nu,1), zeros(s.np,1));
 
 s = OclSystem(@wrongOdeVars,@wrongOdeEq);
-s.setup();
-fh = @(x,z,u,p) s.systemFun.evaluate(x,z,u,p);
+fh = @(x,z,u,p) s.daefun(x,z,u,p);
 assertException('exist', fh, zeros(s.nx,1), zeros(s.nz,1), zeros(s.nu,1), zeros(s.np,1));
 
 s = OclSystem(@missDaeVars,@missDaeEq);
-s.setup();
-fh = @(x,z,u,p) s.systemFun.evaluate(x,z,u,p);
+fh = @(x,z,u,p) s.daefun(x,z,u,p);
 assertException('algebraic equations', fh, zeros(s.nx,1), zeros(s.nz,1), zeros(s.nu,1), zeros(s.np,1));
 
 s = OclSystem(@manyDaeVars,@manyDaeEq);
-s.setup();
-fh = @(x,z,u,p) s.systemFun.evaluate(x,z,u,p);
+fh = @(x,z,u,p) s.daefun(x,z,u,p);
 assertException('algebraic equations', fh, zeros(s.nx,1), zeros(s.nz,1), zeros(s.nu,1), zeros(s.np,1));
 
 end

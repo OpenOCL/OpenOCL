@@ -3,351 +3,292 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 classdef Simultaneous < handle
-  %COLLOCATION Collocation discretization of OCP to NLP
+  %SIMULTANEOUS Direct collocation discretization of OCP to NLP
   %   Discretizes continuous OCP formulation to be solved as an NLP
   
-  properties
-    nlpFun
-    varsStruct
-    timesStruct
-    ocpHandler
-    integratorFun
-    nv
-    system
-    options
-    
-    integratorMap
-    pathconstraintsMap
+  properties (Constant)
+    h_min = 0.001;
   end
   
-  properties(Access = private)
-    N
-    nx
-    ni
-    nu
-    np
-    nit
+  methods (Static)
     
-    igBoundsAll
-    igBounds0
-    igBoundsF
-    
-    igParameters
-    
-  end
-  
-  methods
-    function self = Simultaneous(system,ocpHandler,integrator,N,options)
+    function phase_vars_structure = vars(phase)
       
-      self.system = system;
-      self.ocpHandler = ocpHandler;
-      self.N = N;
-      self.options = options;
-      self.nx = prod(system.statesStruct.size());
-      self.ni = prod(integrator.varsStruct.size());
-      self.nu = prod(system.controlsStruct.size());
-      self.np = prod(system.parametersStruct.size());
-      
-      % N control interval which each have states, integrator vars,
-      % controls, parameters, and timesteps.
-      % Ends with a single state.
-      self.nv = (N+1)*self.nx + N*self.ni + N*self.nu + N*self.np + N;
-      
-      self.nit = integrator.nt; % number of integrator timepoints
-      
-      self.integratorFun = integrator.integratorFun;
-      
-      self.varsStruct = OclStructure();
-      self.varsStruct.addRepeated({'states','integrator','controls','parameters','h','T'}, ...
-                                  {system.statesStruct, ...
-                                   integrator.varsStruct, ...
-                                   system.controlsStruct, ...
-                                   system.parametersStruct, ...
-                                   OclMatrix([1,1])}, self.N);
-      self.varsStruct.add('states',system.statesStruct);
-      
-      self.timesStruct = OclStructure();
-      self.timesStruct.addRepeated({'states','integrator','controls'},...
-                                   {OclMatrix([1,1]),OclMatrix([self.nit,1]),OclMatrix([1,1])},self.N);
-      self.timesStruct.add('states',OclMatrix([1,1]));
-
-      fh = @(self,varargin)self.getNLPFun(varargin{:});
-      self.nlpFun = OclFunction(self,fh,{[self.nv,1]},5);
-      
-      self.igBoundsAll = struct;
-      self.igBounds0 = struct;
-      self.igBoundsF = struct;
-      
-      self.igParameters = struct;
-      
+      phase_vars_structure = OclStructure();
+      phase_vars_structure.addRepeated({'states','integrator','controls','parameters','h'}, ...
+                          {phase.states, ...
+                           phase.integrator.vars, ...
+                           phase.controls, ...
+                           phase.parameters, ...
+                           OclMatrix([1,1])}, length(phase.H_norm));
+      phase_vars_structure.add('states', phase.states);
+      phase_vars_structure.add('parameters', phase.parameters);
     end
     
-    function setParameter(self,id,varargin)
-      self.ocpHandler.setInitialBounds(id,varargin{:});
-      self.igParameters.(id) = mean([varargin{:}]);
-    end
-    
-    function setBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setBounds(id,varargin{:})
-      self.igBoundsAll.(id) = mean([varargin{:}]);
-    end
-    
-    function setInitialBounds(self,id,varargin)
-      % setInitialBounds(id,value)
-      % setInitialBounds(id,lower,upper)
-      self.ocpHandler.setInitialBounds(id,varargin{:});
-      self.igBounds0.(id) = mean([varargin{:}]);
-    end
-    
-    function setEndBounds(self,id,varargin)
-      % setEndBounds(id,value)
-      % setEndBounds(id,lower,upper)
-      self.ocpHandler.setEndBounds(id,varargin{:})
-      self.igBoundsF.(id) = mean([varargin{:}]);
-    end    
-    
-    function setInitialGuess0(self, id, value)
-      self.igBounds0.(id) = value;
-    end
-    
-    function setInitialGuessF(self, id, value)
-      self.igBoundsF.(id) = value;
-    end
-    
-    function setInitialGuess(self, id, value)
-      self.igBoundsAll.(id) = value;
+    function phase_time_struct = times(phase)
+      phase_time_struct = OclStructure();
+      phase_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
+                              {OclMatrix([1,1]), OclMatrix([phase.integrator.nt,1]), OclMatrix([1,1])}, length(phase.H_norm));
+      phase_time_struct.add('states', OclMatrix([1,1]));
     end
     
     function ig = ig(self)
       ig = self.getInitialGuess();
     end
     
-    function initialGuess = getInitialGuess(self)
+    function guess = igFromBounds(bounds)
+      % Averages the bounds to get an initial guess value.
+      % Makes sure no nan values are produced, defaults to 0.
       
-      initialGuess = Variable.create(self.varsStruct,0);
-      igFlat = Variable.create(self.varsStruct.flat(),0);
+      lowVal  = bounds.lower;
+      upVal   = bounds.upper;
       
-      % apply initial guesses from bounds
+      guess = (lowVal + upVal) / 2;
       
-      % ig general (set everywhere)
-      names = fieldnames(self.igBoundsAll);
-      for i=1:length(names)
-        id = names{i};
-        igFlat.get(id).set(self.igBoundsAll.(id));
-      end
+      % set to lowerBounds if upperBounds are inf
+      indizes = isinf(upVal);
+      guess(indizes) = lowVal(indizes);
       
-      % ig at end
-      names = fieldnames(self.igBoundsF);
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igId(:,:,end).set(self.igBoundsF.(id));
-      end
+      % set to upperBounds of lowerBoudns are inf
+      indizes = isinf(lowVal);
+      guess(indizes) = upVal(indizes);
       
-      % ig at start
-      names = fieldnames(self.igBounds0);
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igId(:,:,1).set(self.igBounds0.(id));
-      end
-
-      % linearily interpolate guess
-      names = igFlat.children();
-      for i=1:length(names)
-        id = names{i};
-        igId = igFlat.get(id);
-        igStart = igId(:,:,1).value;
-        igEnd = igId(:,:,end).value;
-        s = igId.size();
-        gridpoints = reshape(linspace(0, 1, s(3)),1,1,s(3));
-        gridpoints = repmat(gridpoints,s(1),s(2));
-        interpolated = igStart + gridpoints.*(igEnd-igStart);
-        igFlat.get(id).set(interpolated);
-      end
-      
-      % ig for parameters
-      names = fieldnames(self.system.parameterBounds);
-      for i=1:length(names)
-        id = names{i};
-        val = mean([self.system.parameterBounds.(id).lower,self.system.parameterBounds.(id).upper]);
-        igFlat.get(id).set(val);
-      end
-      
-      names = fieldnames(self.igParameters);
-      for i=1:length(names)
-        id = names{i};
-        igFlat.get(id).set(self.igParameters.(id));
-      end
-      
-
-      
-      initialGuess.set(igFlat.value());
-      
-      % ig for timesteps
-      if isempty(self.ocpHandler.T)
-        H = self.ocpHandler.H_norm;
-      else
-        H = self.ocpHandler.H_norm.*self.ocpHandler.T;
-      end
-      initialGuess.get('h').set(H);
+      % set to zero if both lower and upper bounds are inf
+      indizes = isinf(lowVal) & isinf(upVal);
+      guess(indizes) = 0;
       
     end
     
-    function [lowerBounds,upperBounds] = getNlpBounds(self)
-      
-      boundsStruct = self.varsStruct.flat();
-      lowerBounds = Variable.create(boundsStruct,-inf);
-      upperBounds = Variable.create(boundsStruct,inf);
-      
-      % system bounds
-      names = fieldnames(self.system.bounds);
-      for i=1:length(names)
-        id = names{i};
-        lowerBounds.get(id).set(self.system.bounds.(id).lower);
-        upperBounds.get(id).set(self.system.bounds.(id).upper);
-      end
-      
-      % system parameter bounds
-      names = fieldnames(self.system.parameterBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,1).set(self.system.parameterBounds.(id).lower);
-        ub(:,:,1).set(self.system.parameterBounds.(id).upper);
-      end
-      
-      % solver bounds
-      names = fieldnames(self.ocpHandler.bounds);
-      for i=1:length(names)
-        id = names{i};
-        lowerBounds.get(id).set(self.ocpHandler.bounds.(id).lower);
-        upperBounds.get(id).set(self.ocpHandler.bounds.(id).upper);
-      end
-      
-      % initial bounds
-      names = fieldnames(self.ocpHandler.initialBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,1).set(self.ocpHandler.initialBounds.(id).lower);
-        ub(:,:,1).set(self.ocpHandler.initialBounds.(id).upper);
-      end
-      
-      % end bounds
-      names = fieldnames(self.ocpHandler.endBounds);
-      for i=1:length(names)
-        id = names{i};
-        lb = lowerBounds.get(id);
-        ub = upperBounds.get(id);
-        lb(:,:,end).set(self.ocpHandler.endBounds.(id).lower);
-        ub(:,:,end).set(self.ocpHandler.endBounds.(id).upper);
-      end
-      
-      lowerBounds = lowerBounds.value;
-      upperBounds = upperBounds.value;
-      
+    function x = first_state(phase,phaseVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
+      x = phaseVars(X_indizes(:,1));
     end
     
-    function [costs,constraints,constraints_LB,constraints_UB,times] = getNLPFun(self,nlpVars)
-  
+    function x = last_state(phase,phaseVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
+      x = phaseVars(X_indizes(:,end));
+    end
+    
+    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase)
+
+      N = length(phase.H_norm);
+      nx = phase.nx;
+      ni = phase.integrator.ni;
+      nu = phase.nu;
+      np = phase.np;
+      
       % number of variables in one control interval
       % + 1 for the timestep
-      nci = self.nx+self.ni+self.nu+self.np+1;
-      
+      nci = nx+ni+nu+np+1;
+
       % Finds indizes of the variables in the NlpVars array.
       % cellfun is similar to python list comprehension 
       % e.g. [range(start_i,start_i+nx) for start_i in range(1,nv,nci)]
-      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nx-1)', 1:nci:self.nv, 'UniformOutput', false));
-      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.ni-1)', self.nx+1:nci:self.nv, 'UniformOutput', false));
-      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.nu-1)', self.nx+self.ni+1:nci:self.nv, 'UniformOutput', false));
-      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+self.np-1)', self.nx+self.ni+self.nu+1:nci:self.nv, 'UniformOutput', false));
-      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', self.nx+self.ni+self.nu+self.np+1:nci:self.nv, 'UniformOutput', false));
+      X_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nx-1)', (0:N)*nci+1, 'UniformOutput', false));
+      I_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+ni-1)', (0:N-1)*nci+nx+1, 'UniformOutput', false));
+      U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', (0:N-1)*nci+nx+ni+1, 'UniformOutput', false));
       
-      X = reshape(nlpVars(X_indizes), self.nx, self.N+1);
-      I = reshape(nlpVars(I_indizes), self.ni, self.N);
-      U = reshape(nlpVars(U_indizes), self.nu, self.N);
-      P = reshape(nlpVars(P_indizes), self.np, self.N);
-      H = reshape(nlpVars(H_indizes), 1      , self.N);
+      p_start = [(0:N-1)*nci+nx+ni+nu+1, (N)*nci+nx+1];
+      P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
+      H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
+    end
+        
+    function [lb_phase,ub_phase] = getBounds(phase)
       
-      % path constraints on first and last state
-      pc0 = [];
-      pc0_lb = [];
-      pc0_ub = [];
-      pcf = [];
-      pcf_lb = [];
-      pcf_ub = [];
-      if self.options.path_constraints_at_boundary
-        [pc0, pc0_lb, pc0_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,1), P(:,1));
-        [pcf,pcf_lb,pcf_ub] = self.ocpHandler.pathConstraintsFun.evaluate(X(:,end), P(:,end));
-      end         
+      [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+
+      lb_phase = -inf * ones(nv_phase,1);
+      ub_phase = inf * ones(nv_phase,1);
+
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+
+      % states
+      for m=1:size(X_indizes,2)
+        lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
+        ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
+      end
+
+      % Merge the two vectors of bound values for lower bounds and upper bounds.
+      % Bound values can only get narrower, e.g. higher for lower bounds.
+      lb_phase(X_indizes(:,1)) = max(phase.stateBounds.lower,phase.stateBounds0.lower);
+      ub_phase(X_indizes(:,1)) = min(phase.stateBounds.upper,phase.stateBounds0.upper);
+
+      lb_phase(X_indizes(:,end)) = max(phase.stateBounds.lower,phase.stateBoundsF.lower);
+      ub_phase(X_indizes(:,end)) = min(phase.stateBounds.upper,phase.stateBoundsF.upper);
+
+      % integrator bounds
+      for m=1:size(I_indizes,2)
+        lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
+        ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
+      end
+
+      % controls
+      for m=1:size(U_indizes,2)
+        lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
+        ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
+      end
+
+      % parameters (only set the initial parameters)
+      lb_phase(P_indizes(:,1)) = phase.parameterBounds.lower;
+      ub_phase(P_indizes(:,1)) = phase.parameterBounds.upper;
+
+      % timesteps
+      if isempty(phase.T)
+        lb_phase(H_indizes) = Simultaneous.h_min;
+      else
+        lb_phase(H_indizes) = phase.H_norm * phase.T;
+        ub_phase(H_indizes) = phase.H_norm * phase.T;
+      end
+    end
+    
+    function ig_phase = getInitialGuess(phase)
+      % creates an initial guess from the information that we have about
+      % bounds in the phase
       
-      T0 = [0, cumsum(H(:,1:end-1))];
+      [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+
+      ig_phase = 0 * ones(nv_phase,1);
+
+      igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
+      igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
+
+      ig_phase(X_indizes(:,1)) = igx0;
+      ig_phase(X_indizes(:,end)) = igxF;
+
+      algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
+      for m=1:N
+        xGuessInterp = igx0 + (m-1)/N.*(igxF-igx0);
+        % integrator variables
+        ig_phase(I_indizes(:,m)) = phase.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
+
+        % states
+        ig_phase(X_indizes(:,m)) = xGuessInterp;
+      end
+
+      % controls
+      for m=1:size(U_indizes,2)
+        ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
+      end
+
+      % parameters
+      for m=1:size(P_indizes,2)
+        ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
+      end
+
+      % timesteps
+      if isempty(phase.T)
+        ig_phase(H_indizes) = phase.H_norm;
+      else
+        ig_phase(H_indizes) = phase.H_norm * phase.T;
+      end
+    end
+    
+    function [nv_phase,N] = nvars(H_norm, nx, ni, nu, np)
+      % number of control intervals
+      N = length(H_norm);
       
-      [xend_arr, ~, cost_arr, int_eq_arr, int_times] = self.integratorMap.evaluate(X(:,1:end-1), I, U, T0, H, P);
-      [pc_eq_arr, pc_lb_arr, pc_ub_arr] = self.pathconstraintsMap.evaluate(X(:,2:end-1), P(:,2:end));
+      % N control interval which each have states, integrator vars,
+      % controls, parameters, and timesteps.
+      % Ends with a single state.
+      nv_phase = N*nx + N*ni + N*nu + N*np + N + nx + np;
+    end
+    
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = simultaneous(phase, phaseVars)
+      
+      H_norm = phase.H_norm;
+      T = phase.T;
+      nx = phase.nx;
+      ni = phase.integrator.ni;
+      nu = phase.nu;
+      np = phase.np;
+      pathcost_fun = @phase.pathcostfun;
+      pathcon_fun = @phase.pathconfun;
+
+      [~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+      
+      X = reshape(phaseVars(X_indizes), nx, N+1);
+      I = reshape(phaseVars(I_indizes), ni, N);
+      U = reshape(phaseVars(U_indizes), nu, N);
+      P = reshape(phaseVars(P_indizes), np, N+1);
+      H = reshape(phaseVars(H_indizes), 1 , N);
+      
+      % path constraints
+      pcon = cell(1,N+1);
+      pcon_lb = cell(1,N+1);
+      pcon_ub = cell(1,N+1);
+      pcost = 0;
+      for k=1:N+1
+        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N+1, X(:,k), P(:,k));
+        pcost = pcost + pathcost_fun(k, N+1, X(:,k), P(:,k));
+      end    
+      
+      pcon = horzcat(pcon{:});
+      pcon_lb = horzcat(pcon_lb{:});
+      pcon_ub = horzcat(pcon_ub{:});
+      
+      % fix dimensions of empty path constraints
+      if isempty(pcon)
+        pcon = double.empty(0,N+1);
+        pcon_lb = double.empty(0,N+1);
+        pcon_ub = double.empty(0,N+1);
+      end
+      
+      [xend_arr, cost_arr, int_eq_arr, int_times] = phase.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
                 
       % timestep constraints
       h_eq = [];
       h_eq_lb = [];
       h_eq_ub = [];
       
-      if isempty(self.ocpHandler.T)
-        % normalized timesteps (sum of timesteps is 1)
-        H_norm = self.ocpHandler.H_norm;
-        
+      if isempty(T)      
         % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
         H_ratio = H_norm(1:end-1)./H_norm(2:end);
         h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
-        h_eq_lb = zeros(1, self.N-1);
-        h_eq_ub = zeros(1, self.N-1);
+        h_eq_lb = zeros(1, N-1);
+        h_eq_ub = zeros(1, N-1);
       end
       
       % Parameter constraints 
       % p0=p1=p2=p3 ...
       p_eq = P(:,2:end)-P(:,1:end-1);
-      p_eq_lb = zeros(self.np, self.N-1);
-      p_eq_ub = zeros(self.np, self.N-1);
+      p_eq_lb = zeros(np, N);
+      p_eq_ub = zeros(np, N);
       
       % continuity (nx x N)
       continuity = xend_arr - X(:,2:end);
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:self.N-1);  continuity(:,1:self.N-1);  pc_eq_arr;  h_eq;     p_eq];
-      shooting_eq_lb = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_lb_arr;  h_eq_lb;  p_eq_lb];
-      shooting_eq_ub = [zeros(self.ni,self.N-1);   zeros(self.nx,self.N-1);   pc_ub_arr;  h_eq_ub;  p_eq_ub];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pcon(:,2:N);     h_eq;     p_eq(:,1:N-1)];
+      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_lb(:,2:N);  h_eq_lb;  p_eq_lb(:,1:N-1)];
+      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pcon_ub(:,2:N);  h_eq_ub;  p_eq_ub(:,1:N-1)];
       
-      % reshape shooting equations to column vector, append final integrator and
+      % reshape shooting equations to column vector, append lastintegrator and
       % continuity equations
-      shooting_eq    = [shooting_eq(:);    int_eq_arr(:,self.N); continuity(:,self.N)];
-      shooting_eq_lb = [shooting_eq_lb(:); zeros(self.ni,1);     zeros(self.nx,1)    ];
-      shooting_eq_ub = [shooting_eq_ub(:); zeros(self.ni,1);     zeros(self.nx,1)    ];
-      
-      % boundary constraints
-      [bc,bc_lb,bc_ub] = self.ocpHandler.boundaryConditionsFun.evaluate(X(:,1),X(:,end),P(:,1));
-      
-      % collect all constraints
-      constraints = vertcat(pc0, shooting_eq, pcf, bc);
-      constraints_LB = vertcat(pc0_lb, shooting_eq_lb, pcf_lb, bc_lb);
-      constraints_UB = vertcat(pc0_ub, shooting_eq_ub, pcf_ub, bc_ub);
-      
-      % terminal cost
-      costf = self.ocpHandler.arrivalCostsFun.evaluate(X(:,end),P(:,end));
-      
-      % discrete cost
-      costD = self.ocpHandler.discreteCostsFun.evaluate(nlpVars); 
-      
+      constraints    = [pcon(:,1);      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pcon(:,N+1);       p_eq(:,N)    ];
+      constraints_lb = [pcon_lb(:,1);   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pcon_lb(:,N+1);    p_eq_lb(:,N) ];
+      constraints_ub = [pcon_ub(:,1);   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pcon_ub(:,N+1);    p_eq_ub(:,N) ];
+
       % sum all costs
-      costs = sum(cost_arr) + costf + costD;
+      costs = sum(cost_arr) + pcost;
       
-      % times
+      % regularization on U
+%       Uvec = U(:);
+%       costs = costs + 1e-6*(Uvec'*Uvec);
+      
+      % times output
+      T0 = [0, cumsum(H(:,1:end-1))];
+      for k=1:size(int_times,1)
+        int_times(k,:) = T0 + int_times(k,:);
+      end
       times = [T0; int_times; T0];
       times = [times(:); T0(end)+H(end)];
+      
+      x0 = X(:,1);
+      p0 = P(:,1);
       
     end % getNLPFun    
   end % methods

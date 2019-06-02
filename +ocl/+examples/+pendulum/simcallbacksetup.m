@@ -1,0 +1,3 @@
+function simcallbacksetup(~)
+  figure;
+end
