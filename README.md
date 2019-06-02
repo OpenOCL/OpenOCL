@@ -9,7 +9,7 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 ```m
 help ocl
 ocl.examples.cartpole
-open mainCartPole
+open ocl.examples.cartpole
 ```
 
 ## Contribute
