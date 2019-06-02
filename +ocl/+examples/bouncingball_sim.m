@@ -1,4 +1,4 @@
-function [sol,times,ocl] = simBouncingBall  
+function [sol,times,ocl] = bouncingball_sim  
 
   num_phases = 5;
   N = 10;

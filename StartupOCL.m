@@ -2,7 +2,6 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-
 function StartupOCL(in)
   % StartupOCL(workingDirLocation)
   % StartupOCL(octaveClear)
@@ -57,13 +56,6 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Core','Variables','Variable'))
   addpath(fullfile(oclPath,'Core','utils'))
 
-  addpath(fullfile(oclPath,'Examples'))
-  addpath(fullfile(oclPath,'Examples','01VanDerPol'))
-  addpath(fullfile(oclPath,'Examples','02BallAndBeam'))
-  addpath(fullfile(oclPath,'Examples','03Pendulum'))
-  addpath(fullfile(oclPath,'Examples','04RaceCar'))
-  addpath(fullfile(oclPath,'Examples','05CartPole'))
-  addpath(fullfile(oclPath,'Examples','06BouncingBall'))
   addpath(fullfile(oclPath,'Test'))
 
   % check if casadi is working
