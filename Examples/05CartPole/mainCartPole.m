@@ -5,7 +5,7 @@
 function [sol,times,solver] = mainCartPole  
 
   options = ocl.Options();
-  options.nlp.controlIntervals = 50;
+  options.nlp.controlIntervals = 40;
   options.nlp.collocationOrder = 3;
 
   system = ocl.System('varsfun',@varsfun, 'daefun', @daefun);

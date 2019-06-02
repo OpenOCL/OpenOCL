@@ -44,7 +44,7 @@ o1 = ocl.timeMeasures;
 [sol,~,ocl] = mainBallAndBeam;
 assertAlmostEqual(sol.controls.tau(1:5:end).value, ...
                   [-20;-9.67180946278377;-6.83499933773107;-3.3277726553036;-0.594240414712151;1.26802912244169;0.938453275453379;-0.199369534081799;-0.838286223053903;-0.292251460119773], ...
-                  'Ball and beam problem Test failed.');
+                  'Ball and beam problem Test failed.', 1e-3);
 
 o2 = ocl.timeMeasures;
 
@@ -52,7 +52,7 @@ o2 = ocl.timeMeasures;
 [sol,~,ocl] = mainRaceCar;
 assertAlmostEqual(sol.controls.dFx(1,:,1:5:end).value,...
       [-0.0101362795430379;-0.999999558480492;0.319856962019424;-0.764994370307151;0.7697294885374;-0.126456278919074;0.580563346802815;-0.661025508901183;0.999998743528033;-0.9999996584554],...
-      'Solve RaceCar Test failed.');
+      'Solve RaceCar Test failed.',1e-2);
 
 o3 = ocl.timeMeasures;
  
@@ -67,7 +67,7 @@ o4.simulationTest = toc(simTic);
 
 % test cart pole
 [sol,~,ocl] = mainCartPole;
-res = sol.states.theta(:,:,1:5:end).value;
-truth = [3.14159265358979;3.43004332636167;3.8605250812409;3.55175774943157;2.52345691486727;1.48648519772981;0.885695638925426;0.31564404730662;0];
+res = sol.states.theta(:,:,1:10:end).value;
+truth = [3.14159265358979;3.86044803075832;2.52342234356076;0.885691999280203;0];
 assertAlmostEqual(res, truth, 'Cart pole test failed.');
 o5 = ocl.timeMeasures;
