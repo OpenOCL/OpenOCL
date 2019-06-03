@@ -48,7 +48,7 @@ classdef OclPhase < handle
       p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
 
-      p.addParameter('N', 50, @isnumeric);
+      p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
       
       r = p.parse(varargin{:});

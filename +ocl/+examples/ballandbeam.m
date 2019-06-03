@@ -25,15 +25,9 @@ function [vars,times,solver] = ballandbeam
 
   varsfun    = @(sh) bbvarsfun(sh, conf);
   daefun     = @(sh,x,~,u,p) bbeqfun(sh,x,u,conf);
-  pathcosts  = @(ch,x,~,u,~,~,~) bbpathcosts(ch,x,u,conf);
+  pathcosts  = @(ch,x,~,u,~) bbpathcosts(ch,x,u,conf);
 
-  options = ocl.Options();
-  options.nlp.controlIntervals = 50;
-
-  system = ocl.System(varsfun, daefun);
-  ocp = ocl.OCP(pathcosts);
-
-  solver = ocl.Solver([],system,ocp,options);
+  solver = ocl.Solver([], varsfun, daefun, pathcosts, 'N', 50);
 
    % bound on time: 0 <= time <= 5
   solver.setBounds('time', 0, 5);

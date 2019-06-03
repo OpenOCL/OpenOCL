@@ -92,7 +92,7 @@ methods
     % keyword argument as positional argument
     for k=1:length(key_list)
       entry = key_list{k};
-      ip.addOptional([entry.name,'Optional'], self.opt_id, @(el) entry.checkfh(el) || @(el) strcmp(el, self.opt_id));
+      ip.addOptional([entry.name,'Optional'], self.opt_id, @(el) entry.checkfh(el) || strcmp(el, self.opt_id));
     end
 
     % keyword arguments as parameter

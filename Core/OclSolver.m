@@ -20,13 +20,13 @@ classdef OclSolver < handle
 
     function self = OclSolver(varargin)
       % OclSolver(T, system, ocp, options, H_norm)
-      % OclSolver(phaseList, options)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
       %           'lagrangecost', @lagrangefun,
       %           'pathcosts', @pathcostfun,
       %           'pathconstraints', @pathconstraintsfun, options)
-      % OclSolver(phaseList, integratorList, options)
+      % OclSolver(phases, transitions, options)
       phaseList = {};
+      emptyfh = @(varargin)[];
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
@@ -77,8 +77,24 @@ classdef OclSolver < handle
       elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
-        %           'pathcosts', @pathcostfun,
-        phaseList = {OclPhase(varargin{:})};
+        %           'pathcosts', @pathcostfun, options
+        
+        p = ocl.ArgumentParser;
+
+        p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
+        p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+        p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
+        p.addParameter('N', 20, @isnumeric);
+        p.addParameter('d', 3, @isnumeric);
+        
+        r = p.parse(varargin{:});
+        
+        phaseList = {OclPhase(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
+                              'N', r.N, 'd', r.d)};
         transitionList = {};
         options = r.options;
         
@@ -91,6 +107,7 @@ classdef OclSolver < handle
         p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
         
         r = p.parse(varargin{:});
+        
         phaseList = r.phases;
         transitionList = r.transitions;
         options = r.options;
