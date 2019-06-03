@@ -1,4 +1,9 @@
-function [sol,times,solver] = bouncingball_sim  
+function [sol,times,solver] = bouncingball_sim(snap)
+
+  % snap images for docs
+  if nargin == 0
+    snap = 0;
+  end
 
   num_phases = 5;
   N = 10;
@@ -39,6 +44,10 @@ function [sol,times,solver] = bouncingball_sim
       
       frame = getframe(fig);
       writeVideo(vw,frame);
+      
+      if snap > 0 && mod(k,snap) == 0
+        snapnow;
+      end
       
       pause(t_new(j)-t_new(j-1)-toc)
     end

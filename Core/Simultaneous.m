@@ -277,7 +277,7 @@ classdef Simultaneous < handle
       costs = sum(cost_arr) + pointcost;
       
       % regularization on U
-      if controls_regularization
+      if controls_regularization && numel(U)>0
         Uvec = U(:);
         costs = costs + controls_regularization_value*(Uvec'*Uvec);
       end

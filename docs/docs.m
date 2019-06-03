@@ -2,8 +2,13 @@
 % Software for optimal control, trajectory optimization, and
 % model predictive control.
 %
-% Web: <a href="https://openocl.org/">https://openocl.org/</a> 
-% API docs: <a href="https://openocl.org/api-docs/">https://openocl.org/api-docs/</a>
+% Web: <https://openocl.org/>
+%
+% API docs: <https://openocl.org/api-docs/>
+%
+%% Get help from the command line
+%
+% help ocl
 %
 %% Get started
 %
@@ -18,7 +23,7 @@
 % Look at example code:
 %
 %   open ocl.examples.cartpole
-%
+% 
 %% List of optimal control examples
 % 
 % * ocl.examples.vanderpol
@@ -54,6 +59,11 @@
 % Get the license text from:  
 %
 % <https://openocl.org/bsd-3-clause/>
-
-function ocl
-  ocl.utils.StartupOCL
+%
+%% Cartpole example
+% 
+ocl.examples.cartpole(20);
+%
+%% Multi-phase bouncing ball example
+% 
+ocl.examples.bouncingball;
