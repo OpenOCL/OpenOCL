@@ -111,7 +111,7 @@ classdef Simulator < handle
         controlsVec(:,:,k).set(u);
       end
       if callback && (isempty(testRun) || (testRun==false))
-        u = self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);
+        u = self.system.callbackfun(x,z,u,times(k),times(k+1),p);
       end
     end
 
