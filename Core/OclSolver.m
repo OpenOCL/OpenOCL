@@ -12,9 +12,6 @@ classdef OclSolver < handle
 
     solver
     phaseList
-
-    callbackfh
-    callbacksetupfh
   end
 
   methods
@@ -69,10 +66,8 @@ classdef OclSolver < handle
         end
 
         phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
-                         ocp.pointcostsfh, ocp.pointconstraintsfh, 'N', H_norm, 'd', d);
-
-        self.cbfh = system.cbfh;
-        self.cbsetupfh = system.cbsetupfh;
+                         ocp.pointcostsfh, ocp.pointconstraintsfh, ...
+                         system.callbacksetupfh, system.callbackfh, 'N', H_norm, 'd', d);
 
         phaseList = {phase};
         transitionList = {};
