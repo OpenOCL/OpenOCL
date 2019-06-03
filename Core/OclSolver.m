@@ -79,50 +79,35 @@ classdef OclSolver < handle
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun,
         p = ocl.ArgumentParser;
+        
         p.addRequired('T', @(el)isscalar(el) && isnumeric(el));
 
-        p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('daefunOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pathcostsOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pointcostsOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pointconstraintsOpt', [], @oclIsFunHandleOrEmpty)
-
-        p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
-        p.addParameter('daefun', emptyfh, @oclIsFunHandle);
-        p.addParameter('pathcosts', emptyfh, @oclIsFunHandle);
-        p.addParameter('pointcosts', emptyfh, @oclIsFunHandle);
-        p.addParameter('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('varsfun', emptyfh, @oclIsFunHandle);
+        p.addKeyword('daefun', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
 
         p.addParameter('N', 30, @isnumeric);
 
-        p.parse(varargin{:});
+        r = p.parse(varargin{:});
+        phaseList = {OclPhase(varargin{:})};
         transitionList = {};
+        options = r.options;
+        
       else
         % OclSolver(phases, transitions, opt)
         p = inputParser;
-        p.addOptional('phasesOpt', [], @(el) isempty(el) || iscell(el) || isa(el, 'OclPhase') );
-        p.addOptional('transitionsOpt', [], @(el) isempty(el) || iscell(el) || ishandle(el) );
-        p.addOptional('optionsOpt', [], @(el) isempty(el) || isstruct(el) || isa(el, 'OclOptions') );
 
-        p.addParameter('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
-        p.addParameter('transitions', {}, @(el) iscell(el) || ishandle(el) );
-        p.addParameter('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
-        p.parse(varargin{:});
-
-        phaseList = p.Results.phasesOpt;
-        if isempty(phaseList)
-          phaseList = p.Results.phases;
-        end
-
-        transitionList = p.Results.transitionsOpt;
-        if isempty(transitionList)
-          transitionList = p.Results.transitions;
-        end
-
-        options = p.Results.optionsOpt;
-        if isempty(options)
-          options = p.Results.options;
-        end
+        p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
+        p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );
+        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
+        
+        r = p.parse(varargin{:});
+        phaseList = r.phases;
+        transitionList = r.transitions;
+        options = r.options;
       end
 
       solver = CasadiSolver(phaseList, transitionList, options);

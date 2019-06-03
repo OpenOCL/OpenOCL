@@ -5,9 +5,9 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    lagrangecostfun
     pathcostsfh
-    pathconfh
+    pointcostsfh
+    pointconstraintsfh
     
     integratormap
     
@@ -40,46 +40,24 @@ classdef OclPhase < handle
       
       emptyfh = @(varargin)[];
       
-      p = inputParser;
-      p.addOptional('varsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('daeOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('lagrangecostsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('pathcostsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('pathconstraintsOpt',[],@oclIsFunHandleOrEmpty);
+      p = ocl.ArgumentParser;
       
-      p.addParameter('vars',emptyfh,@oclIsFunHandle);
-      p.addParameter('dae',emptyfh,@oclIsFunHandle);
-      p.addParameter('lagrangecosts',emptyfh,@oclIsFunHandle);
-      p.addParameter('pathcosts',emptyfh,@oclIsFunHandle);
-      p.addParameter('pathconstraints',emptyfh,@oclIsFunHandle);
+      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+
       p.addParameter('N', 50, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
-      p.parse(varargin{:});
       
-      varsfhInput = p.Results.varsOpt;
-      if isempty(varsfhInput)
-        varsfhInput = p.Results.vars;
-      end
+      r = p.parse(varargin{:});
       
-      daefhInput = p.Results.daeOpt;
-      if isempty(daefhInput)
-        daefhInput = p.Results.dae;
-      end
-      
-      lagrangecostsfhInput = p.Results.lagrangecostsOpt;
-      if isempty(lagrangecostsfhInput)
-        lagrangecostsfhInput = p.Results.lagrangecosts;
-      end
-      
-      pathcostsfhInput = p.Results.pathcostsOpt;
-      if isempty(pathcostsfhInput)
-        pathcostsfhInput = p.Results.pathcosts;
-      end
-      
-      pathconfhInput = p.Results.pathconstraintsOpt;
-      if isempty(pathconfhInput)
-        pathconfhInput = p.Results.pathconstraints;
-      end
+      varsfhInput = r.vars;
+      daefhInput = r.dae;
+      pathcostsfhInput = r.pathcosts;
+      pointcostsfhInput = r.pointcosts;  
+      pathconstraintsfhInput = r.pathconstraints;
       
       H_normInput = p.Results.N;
       dInput = p.Results.d;
@@ -103,14 +81,14 @@ classdef OclPhase < handle
       
       system = OclSystem(varsfhInput, daefhInput);
       colocation = OclCollocation(system.states, system.algvars, system.controls, ...
-                                  system.parameters, @system.daefun, lagrangecostsfhInput, dInput, ...
+                                  system.parameters, @system.daefun, pathcostsfhInput, dInput, ...
                                   system.stateBounds, system.algvarBounds);
       
       self.H_norm = H_normInput;
       self.integrator = colocation;
-      self.pathcostsfh = pathcostsfhInput;
-      self.pathconfh = pathconfhInput;
-      self.lagrangecostfun = @colocation.lagrangecostfun;
+      self.pathcostsfh = @colocation.lagrangecostfun;
+      self.pointcostsfh = pointcostsfhInput;
+      self.pointconstraintsfh = pathconstraintsfhInput;
       
       self.nx = colocation.nx;
       self.nz = colocation.nz;
