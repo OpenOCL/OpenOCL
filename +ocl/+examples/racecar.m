@@ -12,7 +12,6 @@ function [solution,times,solver] = racecar
 
   options = ocl.Options();
   options.nlp.controlIntervals = CONTROL_INTERVALS;
-  options.controls_regularization_value = 1e-3;
 
   system = ocl.System('varsfun', @varsfun, 'daefun', @daefun);
   ocp = ocl.OCP('pointcosts', @pointcosts, 'pointconstraints', @pointconstraints);
