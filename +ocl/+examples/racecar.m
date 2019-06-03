@@ -16,7 +16,7 @@ function [solution,times,solver] = racecar
   system = ocl.System('varsfun', @varsfun, 'daefun', @daefun);
   ocp = ocl.OCP('pointcosts', @pointcosts, 'pointconstraints', @pointconstraints);
 
-  solver = ocl.Solver([],system,ocp,options);
+  solver = ocl.Solver([], system, ocp, options);
 
   % parameters
   m    = 1;         % mass [kg]

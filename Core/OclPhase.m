@@ -8,6 +8,7 @@ classdef OclPhase < handle
     pathcostfun
     pointcostsfh
     pointconstraintsfh
+    callbackfh
     
     integratormap
     
@@ -47,6 +48,7 @@ classdef OclPhase < handle
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+      p.addKeyword('callback', emptyfh, @oclIsFunHandle);
 
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -58,6 +60,7 @@ classdef OclPhase < handle
       pathcostsfhInput = r.pathcosts;
       pointcostsfhInput = r.pointcosts;  
       pointconstraintsfhInput = r.pointconstraints;
+      callbackfh = r.callback;
       
       H_normInput = r.N;
       dInput = r.d;
@@ -223,6 +226,19 @@ classdef OclPhase < handle
       val = pointConHandler.values;
       lb = pointConHandler.lowerBounds;
       ub = pointConHandler.upperBounds;
+    end
+    
+    function u = callbackfun(self,x,z,u,t0,t1,p)
+      
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.states,u);
+      p = Variable.create(self.parameters,p);
+      
+      t0 = Variable.Matrix(t0);
+      t1 = Variable.Matrix(t1);
+      
+      u = self.callbackfh(x,z,u,t0,t1,p);
     end
     
   end

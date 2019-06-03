@@ -95,6 +95,7 @@ classdef OclSolver < handle
         p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('callback', emptyfh, @oclIsFunHandle);
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
