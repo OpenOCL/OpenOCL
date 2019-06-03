@@ -14,6 +14,7 @@ classdef OclSolver < handle
     phaseList
 
     cbfh
+    cbsetupfh
   end
 
   methods
@@ -71,8 +72,9 @@ classdef OclSolver < handle
                          ocp.pointcostsfh, ocp.pointconstraintsfh, 'N', H_norm, 'd', d);
 
         self.cbfh = system.cbfh;
+        self.cbsetupfh = system.cbsetupfh;
 
-        phaseList{1} = phase;
+        phaseList = {phase};
         transitionList = {};
         
         nlp_casadi_mx = options.nlp_casadi_mx;
@@ -95,7 +97,9 @@ classdef OclSolver < handle
         p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+        p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
@@ -108,7 +112,7 @@ classdef OclSolver < handle
         r = p.parse(varargin{:});
         
         phaseList = {OclPhase(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
-                              'N', r.N, 'd', r.d)};
+                              r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
         transitionList = {};
         
         nlp_casadi_mx = r.nlp_casadi_mx;
