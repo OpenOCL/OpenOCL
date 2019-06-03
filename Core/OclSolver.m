@@ -78,7 +78,7 @@ classdef OclSolver < handle
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun,
-        p = inputParser;
+        p = ocl.ArgumentParser;
         p.addRequired('T', @(el)isscalar(el) && isnumeric(el));
 
         p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
