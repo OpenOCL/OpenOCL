@@ -24,16 +24,10 @@ function [vars,times,solver] = ballandbeam
   conf.costR = 1;              % least squares path costs controls weighting matrix
 
   varsfun    = @(sh) bbvarsfun(sh, conf);
-  daefun      = @(sh,x,~,u,p) bbeqfun(sh,x,u,conf);
+  daefun     = @(sh,x,~,u,p) bbeqfun(sh,x,u,conf);
   pathcosts  = @(ch,x,~,u,~,~,~) bbpathcosts(ch,x,u,conf);
 
-  options = ocl.Options();
-  options.nlp.controlIntervals = 50;
-
-  system = ocl.System(varsfun, daefun);
-  ocp = ocl.OCP(pathcosts);
-
-  solver = ocl.Solver([],system,ocp,options);
+  solver = ocl.Solver([], varsfun, daefun, pathcosts, 'N', 50);
 
    % bound on time: 0 <= time <= 5
   solver.setBounds('time', 0, 5);
@@ -88,7 +82,7 @@ function bbvarsfun(sh, c)
   sh.addState('dr');
   sh.addState('theta',  'lb', -c.theta_b,  'ub', c.theta_b  );
   sh.addState('dtheta', 'lb', -c.dtheta_b, 'ub', c.dtheta_b );
-  
+
   sh.addState('time');
 
   sh.addControl('tau',  'lb', -c.tau_b,    'ub', c.tau_b    );
@@ -99,7 +93,7 @@ function bbeqfun(sh,x,u,c)
   sh.setODE('dtheta',(u.tau - c.m*c.g*x.r*cos(x.theta) - 2*c.m*x.r*x.dr*x.dtheta)/(c.I + c.m*x.r^2));
   sh.setODE('r'     ,x.dr);
   sh.setODE('dr'    ,(-c.m*c.g*sin(x.theta) + c.m*x.r*x.dtheta^2)/(c.m + c.J/c.R^2));
-  
+
   sh.setODE('time'    , 1);
 end
 
