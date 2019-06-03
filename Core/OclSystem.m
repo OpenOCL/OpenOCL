@@ -122,11 +122,11 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
 
-    function cbsetupfun(self)
+    function callbacksetupfun(self)
       self.callbacksetupfh();
     end
 
-    function u = cbfun(self,states,algVars,controls,timesBegin,timesEnd,parameters)
+    function u = callbackfun(self,states,algVars,controls,timesBegin,timesEnd,parameters)
       x = Variable.create(self.states,states);
       z = Variable.create(self.algvars,algVars);
       u = Variable.create(self.controls,controls);

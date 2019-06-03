@@ -13,8 +13,8 @@ classdef OclSolver < handle
     solver
     phaseList
 
-    cbfh
-    cbsetupfh
+    callbackfh
+    callbacksetupfh
   end
 
   methods
@@ -231,18 +231,25 @@ classdef OclSolver < handle
     end
 
     function solutionCallback(self,times,solution)
-      sN = size(solution.states);
-      N = sN(3);
+      
+      for ph=1:length(self.phaseList)
+        sN = size(solution{ph}.states);
+        N = sN(3);
 
-      t = times.states;
+        t = times{ph}.states;
 
-      for k=1:N-1
-        x = solution.states(:,:,k+1);
-        z = solution.integrator(:,:,k).algvars;
-        u =  solution.controls(:,:,k);
-        p = solution.parameters(:,:,k);
-        self.cbfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+        self.phaseList{ph}.callbacksetupfun()
+
+        for k=1:N-1
+          x = solution{ph}.states(:,:,k+1);
+          z = solution{ph}.integrator(:,:,k).algvars;
+          u = solution{ph}.controls(:,:,k);
+          p = solution{ph}.parameters(:,:,k);
+          self.phaseList{ph}.callbackfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+        end
       end
+      
+
     end
 
     function setParameter(self,id,varargin)
