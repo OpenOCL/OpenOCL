@@ -4,5 +4,6 @@
 %
 function r = Options(varargin)
   ocl.utils.checkStartup()
+  oclDeprecation('ocl.Options will be removed in future versions.')
   r = OclOptions(varargin{:});
 end
