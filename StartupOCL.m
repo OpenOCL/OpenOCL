@@ -14,7 +14,7 @@ function StartupOCL(in)
   %   workingDirLocation - path to location where the working directory
   %                        should be created.
 
-  oclPath  = fileparts(which('StartupOCL'));
+  oclPath  = fileparts(which('ocl'));
 
   if isempty(oclPath)
     error('Can not find OpenOCL. Add root directory of OpenOCL to the path.')
@@ -218,10 +218,7 @@ function r = checkCasadi(path)
     catch e
       cd(cur_path)
       oclInfo(e);
-      oclError(['Casadi installation in the path found but does not ', ...
-                'work properly. Try restarting Matlab. Remove all ', ...
-                'casadi installations from your path. OpenOCL will ', ...
-                'then install the correct casadi version for you.']);
+      casadiNotWorkingError();
     end
   end
   cd(cur_path)
@@ -233,13 +230,17 @@ function r = checkCasadiWorking()
     r = true;
   catch e
     oclInfo(e);
-    oclError(['Casadi installation in the path found but does not ', ...
-              'work properly. Try restarting Matlab. Remove all ', ...
-              'casadi installations from your path. OpenOCL will ', ...
-              'then install the correct casadi version for you.']);
+    casadiNotWorkingError();
   end
 end
 
 function r = verAtLeast(software, version_number)
   r = ~verLessThan(software,version_number);
+end
+
+function casadiNotWorkingError
+  oclError(['Casadi installation in the path found but does not ', ...
+            'work properly. Try restarting Matlab. Remove all ', ...
+            'casadi installations from your path. Run ocl.utils.clean. OpenOCL will ', ...
+            'then install the correct casadi version for you.']);
 end

@@ -1,0 +1,11 @@
+function clean
+
+  oclPath  = fileparts(which('ocl'));
+  addpath(fullfile(oclPath,'Lib','casadi'));
+  rmpath(fullfile(oclPath,'Lib','casadi'));
+  success = rmdir(fullfile(oclPath,'Lib','casadi'), 's');
+  if ~success
+    error('Could not remove casadi binaries folder. Restart Matlab and run clean again.');
+  end
+  ocl
+end
