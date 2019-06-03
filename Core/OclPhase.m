@@ -5,7 +5,7 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    pathcostsfh
+    pathcostfun
     pointcostsfh
     pointconstraintsfh
     
@@ -57,10 +57,10 @@ classdef OclPhase < handle
       daefhInput = r.dae;
       pathcostsfhInput = r.pathcosts;
       pointcostsfhInput = r.pointcosts;  
-      pathconstraintsfhInput = r.pathconstraints;
+      pointconstraintsfhInput = r.pointconstraints;
       
-      H_normInput = p.Results.N;
-      dInput = p.Results.d;
+      H_normInput = r.N;
+      dInput = r.d;
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -86,9 +86,9 @@ classdef OclPhase < handle
       
       self.H_norm = H_normInput;
       self.integrator = colocation;
-      self.pathcostsfh = @colocation.lagrangecostfun;
+      self.pathcostfun = @colocation.pathcostfun;
       self.pointcostsfh = pointcostsfhInput;
-      self.pointconstraintsfh = pathconstraintsfhInput;
+      self.pointconstraintsfh = pointconstraintsfhInput;
       
       self.nx = colocation.nx;
       self.nz = colocation.nz;
@@ -202,27 +202,27 @@ classdef OclPhase < handle
       self.parameterBounds.upper = p_ub.value;
     end
     
-    function r = pathcostfun(self,k,N,x,p)
-      pcHandler = OclCost();
+    function r = pointcostfun(self,k,N,x,p)
+      pointCostHandler = OclCost();
       
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pathcostsfh(pcHandler,k,N,x,p);
+      self.pointcostsfh(pointCostHandler,k,N,x,p);
       
-      r = pcHandler.value;
+      r = pointCostHandler.value;
     end
     
-    function [val,lb,ub] = pathconfun(self,k,N,x,p)
-      pathConstraintHandler = OclConstraint();
+    function [val,lb,ub] = pointconstraintfun(self,k,N,x,p)
+      pointConHandler = OclConstraint();
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pathconfh(pathConstraintHandler,k,N,x,p);
+      self.pointconstraintsfh(pointConHandler,k,N,x,p);
       
-      val = pathConstraintHandler.values;
-      lb = pathConstraintHandler.lowerBounds;
-      ub = pathConstraintHandler.upperBounds;
+      val = pointConHandler.values;
+      lb = pointConHandler.lowerBounds;
+      ub = pointConHandler.upperBounds;
     end
     
   end

@@ -78,27 +78,13 @@ classdef OclSolver < handle
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun,
-        p = ocl.ArgumentParser;
-        
-        p.addRequired('T', @(el)isscalar(el) && isnumeric(el));
-
-        p.addKeyword('varsfun', emptyfh, @oclIsFunHandle);
-        p.addKeyword('daefun', emptyfh, @oclIsFunHandle);
-        p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-        p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
-        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
-        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
-
-        p.addParameter('N', 30, @isnumeric);
-
-        r = p.parse(varargin{:});
         phaseList = {OclPhase(varargin{:})};
         transitionList = {};
         options = r.options;
         
       else
         % OclSolver(phases, transitions, opt)
-        p = inputParser;
+        p = ocl.ArgumentParser;
 
         p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
         p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );

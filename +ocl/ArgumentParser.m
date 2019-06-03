@@ -125,7 +125,7 @@ methods
     end
 
     % keywords
-    for k=1:length(opt_list)
+    for k=1:length(key_list)
       name = key_list{k}.name;
 
       if strcmp(ip.Results.([name,'Optional']), self.opt_id)
@@ -136,7 +136,7 @@ methods
     end
 
     % parameters
-    for k=1:length(opt_list)
+    for k=1:length(param_list)
       name = param_list{k}.name;
       r.(name) = ip.Results.(name);
     end

@@ -48,7 +48,7 @@ function before_contact_vars(sh)
   sh.addState('v');
 end
 
-function before_contact_ode(sh,x,~,~,~)
+function before_contact_ode(sh,x,~,~,~)  
   sh.setODE('s', x.v);
   sh.setODE('v', -10);
 end

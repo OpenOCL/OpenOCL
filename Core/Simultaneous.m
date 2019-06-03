@@ -203,8 +203,8 @@ classdef Simultaneous < handle
       ni = phase.integrator.ni;
       nu = phase.nu;
       np = phase.np;
-      pathcost_fun = @phase.pathcostfun;
-      pathcon_fun = @phase.pathconfun;
+      pointcost_fun = @phase.pointcostfun;
+      pointcon_fun = @phase.pointconstraintfun;
 
       [~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
       [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
@@ -221,8 +221,8 @@ classdef Simultaneous < handle
       pcon_ub = cell(1,N+1);
       pcost = 0;
       for k=1:N+1
-        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pathcon_fun(k, N+1, X(:,k), P(:,k));
-        pcost = pcost + pathcost_fun(k, N+1, X(:,k), P(:,k));
+        [pcon{k}, pcon_lb{k}, pcon_ub{k}] = pointcon_fun(k, N+1, X(:,k), P(:,k));
+        pcost = pcost + pointcost_fun(k, N+1, X(:,k), P(:,k));
       end    
       
       pcon = horzcat(pcon{:});
