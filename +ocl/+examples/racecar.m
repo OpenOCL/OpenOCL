@@ -157,6 +157,9 @@ end
 
 function animate(time,solution,x_road,y_center,y_min,y_max)
 
+  global testRun
+  isTestRun = testRun;
+
   ts = time(2)-time(1);
   x_car = solution.states.x.value;
   y_car = solution.states.y.value;
@@ -178,8 +181,7 @@ function animate(time,solution,x_road,y_center,y_min,y_max)
     set(car    , 'XData' , x_car(i));
     set(car    , 'YData' , y_car(i));
 
-    global testRun
-    if isempty(testRun) || (testRun==false)
+    if isempty(isTestRun) || (isTestRun==false)
       pause(ts);
     end
 

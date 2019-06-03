@@ -53,7 +53,7 @@ function vars(sh)
   sh.addState('v');
 end
 
-function ode(sh,x,~,u,~)
+function ode(sh,x,~,~,~)
   sh.setODE('s', x.v);
   sh.setODE('v', -10);
 end
