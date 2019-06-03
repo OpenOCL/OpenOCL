@@ -8,8 +8,8 @@ classdef OclSystem < handle
     varsfh
     daefh
     icfh
-    cbfh
-    cbsetupfh
+    callbackfh
+    callbacksetupfh
     
     thisInitialConditions
     
@@ -34,39 +34,28 @@ classdef OclSystem < handle
 
       emptyfh = @(varargin)[];
 
-      p = inputParser;
-      p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('daefunOpt', [], @oclIsFunHandleOrEmpty);
-      p.addOptional('icfunOpt', [], @oclIsFunHandleOrEmpty);
+      p = ocl.ArgumentParser;
 
-      p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
-      p.addParameter('daefun', emptyfh, @oclIsFunHandle);
-      p.addParameter('icfun', emptyfh, @oclIsFunHandle);
-      p.addParameter('cbfun', emptyfh, @oclIsFunHandle);
-      p.addParameter('cbsetupfun', emptyfh, @oclIsFunHandle);
-      p.parse(varargin{:});
+      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+      p.addKeyword('ic', emptyfh, @oclIsFunHandle);
+      p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
+      p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+      
+      r = p.parse(varargin{:});
 
-      varsfun = p.Results.varsfunOpt;
-      if isempty(varsfun)
-        varsfun = p.Results.varsfun;
-      end
-
-      daefun = p.Results.daefunOpt;
-      if isempty(daefun)
-        daefun = p.Results.daefun;
-      end
-
-      icfun = p.Results.icfunOpt;
-      if isempty(icfun)
-        icfun = p.Results.icfun;
-      end
+      varsfun = r.vars;
+      daefun = r.dae;
+      icfun = r.ic;
+      callbacksetupfh = r.callbacksetup;
+      callbackfh = r.callback;
 
       self.varsfh = varsfun;
       self.daefh = daefun;
       self.icfh = icfun;
 
-      self.cbfh = p.Results.cbfun;
-      self.cbsetupfh = p.Results.cbsetupfun;
+      self.callbacksetupfh = callbacksetupfh;
+      self.callbackfh = callbackfh;
       
       svh = OclSysvarsHandler;
       self.varsfh(svh);
@@ -133,11 +122,11 @@ classdef OclSystem < handle
           'In initial condition are only equality constraints allowed.');
     end
 
-    function callSimulationCallbackSetup(self)
-      self.cbsetupfh();
+    function callbacksetupfun(self)
+      self.callbacksetupfh();
     end
 
-    function u = callSimulationCallback(self,states,algVars,controls,timesBegin,timesEnd,parameters)
+    function u = callbackfun(self,states,algVars,controls,timesBegin,timesEnd,parameters)
       x = Variable.create(self.states,states);
       z = Variable.create(self.algvars,algVars);
       u = Variable.create(self.controls,controls);
@@ -146,7 +135,7 @@ classdef OclSystem < handle
       t0 = Variable.Matrix(timesBegin);
       t1 = Variable.Matrix(timesEnd);
 
-      self.cbfh(x,z,u,t0,t1,p);
+      self.callbackfh(x,z,u,t0,t1,p);
       u = Variable.getValueAsColumn(u);
     end
 

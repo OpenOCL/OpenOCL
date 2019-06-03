@@ -5,9 +5,12 @@ classdef OclPhase < handle
     H_norm
     integrator
     
-    lagrangecostfun
-    pathcostsfh
-    pathconfh
+    pathcostfun
+    pointcostsfh
+    pointconstraintsfh
+    
+    callbacksetupfh
+    callbackfh
     
     integratormap
     
@@ -40,49 +43,33 @@ classdef OclPhase < handle
       
       emptyfh = @(varargin)[];
       
-      p = inputParser;
-      p.addOptional('varsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('daeOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('lagrangecostsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('pathcostsOpt',[],@oclIsFunHandleOrEmpty);
-      p.addOptional('pathconstraintsOpt',[],@oclIsFunHandleOrEmpty);
+      p = ocl.ArgumentParser;
       
-      p.addParameter('vars',emptyfh,@oclIsFunHandle);
-      p.addParameter('dae',emptyfh,@oclIsFunHandle);
-      p.addParameter('lagrangecosts',emptyfh,@oclIsFunHandle);
-      p.addParameter('pathcosts',emptyfh,@oclIsFunHandle);
-      p.addParameter('pathconstraints',emptyfh,@oclIsFunHandle);
-      p.addParameter('N', 50, @isnumeric);
+      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+      
+      p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
+      p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+
+      p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
-      p.parse(varargin{:});
       
-      varsfhInput = p.Results.varsOpt;
-      if isempty(varsfhInput)
-        varsfhInput = p.Results.vars;
-      end
+      r = p.parse(varargin{:});
       
-      daefhInput = p.Results.daeOpt;
-      if isempty(daefhInput)
-        daefhInput = p.Results.dae;
-      end
+      varsfhInput = r.vars;
+      daefhInput = r.dae;
+      pathcostsfhInput = r.pathcosts;
+      pointcostsfhInput = r.pointcosts;  
+      pointconstraintsfhInput = r.pointconstraints;
       
-      lagrangecostsfhInput = p.Results.lagrangecostsOpt;
-      if isempty(lagrangecostsfhInput)
-        lagrangecostsfhInput = p.Results.lagrangecosts;
-      end
+      callbacksetupfh = r.callbacksetup;
+      callbackfh = r.callback;
       
-      pathcostsfhInput = p.Results.pathcostsOpt;
-      if isempty(pathcostsfhInput)
-        pathcostsfhInput = p.Results.pathcosts;
-      end
-      
-      pathconfhInput = p.Results.pathconstraintsOpt;
-      if isempty(pathconfhInput)
-        pathconfhInput = p.Results.pathconstraints;
-      end
-      
-      H_normInput = p.Results.N;
-      dInput = p.Results.d;
+      H_normInput = r.N;
+      dInput = r.d;
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
@@ -103,14 +90,17 @@ classdef OclPhase < handle
       
       system = OclSystem(varsfhInput, daefhInput);
       colocation = OclCollocation(system.states, system.algvars, system.controls, ...
-                                  system.parameters, @system.daefun, lagrangecostsfhInput, dInput, ...
+                                  system.parameters, @system.daefun, pathcostsfhInput, dInput, ...
                                   system.stateBounds, system.algvarBounds);
       
       self.H_norm = H_normInput;
       self.integrator = colocation;
-      self.pathcostsfh = pathcostsfhInput;
-      self.pathconfh = pathconfhInput;
-      self.lagrangecostfun = @colocation.lagrangecostfun;
+      self.pathcostfun = @colocation.pathcostfun;
+      self.pointcostsfh = pointcostsfhInput;
+      self.pointconstraintsfh = pointconstraintsfhInput;
+      
+      self.callbacksetupfh = callbacksetupfh;
+      self.callbackfh = callbackfh;
       
       self.nx = colocation.nx;
       self.nz = colocation.nz;
@@ -224,27 +214,44 @@ classdef OclPhase < handle
       self.parameterBounds.upper = p_ub.value;
     end
     
-    function r = pathcostfun(self,k,N,x,p)
-      pcHandler = OclCost();
+    function r = pointcostfun(self,k,N,x,p)
+      pointCostHandler = OclCost();
       
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pathcostsfh(pcHandler,k,N,x,p);
+      self.pointcostsfh(pointCostHandler,k,N,x,p);
       
-      r = pcHandler.value;
+      r = pointCostHandler.value;
     end
     
-    function [val,lb,ub] = pathconfun(self,k,N,x,p)
-      pathConstraintHandler = OclConstraint();
+    function [val,lb,ub] = pointconstraintfun(self,k,N,x,p)
+      pointConHandler = OclConstraint();
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pathconfh(pathConstraintHandler,k,N,x,p);
+      self.pointconstraintsfh(pointConHandler,k,N,x,p);
       
-      val = pathConstraintHandler.values;
-      lb = pathConstraintHandler.lowerBounds;
-      ub = pathConstraintHandler.upperBounds;
+      val = pointConHandler.values;
+      lb = pointConHandler.lowerBounds;
+      ub = pointConHandler.upperBounds;
+    end
+    
+    function callbacksetupfun(self)
+      self.callbacksetupfh();
+    end
+    
+    function u = callbackfun(self,x,z,u,t0,t1,p)
+      
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.states,u);
+      p = Variable.create(self.parameters,p);
+      
+      t0 = Variable.Matrix(t0);
+      t1 = Variable.Matrix(t1);
+      
+      u = self.callbackfh(x,z,u,t0,t1,p);
     end
     
   end

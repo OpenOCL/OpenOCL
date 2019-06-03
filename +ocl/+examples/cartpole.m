@@ -2,16 +2,9 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [sol,times,solver] = mainCartPole  
+function [sol,times,solver] = cartpole  
 
-  options = ocl.Options();
-  options.nlp.controlIntervals = 40;
-  options.nlp.collocationOrder = 3;
-
-  system = ocl.System('varsfun',@varsfun, 'daefun', @daefun);
-  ocp = ocl.OCP('pointcosts', @pointcosts);
-  
-  solver = ocl.Solver([], system, ocp, options);
+  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'pointcosts', @pointcosts, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;

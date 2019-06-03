@@ -12,27 +12,25 @@ classdef OclSolver < handle
 
     solver
     phaseList
-
-    cbfh
   end
 
   methods
 
     function self = OclSolver(varargin)
       % OclSolver(T, system, ocp, options, H_norm)
-      % OclSolver(phaseList, options)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
       %           'lagrangecost', @lagrangefun,
       %           'pathcosts', @pathcostfun,
       %           'pathconstraints', @pathconstraintsfun, options)
-      % OclSolver(phaseList, integratorList, options)
+      % OclSolver(phases, transitions, options)
       phaseList = {};
+      emptyfh = @(varargin)[];
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
 
         oclDeprecation(['This way of creating the solver ', ...
-                        'is deprecated. It will be removed from version 5.0.']);
+                        'is deprecated. It will be removed from version >5.01']);
 
         T = varargin{1};
         system = varargin{2};
@@ -68,64 +66,83 @@ classdef OclSolver < handle
         end
 
         phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
-                         ocp.pointcostsfh, ocp.pointconstraintsfh, 'N', H_norm, 'd', d);
+                         ocp.pointcostsfh, ocp.pointconstraintsfh, ...
+                         system.callbacksetupfh, system.callbackfh, 'N', H_norm, 'd', d);
 
-        self.cbfh = system.cbfh;
-
-        phaseList{1} = phase;
+        phaseList = {phase};
         transitionList = {};
+        
+        nlp_casadi_mx = options.nlp_casadi_mx;
+        controls_regularization = options.controls_regularization;
+        controls_regularization_value = options.controls_regularization_value;
+        
+        casadi_options = options.nlp.casadi;
+        casadi_options.ipopt = options.nlp.ipopt;
+        
       elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
-        %           'pathcosts', @pathcostfun,
-        p = inputParser;
-        p.addRequired('T', @(el)isscalar(el) && isnumeric(el));
+        %           'pathcosts', @pathcostfun, options
+        
+        p = ocl.ArgumentParser;
 
-        p.addOptional('varsfunOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('daefunOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pathcostsOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pointcostsOpt', [], @oclIsFunHandleOrEmpty);
-        p.addOptional('pointconstraintsOpt', [], @oclIsFunHandleOrEmpty)
-
-        p.addParameter('varsfun', emptyfh, @oclIsFunHandle);
-        p.addParameter('daefun', emptyfh, @oclIsFunHandle);
-        p.addParameter('pathcosts', emptyfh, @oclIsFunHandle);
-        p.addParameter('pointcosts', emptyfh, @oclIsFunHandle);
-        p.addParameter('pointconstraints', emptyfh, @oclIsFunHandle);
-
-        p.addParameter('N', 30, @isnumeric);
-
-        p.parse(varargin{:});
+        p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
+        p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+        p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        
+        p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+        p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
+        
+        p.addParameter('nlp_casadi_mx', false, @islogical);
+        p.addParameter('controls_regularization', true, @islogical);
+        p.addParameter('controls_regularization_value', 1e-6, @isnumeric);
+        
+        p.addParameter('casadi_options', CasadiOptions(), @(el) isstruct(el));
+        p.addParameter('N', 20, @isnumeric);
+        p.addParameter('d', 3, @isnumeric);
+        
+        r = p.parse(varargin{:});
+        
+        phaseList = {OclPhase(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
+                              r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
         transitionList = {};
+        
+        nlp_casadi_mx = r.nlp_casadi_mx;
+        controls_regularization = r.controls_regularization;
+        controls_regularization_value = r.controls_regularization_value;
+        
+        casadi_options = r.casadi_options;
+        
       else
         % OclSolver(phases, transitions, opt)
-        p = inputParser;
-        p.addOptional('phasesOpt', [], @(el) isempty(el) || iscell(el) || isa(el, 'OclPhase') );
-        p.addOptional('transitionsOpt', [], @(el) isempty(el) || iscell(el) || ishandle(el) );
-        p.addOptional('optionsOpt', [], @(el) isempty(el) || isstruct(el) || isa(el, 'OclOptions') );
+        p = ocl.ArgumentParser;
 
-        p.addParameter('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
-        p.addParameter('transitions', {}, @(el) iscell(el) || ishandle(el) );
-        p.addParameter('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
-        p.parse(varargin{:});
-
-        phaseList = p.Results.phasesOpt;
-        if isempty(phaseList)
-          phaseList = p.Results.phases;
-        end
-
-        transitionList = p.Results.transitionsOpt;
-        if isempty(transitionList)
-          transitionList = p.Results.transitions;
-        end
-
-        options = p.Results.optionsOpt;
-        if isempty(options)
-          options = p.Results.options;
-        end
+        p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
+        p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );
+        
+        p.addParameter('nlp_casadi_mx', false, @islogical);
+        p.addParameter('controls_regularization', true, @islogical);
+        p.addParameter('controls_regularization_value', 1e-6, @isnumeric);
+        
+        p.addParameter('casadi_options', CasadiOptions(), @(el) isstruct(el));
+        
+        r = p.parse(varargin{:});
+        
+        phaseList = r.phases;
+        transitionList = r.transitions;
+        
+        nlp_casadi_mx = r.nlp_casadi_mx;
+        controls_regularization = r.controls_regularization;
+        controls_regularization_value = r.controls_regularization_value;
+        
+        casadi_options = r.casadi_options;
       end
 
-      solver = CasadiSolver(phaseList, transitionList, options);
+      solver = CasadiSolver(phaseList, transitionList, ...
+            nlp_casadi_mx, controls_regularization, controls_regularization_value, casadi_options);
 
       % set instance variables
       self.phaseList = phaseList;
@@ -209,18 +226,25 @@ classdef OclSolver < handle
     end
 
     function solutionCallback(self,times,solution)
-      sN = size(solution.states);
-      N = sN(3);
+      
+      for ph=1:length(self.phaseList)
+        sN = size(solution{ph}.states);
+        N = sN(3);
 
-      t = times.states;
+        t = times{ph}.states;
 
-      for k=1:N-1
-        x = solution.states(:,:,k+1);
-        z = solution.integrator(:,:,k).algvars;
-        u =  solution.controls(:,:,k);
-        p = solution.parameters(:,:,k);
-        self.cbfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+        self.phaseList{ph}.callbacksetupfun()
+
+        for k=1:N-1
+          x = solution{ph}.states(:,:,k+1);
+          z = solution{ph}.integrator(:,:,k).algvars;
+          u = solution{ph}.controls(:,:,k);
+          p = solution{ph}.parameters(:,:,k);
+          self.phaseList{ph}.callbackfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+        end
       end
+      
+
     end
 
     function setParameter(self,id,varargin)

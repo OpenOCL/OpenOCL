@@ -9,6 +9,10 @@ classdef OclAssignment < handle
       self.varsList = varsList;
     end
     
+    function r = length(self)
+      r = length(self.varsList);
+    end
+    
     function varargout = subsref(self,s)
       
       vl = self.varsList;

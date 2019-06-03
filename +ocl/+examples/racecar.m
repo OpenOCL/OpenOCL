@@ -8,16 +8,9 @@ function [solution,times,solver] = racecar
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
   MAX_TIME = 20;
-  CONTROL_INTERVALS = 50;     % control discretization
 
-  options = ocl.Options();
-  options.nlp.controlIntervals = CONTROL_INTERVALS;
-  options.controls_regularization_value = 1e-3;
-
-  system = ocl.System('varsfun', @varsfun, 'daefun', @daefun);
-  ocp = ocl.OCP('pointcosts', @pointcosts, 'pointconstraints', @pointconstraints);
-
-  solver = ocl.Solver([],system,ocp,options);
+  solver = ocl.Solver([], @varsfun, @daefun, ...
+                      'pointcosts', @pointcosts, 'pointconstraints', @pointconstraints, 'N', 50);
 
   % parameters
   m    = 1;         % mass [kg]

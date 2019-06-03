@@ -20,7 +20,7 @@ classdef OclCollocation < handle
     parameters
     
     daefun
-    lagrangecostsfh
+    pathcostsfh
     
     integratorBounds
     stateBounds
@@ -46,7 +46,7 @@ classdef OclCollocation < handle
   
   methods
     
-    function self = OclCollocation(states, algvars, controls, parameters, daefun, lagrangecostsfh, order, ...
+    function self = OclCollocation(states, algvars, controls, parameters, daefun, pathcostsfh, order, ...
                                    stateBounds, algvarBounds)
       
       self.states = states;
@@ -61,7 +61,7 @@ classdef OclCollocation < handle
       self.nt = order;
       
       self.daefun = daefun;
-      self.lagrangecostsfh = lagrangecostsfh;
+      self.pathcostsfh = pathcostsfh;
       
       self.order = order;
       self.tau_root = OclCollocation.colpoints(order);
@@ -128,7 +128,7 @@ classdef OclCollocation < handle
         statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
 
         % Add contribution to quadrature function
-        qj = self.lagrangecostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
+        qj = self.pathcostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
         J = J + self.B(j+1)*qj*h;
       end
 
@@ -170,7 +170,7 @@ classdef OclCollocation < handle
       self.integratorBounds.upper = ub.value;
     end
     
-    function r = lagrangecostfun(self,x,z,u,p)
+    function r = pathcostfun(self,x,z,u,p)
       pcHandler = OclCost();
       
       x = Variable.create(self.states,x);
@@ -178,7 +178,7 @@ classdef OclCollocation < handle
       u = Variable.create(self.controls,u);
       p = Variable.create(self.parameters,p);
       
-      self.lagrangecostsfh(pcHandler,x,z,u,p);
+      self.pathcostsfh(pcHandler,x,z,u,p);
       
       r = pcHandler.value;
     end

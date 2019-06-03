@@ -92,7 +92,7 @@ classdef Simulator < handle
       % setup callback
       global testRun
       if callback && (isempty(testRun) || (testRun==false))
-        self.system.callSimulationCallbackSetup();
+        self.system.callbacksetupfun();
       end
 
       for k=1:N-1
@@ -101,7 +101,7 @@ classdef Simulator < handle
         u = Variable.getValueAsColumn(controlsVec(:,:,k));
 
         if callback && (isempty(testRun) || (testRun==false))
-          u = self.system.callSimulationCallback(x,z,u,times(k),times(k+1),p);
+          u = self.system.callbackfun(x,z,u,times(k),times(k+1),p);
         end
 
         [x,z] = self.integrator.evaluate(x,z,u,t,p);

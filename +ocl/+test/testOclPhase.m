@@ -2,26 +2,26 @@ function testOclPhase
 
 % ocp empty test
 ocp = OclPhase(1, @emptyVars, @emptyDae);
-assertEqual(ocp.lagrangecostfun([],[],[],[]),0);
-assertEqual(ocp.pathcostfun(1,10,[],[]),0);
+assertEqual(ocp.pathcostfun([],[],[],[]),0);
+assertEqual(ocp.pointcostfun(1,10,[],[]),0);
 
-[val,lb,ub] = ocp.pathconfun(1,10,[],[]);
+[val,lb,ub] = ocp.pointconstraintfun(1,10,[],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % ocp valid test
 ocp = OclPhase(1, @validVars, @validDae, ...
-                  @validLagrangeCosts, @validPathCosts, @validPathConstraints);
+                  @validPathCosts, @validPointCosts, @validPointConstraints);
 
-c = ocp.lagrangecostfun(ones(ocp.nx,1),ones(ocp.nz,1),ones(ocp.nu,1),ones(ocp.np,1));
+c = ocp.pathcostfun(ones(ocp.nx,1),ones(ocp.nz,1),ones(ocp.nu,1),ones(ocp.np,1));
 assertEqual(c,26+1e-3*12);
 
-c = ocp.pathcostfun(5,5,ones(ocp.nx,1),ones(ocp.np,1));
+c = ocp.pointcostfun(5,5,ones(ocp.nx,1),ones(ocp.np,1));
 assertEqual(c, -1);
 
 % path constraints in the form of : -inf <= val <= 0 or 0 <= val <= 0
-[val,lb,ub] = ocp.pathconfun(2,5,ones(ocp.nx,1),ones(ocp.np,1));
+[val,lb,ub] = ocp.pointconstraintfun(2,5,ones(ocp.nx,1),ones(ocp.np,1));
 % ub all zero
 assertEqual(ub,zeros(36,1));
 % lb either zero for eq or -inf for ineq
@@ -30,7 +30,7 @@ assertEqual(lb,[-inf,-inf,0,0,-inf,-inf,-inf*ones(1,5),0,-inf*ones(1,12),-inf*on
 assertEqual(val,[0,0,0,0,0,-1,2,2,2,2,2,0,-3*ones(1,12),zeros(1,12)].');
 
 % bc
-[val,lb,ub] = ocp.pathconfun(1,5,2*ones(ocp.nx,1),ones(ocp.np,1));
+[val,lb,ub] = ocp.pointconstraintfun(1,5,2*ones(ocp.nx,1),ones(ocp.np,1));
 assertEqual(ub,zeros(3,1));
 assertEqual(lb,[0,-inf,-inf].');
 assertEqual(val,[-1,1,-4].');
@@ -98,7 +98,7 @@ function validDae(daeh,x,z,u,p)
   daeh.setAlgEquation(p.y(:,1:3,:));
 end
 
-function validLagrangeCosts(ch,x,z,u,p)
+function validPathCosts(ch,x,z,u,p)
   ch.add(x.a); % 1
   ch.add(x.c.'*x.c); % 7
   ch.add(1e-3*sum(sum(u.m))+sum(sum(p.z))+sum(sum(z.t))+x.ttt+1); % 1e-3*12+26
@@ -106,14 +106,14 @@ function validLagrangeCosts(ch,x,z,u,p)
   ch.add(-1); % -1
 end
 
-function validPathCosts(ch,k,N,x,p)
+function validPointCosts(ch,k,N,x,p)
   ch.add(x.d);
   ch.add(0);
   ch.add(-1);
   ch.add(-1*p.v*1);
 end
 
-function validPathConstraints(ch,k,N,x,p)
+function validPointConstraints(ch,k,N,x,p)
   if k == 1
     ch.add(x.a,'==',3);
     ch.add(x.a,'>=',3*1);
