@@ -13,5 +13,4 @@
 % * ocl.examples.bouncingball_sim (multi-phase)
 %
 function examples
-  oclInfo('Running cartpole example')
   ocl.examples.cartpole
