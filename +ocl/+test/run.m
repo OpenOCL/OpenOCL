@@ -7,7 +7,7 @@ function [nFails] = run(testExamples,saveLog,suffix)
   % runTests()
   % runTests(testExamples)
   % runTests(1,1,'computername')
-  ocl.checkStartup()
+  ocl.utils.checkStartup()
   
   if nargin < 1
     testExamples = false;

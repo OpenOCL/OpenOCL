@@ -83,7 +83,7 @@ classdef OclSolver < handle
         %           'pathcosts', @pathcostfun, options
         
         emptyfh = @(varargin)[];
-        p = ocl.ArgumentParser;
+        p = ocl.utils.ArgumentParser;
 
         p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
         p.addKeyword('vars', emptyfh, @oclIsFunHandle);
@@ -117,7 +117,7 @@ classdef OclSolver < handle
         
       else
         % OclSolver(phases, transitions, opt)
-        p = ocl.ArgumentParser;
+        p = ocl.utils.ArgumentParser;
 
         p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
         p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );

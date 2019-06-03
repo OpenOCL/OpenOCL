@@ -1,8 +1,8 @@
-function [sol,times,ocl] = bouncingball  
+function [sol,times,solver] = bouncingball  
   
-  before_contact = OclPhase([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
-  after_contact = OclPhase(1, @after_contact_vars, @after_contact_ode, ...
-                           @after_contact_cost, 'N', 5, 'd', 2);
+  before_contact = ocl.Phase([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
+  after_contact = ocl.Phase(1, @after_contact_vars, @after_contact_ode, ...
+                            @after_contact_cost, 'N', 5, 'd', 2);
 
   before_contact.setInitialStateBounds('s', 1);
   before_contact.setInitialStateBounds('v', 0);
@@ -10,12 +10,12 @@ function [sol,times,ocl] = bouncingball
   
   after_contact.setEndStateBounds('s', 1);
 
-  ocl = OclSolver({before_contact, after_contact}, {@phase_transition});
+  solver = OclSolver({before_contact, after_contact}, {@phase_transition});
 
-  [sol,times] = ocl.solve(ocl.getInitialGuess());
+  [sol,times] = solver.solve(solver.getInitialGuess());
 
   figure
-  spy(full(ocl.jacobian_pattern(sol)))
+  spy(full(solver.jacobian_pattern(sol)))
   
   % phase 1
   figure; 

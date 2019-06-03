@@ -43,7 +43,7 @@ classdef OclPhase < handle
       
       emptyfh = @(varargin)[];
       
-      p = ocl.ArgumentParser;
+      p = ocl.utils.ArgumentParser;
       
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);

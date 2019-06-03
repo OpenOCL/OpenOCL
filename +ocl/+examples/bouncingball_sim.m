@@ -1,10 +1,10 @@
-function [sol,times,ocl] = bouncingball_sim  
+function [sol,times,solver] = bouncingball_sim  
 
   num_phases = 5;
   N = 10;
   
-  phase0 = OclPhase([], @vars, @ode, 'N', N, 'd', 2);
-  phase = OclPhase([], @vars, @ode, 'N', N, 'd', 2);
+  phase0 = ocl.Phase([], @vars, @ode, 'N', N, 'd', 2);
+  phase = ocl.Phase([], @vars, @ode, 'N', N, 'd', 2);
 
   phase0.setInitialStateBounds('s', 1);
   phase0.setInitialStateBounds('v', 0);
@@ -12,13 +12,13 @@ function [sol,times,ocl] = bouncingball_sim
   phase0.setEndStateBounds('s', 0);
   phase.setEndStateBounds('s', 0);
 
-  ocl = OclSolver(num2cell([phase0,repmat(phase,1,num_phases-1)]), ...
+  solver = OclSolver(num2cell([phase0,repmat(phase,1,num_phases-1)]), ...
                   repmat({@transition},1,num_phases-1));
 
-  [sol,times] = ocl.solve(ocl.getInitialGuess());
+  [sol,times] = solver.solve(solver.getInitialGuess());
 
   figure
-  spy(full(ocl.jacobian_pattern(sol)))
+  spy(full(solver.jacobian_pattern(sol)))
   
   vw = VideoWriter(fullfile(getenv('OPENOCL_WORK'),'bouncingball.avi'));
   vw.FrameRate = 30;
