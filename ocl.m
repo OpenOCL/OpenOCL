@@ -60,4 +60,4 @@
 %  <a href="https://openocl.org/bsd-3-clause/">https://openocl.org/bsd-3-clause/</a>
 
 function ocl
-  StartupOCL
+  ocl.utils.StartupOCL
