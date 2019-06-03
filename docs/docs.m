@@ -61,9 +61,13 @@
 % <https://openocl.org/bsd-3-clause/>
 %
 %% Cartpole example
-% 
+%
+% <include>../+ocl/+examples/cartpole.m</include>
+%
 ocl.examples.cartpole(20);
 %
 %% Multi-phase bouncing ball example
-% 
+%
+% <include>../+ocl/+examples/bouncingball.m</include>
+%
 ocl.examples.bouncingball;
