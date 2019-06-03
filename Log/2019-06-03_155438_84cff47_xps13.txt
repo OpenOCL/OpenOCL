@@ -1,0 +1,58 @@
+Test on 03-Jun-2019 15:54:38
+Version: 84cff47cef47e4cd479f505a134a7441ad0e43d9
+
+
+Variable Tests passed
+It took 0.1460 seconds.
+
+TreeVariable Tests passed
+It took 0.0313 seconds.
+
+VarStructure Tests passed
+It took 0.0025 seconds.
+
+OclSystem Tests passed
+It took 0.0313 seconds.
+
+OclOCP Tests passed
+It took 0.0992 seconds.
+
+Integrator Tests passed
+It took 0.6057 seconds.
+
+Examples Tests passed
+It took 15.6851 seconds.
+
+Test 1, constructTotal: 0.1526 seconds.
+Test 1, constructSolver: 0.0191 seconds.
+Test 1, solveTotal: 0.0853 seconds.
+Test 1, solveCasadi: 0.0509 seconds.
+Test 1, nlpFunEval: 0.0314 seconds.
+Test 1, sum: 0.3393 seconds.
+
+Test 2, constructTotal: 0.3469 seconds.
+Test 2, constructSolver: 0.1120 seconds.
+Test 2, solveTotal: 0.6317 seconds.
+Test 2, solveCasadi: 0.5894 seconds.
+Test 2, nlpFunEval: 0.0391 seconds.
+Test 2, sum: 1.7192 seconds.
+
+Test 3, constructTotal: 1.9847 seconds.
+Test 3, constructSolver: 0.1578 seconds.
+Test 3, solveTotal: 2.3194 seconds.
+Test 3, solveCasadi: 2.0556 seconds.
+Test 3, nlpFunEval: 0.2604 seconds.
+Test 3, sum: 6.7780 seconds.
+
+Test 4, simulationTest: 0.3572 seconds.
+Test 4, sum: 0.3572 seconds.
+
+Test 5, constructTotal: 0.3050 seconds.
+Test 5, constructSolver: 0.0852 seconds.
+Test 5, solveTotal: 1.4501 seconds.
+Test 5, solveCasadi: 1.4141 seconds.
+Test 5, nlpFunEval: 0.0324 seconds.
+Test 5, sum: 3.2867 seconds.
+
+All tests passed!
+

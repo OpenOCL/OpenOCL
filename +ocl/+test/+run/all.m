@@ -2,6 +2,5 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-
-function [nFails] = run()
-  nFails = ocl.test.run.core();
+function [nFails] = all
+ nFails = ocl.test.run.core(1);
