@@ -23,8 +23,6 @@ classdef OclSolver < handle
       %           'pathcosts', @pathcostfun,
       %           'pathconstraints', @pathconstraintsfun, options)
       % OclSolver(phases, transitions, options)
-      phaseList = {};
-      emptyfh = @(varargin)[];
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
@@ -84,6 +82,7 @@ classdef OclSolver < handle
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun, options
         
+        emptyfh = @(varargin)[];
         p = ocl.ArgumentParser;
 
         p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
