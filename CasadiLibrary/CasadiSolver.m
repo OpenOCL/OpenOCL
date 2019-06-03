@@ -4,24 +4,30 @@ classdef CasadiSolver < handle
     timeMeasures
     phaseList
     nlpData
-    options
   end
   
   properties (Access = private)
-
+    controls_regularization
+    controls_regularization_value
   end
   
   methods
     
-    function self = CasadiSolver(phaseList, transitionList, options)
+    function self = CasadiSolver(phaseList, transitionList, ...
+                                 nlp_casadi_mx, ...
+                                 controls_regularization, controls_regularization_value, ...
+                                 casadi_options)
       
       oclAssert(length(phaseList)==length(transitionList)+1, ...
                 'You need to specify Np-1 transitions for Np phases.');
+              
+      self.controls_regularization =controls_regularization;
+      self.controls_regularization_value = controls_regularization_value;
       
       constructTotalTic = tic;
       
       % create variables as casadi symbolics
-      if options.nlp_casadi_mx
+      if nlp_casadi_mx
         expr = @casadi.MX.sym;
       else
         expr = @casadi.SX.sym;
@@ -53,7 +59,8 @@ classdef CasadiSolver < handle
         v_last_phase = v_phase;
         v_phase = expr(['v','_ph',mat2str(k)], nv_phase);
           
-        [costs_phase,constraints_phase,constraints_LB_phase,constraints_UB_phase,~] = Simultaneous.simultaneous(phase, v_phase);
+        [costs_phase,constraints_phase,constraints_LB_phase,constraints_UB_phase,~] = Simultaneous.simultaneous(phase, v_phase, ...
+              controls_regularization, controls_regularization_value);
         
         transition_eq = [];
         transition_lb = [];
@@ -94,15 +101,8 @@ classdef CasadiSolver < handle
       casadiNLP.g = constraints;
       casadiNLP.p = [];
       
-      opts = options.nlp.casadi;
-      if isfield(options.nlp,options.nlp.solver)
-        opts.(options.nlp.solver) = options.nlp.(options.nlp.solver);
-      end
-      
       constructSolverTic = tic;
-      casadiSolver = casadi.nlpsol('my_solver', options.nlp.solver,... 
-                                   casadiNLP, opts);
-
+      casadiSolver = casadi.nlpsol('my_solver', 'ipopt', casadiNLP, casadi_options);
       constructSolverTime = toc(constructSolverTic);
 
       nlpData = struct;
@@ -116,7 +116,6 @@ classdef CasadiSolver < handle
       
       self.phaseList = phaseList;
       self.nlpData = nlpData;
-      self.options = options;
       self.timeMeasures = timeMeasures;
     end
     
@@ -126,6 +125,8 @@ classdef CasadiSolver < handle
       solveTotalTic = tic;
       
       pl = self.phaseList;
+      uregu = self.controls_regularization;
+      uregu_value = self.controls_regularization_value;
       
       lbv = cell(length(pl),1);
       ubv = cell(length(pl),1);
@@ -152,7 +153,7 @@ classdef CasadiSolver < handle
       sol = self.nlpData.solver.call(args);
       solveCasadiTime = toc(solveCasadiTic);
       
-      if strcmp(self.options.nlp.solver,'ipopt') && strcmp(self.nlpData.solver.stats().return_status,'NonIpopt_Exception_Thrown')
+      if strcmp(self.nlpData.solver.stats().return_status, 'NonIpopt_Exception_Thrown')
         oclWarning('Solver was interrupted by user.');
       end
       
@@ -173,7 +174,9 @@ classdef CasadiSolver < handle
       constraints = cell(length(pl),1);
       for k=1:length(pl)
         phase = pl{k};
-        [objective{k},constraints{k},~,~,times{k}] = Simultaneous.simultaneous(phase, sol{k});
+        [objective{k},constraints{k},~,~,times{k}] = Simultaneous.simultaneous(phase, sol{k}, ...
+                                                                               uregu, ...
+                                                                               uregu_value);
         objective{k} = full(objective{k});
         constraints{k} = full(constraints{k});
         times{k} = full(times{k});

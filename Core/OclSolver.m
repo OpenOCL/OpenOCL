@@ -32,7 +32,7 @@ classdef OclSolver < handle
         % OclSolver(T, system, ocp, options, H_norm)
 
         oclDeprecation(['This way of creating the solver ', ...
-                        'is deprecated. It will be removed from version 5.0.']);
+                        'is deprecated. It will be removed from version >5.01']);
 
         T = varargin{1};
         system = varargin{2};
@@ -74,6 +74,14 @@ classdef OclSolver < handle
 
         phaseList{1} = phase;
         transitionList = {};
+        
+        nlp_casadi_mx = options.nlp_casadi_mx;
+        controls_regularization = options.controls_regularization;
+        controls_regularization_value = options.controls_regularization_value;
+        
+        casadi_options = options.nlp.casadi;
+        casadi_options.ipopt = options.nlp.ipopt;
+        
       elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
@@ -87,7 +95,12 @@ classdef OclSolver < handle
         p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
         p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
-        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
+        
+        p.addParameter('nlp_casadi_mx', false, @islogical);
+        p.addParameter('controls_regularization', true, @islogical);
+        p.addParameter('controls_regularization_value', 1e-6, @isnumeric);
+        
+        p.addParameter('casadi_options', CasadiOptions(), @(el) isstruct(el));
         p.addParameter('N', 20, @isnumeric);
         p.addParameter('d', 3, @isnumeric);
         
@@ -96,7 +109,12 @@ classdef OclSolver < handle
         phaseList = {OclPhase(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
                               'N', r.N, 'd', r.d)};
         transitionList = {};
-        options = r.options;
+        
+        nlp_casadi_mx = r.nlp_casadi_mx;
+        controls_regularization = r.controls_regularization;
+        controls_regularization_value = r.controls_regularization_value;
+        
+        casadi_options = r.casadi_options;
         
       else
         % OclSolver(phases, transitions, opt)
@@ -104,16 +122,27 @@ classdef OclSolver < handle
 
         p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
         p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );
-        p.addKeyword('options', OclOptions(), @(el) isstruct(el) || isa(el, 'OclOptions'));
+        
+        p.addParameter('nlp_casadi_mx', false, @islogical);
+        p.addParameter('controls_regularization', true, @islogical);
+        p.addParameter('controls_regularization_value', 1e-6, @isnumeric);
+        
+        p.addParameter('casadi_options', CasadiOptions(), @(el) isstruct(el));
         
         r = p.parse(varargin{:});
         
         phaseList = r.phases;
         transitionList = r.transitions;
-        options = r.options;
+        
+        nlp_casadi_mx = r.nlp_casadi_mx;
+        controls_regularization = r.controls_regularization;
+        controls_regularization_value = r.controls_regularization_value;
+        
+        casadi_options = r.casadi_options;
       end
 
-      solver = CasadiSolver(phaseList, transitionList, options);
+      solver = CasadiSolver(phaseList, transitionList, ...
+            nlp_casadi_mx, controls_regularization, controls_regularization_value, casadi_options);
 
       % set instance variables
       self.phaseList = phaseList;
