@@ -74,7 +74,7 @@ classdef OclSolver < handle
 
         phaseList{1} = phase;
         transitionList = {};
-      elseif nargin >= 1 && isscalar(varargin{1})
+      elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun,
