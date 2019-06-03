@@ -6,19 +6,8 @@
 function [solution,times,solver] = vanderpol
 
   END_TIME = 10;              % horizon length (seconds)
-  CONTROL_INTERVALS = 30;     % control discretization
 
-  % Get and set solver options
-  options = ocl.Options();
-  options.nlp.controlIntervals = CONTROL_INTERVALS;
-  options.nlp.collocationOrder = 3;
-  options.nlp.ipopt.linear_solver = 'mumps';
-  options.nlp.solver = 'ipopt';
-
-  system = ocl.System(@varsfun,@daefun);
-  ocp = ocl.OCP(@pathcosts);
-
-  solver = ocl.Solver(END_TIME,system,ocp,options);
+  solver = ocl.Solver(END_TIME, @varsfun, @daefun, @pathcosts, 'N', 30);
 
   % intial state bounds
   solver.setInitialBounds('x',     0);
