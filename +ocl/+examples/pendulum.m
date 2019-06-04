@@ -39,6 +39,7 @@ function [vars,times,solver] = pendulum
   figure
   solver.solutionCallback(times,solution);
 
+  snapnow;
 end
 
 function pointcosts(ch,k,K,x,~)

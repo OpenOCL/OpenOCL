@@ -184,16 +184,17 @@ function animate(time,solution,x_road,y_center,y_min,y_max)
     set(car    , 'XData' , x_car(k));
     set(car    , 'YData' , y_car(k));
 
-    drawnow
+    if isempty(isTestRun) || (isTestRun==false)
+      pause(ts);
+    end
     
+    drawnow;
     % record image for docs
     if k == snap_at(1)
       snapnow;
       snap_at = snap_at(2:end);
     end
     
-    if isempty(isTestRun) || (isTestRun==false)
-      pause(ts);
-    end
+
   end
 end

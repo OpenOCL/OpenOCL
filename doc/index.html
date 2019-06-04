@@ -328,17 +328,17 @@ Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 105
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 101
-Total CPU secs in IPOPT (w/o function evaluations)   =      0.688
-Total CPU secs in NLP function evaluations           =      0.016
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.707
+Total CPU secs in NLP function evaluations           =      0.049
 
 EXIT: Optimal Solution Found.
                t_proc [s]   t_wall [s]    n_eval
-   my_solver        0.705        0.705         1
+   my_solver        0.756        0.756         1
        nlp_f            0            0       137
-       nlp_g        0.001     0.000999       137
+       nlp_g        0.016       0.0166       137
   nlp_grad_f            0            0        83
-  nlp_hess_l            0            0        98
-   nlp_jac_g        0.015       0.0156       106
+  nlp_hess_l        0.001        0.001        98
+   nlp_jac_g        0.032       0.0323       106
 </pre><img vspace="5" hspace="5" src="index_01.png" alt=""> <img vspace="5" hspace="5" src="index_02.png" alt=""> <img vspace="5" hspace="5" src="index_03.png" alt=""> <img vspace="5" hspace="5" src="index_04.png" alt=""> <img vspace="5" hspace="5" src="index_05.png" alt=""> <img vspace="5" hspace="5" src="index_06.png" alt=""> <img vspace="5" hspace="5" src="index_07.png" alt=""> <h2 id="8">Multi-phase bouncing ball example</h2><pre class="language-matlab">
 <span class="keyword">function</span> [sol,times,solver] = bouncingball  
   
@@ -466,17 +466,17 @@ Number of inequality constraint evaluations          = 0
 Number of equality constraint Jacobian evaluations   = 9
 Number of inequality constraint Jacobian evaluations = 0
 Number of Lagrangian Hessian evaluations             = 8
-Total CPU secs in IPOPT (w/o function evaluations)   =      0.011
-Total CPU secs in NLP function evaluations           =      0.000
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.000
+Total CPU secs in NLP function evaluations           =      0.015
 
 EXIT: Optimal Solution Found.
                t_proc [s]   t_wall [s]    n_eval
-   my_solver        0.013       0.0131         1
+   my_solver        0.015       0.0156         1
        nlp_f            0            0         9
        nlp_g            0            0         9
   nlp_grad_f            0            0        10
   nlp_hess_l            0            0         8
-   nlp_jac_g            0            0        10
+   nlp_jac_g        0.015       0.0156        10
 </pre><img vspace="5" hspace="5" src="index_08.png" alt=""> <img vspace="5" hspace="5" src="index_09.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
 ##### SOURCE BEGIN #####
 %% OpenOCL - Open Optimal Control Library

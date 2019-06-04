@@ -138,12 +138,11 @@ function bbanimate(times,rTrajectory,thetaTrajectory,c)
       pause(times(i)-times(i-1));
     end
 
+    drawnow
     if i == snap_at(1)
       snapnow;
       snap_at = snap_at(2:end);
     end
-
-    drawnow
   end
 
 end

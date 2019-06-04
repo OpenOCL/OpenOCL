@@ -30,6 +30,6 @@ function xVec = pendulum_sim
   controlsSeries.F.set(10);
 
   [xVec,~,~] = simulator.simulate(states,times,controlsSeries,p);
-
+  snapnow;
 end
 
