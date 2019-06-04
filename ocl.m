@@ -9,41 +9,29 @@
 %
 % Run an example with:
 %   
-%   ocl.examples.cartpole
+%   <a href="matlab:ocl.examples.cartpole">ocl.examples.cartpole</a>
 % 
 % Get a list of all examples:
 %
-%   help ocl.examples
+%   <a href="matlab:help ocl.examples">help ocl.examples</a>
 %
 % Look at example code:
 %
-%   open ocl.examples.cartpole
+%   <a href="matlab:open ocl.examples.cartpole">open ocl.examples.cartpole</a>
 %
 %% List of optimal control examples
 % 
-% * ocl.examples.vanderpol
-% * ocl.examples.ballandbeam
-% * ocl.examples.pendulum
-% * ocl.examples.racecar
-% * ocl.examples.cartpole
-% * ocl.examples.bouncingball (multi-stage)
+% * <a href="matlab:open ocl.examples.ballandbeam">ocl.examples.ballandbeam</a>
+% * <a href="matlab:open ocl.examples.bouncingball">ocl.examples.bouncingball</a> (multi-stage)
+% * <a href="matlab:open ocl.examples.cartpole">ocl.examples.cartpole</a>
+% * <a href="matlab:open ocl.examples.pendulum">ocl.examples.pendulum</a>
+% * <a href="matlab:open ocl.examples.racecar">ocl.examples.racecar</a>
+% * <a href="matlab:open ocl.examples.vanderpol">ocl.examples.vanderpol</a>
 %
 %% List of simulation examples
 %
-% * ocl.examples.pendulum_sim
-% * ocl.examples.bouncingball_sim (multi-stage)
-%
-%% List of classes
-%
-% * ocl.System (OclSystem)
-% * ocl.OCP (OclOCP)
-% * ocl.Options (OclOptions)
-% * ocl.Solver (OclSolver)
-%
-%% List of functions
-%
-% * ocl.plot
-% * ocl.stairs
+% * <a href="matlab:open ocl.examples.bouncingball">ocl.examples.bouncingball</a> (multi-stage)
+% * <a href="matlab:open ocl.examples.pendulum_sim">ocl.examples.pendulum_sim</a> 
 %
 %% Copyright notice
 %

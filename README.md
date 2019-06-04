@@ -7,7 +7,7 @@ Visit the main website [openocl.org](https://openocl.org) to [download](https://
 ## Get started
 
 ```m
-help ocl
+doc ocl
 ocl.examples.cartpole
 open ocl.examples.cartpole
 ```
