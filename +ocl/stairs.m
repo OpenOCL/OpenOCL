@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function varargout = stairs(varargin)
-  ocl.checkStartup()
+  ocl.utils.checkStartup()
   varargout = cell(nargout,1);
   [varargout{:}] = OclStairs(varargin{:});
 end

@@ -7,4 +7,5 @@ slprj/
 octave-workspace
 .autosave
 Workspace
-Lib
+Lib/casadi
+doc/html

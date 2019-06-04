@@ -3,6 +3,9 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function opt = OclOptions()
+
+  oclDeprecation('The use of OclOptions is deprecated, pass options directly to the stage or solver.')
+
   opt = struct;
   opt.solverInterface   = 'casadi';
   opt.system_casadi_mx  = false;

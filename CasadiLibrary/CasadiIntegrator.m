@@ -22,7 +22,7 @@ classdef CasadiIntegrator < handle
       h = casadi.SX.sym('h',1,1);
       parameters = casadi.SX.sym('p',system.np,1);
       
-      [ode,alg] = system.systemFun.evaluate(states,algVars,controls,parameters);
+      [ode,alg] = system.daefun(states,algVars,controls,parameters);
 
       dae = struct;
       dae.x = states;

@@ -3,6 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function r = Options(varargin)
-  ocl.checkStartup()
+  ocl.utils.checkStartup()
+  oclDeprecation('ocl.Options will be removed in future versions.')
   r = OclOptions(varargin{:});
 end

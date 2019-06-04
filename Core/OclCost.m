@@ -5,14 +5,12 @@
 classdef OclCost < handle
   properties
     value
-    obj
   end
   
   methods
     
-    function self = OclCost(obj)
+    function self = OclCost()
       self.value = 0;
-      self.obj = obj;
     end
     
     function add(self,val)

@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding="utf-8"?>
+<toc version="2.0">
+    <tocitem target="index.html">OpenOCL - Open Optimal Control Library
+      <tocitem target="https://openocl.org/ocl-docs-matlab/examples.html">Examples
+        <tocitem target="https://openocl.org/ocl-docs-matlab/vanderpol.html">vanderpol</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/ballandbeam.html">ballandbeam</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/cartpole.html">cartpole</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/racecar.html">racecar</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/bouncingball.html">bouncingball</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/bouncingball_sim.html">bouncingball_sim</tocitem>
+        <tocitem target="https://openocl.org/ocl-docs-matlab/pendulum_sim.html">pendulum_sim</tocitem>
+      </tocitem>
+    
+    </tocitem>
+</toc>

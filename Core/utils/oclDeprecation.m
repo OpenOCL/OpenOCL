@@ -3,4 +3,4 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function oclDeprecation(msg)
-  oclWarning([msg, ' This will be removed in future versions.']);
+  oclWarning(msg);

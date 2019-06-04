@@ -171,6 +171,8 @@ classdef Variable < handle
           % v.slice(1) || v.get(id)
           [varargout{1:nargout}] = builtin('subsref',self,s);
         end
+      elseif isempty(s)
+        [varargout{1}] = self;
       else
         oclError('Not supported.');
       end

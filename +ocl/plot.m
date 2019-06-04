@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function varargout = plot(varargin)
-  ocl.checkStartup()
+  ocl.utils.checkStartup()
   varargout = cell(nargout,1);
   [varargout{:}] = OclPlot(varargin{:});
 end
