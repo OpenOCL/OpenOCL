@@ -60,7 +60,8 @@ function StartupOCL(in)
   
   if ~exist(fullfile(oclPath,'Lib','casadi'), 'dir')
     r = mkdir(fullfile(oclPath,'Lib','casadi'));
-    oclAssert(r, 'Could not create direcotory in Lib/casadi');
+    oclAssert(r, 'Could not create directory in Lib/casadi');
+    casadiFound = false;
   else
     % check if casadi is already installed
     addpath(fullfile(oclPath,'Lib'))
