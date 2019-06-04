@@ -193,7 +193,5 @@ function animate(time,solution,x_road,y_center,y_min,y_max)
       snapnow;
       snap_at = snap_at(2:end);
     end
-    
-
   end
 end
