@@ -11,7 +11,7 @@ classdef OclSolver < handle
     igParameters
 
     solver
-    phaseList
+    stageList
   end
 
   methods
@@ -22,7 +22,7 @@ classdef OclSolver < handle
       %           'lagrangecost', @lagrangefun,
       %           'pathcosts', @pathcostfun,
       %           'pathconstraints', @pathconstraintsfun, options)
-      % OclSolver(phases, transitions, options)
+      % OclSolver(stages, transitions, options)
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
@@ -63,11 +63,11 @@ classdef OclSolver < handle
           oclError('Dimension of T does not match the number of control intervals.')
         end
 
-        phase = OclPhase(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
+        stage = OclStage(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
                          ocp.pointcostsfh, ocp.pointconstraintsfh, ...
                          system.callbacksetupfh, system.callbackfh, 'N', H_norm, 'd', d);
 
-        phaseList = {phase};
+        stageList = {stage};
         transitionList = {};
         
         nlp_casadi_mx = options.nlp_casadi_mx;
@@ -105,7 +105,7 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        phaseList = {OclPhase(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
+        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
                               r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
         transitionList = {};
         
@@ -119,7 +119,7 @@ classdef OclSolver < handle
         % OclSolver(phases, transitions, opt)
         p = ocl.utils.ArgumentParser;
 
-        p.addKeyword('phases', {}, @(el) iscell(el) || isa(el, 'OclPhase'));
+        p.addKeyword('stages', {}, @(el) iscell(el) || isa(el, 'OclStage'));
         p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
@@ -130,7 +130,7 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        phaseList = r.phases;
+        stageList = r.phases;
         transitionList = r.transitions;
         
         nlp_casadi_mx = r.nlp_casadi_mx;
@@ -140,25 +140,25 @@ classdef OclSolver < handle
         casadi_options = r.casadi_options;
       end
 
-      solver = CasadiSolver(phaseList, transitionList, ...
+      solver = CasadiSolver(stageList, transitionList, ...
             nlp_casadi_mx, controls_regularization, controls_regularization_value, casadi_options);
 
       % set instance variables
-      self.phaseList = phaseList;
+      self.stageList = stageList;
       self.solver = solver;
     end
 
     function r = jacobian_pattern(self, assignment)
 
       s = self.solver;
-      ph_list = self.phaseList;
+      st_list = self.stageList;
 
       v = s.nlpData.casadiNLP.x;
       g = s.nlpData.casadiNLP.g;
       jac_fun = casadi.Function('j', {v}, {jacobian(g, v)});
 
-      values = cell(length(ph_list),1);
-      for k=1:length(ph_list)
+      values = cell(length(st_list),1);
+      for k=1:length(st_list)
         values{k} = assignment{k}.value;
       end
       values = vertcat(values{:});
@@ -168,24 +168,24 @@ classdef OclSolver < handle
     function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
 
       s = self.solver;
-      ph_list = self.phaseList;
+      st_list = self.stageList;
 
-      ig_list = cell(length(ph_list),1);
-      for k=1:length(ph_list)
+      ig_list = cell(length(st_list),1);
+      for k=1:length(st_list)
         ig_list{k} = ig{k}.value;
       end
 
       [sol,times,objective,constraints] = s.solve(ig_list);
 
-      sol_list = cell(length(ph_list));
-      times_list = cell(length(ph_list));
-      obj_list = cell(length(ph_list));
-      con_list = cell(length(ph_list));
+      sol_list = cell(length(st_list));
+      times_list = cell(length(st_list));
+      obj_list = cell(length(st_list));
+      con_list = cell(length(st_list));
 
-      for k=1:length(ph_list)
-        phase = ph_list{k};
-        vars_structure = Simultaneous.vars(phase);
-        times_structure = Simultaneous.times(phase);
+      for k=1:length(st_list)
+        stage = st_list{k};
+        vars_structure = Simultaneous.vars(stage);
+        times_structure = Simultaneous.times(stage);
         sol_list{k} = Variable.create(vars_structure, sol{k});
         times_list{k} = Variable.create(times_structure, times{k});
         obj_list{k} = objective{k};
@@ -210,7 +210,7 @@ classdef OclSolver < handle
 
     function igAssignment = getInitialGuess(self)
 
-      pl = self.phaseList;
+      pl = self.stageList;
 
       igList = cell(length(pl),1);
       for k=1:length(pl)
@@ -221,25 +221,24 @@ classdef OclSolver < handle
       end
 
       igAssignment = OclAssignment(igList);
-
     end
 
     function solutionCallback(self,times,solution)
       
-      for ph=1:length(self.phaseList)
-        sN = size(solution{ph}.states);
+      for st_idx=1:length(self.stageList)
+        sN = size(solution{st_idx}.states);
         N = sN(3);
 
-        t = times{ph}.states;
+        t = times{st_idx}.states;
 
-        self.phaseList{ph}.callbacksetupfun()
+        self.stageList{st_idx}.callbacksetupfun()
 
         for k=1:N-1
-          x = solution{ph}.states(:,:,k+1);
-          z = solution{ph}.integrator(:,:,k).algvars;
-          u = solution{ph}.controls(:,:,k);
-          p = solution{ph}.parameters(:,:,k);
-          self.phaseList{ph}.callbackfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
+          x = solution{st_idx}.states(:,:,k+1);
+          z = solution{st_idx}.integrator(:,:,k).algvars;
+          u = solution{st_idx}.controls(:,:,k);
+          p = solution{st_idx}.parameters(:,:,k);
+          self.stageList{st_idx}.callbackfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
         end
       end
       
@@ -250,48 +249,48 @@ classdef OclSolver < handle
       if length(self.phaseList) == 1
         self.phaseList{1}.setParameterBounds(id, varargin{:});
       else
-        oclError('For multiphase problems, set the bounds to the phases directlly.')
+        oclError('For multi-stage problems, set the bounds to the stages directlly.')
       end
     end
 
     function setBounds(self,id,varargin)
       % setBounds(id,value)
       % setBounds(id,lower,upper)
-      if length(self.phaseList) == 1
+      if length(self.stageList) == 1
 
         % check if id is a state, control, algvar or parameter
-        if oclFieldnamesContain(self.phaseList{1}.states.getNames(), id)
-          self.phaseList{1}.setStateBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.phaseList{1}.algvars.getNames(), id)
-          self.phaseList{1}.setAlgvarBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.phaseList{1}.controls.getNames(), id)
-          self.phaseList{1}.setControlBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.phaseList{1}.parameters.getNames(), id)
-          self.phaseList{1}.setParameterBounds(id, varargin{:});
+        if oclFieldnamesContain(self.stageList{1}.states.getNames(), id)
+          self.stageList{1}.setStateBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.stageList{1}.algvars.getNames(), id)
+          self.stageList{1}.setAlgvarBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.stageList{1}.controls.getNames(), id)
+          self.stageList{1}.setControlBounds(id, varargin{:});
+        elseif oclFieldnamesContain(self.stageList{1}.parameters.getNames(), id)
+          self.stageList{1}.setParameterBounds(id, varargin{:});
         end
 
       else
-        oclError('For multiphase problems, set the bounds to the phases directly.')
+        oclError('For multi-stage problems, set the bounds to the stages directly.')
       end
     end
 
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      if length(self.phaseList) == 1
-        self.phaseList{1}.setInitialStateBounds(id, varargin{:});
+      if length(self.stageList) == 1
+        self.stageList{1}.setInitialStateBounds(id, varargin{:});
       else
-        oclError('For multiphase problems, set the bounds to the phases directly.')
+        oclError('For multi-stage problems, set the bounds to the stages directly.')
       end
     end
 
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      if length(self.phaseList) == 1
-        self.phaseList{1}.setEndStateBounds(id, varargin{:});
+      if length(self.stageList) == 1
+        self.stageList{1}.setEndStateBounds(id, varargin{:});
       else
-        oclError('For multiphase problems, set the bounds to the phases directlly.')
+        oclError('For multi-stage problems, set the bounds to the stages directlly.')
       end
     end
 

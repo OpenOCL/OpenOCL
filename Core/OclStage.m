@@ -1,4 +1,4 @@
-classdef OclPhase < handle
+classdef OclStage < handle
 
   properties
     T
@@ -39,7 +39,7 @@ classdef OclPhase < handle
   
   methods
     
-    function self = OclPhase(T, varargin)
+    function self = OclStage(T, varargin)
       
       emptyfh = @(varargin)[];
       

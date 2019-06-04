@@ -12,23 +12,23 @@ classdef Simultaneous < handle
   
   methods (Static)
     
-    function phase_vars_structure = vars(phase)
+    function phase_vars_structure = vars(stage)
       
       phase_vars_structure = OclStructure();
       phase_vars_structure.addRepeated({'states','integrator','controls','parameters','h'}, ...
-                          {phase.states, ...
-                           phase.integrator.vars, ...
-                           phase.controls, ...
-                           phase.parameters, ...
-                           OclMatrix([1,1])}, length(phase.H_norm));
-      phase_vars_structure.add('states', phase.states);
-      phase_vars_structure.add('parameters', phase.parameters);
+                          {stage.states, ...
+                           stage.integrator.vars, ...
+                           stage.controls, ...
+                           stage.parameters, ...
+                           OclMatrix([1,1])}, length(stage.H_norm));
+      phase_vars_structure.add('states', stage.states);
+      phase_vars_structure.add('parameters', stage.parameters);
     end
     
-    function phase_time_struct = times(phase)
+    function phase_time_struct = times(stage)
       phase_time_struct = OclStructure();
       phase_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
-                              {OclMatrix([1,1]), OclMatrix([phase.integrator.nt,1]), OclMatrix([1,1])}, length(phase.H_norm));
+                              {OclMatrix([1,1]), OclMatrix([stage.integrator.nt,1]), OclMatrix([1,1])}, length(stage.H_norm));
       phase_time_struct.add('states', OclMatrix([1,1]));
     end
     
@@ -59,23 +59,23 @@ classdef Simultaneous < handle
       
     end
     
-    function x = first_state(phase,phaseVars)
-      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
-      x = phaseVars(X_indizes(:,1));
+    function x = first_state(stage,stageVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(stage);
+      x = stageVars(X_indizes(:,1));
     end
     
-    function x = last_state(phase,phaseVars)
-      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(phase);
-      x = phaseVars(X_indizes(:,end));
+    function x = last_state(stage,stageVars)
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(stage);
+      x = stageVars(X_indizes(:,end));
     end
     
-    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getPhaseIndizes(phase)
+    function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getStageIndizes(stage)
 
-      N = length(phase.H_norm);
-      nx = phase.nx;
-      ni = phase.integrator.ni;
-      nu = phase.nu;
-      np = phase.np;
+      N = length(stage.H_norm);
+      nx = stage.nx;
+      ni = stage.integrator.ni;
+      nu = stage.nu;
+      np = stage.np;
       
       % number of variables in one control interval
       % + 1 for the timestep
@@ -93,128 +93,128 @@ classdef Simultaneous < handle
       H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
     end
         
-    function [lb_phase,ub_phase] = getBounds(phase)
+    function [lb_stage,ub_stage] = getBounds(stage)
       
-      [nv_phase,~] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+      [nv_stage,~] = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
 
-      lb_phase = -inf * ones(nv_phase,1);
-      ub_phase = inf * ones(nv_phase,1);
+      lb_stage = -inf * ones(nv_stage,1);
+      ub_stage = inf * ones(nv_stage,1);
 
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getStageIndizes(stage);
 
       % states
       for m=1:size(X_indizes,2)
-        lb_phase(X_indizes(:,m)) = phase.stateBounds.lower;
-        ub_phase(X_indizes(:,m)) = phase.stateBounds.upper;
+        lb_stage(X_indizes(:,m)) = stage.stateBounds.lower;
+        ub_stage(X_indizes(:,m)) = stage.stateBounds.upper;
       end
 
       % Merge the two vectors of bound values for lower bounds and upper bounds.
       % Bound values can only get narrower, e.g. higher for lower bounds.
-      lb_phase(X_indizes(:,1)) = max(phase.stateBounds.lower,phase.stateBounds0.lower);
-      ub_phase(X_indizes(:,1)) = min(phase.stateBounds.upper,phase.stateBounds0.upper);
+      lb_stage(X_indizes(:,1)) = max(stage.stateBounds.lower,stage.stateBounds0.lower);
+      ub_stage(X_indizes(:,1)) = min(stage.stateBounds.upper,stage.stateBounds0.upper);
 
-      lb_phase(X_indizes(:,end)) = max(phase.stateBounds.lower,phase.stateBoundsF.lower);
-      ub_phase(X_indizes(:,end)) = min(phase.stateBounds.upper,phase.stateBoundsF.upper);
+      lb_stage(X_indizes(:,end)) = max(stage.stateBounds.lower,stage.stateBoundsF.lower);
+      ub_stage(X_indizes(:,end)) = min(stage.stateBounds.upper,stage.stateBoundsF.upper);
 
       % integrator bounds
       for m=1:size(I_indizes,2)
-        lb_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.lower;
-        ub_phase(I_indizes(:,m)) = phase.integrator.integratorBounds.upper;
+        lb_stage(I_indizes(:,m)) = stage.integrator.integratorBounds.lower;
+        ub_stage(I_indizes(:,m)) = stage.integrator.integratorBounds.upper;
       end
 
       % controls
       for m=1:size(U_indizes,2)
-        lb_phase(U_indizes(:,m)) = phase.controlBounds.lower;
-        ub_phase(U_indizes(:,m)) = phase.controlBounds.upper;
+        lb_stage(U_indizes(:,m)) = stage.controlBounds.lower;
+        ub_stage(U_indizes(:,m)) = stage.controlBounds.upper;
       end
 
       % parameters (only set the initial parameters)
-      lb_phase(P_indizes(:,1)) = phase.parameterBounds.lower;
-      ub_phase(P_indizes(:,1)) = phase.parameterBounds.upper;
+      lb_stage(P_indizes(:,1)) = stage.parameterBounds.lower;
+      ub_stage(P_indizes(:,1)) = stage.parameterBounds.upper;
 
       % timesteps
-      if isempty(phase.T)
-        lb_phase(H_indizes) = Simultaneous.h_min;
+      if isempty(stage.T)
+        lb_stage(H_indizes) = Simultaneous.h_min;
       else
-        lb_phase(H_indizes) = phase.H_norm * phase.T;
-        ub_phase(H_indizes) = phase.H_norm * phase.T;
+        lb_stage(H_indizes) = stage.H_norm * stage.T;
+        ub_stage(H_indizes) = stage.H_norm * stage.T;
       end
     end
     
-    function ig_phase = getInitialGuess(phase)
+    function ig_stage = getInitialGuess(stage)
       % creates an initial guess from the information that we have about
       % bounds in the phase
       
-      [nv_phase,N] = Simultaneous.nvars(phase.H_norm, phase.nx, phase.integrator.ni, phase.nu, phase.np);
+      [nv_phase,N] = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
 
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getStageIndizes(stage);
 
-      ig_phase = 0 * ones(nv_phase,1);
+      ig_stage = 0 * ones(nv_phase,1);
 
-      igx0 = Simultaneous.igFromBounds(phase.stateBounds0);
-      igxF = Simultaneous.igFromBounds(phase.stateBoundsF);
+      igx0 = Simultaneous.igFromBounds(stage.stateBounds0);
+      igxF = Simultaneous.igFromBounds(stage.stateBoundsF);
 
-      ig_phase(X_indizes(:,1)) = igx0;
-      ig_phase(X_indizes(:,end)) = igxF;
+      ig_stage(X_indizes(:,1)) = igx0;
+      ig_stage(X_indizes(:,end)) = igxF;
 
-      algVarsGuess = Simultaneous.igFromBounds(phase.integrator.algvarBounds);      
+      algVarsGuess = Simultaneous.igFromBounds(stage.integrator.algvarBounds);      
       for m=1:N
         xGuessInterp = igx0 + (m-1)/N.*(igxF-igx0);
         % integrator variables
-        ig_phase(I_indizes(:,m)) = phase.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
+        ig_stage(I_indizes(:,m)) = stage.integrator.getInitialGuess(xGuessInterp, algVarsGuess);
 
         % states
-        ig_phase(X_indizes(:,m)) = xGuessInterp;
+        ig_stage(X_indizes(:,m)) = xGuessInterp;
       end
 
       % controls
       for m=1:size(U_indizes,2)
-        ig_phase(U_indizes(:,m)) = Simultaneous.igFromBounds(phase.controlBounds);
+        ig_stage(U_indizes(:,m)) = Simultaneous.igFromBounds(stage.controlBounds);
       end
 
       % parameters
       for m=1:size(P_indizes,2)
-        ig_phase(P_indizes(:,m)) = Simultaneous.igFromBounds(phase.parameterBounds);
+        ig_stage(P_indizes(:,m)) = Simultaneous.igFromBounds(stage.parameterBounds);
       end
 
       % timesteps
-      if isempty(phase.T)
-        ig_phase(H_indizes) = phase.H_norm;
+      if isempty(stage.T)
+        ig_stage(H_indizes) = stage.H_norm;
       else
-        ig_phase(H_indizes) = phase.H_norm * phase.T;
+        ig_stage(H_indizes) = stage.H_norm * stage.T;
       end
     end
     
-    function [nv_phase,N] = nvars(H_norm, nx, ni, nu, np)
+    function [nv_stage,N] = nvars(H_norm, nx, ni, nu, np)
       % number of control intervals
       N = length(H_norm);
       
       % N control interval which each have states, integrator vars,
       % controls, parameters, and timesteps.
       % Ends with a single state.
-      nv_phase = N*nx + N*ni + N*nu + N*np + N + nx + np;
+      nv_stage = N*nx + N*ni + N*nu + N*np + N + nx + np;
     end
     
-    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = simultaneous(phase, phaseVars, ...
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = simultaneous(stage, stage_vars, ...
             controls_regularization, controls_regularization_value)
       
-      H_norm = phase.H_norm;
-      T = phase.T;
-      nx = phase.nx;
-      ni = phase.integrator.ni;
-      nu = phase.nu;
-      np = phase.np;
-      pointcost_fun = @phase.pointcostfun;
-      pointcon_fun = @phase.pointconstraintfun;
+      H_norm = stage.H_norm;
+      T = stage.T;
+      nx = stage.nx;
+      ni = stage.integrator.ni;
+      nu = stage.nu;
+      np = stage.np;
+      pointcost_fun = @stage.pointcostfun;
+      pointcon_fun = @stage.pointconstraintfun;
 
       [~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
-      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getPhaseIndizes(phase);
+      [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getStageIndizes(stage);
       
-      X = reshape(phaseVars(X_indizes), nx, N+1);
-      I = reshape(phaseVars(I_indizes), ni, N);
-      U = reshape(phaseVars(U_indizes), nu, N);
-      P = reshape(phaseVars(P_indizes), np, N+1);
-      H = reshape(phaseVars(H_indizes), 1 , N);
+      X = reshape(stage_vars(X_indizes), nx, N+1);
+      I = reshape(stage_vars(I_indizes), ni, N);
+      U = reshape(stage_vars(U_indizes), nu, N);
+      P = reshape(stage_vars(P_indizes), np, N+1);
+      H = reshape(stage_vars(H_indizes), 1 , N);
       
       % point constraints, point costs
       pointcon = cell(1,N+1);
@@ -237,7 +237,7 @@ classdef Simultaneous < handle
         pointcon_ub = double.empty(0,N+1);
       end
       
-      [xend_arr, cost_arr, int_eq_arr, int_times] = phase.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
+      [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
                 
       % timestep constraints
       h_eq = [];

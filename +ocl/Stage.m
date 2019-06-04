@@ -2,8 +2,8 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function varargout = Phase(varargin)
+function varargout = Stage(varargin)
   ocl.utils.checkStartup()
   varargout = cell(nargout,1);
-  [varargout{:}] = OclPhase(varargin{:});
+  [varargout{:}] = OclStage(varargin{:});
 end
