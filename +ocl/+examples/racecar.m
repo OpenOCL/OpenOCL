@@ -174,17 +174,26 @@ function animate(time,solution,x_road,y_center,y_min,y_max)
   legend('car','car trajectory');
   axis equal;xlabel('x[m]');ylabel('y[m]');
   pause(ts)
+  
+  snap_at = floor(linspace(2,length(time),4));
+  
   %%
-  for i = 2:1:length(time)
-    set(carLine, 'XData' , x_car(1:i));
-    set(carLine, 'YData' , y_car(1:i));
-    set(car    , 'XData' , x_car(i));
-    set(car    , 'YData' , y_car(i));
+  for k = 2:1:length(time)
+    set(carLine, 'XData' , x_car(1:k));
+    set(carLine, 'YData' , y_car(1:k));
+    set(car    , 'XData' , x_car(k));
+    set(car    , 'YData' , y_car(k));
 
+    drawnow
+    
+    % record image for docs
+    if k == snap_at(1)
+      snapnow;
+      snap_at = snap_at(2:end);
+    end
+    
     if isempty(isTestRun) || (isTestRun==false)
       pause(ts);
     end
-
-    drawnow
   end
 end

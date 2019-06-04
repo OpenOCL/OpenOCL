@@ -119,6 +119,8 @@ function bbanimate(times,rTrajectory,thetaTrajectory,c)
   axis([-1.2, 1.2, -0.7, 0.7]);
   xlabel('x [m]');ylabel('y [m]');
 
+  snap_at = floor(linspace(2,length(times),4));
+  
   for i = 2:1:length(times)
     xbeam = c.L*cos(thetaTrajectory(i));
     ybeam = c.L*sin(thetaTrajectory(i));
@@ -134,6 +136,11 @@ function bbanimate(times,rTrajectory,thetaTrajectory,c)
 
     if ~oclIsTestRun()
       pause(times(i)-times(i-1));
+    end
+
+    if i == snap_at(1)
+      snapnow;
+      snap_at = snap_at(2:end);
     end
 
     drawnow

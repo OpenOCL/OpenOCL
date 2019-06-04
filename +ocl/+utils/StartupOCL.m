@@ -50,6 +50,8 @@ function StartupOCL(in)
   addpath(oclPath)
   addpath(exportDir)
   addpath(fullfile(oclPath,'CasadiLibrary'))
+  
+  addpath(fullfile(oclPath,'doc'))
 
   addpath(fullfile(oclPath,'Core'))
   addpath(fullfile(oclPath,'Core','Variables'))

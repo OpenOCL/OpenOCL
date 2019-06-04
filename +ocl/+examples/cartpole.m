@@ -2,12 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [sol,times,solver] = cartpole(snap)
-
-  % snap images for docs
-  if nargin == 0
-    snap = 0;
-  end
+function [sol,times,solver] = cartpole
 
   solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'pointcosts', @pointcosts, 'N', 40, 'd', 3);
 
@@ -41,7 +36,7 @@ function [sol,times,solver] = cartpole(snap)
   legend({'force [10*N]','position [m]','velocity [m/s]','theta [rad]'})
   xlabel('time [s]');
 
-  animate(sol,times, snap);
+  animate(sol,times);
 
 end
 
@@ -100,15 +95,24 @@ function handles = animate(sol,times,snap)
   times = times.integrator.value;
   times = times(:);
   
+  snap_at = floor(linspace(2,length(times),4));
+  
   for k=2:length(times)
     t = times(k);
     x = states(:,k);
     dt = t-times(k-1);
-    handles = draw(t, dt, x, [0,0,0,0], pmax, handles, snap, k);
+    
+    handles = draw(t, dt, x, [0,0,0,0], pmax, handles);
+    
+    % record image for docs
+    if k == snap_at(1)
+      snapnow;
+      snap_at = snap_at(2:end);
+    end
   end
 end
 
-function handles = draw(time, dt, x, Xref, pmax, handles, snap, iter)
+function handles = draw(time, dt, x, Xref, pmax, handles)
   p = x(1);
   theta = x(2);
   t = time;
@@ -118,11 +122,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles, snap, iter)
 
   if isempty(handles)
   
-    if snap == 0 
-      figure;
-    else
-      figure('Position', [50 50 400 300]);
-    end
+    figure;
 
     hold on;
     x_target = Xref(1);
@@ -171,10 +171,6 @@ function handles = draw(time, dt, x, Xref, pmax, handles, snap, iter)
   global testRun
   if isempty(testRun) || (testRun==false)
     pause(dt);
-    
-    if snap > 0 && mod(iter,snap)==0
-      snapnow
-    end
   end
 end
 
