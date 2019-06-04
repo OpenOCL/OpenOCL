@@ -188,7 +188,6 @@ function animate(time,solution,x_road,y_center,y_min,y_max)
       pause(ts);
     end
     
-    drawnow;
     % record image for docs
     if k == snap_at(1)
       snapnow;

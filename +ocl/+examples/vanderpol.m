@@ -29,7 +29,6 @@ function [solution,times,solver] = vanderpol
   xlabel('time')
   legend({'x','y','u'})
 
-  drawnow;
   snapnow;
 end
 

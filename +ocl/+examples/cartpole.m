@@ -86,7 +86,7 @@ function pointcosts(self,k,K,x,~)
   end
 end
 
-function handles = animate(sol,times,snap)
+function handles = animate(sol,times)
 
   handles = {};
   pmax = max(abs(sol.states.p.value));
