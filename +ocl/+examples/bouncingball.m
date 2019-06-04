@@ -14,7 +14,6 @@ function [sol,times,solver] = bouncingball
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 
-  disp('Jacobian of the constraints');
   figure
   spy(full(solver.jacobian_pattern(sol)))
   
