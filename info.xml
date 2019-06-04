@@ -14,6 +14,6 @@ ensure the above copyright notice is visible in any derived work.
     <name>OpenOCL</name>
     <type>toolbox</type>
     <icon></icon>
-    <help_location>doc/html</help_location>
+    <help_location>doc</help_location>
     <help_contents_icon></help_contents_icon>
 </productinfo>
