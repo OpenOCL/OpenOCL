@@ -66,7 +66,8 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'Lib'))
   addpath(fullfile(oclPath,'Lib','casadi'))
 
-  % check if casadi is already installed 
+  % check if casadi is already installed (need to wait shortly for path update)
+  pause(0.1)
   casadiFound = checkCasadi(fullfile(oclPath,'Lib','casadi'));
 
   % install casadi into Lib folder
