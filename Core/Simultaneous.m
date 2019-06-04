@@ -12,24 +12,24 @@ classdef Simultaneous < handle
   
   methods (Static)
     
-    function phase_vars_structure = vars(stage)
+    function stage_vars_structure = vars(stage)
       
-      phase_vars_structure = OclStructure();
-      phase_vars_structure.addRepeated({'states','integrator','controls','parameters','h'}, ...
+      stage_vars_structure = OclStructure();
+      stage_vars_structure.addRepeated({'states','integrator','controls','parameters','h'}, ...
                           {stage.states, ...
                            stage.integrator.vars, ...
                            stage.controls, ...
                            stage.parameters, ...
                            OclMatrix([1,1])}, length(stage.H_norm));
-      phase_vars_structure.add('states', stage.states);
-      phase_vars_structure.add('parameters', stage.parameters);
+      stage_vars_structure.add('states', stage.states);
+      stage_vars_structure.add('parameters', stage.parameters);
     end
     
-    function phase_time_struct = times(stage)
-      phase_time_struct = OclStructure();
-      phase_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
+    function stage_time_struct = times(stage)
+      stage_time_struct = OclStructure();
+      stage_time_struct.addRepeated({'states', 'integrator', 'controls'}, ...
                               {OclMatrix([1,1]), OclMatrix([stage.integrator.nt,1]), OclMatrix([1,1])}, length(stage.H_norm));
-      phase_time_struct.add('states', OclMatrix([1,1]));
+      stage_time_struct.add('states', OclMatrix([1,1]));
     end
     
     function ig = ig(self)
@@ -143,13 +143,13 @@ classdef Simultaneous < handle
     
     function ig_stage = getInitialGuess(stage)
       % creates an initial guess from the information that we have about
-      % bounds in the phase
+      % bounds in the stage
       
-      [nv_phase,N] = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+      [nv_stage,N] = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
 
       [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getStageIndizes(stage);
 
-      ig_stage = 0 * ones(nv_phase,1);
+      ig_stage = 0 * ones(nv_stage,1);
 
       igx0 = Simultaneous.igFromBounds(stage.stateBounds0);
       igxF = Simultaneous.igFromBounds(stage.stateBoundsF);

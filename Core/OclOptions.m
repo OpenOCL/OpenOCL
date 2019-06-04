@@ -4,7 +4,7 @@
 %
 function opt = OclOptions()
 
-  oclDeprecation('The use of OclOptions is deprecated, pass options directly to the phase or solver.')
+  oclDeprecation('The use of OclOptions is deprecated, pass options directly to the stage or solver.')
 
   opt = struct;
   opt.solverInterface   = 'casadi';

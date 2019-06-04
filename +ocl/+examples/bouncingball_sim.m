@@ -67,8 +67,8 @@ function ode(sh,x,~,~,~)
 end
 
 function transition(ch, x0, xF)
-  % x0 current phase
-  % xF previous phase
+  % x0 current stage
+  % xF previous stage
   ch.add(x0.s, '==', xF.s);
   ch.add(x0.v, '==', -xF.v/sqrt(2));
 end

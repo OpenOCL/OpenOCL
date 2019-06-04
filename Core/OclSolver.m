@@ -116,7 +116,7 @@ classdef OclSolver < handle
         casadi_options = r.casadi_options;
         
       else
-        % OclSolver(phases, transitions, opt)
+        % OclSolver(stages, transitions, opt)
         p = ocl.utils.ArgumentParser;
 
         p.addKeyword('stages', {}, @(el) iscell(el) || isa(el, 'OclStage'));
@@ -214,9 +214,9 @@ classdef OclSolver < handle
 
       igList = cell(length(pl),1);
       for k=1:length(pl)
-        phase = pl{k};
-        varsStruct = Simultaneous.vars(phase);
-        ig = Simultaneous.getInitialGuess(phase);
+        stage = pl{k};
+        varsStruct = Simultaneous.vars(stage);
+        ig = Simultaneous.getInitialGuess(stage);
         igList{k} = Variable.create(varsStruct, ig);
       end
 

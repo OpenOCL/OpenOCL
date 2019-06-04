@@ -74,8 +74,8 @@ o5 = solver.timeMeasures;
 
 % test bouncing ball
 [sol,~,solver] = ocl.examples.bouncingball;
-phase_1 = sol{1}.states.s.value;
-assertAlmostEqual(phase_1, [1;0.888888888888889;0.555555555555555;0], 'Cart pole test failed.');
-phase_2 = sol{2}.states.s.value;
-assertAlmostEqual(phase_2, [0;0.452518978545424;0.870025304727232;1.16127214163633;1.23501265236362;1], 'Cart pole test failed.');
+stage_1 = sol{1}.states.s.value;
+assertAlmostEqual(stage_1, [1;0.888888888888889;0.555555555555555;0], 'Cart pole test failed.');
+stage_2 = sol{2}.states.s.value;
+assertAlmostEqual(stage_2, [0;0.452518978545424;0.870025304727232;1.16127214163633;1.23501265236362;1], 'Cart pole test failed.');
 o6 = solver.timeMeasures;
