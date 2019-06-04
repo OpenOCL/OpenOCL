@@ -104,7 +104,6 @@ function handles = animate(sol,times)
     
     handles = draw(t, dt, x, [0,0,0,0], pmax, handles);
     
-    drawnow;
     % record image for docs
     if k == snap_at(1)
       snapnow;

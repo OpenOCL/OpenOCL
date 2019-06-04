@@ -130,7 +130,7 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = r.phases;
+        stageList = r.stages;
         transitionList = r.transitions;
         
         nlp_casadi_mx = r.nlp_casadi_mx;
@@ -246,8 +246,8 @@ classdef OclSolver < handle
     end
 
     function setParameter(self,id,varargin)
-      if length(self.phaseList) == 1
-        self.phaseList{1}.setParameterBounds(id, varargin{:});
+      if length(self.stageList) == 1
+        self.stageList{1}.setParameterBounds(id, varargin{:});
       else
         oclError('For multi-stage problems, set the bounds to the stages directlly.')
       end

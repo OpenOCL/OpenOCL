@@ -60,12 +60,12 @@ classdef Simultaneous < handle
     end
     
     function x = first_state(stage,stageVars)
-      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(stage);
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getStageIndizes(stage);
       x = stageVars(X_indizes(:,1));
     end
     
     function x = last_state(stage,stageVars)
-      [X_indizes, ~, ~, ~, ~] = Simultaneous.getPhaseIndizes(stage);
+      [X_indizes, ~, ~, ~, ~] = Simultaneous.getStageIndizes(stage);
       x = stageVars(X_indizes(:,end));
     end
     

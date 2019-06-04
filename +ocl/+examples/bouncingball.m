@@ -1,7 +1,7 @@
 function [sol,times,solver] = bouncingball  
   
-  before_contact = ocl.Phase([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
-  after_contact = ocl.Phase(1, @after_contact_vars, @after_contact_ode, ...
+  before_contact = ocl.Stage([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
+  after_contact = ocl.Stage(1, @after_contact_vars, @after_contact_ode, ...
                             @after_contact_cost, 'N', 5, 'd', 2);
 
   before_contact.setInitialStateBounds('s', 1);
@@ -10,14 +10,14 @@ function [sol,times,solver] = bouncingball
   
   after_contact.setEndStateBounds('s', 1);
 
-  solver = OclSolver({before_contact, after_contact}, {@phase_transition});
+  solver = OclSolver({before_contact, after_contact}, {@stage_transition});
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 
   figure
   spy(full(solver.jacobian_pattern(sol)))
   
-  % phase 1
+  % stage 1
   figure; 
   subplot(1,2,1)
   hold on; grid on;
@@ -27,9 +27,9 @@ function [sol,times,solver] = bouncingball
   xlabel('time [s]');
   ylim([-5 3])
   yticks(-5:3)
-  title('phase 1')
+  title('stage 1')
   
-  % phase 2
+  % stage 2
   subplot(1,2,2)
   hold on; grid on;
   oclPlot(times{2}.states, sol{2}.states.s)
@@ -39,7 +39,7 @@ function [sol,times,solver] = bouncingball
   xlabel('time [s]');
   ylim([-5 3])
   yticks(-5:3)
-  title('phase 2')
+  title('stage 2')
 
 end
 
@@ -68,9 +68,9 @@ function after_contact_cost(ch,~,~,u,~)
   ch.add( u.F^2 );
 end
 
-function phase_transition(ch, x0, xF)
-  % x0 current phase
-  % xF previous phase
+function stage_transition(ch, x0, xF)
+  % x0 current stage
+  % xF previous stage
   ch.add(x0.s, '==', xF.s);
   ch.add(x0.v, '==', -xF.v/2);
 end

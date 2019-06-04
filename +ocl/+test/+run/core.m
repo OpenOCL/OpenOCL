@@ -40,7 +40,7 @@ function [nFails] = core(testExamples,saveLog,suffix)
   tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'ocl.test.testTreeVariable';
   tests{end+1}.name = 'VarStructure'; tests{end}.file = 'ocl.test.testVarStructure';
   tests{end+1}.name = 'OclSystem';    tests{end}.file = 'ocl.test.testOclSystem';
-  tests{end+1}.name = 'OclOCP';       tests{end}.file = 'ocl.test.testOclPhase';
+  tests{end+1}.name = 'OclStage';       tests{end}.file = 'ocl.test.testOclStage';
   tests{end+1}.name = 'Integrator';   tests{end}.file = 'ocl.test.testOclIntegrator';
   
   if testExamples

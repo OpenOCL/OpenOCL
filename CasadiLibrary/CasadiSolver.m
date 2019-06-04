@@ -2,7 +2,7 @@ classdef CasadiSolver < handle
   
   properties
     timeMeasures
-    phaseList
+    stageList
     nlpData
   end
   
@@ -114,7 +114,7 @@ classdef CasadiSolver < handle
       timeMeasures.constructTotal = toc(constructTotalTic);
       timeMeasures.constructSolver = constructSolverTime;
       
-      self.phaseList = stageList;
+      self.stageList = stageList;
       self.nlpData = nlpData;
       self.timeMeasures = timeMeasures;
     end
