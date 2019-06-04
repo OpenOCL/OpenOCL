@@ -61,14 +61,12 @@ function StartupOCL(in)
   if ~exist(fullfile(oclPath,'Lib','casadi'), 'dir')
     r = mkdir(fullfile(oclPath,'Lib','casadi'));
     oclAssert(r, 'Could not create direcotory in Lib/casadi');
+  else
+    % check if casadi is already installed
+    addpath(fullfile(oclPath,'Lib'))
+    addpath(fullfile(oclPath,'Lib','casadi'))
+    casadiFound = checkCasadi(fullfile(oclPath,'Lib','casadi'));
   end
-  
-  addpath(fullfile(oclPath,'Lib'))
-  addpath(fullfile(oclPath,'Lib','casadi'))
-
-  % check if casadi is already installed (need to wait shortly for path update)
-  pause(0.1)
-  casadiFound = checkCasadi(fullfile(oclPath,'Lib','casadi'));
 
   % install casadi into Lib folder
   if ~casadiFound 
@@ -125,6 +123,9 @@ function StartupOCL(in)
       oclInfo(['Could not set up CasADi for you system.', ...
                'You need to install CasADi yourself and add it to your path.'])
     end
+    % add Lib and Lib/casadi to path
+    addpath(fullfile(oclPath,'Lib'))
+    addpath(fullfile(oclPath,'Lib','casadi'))
   end
   
   casadiFound = checkCasadiWorking();
