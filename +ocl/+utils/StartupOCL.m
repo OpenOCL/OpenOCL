@@ -71,7 +71,6 @@ function StartupOCL(in)
 
   % install casadi into Lib folder
   if ~casadiFound 
-    fprintf(2,'\nYour input is required! Please read below:\n')
     
     if ispc && verAtLeast('matlab','9.0')
       % Windows, >=Matlab 2016a
@@ -183,15 +182,38 @@ end
 
 function downloadCasadi(oclPath, path, filename, dest)
 
+  if exist(fullfile(dest, 'CUSTOM_CASADI'), 'file') > 0
+    fprintf(['You chose to your use your custom CasADi installation. If you changed \n', ...
+            'your mind delete the CUSTOM_CASADI file in %s\n'], dest);
+    return;
+  end
+  
+  fprintf(2,'\nYour input is required! Please read below:\n')
+  
   confirmation = [ '\n', 'Dear User, if you continue, CasADi will be downloaded from \n', ...
                    path, filename, ' \n', ...
                    'and saved to the Workspace folder. The archive will be extracted \n', ...
                    'to the Lib folder. This will take a few minutes. \n\n', ...
-                   'Hit [enter] to continue: '];
+                   'Hit [enter] to continue! \n\n', ...
+                   'Advanced users: \n', ...
+                   'If you have set-up your own CasADi version and you want to use that, you \n', ...
+                   'can type `n` and hit [enter]. We will then perform some basic checks if \n', ...
+                   'your version is campatible. We strongly recommend you to let OpenOCL install \n', ...
+                   'the required version (if you do not save the path, the CasADi version of OpenOCL \n', ...
+                   'will not be on your path at startup, and not conflict with you current CasADi \n', ...
+                   'installation): '];
   m = input(confirmation,'s');
   
   if strcmp(m, 'n') || strcmp(m, 'no')
-    oclError('You did not agree to download CasADi. Either run again or set-up CasADi manually.');
+    try 
+      ocl.test.testVariable;
+      fid = fopen(fullfile(dest, 'CUSTOM_CASADI'),'w');
+      fclose(fid);
+      return;
+    catch e
+      warning(e.message)
+      oclError('You did not agree to download CasADi and your version is not compatible. Either run again or set-up a compatible CasADi version manually.');
+    end
   end
   
   archive_destination = fullfile(oclPath, 'Workspace', filename);
