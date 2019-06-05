@@ -19,10 +19,10 @@ classdef OclSolver < handle
     function self = OclSolver(varargin)
       % OclSolver(T, system, ocp, options, H_norm)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
-      %           'lagrangecost', @lagrangefun,
       %           'pathcosts', @pathcostfun,
-      %           'pathconstraints', @pathconstraintsfun, options)
-      % OclSolver(stages, transitions, options)
+      %           'pointcosts', @pointcostfun,
+      %           'pointconstraints', @pointconstraintsfun, casadi_options)
+      % OclSolver(stages, transitions, casadi_options)
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
@@ -82,14 +82,15 @@ classdef OclSolver < handle
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun, options
         
-        emptyfh = @(varargin)[];
+        zerofh = @(varargin) 0;
+        emptyfh = @(varargin) [];
         p = ocl.utils.ArgumentParser;
 
         p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
         p.addKeyword('vars', emptyfh, @oclIsFunHandle);
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
-        p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-        p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
+        p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
+        p.addKeyword('pointcosts', zerofh, @oclIsFunHandle);
         p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
         
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
