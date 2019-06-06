@@ -23,11 +23,11 @@ If you would like to participate in the project, you are very welcome!
 
 ## Publications
 
-Please [cite us](https://openocl.org/publications/) if you use OpenOCL in you scientific work.
+Please [cite us](https://openocl.org/publications/) if you use OpenOCL in you scientific work.  
 
-OpenOCL - Open Optimal Control Library 
-Jonas Koenemann, Giovanni Licitra, Mustafa Alp, Moritz Diehl
-June 2019 [research gate]
+OpenOCL - Open Optimal Control Library   
+Jonas Koenemann, Giovanni Licitra, Mustafa Alp, Moritz Diehl  
+June 2019 [research gate]  
 
 A Reference Model for Airborne Wind Energy Systems For Optimization and Control  
 E. Malz, J. Koenemann, S. Sieberling, S. Gros  
