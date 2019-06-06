@@ -16,7 +16,7 @@ classdef OclMatrix < OclStructure
       self.msize = size;
     end
     function [N,M,K] = size(self)
-      s = self.msize();
+      s = self.msize;
       if nargout>1
         N = s(1);
         M = s(2);
