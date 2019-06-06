@@ -60,7 +60,7 @@ classdef OclStage < handle
       r = p.parse(varargin{:});
       
       varsfhInput = r.vars;
-% %       daefhInput = r.dae;
+      daefhInput = r.dae;
       pathcostsfhInput = r.pathcosts;
       pointcostsfhInput = r.pointcosts;  
       pointconstraintsfhInput = r.pointconstraints;
