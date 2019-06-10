@@ -2,7 +2,7 @@
 <img src="https://openocl.org/imgs/cartpole.gif" width="30%"> <img src="https://openocl.org/imgs/car.png" width="30%"> <img src="https://openocl.org/imgs/circ.png" width="30%">  
 <img src="https://openocl.org/imgs/pend.png" width="30%"> <img src="https://openocl.org/imgs/ballbeam.png" width="30%"> <img src="https://openocl.org/imgs/lemn.png" width="30%">    
 
-Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/JonasKoenemann/optimal-control/tree/master/Examples).
+Visit the main website [openocl.org](https://openocl.org) to [download](https://openocl.org/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.org/api-docs/) and the [examples](https://github.com/OpenOCL/OpenOCL/tree/master/%2Bocl/%2Bexamples).
 
 ## Get started
 
