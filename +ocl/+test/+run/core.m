@@ -34,7 +34,7 @@ function [nFails] = core(testExamples,saveLog,suffix)
     error('Test directory not set. Run StartupOCL again.')
   end
   
-  global testRun
+  ocl.utils.setTestRun(true)
   
   tests{1}.name = 'Variable';         tests{end}.file = 'ocl.test.testVariable';
   tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'ocl.test.testTreeVariable';
@@ -53,7 +53,6 @@ function [nFails] = core(testExamples,saveLog,suffix)
   if testExamples
     close all
     set(0,'DefaultFigureVisible','off');
-    testRun = true;
   end
   
   %% run all tests
@@ -96,8 +95,9 @@ function [nFails] = core(testExamples,saveLog,suffix)
   
   if testExamples
     set(0,'DefaultFigureVisible','on');
-    testRun = false;
   end
+
+  ocl.utils.setTestRun(false);
   
   function testResult = runTest(testName,scriptHandle)
     testResult = struct;
