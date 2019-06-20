@@ -21,9 +21,9 @@ If you would like to participate in the project, you are very welcome! [Contribu
 * airborne wind energy: https://openawe.github.io/
 * robotics: https://github.com/jkoendev/openocl_models (very experimental)
 
-## Publications
+## Citing and publications
 
-Please [cite us](https://openocl.org/publications/) if you use OpenOCL in your scientific work.  
+Please [cite us](https://openocl.org/publications/) and consider giving us a star on github if you use OpenOCL in your (scientific) work.
 
 ## Legal notice
 
