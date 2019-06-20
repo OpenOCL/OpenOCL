@@ -14,7 +14,7 @@ open ocl.examples.cartpole
 
 ## Contribute
 
-If you would like to participate in the project, you are very welcome!
+If you would like to participate in the project, you are very welcome! [Contribution guidelines](https://openocl.org/contribute/)
 
 ## Models
 
