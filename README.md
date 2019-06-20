@@ -23,7 +23,7 @@ If you would like to participate in the project, you are very welcome! [Contribu
 
 ## Citing and publications
 
-Please [cite us](https://openocl.org/publications/) and consider giving us a star on github if you use OpenOCL in your (scientific) work.
+If you use OpenOCL, please [cite us](https://openocl.org/publications/) and consider giving us a **star** on this repository.
 
 ## Legal notice
 
