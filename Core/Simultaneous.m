@@ -226,15 +226,23 @@ classdef Simultaneous < handle
         pointcost = pointcost + pointcost_fun(k, N+1, X(:,k), P(:,k));
       end    
       
-      pointcon = horzcat(pointcon{:});
-      pointcon_lb = horzcat(pointcon_lb{:});
-      pointcon_ub = horzcat(pointcon_ub{:});
+      pointcon0 = pointcon{1};
+      pointcon0_lb = pointcon_lb{1};
+      pointcon0_ub = pointcon_ub{1};
+      
+      pointconF = pointcon{end};
+      pointconF_lb = pointcon_lb{end};
+      pointconF_ub = pointcon_ub{end};
+      
+      pointcon = horzcat(pointcon{2:end-1});
+      pointcon_lb = horzcat(pointcon_lb{2:end-1});
+      pointcon_ub = horzcat(pointcon_ub{2:end-1});
       
       % fix dimensions of empty path constraints
       if isempty(pointcon)
-        pointcon = double.empty(0,N+1);
-        pointcon_lb = double.empty(0,N+1);
-        pointcon_ub = double.empty(0,N+1);
+        pointcon = double.empty(0,N-1);
+        pointcon_lb = double.empty(0,N-1);
+        pointcon_ub = double.empty(0,N-1);
       end
       
       [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
@@ -263,15 +271,15 @@ classdef Simultaneous < handle
       
       % merge integrator equations, continuity, and path constraints,
       % timesteps constraints
-      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pointcon(:,2:N);     h_eq;     p_eq(:,1:N-1)];
-      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_lb(:,2:N);  h_eq_lb;  p_eq_lb(:,1:N-1)];
-      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_ub(:,2:N);  h_eq_ub;  p_eq_ub(:,1:N-1)];
+      shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pointcon;     h_eq;     p_eq(:,1:N-1)];
+      shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
+      shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
       
       % reshape shooting equations to column vector, append lastintegrator and
       % continuity equations
-      constraints    = [pointcon(:,1);      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pointcon(:,N+1);       p_eq(:,N)    ];
-      constraints_lb = [pointcon_lb(:,1);   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pointcon_lb(:,N+1);    p_eq_lb(:,N) ];
-      constraints_ub = [pointcon_ub(:,1);   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pointcon_ub(:,N+1);    p_eq_ub(:,N) ];
+      constraints    = [pointcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pointconF;       p_eq(:,N)    ];
+      constraints_lb = [pointcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pointconF_lb;    p_eq_lb(:,N) ];
+      constraints_ub = [pointcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pointconF_ub;    p_eq_ub(:,N) ];
 
       % sum all costs
       costs = sum(cost_arr) + pointcost;

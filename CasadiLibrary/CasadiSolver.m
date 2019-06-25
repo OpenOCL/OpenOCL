@@ -44,11 +44,11 @@ classdef CasadiSolver < handle
       for k=1:length(stageList)
         stage = stageList{k};
         
-        x = expr(['x','_ph',mat2str(k)], stage.nx);
-        vi = expr(['vi','_ph',mat2str(k)], stage.integrator.ni);
-        u = expr(['u','_ph',mat2str(k)], stage.nu);
-        h = expr(['h','_ph',mat2str(k)]);
-        p = expr(['p','_ph',mat2str(k)], stage.np);
+        x = expr(['x','_s',mat2str(k)], stage.nx);
+        vi = expr(['vi','_s',mat2str(k)], stage.integrator.ni);
+        u = expr(['u','_s',mat2str(k)], stage.nu);
+        h = expr(['h','_s',mat2str(k)]);
+        p = expr(['p','_s',mat2str(k)], stage.np);
         
         [statesEnd, cost_integr, equations, rel_times] = stage.integrator.integratorfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, cost_integr, equations, rel_times});
@@ -57,7 +57,7 @@ classdef CasadiSolver < handle
         
         nv_stage = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
         v_last_stage = v_stage;
-        v_stage = expr(['v','_ph',mat2str(k)], nv_stage);
+        v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
         [costs_stage,constraints_stage,constraints_LB_stage,constraints_UB_stage,~] = Simultaneous.simultaneous(stage, v_stage, ...
               controls_regularization, controls_regularization_value);
