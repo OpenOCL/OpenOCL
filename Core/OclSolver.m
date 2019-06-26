@@ -178,7 +178,11 @@ classdef OclSolver < handle
         end
       else
         % ig InitialGuess
-        ig_list = ig;
+        ig_list = cell(length(st_list),1);
+        for k=1:length(st_list)
+          ig_stage = Simultaneous.getInitialGuessWithUserData(st_list{k}, ig{k});
+          ig_list{k} = ig_stage.value;
+        end
       end
 
       [sol,times,objective,constraints] = s.solve(ig_list);
@@ -210,8 +214,11 @@ classdef OclSolver < handle
       r = self.solver.timeMeasures;
     end
     
-    function ig = initialGuess(self)
-      ig = ocl.InitialGuess();
+    function ig_list = initialGuess(self)
+      ig_list = cell(length(self.stageList), 1);
+      for k=1:length(ig_list)
+        ig_list{k} = ocl.InitialGuess(self.stageList{k}.states);
+      end
     end
 
     function ig = ig(self)

@@ -2,17 +2,29 @@ classdef InitialGuess < handle
 
   properties
     data
+    states_struct
   end
 
   methods
 
-    function self = InitialGuess()
-      
+    function self = InitialGuess(states_struct)
+      self.states_struct = states_struct;
     end
     
-    function add(self, name, xdata, ydata)
-      self.data.(name).x = xdata;
-      self.data.(name).y = ydata;
+    function add(self, id, xdata, ydata)
+      
+      % check if id is a state id
+      trajectory_structure = OclStructure();
+      trajectory_structure.addRepeated({'states'}, ...
+                                       {self.states_struct.get(id)}, ...
+                                       length(xdata));
+      
+      trajectory = Variable.create(trajectory_structure, 0);
+      states = trajectory.states;
+      states.set(ydata);
+      
+      self.data.(id).x = xdata;
+      self.data.(id).y = states.value;
     end
 
   end
