@@ -4,6 +4,8 @@ classdef CasadiSolver < handle
     timeMeasures
     stageList
     nlpData
+    gridpoints
+    gridpoints_integrator
   end
   
   properties (Access = private)
@@ -39,6 +41,9 @@ classdef CasadiSolver < handle
       constraints_LB = cell(length(stageList), 1);
       constraints_UB = cell(length(stageList), 1);
       
+      gridpoints = cell(length(stageList), 1);
+      gridpoints_integrator = cell(length(stageList), 1);
+      
       v_stage = [];
       
       for k=1:length(stageList)
@@ -59,7 +64,8 @@ classdef CasadiSolver < handle
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
-        [costs_stage,constraints_stage,constraints_LB_stage,constraints_UB_stage,~] = Simultaneous.simultaneous(stage, v_stage, ...
+        [costs_stage,constraints_stage,constraints_LB_stage, ...
+          constraints_UB_stage] = Simultaneous.simultaneous(stage, v_stage, ...
               controls_regularization, controls_regularization_value);
         
         transition_eq = [];
@@ -86,6 +92,9 @@ classdef CasadiSolver < handle
         constraints{k} = vertcat(transition_eq, constraints_stage);
         constraints_LB{k} = vertcat(transition_lb, constraints_LB_stage);
         constraints_UB{k} = vertcat(transition_ub, constraints_UB_stage);
+        
+        gridpoints_integrator{k} = Simultaneous.normalized_integrator_times(stage);
+        gridpoints{k} = Simultaneous.normalized_state_times(stage);
       end
       
       v = vertcat(vars{:});
@@ -117,6 +126,8 @@ classdef CasadiSolver < handle
       self.stageList = stageList;
       self.nlpData = nlpData;
       self.timeMeasures = timeMeasures;
+      self.gridpoints = gridpoints;
+      self.gridpoints_integrator = gridpoints_integrator;
     end
     
     function [sol,times,objective,constraints] = solve(self,v0)

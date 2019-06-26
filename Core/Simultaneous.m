@@ -141,6 +141,36 @@ classdef Simultaneous < handle
       end
     end
     
+    function ig_stage = getInitialGuessWithUserData(stage, ig_data)
+      
+      ig = Simultaneous.getInitialGuess(stage);
+      
+      % incoorperate user input ig data for state trajectories
+      names = fieldnames(ig_data);
+      for k=1:length(names)
+        id = names{k};
+        
+        xdata = ig.data.(id).x;
+        ydata = ig.data.(id).y;
+        
+        % state trajectories
+        xtarget = Simultaneous.normalized_state_times(stage);
+        ytarget = interp1(xdata,ydata,xtarget); 
+        
+        ig.states.get(id).set(ytarget);
+        
+        xtarget = Simultaneous.normalized_integrator_times(stage);
+        ytarget = interp1(xdata,ydata,xtarget); 
+        
+        ig.integrator.states.get(id).set(ytarget);
+        
+      end
+      
+      
+      
+      
+    end
+    
     function ig_stage = getInitialGuess(stage)
       % creates an initial guess from the information that we have about
       % bounds in the stage
@@ -195,7 +225,26 @@ classdef Simultaneous < handle
       nv_stage = N*nx + N*ni + N*nu + N*np + N + nx + np;
     end
     
-    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = simultaneous(stage, stage_vars, ...
+    function r = normalized_integrator_times(stage)
+      H_norm = stage.H_norm;
+      integrator = stage.integrator;
+      
+      r = zeros(length(H_norm), integrator.nt);
+      time = 0;
+      for k=1:length(H_norm)
+        h = H_norm(k);
+        r(k,:) = time + h * stage.integrator.normalized_times();
+        time = time + H_norm(k);
+      end
+      r = reshape(r, length(H_norm) * integrator.nt, 1);
+    end
+    
+    function r = normalized_state_times(stage)
+      r = cumsum(stage.H_norm);
+    end
+    
+    function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
+        simultaneous(stage, stage_vars, ...
             controls_regularization, controls_regularization_value)
       
       H_norm = stage.H_norm;

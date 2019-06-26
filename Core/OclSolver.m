@@ -170,10 +170,15 @@ classdef OclSolver < handle
 
       s = self.solver;
       st_list = self.stageList;
-
-      ig_list = cell(length(st_list),1);
-      for k=1:length(st_list)
-        ig_list{k} = ig{k}.value;
+      
+      if isa(ig, 'OclAssignment')
+        ig_list = cell(length(st_list),1);
+        for k=1:length(st_list)
+          ig_list{k} = ig{k}.value;
+        end
+      else
+        % ig InitialGuess
+        ig_list = ig;
       end
 
       [sol,times,objective,constraints] = s.solve(ig_list);
@@ -203,6 +208,10 @@ classdef OclSolver < handle
 
     function r = timeMeasures(self)
       r = self.solver.timeMeasures;
+    end
+    
+    function ig = initialGuess(self)
+      ig = ocl.InitialGuess();
     end
 
     function ig = ig(self)

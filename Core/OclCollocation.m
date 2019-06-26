@@ -11,101 +11,105 @@
 % Under GNU Lesser General Public License
 
 classdef OclCollocation < handle
-  
+
   properties
-    
+
     states
     algvars
     controls
     parameters
-    
+
     daefun
     pathcostsfh
-    
+
     integratorBounds
     stateBounds
     algvarBounds
-    
+
     vars
     nx
     nz
     nu
     np
     nt
-    
+
     ni
   end
-  
+
   properties(Access = private)
     B
     C
-    D  
+    D
     tau_root
     order
   end
-  
+
   methods
-    
+
     function self = OclCollocation(states, algvars, controls, parameters, daefun, pathcostsfh, order, ...
                                    stateBounds, algvarBounds)
-      
+
       self.states = states;
       self.algvars = algvars;
       self.controls = controls;
       self.parameters = parameters;
-      
+
       self.nx = prod(states.size());
       self.nz = prod(algvars.size());
       self.nu = prod(controls.size());
       self.np = prod(parameters.size());
       self.nt = order;
-      
+
       self.daefun = daefun;
       self.pathcostsfh = pathcostsfh;
-      
+
       self.order = order;
       self.tau_root = OclCollocation.colpoints(order);
       [self.C,self.D,self.B] = self.getCoefficients(order);
-      
+
       self.vars = OclStructure();
       self.vars.addRepeated({'states', 'algvars'},...
                             {states, algvars}, order);
-      
+
       si = self.vars.size();
       self.ni = prod(si);
-      
+
       self.integratorBounds = OclBounds(-inf * ones(self.ni, 1), inf * ones(self.ni, 1));
       self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
       self.algvarBounds = OclBounds(-inf * ones(self.nz, 1), inf * ones(self.nz, 1));
-      
+
       names = fieldnames(stateBounds);
       for k=1:length(names)
         id = names{k};
         self.setStateBounds(id, stateBounds.(id).lower, stateBounds.(id).upper);
       end
-      
+
       names = fieldnames(algvarBounds);
       for k=1:length(names)
         id = names{k};
         self.setAlgvarBounds(id, algvarBounds.(id).lower, algvarBounds.(id).upper);
       end
-                                      
+
     end
     
+    function r = normalized_times(self)
+      r = self.tau_root(2:end);
+    end
+
     function [statesEnd, costs, equations, rel_times] = ...
           integratorfun(self, statesBegin, integratorVars, ...
-                        controls, h, parameters)              
-      
+                        controls, h, parameters)
+
       equations = cell(self.order,1);
       J = 0;
-      
+
       % Loop over collocation points
       statesEnd = self.D(1)*statesBegin;
       rel_times = cell(self.order,1);
       for j=1:self.order
-        
+
         rel_times{j} = self.tau_root(j+1) * h;
-        
+
         j_vars = (j-1)*(self.nx+self.nz);
         j_states = j_vars+1:j_vars+self.nx;
         j_algVars = j_vars+self.nx+1:j_vars+self.nx+self.nz;
@@ -121,7 +125,7 @@ classdef OclCollocation < handle
         [ode,alg] = self.daefun(integratorVars(j_states), ...
                            integratorVars(j_algVars), ...
                            controls,parameters);
-                                                 
+
         equations{j} = [h*ode-xp; alg];
 
         % Add contribution to the end state
@@ -136,50 +140,50 @@ classdef OclCollocation < handle
       equations = vertcat(equations{:});
       rel_times = vertcat(rel_times{:});
     end
-    
+
     function r = getInitialGuess(self, stateGuess, algvarGuess)
       ig = Variable.create(self.vars, 0);
       ig.states.set(stateGuess);
       ig.algvars.set(algvarGuess);
       r = ig.value;
     end
-    
+
     function setStateBounds(self,id,varargin)
       x_lb = Variable.create(self.vars, self.integratorBounds.lower);
       x_ub = Variable.create(self.vars, self.integratorBounds.upper);
-      
+
       bounds = OclBounds(varargin{:});
-      
+
       x_lb.get('states').get(id).set(bounds.lower);
       x_ub.get('states').get(id).set(bounds.upper);
-      
+
       self.integratorBounds.lower = x_lb.value;
       self.integratorBounds.upper = x_ub.value;
     end
-    
+
     function setAlgvarBounds(self,id,varargin)
       lb = Variable.create(self.vars, self.integratorBounds.lower);
       ub = Variable.create(self.vars, self.integratorBounds.upper);
-      
+
       bounds = OclBounds(varargin{:});
-      
+
       lb.get('algvars').get(id).set(bounds.lower);
       ub.get('algvars').get(id).set(bounds.upper);
-      
+
       self.integratorBounds.lower = lb.value;
       self.integratorBounds.upper = ub.value;
     end
-    
+
     function r = pathcostfun(self,x,z,u,p)
       pcHandler = OclCost();
-      
+
       x = Variable.create(self.states,x);
       z = Variable.create(self.algvars,z);
       u = Variable.create(self.controls,u);
       p = Variable.create(self.parameters,p);
-      
+
       self.pathcostsfh(pcHandler,x,z,u,p);
-      
+
       r = pcHandler.value;
     end
   end
@@ -187,7 +191,7 @@ classdef OclCollocation < handle
   methods (Access = private)
 
     function [C,D,B] = getCoefficients(self, d)
-      
+
       % Coefficients of the collocation equation
       C = zeros(d+1,d+1);
 
@@ -221,9 +225,9 @@ classdef OclCollocation < handle
         B(j) = polyval(pint, 1.0);
       end
     end
-    
+
   end
-  
+
   methods (Static)
     function [ times ] = colpoints( d )
       if d == 2
@@ -239,6 +243,5 @@ classdef OclCollocation < handle
       end
     end
   end
-  
-end
 
+end
