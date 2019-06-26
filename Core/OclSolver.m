@@ -194,8 +194,8 @@ classdef OclSolver < handle
 
       for k=1:length(st_list)
         stage = st_list{k};
-        vars_structure = Simultaneous.vars(stage);
-        times_structure = Simultaneous.times(stage);
+        vars_structure = ocl.simultaneous.variables(stage);
+        times_structure = ocl.simultaneous.times(stage);
         sol_list{k} = Variable.create(vars_structure, sol{k});
         times_list{k} = Variable.create(times_structure, times{k});
         obj_list{k} = objective{k};
@@ -232,8 +232,8 @@ classdef OclSolver < handle
       igList = cell(length(pl),1);
       for k=1:length(pl)
         stage = pl{k};
-        varsStruct = Simultaneous.vars(stage);
-        ig = Simultaneous.getInitialGuess(stage);
+        varsStruct = ocl.simultaneous.variables(stage);
+        ig = ocl.simultaneous.getInitialGuess(stage);
         igList{k} = Variable.create(varsStruct, ig);
       end
 

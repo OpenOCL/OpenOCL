@@ -11,7 +11,7 @@ np = stage.np;
 pointcost_fun = @stage.pointcostfun;
 pointcon_fun = @stage.pointconstraintfun;
 
-[~,N] = Simultaneous.nvars(H_norm, nx, ni, nu, np);
+[~,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
 [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
 
 X = reshape(stage_vars(X_indizes), nx, N+1);

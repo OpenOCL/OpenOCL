@@ -60,12 +60,12 @@ classdef CasadiSolver < handle
         
         stage.integratormap = integrator_fun.map(stage.N,'serial');
         
-        nv_stage = simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
         [costs_stage,constraints_stage,constraints_LB_stage, ...
-          constraints_UB_stage] = simultaneous.equations(stage, v_stage, ...
+          constraints_UB_stage] = ocl.simultaneous.equations(stage, v_stage, ...
               controls_regularization, controls_regularization_value);
         
         transition_eq = [];
