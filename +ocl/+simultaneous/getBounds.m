@@ -1,11 +1,11 @@
 function [lb_stage,ub_stage] = getBounds(stage)
 
-[nv_stage,~] = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+[nv_stage,~] = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
 
 lb_stage = -inf * ones(nv_stage,1);
 ub_stage = inf * ones(nv_stage,1);
 
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = Simultaneous.getStageIndizes(stage);
+[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
 
 % states
 for m=1:size(X_indizes,2)
@@ -39,7 +39,7 @@ ub_stage(P_indizes(:,1)) = stage.parameterBounds.upper;
 
 % timesteps
 if isempty(stage.T)
-  lb_stage(H_indizes) = Simultaneous.h_min;
+  lb_stage(H_indizes) = 0.0;
 else
   lb_stage(H_indizes) = stage.H_norm * stage.T;
   ub_stage(H_indizes) = stage.H_norm * stage.T;

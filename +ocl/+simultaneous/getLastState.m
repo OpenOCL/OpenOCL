@@ -1,3 +1,3 @@
 function x = getLastState(stage,stageVars)
-[X_indizes, ~, ~, ~, ~] = Simultaneous.getStageIndizes(stage);
+[X_indizes, ~, ~, ~, ~] = ocl.simultaneous.getStageIndizes(stage);
 x = stageVars(X_indizes(:,end));

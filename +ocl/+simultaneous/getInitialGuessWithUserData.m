@@ -1,7 +1,7 @@
 function ig_stage = getInitialGuessWithUserData(stage, ig_data)
 
-ig_values = Simultaneous.getInitialGuess(stage);
-varsStruct = Simultaneous.vars(stage);
+ig_values = ocl.simultaneous.getInitialGuess(stage);
+varsStruct = ocl.simultaneous.vars(stage);
 ig_stage = Variable.create(varsStruct, ig_values);
 
 % incoorperate user input ig data for state trajectories
@@ -13,12 +13,12 @@ for k=1:length(names)
   ydata = ig_data.data.(id).y;
   
   % state trajectories
-  xtarget = Simultaneous.normalized_state_times(stage);
+  xtarget = ocl.simultaneous.normalizedStateTimes(stage);
   ytarget = interp1(xdata,ydata',xtarget,'linear','extrap');
   
   ig_stage.states.get(id).set(ytarget');
   
-  xtarget = Simultaneous.normalized_integrator_times(stage);
+  xtarget = ocl.simultaneous.normalizedIntegratorTimes(stage);
   ytarget = interp1(xdata,ydata',xtarget,'linear','extrap');
   
   ig_stage.integrator.states.get(id).set(ytarget');
