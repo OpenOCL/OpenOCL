@@ -180,7 +180,7 @@ classdef OclSolver < handle
         % ig InitialGuess
         ig_list = cell(length(st_list),1);
         for k=1:length(st_list)
-          ig_stage = Simultaneous.getInitialGuessWithUserData(st_list{k}, ig{k});
+          ig_stage = ocl.simultaneous.getInitialGuessWithUserData(st_list{k}, ig{k});
           ig_list{k} = ig_stage.value;
         end
       end
