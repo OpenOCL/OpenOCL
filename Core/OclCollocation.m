@@ -149,19 +149,33 @@ classdef OclCollocation < handle
     end
 
     function setStateBounds(self,id,varargin)
-      x_lb = Variable.create(self.vars, self.integratorBounds.lower);
-      x_ub = Variable.create(self.vars, self.integratorBounds.upper);
+      % integrator
+      lb = Variable.create(self.vars, self.integratorBounds.lower);
+      ub = Variable.create(self.vars, self.integratorBounds.upper);
 
       bounds = OclBounds(varargin{:});
 
-      x_lb.get('states').get(id).set(bounds.lower);
-      x_ub.get('states').get(id).set(bounds.upper);
+      lb.get('states').get(id).set(bounds.lower);
+      ub.get('states').get(id).set(bounds.upper);
 
-      self.integratorBounds.lower = x_lb.value;
-      self.integratorBounds.upper = x_ub.value;
+      self.integratorBounds.lower = lb.value;
+      self.integratorBounds.upper = ub.value;
+      
+      % states
+      x_lb = Variable.create(self.states, self.stateBounds.lower);
+      x_ub = Variable.create(self.states, self.stateBounds.upper);
+
+      bounds = OclBounds(varargin{:});
+
+      x_lb.get(id).set(bounds.lower);
+      x_ub.get(id).set(bounds.upper);
+
+      self.stateBounds.lower = x_lb.value;
+      self.stateBounds.upper = x_ub.value;
     end
 
     function setAlgvarBounds(self,id,varargin)
+      % integrator vars 
       lb = Variable.create(self.vars, self.integratorBounds.lower);
       ub = Variable.create(self.vars, self.integratorBounds.upper);
 
@@ -172,6 +186,18 @@ classdef OclCollocation < handle
 
       self.integratorBounds.lower = lb.value;
       self.integratorBounds.upper = ub.value;
+      
+      % algvars
+      z_lb = Variable.create(self.algvars, self.algvarBounds.lower);
+      z_ub = Variable.create(self.algvars, self.algvarBounds.upper);
+
+      bounds = OclBounds(varargin{:});
+
+      z_lb.get(id).set(bounds.lower);
+      z_ub.get(id).set(bounds.upper);
+
+      self.algvarBounds.lower = z_lb.value;
+      self.algvarBounds.upper = z_ub.value;
     end
 
     function r = pathcostfun(self,x,z,u,p)

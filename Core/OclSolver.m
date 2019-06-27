@@ -4,7 +4,7 @@
 %
 classdef OclSolver < handle
 
-  properties (Access = private)
+  properties
     bounds
     initialBounds
     endBounds
@@ -284,6 +284,8 @@ classdef OclSolver < handle
           self.stageList{1}.setControlBounds(id, varargin{:});
         elseif oclFieldnamesContain(self.stageList{1}.parameters.getNames(), id)
           self.stageList{1}.setParameterBounds(id, varargin{:});
+        else
+          oclWarning(['You specified a bound for a variable that does not exist: ', id]);
         end
 
       else
