@@ -10,7 +10,7 @@ function [solution,times,solver] = racecar
   MAX_TIME = 20;
 
   solver = ocl.Solver([], @varsfun, @daefun, ...
-                      'pointcosts', @pointcosts, 'pointconstraints', @pointconstraints, 'N', 50);
+                      'intervalcosts', @intervalcosts, 'intervalconstraints', @intervalconstraints, 'N', 50);
 
   % parameters
   m    = 1;         % mass [kg]
@@ -134,13 +134,13 @@ function daefun(sh,x,~,u,p)
   sh.setODE('time', 1);
 end
 
-function pointcosts(ch,k,K,x,~)
+function intervalcosts(ch,k,K,x,~)
   if k==K
     ch.add(x.time);
   end
 end
 
-function pointconstraints(ch,~,~,x,p)
+function intervalconstraints(ch,~,~,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 

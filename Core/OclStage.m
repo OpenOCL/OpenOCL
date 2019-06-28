@@ -6,8 +6,8 @@ classdef OclStage < handle
     integrator
     
     pathcostfun
-    pointcostsfh
-    pointconstraintsfh
+    intervalcostsfh
+    intervalconstraintsfh
     
     callbacksetupfh
     callbackfh
@@ -48,8 +48,8 @@ classdef OclStage < handle
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+      p.addKeyword('intervalcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('intervalconstraints', emptyfh, @oclIsFunHandle);
       
       p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
       p.addKeyword('callback', emptyfh, @oclIsFunHandle);
@@ -62,8 +62,8 @@ classdef OclStage < handle
       varsfhInput = r.vars;
       daefhInput = r.dae;
       pathcostsfhInput = r.pathcosts;
-      pointcostsfhInput = r.pointcosts;  
-      pointconstraintsfhInput = r.pointconstraints;
+      intervalcostsfhInput = r.intervalcosts;  
+      intervalconstraintsfhInput = r.intervalconstraints;
       
       callbacksetupfh = r.callbacksetup;
       callbackfh = r.callback;
@@ -96,8 +96,8 @@ classdef OclStage < handle
       self.H_norm = H_normInput;
       self.integrator = colocation;
       self.pathcostfun = @colocation.pathcostfun;
-      self.pointcostsfh = pointcostsfhInput;
-      self.pointconstraintsfh = pointconstraintsfhInput;
+      self.intervalcostsfh = intervalcostsfhInput;
+      self.intervalconstraintsfh = intervalconstraintsfhInput;
       
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
@@ -214,27 +214,27 @@ classdef OclStage < handle
       self.parameterBounds.upper = p_ub.value;
     end
     
-    function r = pointcostfun(self,k,N,x,p)
-      pointCostHandler = OclCost();
+    function r = intervalcostfun(self,k,N,x,p)
+      intervalCostHandler = OclCost();
       
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pointcostsfh(pointCostHandler,k,N,x,p);
+      self.intervalcostsfh(intervalCostHandler,k,N,x,p);
       
-      r = pointCostHandler.value;
+      r = intervalCostHandler.value;
     end
     
-    function [val,lb,ub] = pointconstraintfun(self,k,N,x,p)
-      pointConHandler = OclConstraint();
+    function [val,lb,ub] = intervalconstraintfun(self,k,N,x,p)
+      intervalConHandler = OclConstraint();
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pointconstraintsfh(pointConHandler,k,N,x,p);
+      self.intervalconstraintsfh(intervalConHandler,k,N,x,p);
       
-      val = pointConHandler.values;
-      lb = pointConHandler.lowerBounds;
-      ub = pointConHandler.upperBounds;
+      val = intervalConHandler.values;
+      lb = intervalConHandler.lowerBounds;
+      ub = intervalConHandler.upperBounds;
     end
     
     function callbacksetupfun(self)

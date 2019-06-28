@@ -17,66 +17,17 @@ classdef OclSolver < handle
   methods
 
     function self = OclSolver(varargin)
-      % OclSolver(T, system, ocp, options, H_norm)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
       %           'pathcosts', @pathcostfun,
-      %           'pointcosts', @pointcostfun,
-      %           'pointconstraints', @pointconstraintsfun, casadi_options)
+      %           'intervalcosts', @intervalcostfun,
+      %           'intervalconstraints', @intervalconstraintsfun, casadi_options)
       % OclSolver(stages, transitions, casadi_options)
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
-
         oclDeprecation(['This way of creating the solver ', ...
                         'is deprecated. It will be removed from version >5.01']);
-
-        T = varargin{1};
-        system = varargin{2};
-        ocp = varargin{3};
-        options = varargin{4};
-
-        N = options.nlp.controlIntervals;
-        d = options.nlp.collocationOrder;
-
-        if nargin >= 5
-          H_norm = varargin{5};
-        else
-          H_norm = repmat(1/N,1,N);
-        end
-
-        % for compatibility with older versions
-        if length(T) == 1
-          % T = final time
-        elseif length(T) == N+1
-          % T = N+1 timepoints at states
-          OclDeprecation('Setting of multiple timepoints is deprecated, use the discretization parameter N instead.');
-          H_norm = (T(2:N+1)-T(1:N))/ T(end);
-          T = T(end);
-        elseif length(T) == N
-          % T = N timesteps
-          OclDeprecation('Setting of multiple timesteps is deprecated, use the discretization parameter N instead.');
-          H_norm = T/sum(T);
-          T = sum(T);
-        elseif isempty(T)
-          % T = [] free end time
-        else
-          oclError('Dimension of T does not match the number of control intervals.')
-        end
-
-        stage = OclStage(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
-                         ocp.pointcostsfh, ocp.pointconstraintsfh, ...
-                         system.callbacksetupfh, system.callbackfh, 'N', H_norm, 'd', d);
-
-        stageList = {stage};
-        transitionList = {};
-        
-        nlp_casadi_mx = options.nlp_casadi_mx;
-        controls_regularization = options.controls_regularization;
-        controls_regularization_value = options.controls_regularization_value;
-        
-        casadi_options = options.nlp.casadi;
-        casadi_options.ipopt = options.nlp.ipopt;
-        
+        oclError('OclSystem is not supported anymore!');
       elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
@@ -90,8 +41,8 @@ classdef OclSolver < handle
         p.addKeyword('vars', emptyfh, @oclIsFunHandle);
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('pointcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('intervalcosts', zerofh, @oclIsFunHandle);
+        p.addKeyword('intervalconstraints', emptyfh, @oclIsFunHandle);
         
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
         p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
@@ -106,7 +57,7 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
+        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.intervalcosts, r.intervalconstraints, ...
                               r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
         transitionList = {};
         

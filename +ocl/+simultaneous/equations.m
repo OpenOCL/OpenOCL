@@ -8,8 +8,8 @@ nx = stage.nx;
 ni = stage.integrator.ni;
 nu = stage.nu;
 np = stage.np;
-pointcost_fun = @stage.pointcostfun;
-pointcon_fun = @stage.pointconstraintfun;
+intervalcost_fun = @stage.intervalcostfun;
+intervalcon_fun = @stage.intervalconstraintfun;
 
 [~,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
 [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
@@ -20,33 +20,33 @@ U = reshape(stage_vars(U_indizes), nu, N);
 P = reshape(stage_vars(P_indizes), np, N+1);
 H = reshape(stage_vars(H_indizes), 1 , N);
 
-% point constraints, point costs
-pointcon = cell(1,N+1);
-pointcon_lb = cell(1,N+1);
-pointcon_ub = cell(1,N+1);
-pointcost = 0;
+% interval constraints, interval costs
+intervalcon = cell(1,N+1);
+intervalcon_lb = cell(1,N+1);
+intervalcon_ub = cell(1,N+1);
+intervalcost = 0;
 for k=1:N+1
-  [pointcon{k}, pointcon_lb{k}, pointcon_ub{k}] = pointcon_fun(k, N+1, X(:,k), P(:,k));
-  pointcost = pointcost + pointcost_fun(k, N+1, X(:,k), P(:,k));
+  [intervalcon{k}, intervalcon_lb{k}, intervalcon_ub{k}] = intervalcon_fun(k, N+1, X(:,k), P(:,k));
+  intervalcost = intervalcost + intervalcost_fun(k, N+1, X(:,k), P(:,k));
 end
 
-pointcon0 = pointcon{1};
-pointcon0_lb = pointcon_lb{1};
-pointcon0_ub = pointcon_ub{1};
+intervalcon0 = intervalcon{1};
+intervalcon0_lb = intervalcon_lb{1};
+intervalcon0_ub = intervalcon_ub{1};
 
-pointconF = pointcon{end};
-pointconF_lb = pointcon_lb{end};
-pointconF_ub = pointcon_ub{end};
+intervalconF = intervalcon{end};
+intervalconF_lb = intervalcon_lb{end};
+intervalconF_ub = intervalcon_ub{end};
 
-pointcon = horzcat(pointcon{2:end-1});
-pointcon_lb = horzcat(pointcon_lb{2:end-1});
-pointcon_ub = horzcat(pointcon_ub{2:end-1});
+intervalcon = horzcat(intervalcon{2:end-1});
+intervalcon_lb = horzcat(intervalcon_lb{2:end-1});
+intervalcon_ub = horzcat(intervalcon_ub{2:end-1});
 
 % fix dimensions of empty path constraints
-if isempty(pointcon)
-  pointcon = double.empty(0,N-1);
-  pointcon_lb = double.empty(0,N-1);
-  pointcon_ub = double.empty(0,N-1);
+if isempty(intervalcon)
+  intervalcon = double.empty(0,N-1);
+  intervalcon_lb = double.empty(0,N-1);
+  intervalcon_ub = double.empty(0,N-1);
 end
 
 [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
@@ -75,18 +75,18 @@ continuity = xend_arr - X(:,2:end);
 
 % merge integrator equations, continuity, and path constraints,
 % timesteps constraints
-shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   pointcon;     h_eq;     p_eq(:,1:N-1)];
-shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
-shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         pointcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
+shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   intervalcon;     h_eq;     p_eq(:,1:N-1)];
+shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         intervalcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
+shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         intervalcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
 
 % reshape shooting equations to column vector, append lastintegrator and
 % continuity equations
-constraints    = [pointcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); pointconF;       p_eq(:,N)    ];
-constraints_lb = [pointcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     pointconF_lb;    p_eq_lb(:,N) ];
-constraints_ub = [pointcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     pointconF_ub;    p_eq_ub(:,N) ];
+constraints    = [intervalcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); intervalconF;       p_eq(:,N)    ];
+constraints_lb = [intervalcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     intervalconF_lb;    p_eq_lb(:,N) ];
+constraints_ub = [intervalcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     intervalconF_ub;    p_eq_ub(:,N) ];
 
 % sum all costs
-costs = sum(cost_arr) + pointcost;
+costs = sum(cost_arr) + intervalcost;
 
 % regularization on U
 if controls_regularization && numel(U)>0
