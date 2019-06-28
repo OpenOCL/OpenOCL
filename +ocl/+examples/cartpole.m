@@ -4,7 +4,7 @@
 %
 function [sol,times,solver] = cartpole
 
-  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'intervalcosts', @intervalcosts, 'N', 40, 'd', 3);
+  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'gridcosts', @gridcosts, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
@@ -80,7 +80,7 @@ function daefun(sh,x,~,u,~)
   
 end
 
-function intervalcosts(self,k,K,x,~)
+function gridcosts(self,k,K,x,~)
   if k == K
     self.add( x.time );
   end

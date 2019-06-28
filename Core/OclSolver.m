@@ -19,8 +19,8 @@ classdef OclSolver < handle
     function self = OclSolver(varargin)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
       %           'pathcosts', @pathcostfun,
-      %           'intervalcosts', @intervalcostfun,
-      %           'intervalconstraints', @intervalconstraintsfun, casadi_options)
+      %           'gridcosts', @gridcostfun,
+      %           'gridconstraints', @gridconstraintsfun, casadi_options)
       % OclSolver(stages, transitions, casadi_options)
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
@@ -41,8 +41,8 @@ classdef OclSolver < handle
         p.addKeyword('vars', emptyfh, @oclIsFunHandle);
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('intervalcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('intervalconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
+        p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
         
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
         p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
@@ -57,7 +57,7 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.intervalcosts, r.intervalconstraints, ...
+        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
                               r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
         transitionList = {};
         

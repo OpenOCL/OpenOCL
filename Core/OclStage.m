@@ -6,8 +6,8 @@ classdef OclStage < handle
     integrator
     
     pathcostfun
-    intervalcostsfh
-    intervalconstraintsfh
+    gridcostsfh
+    gridconstraintsfh
     
     callbacksetupfh
     callbackfh
@@ -48,8 +48,8 @@ classdef OclStage < handle
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('intervalcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('intervalconstraints', emptyfh, @oclIsFunHandle);
+      p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
+      p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
       
       p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
       p.addKeyword('callback', emptyfh, @oclIsFunHandle);
@@ -62,8 +62,8 @@ classdef OclStage < handle
       varsfhInput = r.vars;
       daefhInput = r.dae;
       pathcostsfhInput = r.pathcosts;
-      intervalcostsfhInput = r.intervalcosts;  
-      intervalconstraintsfhInput = r.intervalconstraints;
+      gridcostsfhInput = r.gridcosts;  
+      gridconstraintsfhInput = r.gridconstraints;
       
       callbacksetupfh = r.callbacksetup;
       callbackfh = r.callback;
@@ -83,7 +83,7 @@ classdef OclStage < handle
         H_normInput = H_normInput/sum(H_normInput);
         oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
                     'N either be a scalar value or a normalized vector with the length ', ...
-                    'of the number of control interval. Check the documentation of N. ', ...
+                    'of the number of control grid. Check the documentation of N. ', ...
                     'Make sure the timesteps sum up to 1, and contain the relative ', ...
                     'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
       end
@@ -96,8 +96,8 @@ classdef OclStage < handle
       self.H_norm = H_normInput;
       self.integrator = colocation;
       self.pathcostfun = @colocation.pathcostfun;
-      self.intervalcostsfh = intervalcostsfhInput;
-      self.intervalconstraintsfh = intervalconstraintsfhInput;
+      self.gridcostsfh = gridcostsfhInput;
+      self.gridconstraintsfh = gridconstraintsfhInput;
       
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
@@ -214,27 +214,27 @@ classdef OclStage < handle
       self.parameterBounds.upper = p_ub.value;
     end
     
-    function r = intervalcostfun(self,k,N,x,p)
-      intervalCostHandler = OclCost();
+    function r = gridcostfun(self,k,N,x,p)
+      gridCostHandler = OclCost();
       
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.intervalcostsfh(intervalCostHandler,k,N,x,p);
+      self.gridcostsfh(gridCostHandler,k,N,x,p);
       
-      r = intervalCostHandler.value;
+      r = gridCostHandler.value;
     end
     
-    function [val,lb,ub] = intervalconstraintfun(self,k,N,x,p)
-      intervalConHandler = OclConstraint();
+    function [val,lb,ub] = gridconstraintfun(self,k,N,x,p)
+      gridConHandler = OclConstraint();
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.intervalconstraintsfh(intervalConHandler,k,N,x,p);
+      self.gridconstraintsfh(gridConHandler,k,N,x,p);
       
-      val = intervalConHandler.values;
-      lb = intervalConHandler.lowerBounds;
-      ub = intervalConHandler.upperBounds;
+      val = gridConHandler.values;
+      lb = gridConHandler.lowerBounds;
+      ub = gridConHandler.upperBounds;
     end
     
     function callbacksetupfun(self)

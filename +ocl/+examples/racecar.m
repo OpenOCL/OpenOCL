@@ -10,7 +10,7 @@ function [solution,times,solver] = racecar
   MAX_TIME = 20;
 
   solver = ocl.Solver([], @varsfun, @daefun, ...
-                      'intervalcosts', @intervalcosts, 'intervalconstraints', @intervalconstraints, 'N', 50);
+                      'gridcosts', @gridcosts, 'gridconstraints', @gridconstraints, 'N', 50);
 
   % parameters
   m    = 1;         % mass [kg]
@@ -134,13 +134,13 @@ function daefun(sh,x,~,u,p)
   sh.setODE('time', 1);
 end
 
-function intervalcosts(ch,k,K,x,~)
+function gridcosts(ch,k,K,x,~)
   if k==K
     ch.add(x.time);
   end
 end
 
-function intervalconstraints(ch,~,~,x,p)
+function gridconstraints(ch,~,~,x,p)
   % speed constraint
   ch.add(x.vx^2+x.vy^2, '<=', p.Vmax^2);
 

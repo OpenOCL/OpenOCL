@@ -3,25 +3,25 @@ function testOclStage
 % stage empty test
 stage = OclStage(1, @emptyVars, @emptyDae);
 assertEqual(stage.pathcostfun([],[],[],[]),0);
-assertEqual(stage.intervalcostfun(1,10,[],[]),0);
+assertEqual(stage.gridcostfun(1,10,[],[]),0);
 
-[val,lb,ub] = stage.intervalconstraintfun(1,10,[],[]);
+[val,lb,ub] = stage.gridconstraintfun(1,10,[],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % stage valid test
 stage = OclStage(1, @validVars, @validDae, ...
-                  @validPathCosts, @validintervalCosts, @validintervalConstraints);
+                  @validPathCosts, @validgridCosts, @validgridConstraints);
 
 c = stage.pathcostfun(ones(stage.nx,1),ones(stage.nz,1),ones(stage.nu,1),ones(stage.np,1));
 assertEqual(c,26+1e-3*12);
 
-c = stage.intervalcostfun(5,5,ones(stage.nx,1),ones(stage.np,1));
+c = stage.gridcostfun(5,5,ones(stage.nx,1),ones(stage.np,1));
 assertEqual(c, -1);
 
 % path constraints in the form of : -inf <= val <= 0 or 0 <= val <= 0
-[val,lb,ub] = stage.intervalconstraintfun(2,5,ones(stage.nx,1),ones(stage.np,1));
+[val,lb,ub] = stage.gridconstraintfun(2,5,ones(stage.nx,1),ones(stage.np,1));
 % ub all zero
 assertEqual(ub,zeros(36,1));
 % lb either zero for eq or -inf for ineq
@@ -30,7 +30,7 @@ assertEqual(lb,[-inf,-inf,0,0,-inf,-inf,-inf*ones(1,5),0,-inf*ones(1,12),-inf*on
 assertEqual(val,[0,0,0,0,0,-1,2,2,2,2,2,0,-3*ones(1,12),zeros(1,12)].');
 
 % bc
-[val,lb,ub] = stage.intervalconstraintfun(1,5,2*ones(stage.nx,1),ones(stage.np,1));
+[val,lb,ub] = stage.gridconstraintfun(1,5,2*ones(stage.nx,1),ones(stage.np,1));
 assertEqual(ub,zeros(3,1));
 assertEqual(lb,[0,-inf,-inf].');
 assertEqual(val,[-1,1,-4].');
@@ -106,14 +106,14 @@ function validPathCosts(ch,x,z,u,p)
   ch.add(-1); % -1
 end
 
-function validintervalCosts(ch,k,N,x,p)
+function validgridCosts(ch,k,N,x,p)
   ch.add(x.d);
   ch.add(0);
   ch.add(-1);
   ch.add(-1*p.v*1);
 end
 
-function validintervalConstraints(ch,k,N,x,p)
+function validgridConstraints(ch,k,N,x,p)
   if k == 1
     ch.add(x.a,'==',3);
     ch.add(x.a,'>=',3*1);

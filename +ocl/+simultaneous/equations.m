@@ -8,8 +8,8 @@ nx = stage.nx;
 ni = stage.integrator.ni;
 nu = stage.nu;
 np = stage.np;
-intervalcost_fun = @stage.intervalcostfun;
-intervalcon_fun = @stage.intervalconstraintfun;
+gridcost_fun = @stage.gridcostfun;
+gridcon_fun = @stage.gridconstraintfun;
 
 [~,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
 [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
@@ -20,33 +20,33 @@ U = reshape(stage_vars(U_indizes), nu, N);
 P = reshape(stage_vars(P_indizes), np, N+1);
 H = reshape(stage_vars(H_indizes), 1 , N);
 
-% interval constraints, interval costs
-intervalcon = cell(1,N+1);
-intervalcon_lb = cell(1,N+1);
-intervalcon_ub = cell(1,N+1);
-intervalcost = 0;
+% grid constraints, grid costs
+gridcon = cell(1,N+1);
+gridcon_lb = cell(1,N+1);
+gridcon_ub = cell(1,N+1);
+gridcost = 0;
 for k=1:N+1
-  [intervalcon{k}, intervalcon_lb{k}, intervalcon_ub{k}] = intervalcon_fun(k, N+1, X(:,k), P(:,k));
-  intervalcost = intervalcost + intervalcost_fun(k, N+1, X(:,k), P(:,k));
+  [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridcon_fun(k, N+1, X(:,k), P(:,k));
+  gridcost = gridcost + gridcost_fun(k, N+1, X(:,k), P(:,k));
 end
 
-intervalcon0 = intervalcon{1};
-intervalcon0_lb = intervalcon_lb{1};
-intervalcon0_ub = intervalcon_ub{1};
+gridcon0 = gridcon{1};
+gridcon0_lb = gridcon_lb{1};
+gridcon0_ub = gridcon_ub{1};
 
-intervalconF = intervalcon{end};
-intervalconF_lb = intervalcon_lb{end};
-intervalconF_ub = intervalcon_ub{end};
+gridconF = gridcon{end};
+gridconF_lb = gridcon_lb{end};
+gridconF_ub = gridcon_ub{end};
 
-intervalcon = horzcat(intervalcon{2:end-1});
-intervalcon_lb = horzcat(intervalcon_lb{2:end-1});
-intervalcon_ub = horzcat(intervalcon_ub{2:end-1});
+gridcon = horzcat(gridcon{2:end-1});
+gridcon_lb = horzcat(gridcon_lb{2:end-1});
+gridcon_ub = horzcat(gridcon_ub{2:end-1});
 
 % fix dimensions of empty path constraints
-if isempty(intervalcon)
-  intervalcon = double.empty(0,N-1);
-  intervalcon_lb = double.empty(0,N-1);
-  intervalcon_ub = double.empty(0,N-1);
+if isempty(gridcon)
+  gridcon = double.empty(0,N-1);
+  gridcon_lb = double.empty(0,N-1);
+  gridcon_ub = double.empty(0,N-1);
 end
 
 [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
@@ -75,18 +75,18 @@ continuity = xend_arr - X(:,2:end);
 
 % merge integrator equations, continuity, and path constraints,
 % timesteps constraints
-shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   intervalcon;     h_eq;     p_eq(:,1:N-1)];
-shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         intervalcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
-shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         intervalcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
+shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   gridcon;     h_eq;     p_eq(:,1:N-1)];
+shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         gridcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
+shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         gridcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
 
 % reshape shooting equations to column vector, append lastintegrator and
 % continuity equations
-constraints    = [intervalcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); intervalconF;       p_eq(:,N)    ];
-constraints_lb = [intervalcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     intervalconF_lb;    p_eq_lb(:,N) ];
-constraints_ub = [intervalcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     intervalconF_ub;    p_eq_ub(:,N) ];
+constraints    = [gridcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); gridconF;       p_eq(:,N)    ];
+constraints_lb = [gridcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     gridconF_lb;    p_eq_lb(:,N) ];
+constraints_ub = [gridcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     gridconF_ub;    p_eq_ub(:,N) ];
 
 % sum all costs
-costs = sum(cost_arr) + intervalcost;
+costs = sum(cost_arr) + gridcost;
 
 % regularization on U
 if controls_regularization && numel(U)>0
