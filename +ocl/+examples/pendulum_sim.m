@@ -26,6 +26,7 @@ function xVec = pendulum_sim
   controlsSeries = simulator.getControlsVec(length(times)-1);
   controlsSeries.F.set(10);
 
+  figure
   [xVec,~,~] = simulator.simulate(states,times,controlsSeries,p,true);
   snapnow;
 end

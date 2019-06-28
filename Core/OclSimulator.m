@@ -55,7 +55,7 @@ classdef OclSimulator < handle
       z = Variable.create(self.system.algvars,0);
     end
 
-    function [states_out] = reset(self,varargin)
+    function [x] = reset(self,varargin)
 
       p = ocl.utils.ArgumentParser;
       p.addRequired('x0', @(el) isa(el, 'Variable') || isnumeric(el) );
@@ -95,8 +95,6 @@ classdef OclSimulator < handle
       self.current_state = x;
       self.algebraic_guess = z;
       self.parameters = p;
-
-      states_out = initialStates;
     end
 
     function [states_out,algebraics_out] = step(self, controls_in, dt)
@@ -165,7 +163,7 @@ classdef OclSimulator < handle
         controlsVec.set(args.controls);
       end
 
-      self.reset(x0, p);
+      x0 = self.reset(x0, p);
 
       useCallback = args.callback;
 
@@ -179,6 +177,8 @@ classdef OclSimulator < handle
       statesVec = statesVec.x;
       algVarsVec = Variable.create(algVarsVecStruct,0);
       algVarsVec = algVarsVec.z;
+      
+      statesVec(:,:,1).set(x0);
 
       for k=1:N-1
 
