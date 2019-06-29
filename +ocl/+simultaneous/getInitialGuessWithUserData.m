@@ -19,6 +19,8 @@ for k=1:length(names)
   ocl.types.variable.setFromNdMatrix(ig_stage.states.get(id), ytarget);
   
   xtarget = ocl.simultaneous.normalizedIntegratorTimes(stage);
+  xtarget = xtarget(:);
+  
   ytarget = interp1(xdata,ydata,xtarget,'linear','extrap');
   
   ocl.types.variable.setFromNdMatrix(ig_stage.integrator.states.get(id), ytarget);

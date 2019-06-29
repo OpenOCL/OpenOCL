@@ -50,7 +50,7 @@ classdef CasadiSolver < handle
         stage = stageList{k};
         
         x = expr(['x','_s',mat2str(k)], stage.nx);
-        vi = expr(['vi','_s',mat2str(k)], stage.integrator.ni);
+        vi = expr(['vi','_s',mat2str(k)], stage.integrator.num_i);
         u = expr(['u','_s',mat2str(k)], stage.nu);
         h = expr(['h','_s',mat2str(k)]);
         p = expr(['p','_s',mat2str(k)], stage.np);
@@ -60,7 +60,7 @@ classdef CasadiSolver < handle
         
         stage.integratormap = integrator_fun.map(stage.N,'serial');
         
-        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
@@ -174,7 +174,7 @@ classdef CasadiSolver < handle
       i = 1;
       for k=1:length(pl)
         stage = pl{k};
-        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
         sol{k} = sol_values(i:i+nv_stage-1);
         i = i + nv_stage;
       end

@@ -7,6 +7,8 @@ classdef OclStage < handle
     
     pathcostfun
     gridcostsfh
+    pointcostsarray
+    
     gridconstraintsfh
     
     callbacksetupfh
@@ -49,10 +51,13 @@ classdef OclStage < handle
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
+      
       p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
       
       p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
       p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+      
+      p.addKeyword('pointcosts', {}, @(el) iscell(el) && (isempty(el) || isa(el{1}, 'ocl.Pointcost')));
 
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -61,8 +66,11 @@ classdef OclStage < handle
       
       varsfhInput = r.vars;
       daefhInput = r.dae;
+      
       pathcostsfhInput = r.pathcosts;
       gridcostsfhInput = r.gridcosts;  
+      pointcostsarrayInput = r.pointcosts;  
+      
       gridconstraintsfhInput = r.gridconstraints;
       
       callbacksetupfh = r.callbacksetup;
@@ -95,17 +103,20 @@ classdef OclStage < handle
       
       self.H_norm = H_normInput;
       self.integrator = colocation;
+      
       self.pathcostfun = @colocation.pathcostfun;
       self.gridcostsfh = gridcostsfhInput;
+      self.pointcostsarray = pointcostsarrayInput;
+      
       self.gridconstraintsfh = gridconstraintsfhInput;
       
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
       
-      self.nx = colocation.nx;
-      self.nz = colocation.nz;
-      self.nu = colocation.nu;
-      self.np = colocation.np;
+      self.nx = colocation.num_x;
+      self.nz = colocation.num_z;
+      self.nu = colocation.num_u;
+      self.np = colocation.num_p;
       
       self.states = system.states;
       self.algvars = system.algvars;
@@ -223,6 +234,18 @@ classdef OclStage < handle
       self.gridcostsfh(gridCostHandler,k,N,x,p);
       
       r = gridCostHandler.value;
+    end
+    
+    function r = pointcostfun(self, k, x, p)
+      ch = OclCost();
+      
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
+      
+      fh = self.pointcostsarray{k};
+      fh(ch, x, p);
+      
+      r = ch.value;
     end
     
     function [val,lb,ub] = gridconstraintfun(self,k,N,x,p)

@@ -27,20 +27,19 @@ classdef OclCollocation < handle
     algvarBounds
 
     vars
-    nx
-    nz
-    nu
-    np
-    nt
+    num_x
+    num_z
+    num_u
+    num_p
+    num_t
 
-    ni
-  end
-
-  properties(Access = private)
-    B
-    C
-    D
-    tau_root
+    num_i
+    
+    coefficients
+    coeff_eval
+    coeff_der
+    coeff_int
+    collocation_points
     order
   end
 
@@ -54,29 +53,32 @@ classdef OclCollocation < handle
       self.controls = controls;
       self.parameters = parameters;
 
-      self.nx = prod(states.size());
-      self.nz = prod(algvars.size());
-      self.nu = prod(controls.size());
-      self.np = prod(parameters.size());
-      self.nt = order;
+      nx = prod(states.size());
+      nz = prod(algvars.size());
+      nu = prod(controls.size());
+      np = prod(parameters.size());
+      nt = order;
 
       self.daefun = daefun;
       self.pathcostsfh = pathcostsfh;
-
-      self.order = order;
-      self.tau_root = OclCollocation.colpoints(order);
-      [self.C,self.D,self.B] = self.getCoefficients(order);
-
+      
+      tau = ocl.collocation.collocationPoints(order);
+      
+      coeff = ocl.collocation.coefficients(tau);
+      self.coeff_eval = ocl.collocation.evalCoefficients(coeff, order, 1.0);
+      self.coeff_der = ocl.collocation.evalCoefficientsDerivative(coeff, tau, order);
+      self.coeff_int = ocl.collocation.evalCoefficientsIntegral(coeff, order, 1.0);
+      
       self.vars = OclStructure();
       self.vars.addRepeated({'states', 'algvars'},...
                             {states, algvars}, order);
 
       si = self.vars.size();
-      self.ni = prod(si);
+      ni = prod(si);
 
-      self.integratorBounds = OclBounds(-inf * ones(self.ni, 1), inf * ones(self.ni, 1));
-      self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
-      self.algvarBounds = OclBounds(-inf * ones(self.nz, 1), inf * ones(self.nz, 1));
+      self.integratorBounds = OclBounds(-inf * ones(ni, 1), inf * ones(ni, 1));
+      self.stateBounds = OclBounds(-inf * ones(nx, 1), inf * ones(nx, 1));
+      self.algvarBounds = OclBounds(-inf * ones(nz, 1), inf * ones(nz, 1));
 
       names = fieldnames(stateBounds);
       for k=1:length(names)
@@ -89,56 +91,70 @@ classdef OclCollocation < handle
         id = names{k};
         self.setAlgvarBounds(id, algvarBounds.(id).lower, algvarBounds.(id).upper);
       end
-
+      
+      self.num_x = nx;
+      self.num_z = nz;
+      self.num_u = nu;
+      self.num_p = np;
+      self.num_t = nt;
+      self.num_i = ni;
+      self.coefficients = coeff;
+      self.collocation_points = tau;
+      self.order = order;
     end
     
     function r = normalized_times(self)
-      r = self.tau_root(2:end);
+      r = self.collocation_points(2:end);
     end
 
-    function [statesEnd, costs, equations, rel_times] = ...
-          integratorfun(self, statesBegin, integratorVars, ...
-                        controls, h, parameters)
+    function [xF, costs, equations, rel_times] = ...
+          integratorfun(self, x0, vars, u, h, params)
 
-      equations = cell(self.order,1);
+      C = self.coeff_der;
+      B = self.coeff_int;
+      
+      tau = self.collocation_points;
+      d = self.order;
+      
+      nx = self.num_x;
+      nz = self.num_z;
+        
+      equations = cell(d,1);
       J = 0;
 
       % Loop over collocation points
-      statesEnd = self.D(1)*statesBegin;
-      rel_times = cell(self.order,1);
-      for j=1:self.order
+      rel_times = cell(d,1);
+      for j=1:d
 
-        rel_times{j} = self.tau_root(j+1) * h;
+        rel_times{j} = tau(j+1) * h;
 
-        j_vars = (j-1)*(self.nx+self.nz);
-        j_states = j_vars+1:j_vars+self.nx;
-        j_algVars = j_vars+self.nx+1:j_vars+self.nx+self.nz;
+        j_vars = (j-1)*(nx+nz);
+        j_x = j_vars+1:j_vars+nx;
+        j_z = j_vars+nx+1:j_vars+nx+nz;
 
-        xp = self.C(1,j+1)*statesBegin;
-        for r=1:self.order
-          r_vars = (r-1)*(self.nx+self.nz);
-          r_states = r_vars+1:r_vars+self.nx;
-          xp = xp + self.C(r+1,j+1)*integratorVars(r_states);
+        xp = C(1,j+1)*x0;
+        for r=1:d
+          r_vars = (r-1)*(nx+nz);
+          r_x = r_vars+1:r_vars+nx;
+          xp = xp + C(r+1,j+1)*vars(r_x);
         end
 
         % Append collocation equations
-        [ode,alg] = self.daefun(integratorVars(j_states), ...
-                           integratorVars(j_algVars), ...
-                           controls,parameters);
+        [ode,alg] = self.daefun(vars(j_x), vars(j_z), u, params);
 
         equations{j} = [h*ode-xp; alg];
 
-        % Add contribution to the end state
-        statesEnd = statesEnd + self.D(j+1)*integratorVars(j_states);
-
         % Add contribution to quadrature function
-        qj = self.pathcostfun(integratorVars(j_states),integratorVars(j_algVars),controls,parameters);
-        J = J + self.B(j+1)*qj*h;
+        qj = self.pathcostfun(vars(j_x),vars(j_z),u,params);
+        J = J + B(j+1)*qj*h;
       end
 
       costs = J;
       equations = vertcat(equations{:});
       rel_times = vertcat(rel_times{:});
+      
+      xF = ocl.collocation.getStateAtPoint(self, x0, vars, 1.0);
+      
     end
 
     function r = getInitialGuess(self, stateGuess, algvarGuess)
@@ -211,62 +227,6 @@ classdef OclCollocation < handle
       self.pathcostsfh(pcHandler,x,z,u,p);
 
       r = pcHandler.value;
-    end
-  end
-
-  methods (Access = private)
-
-    function [C,D,B] = getCoefficients(self, d)
-
-      % Coefficients of the collocation equation
-      C = zeros(d+1,d+1);
-
-      % Coefficients of the continuity equation
-      D = zeros(d+1, 1);
-
-      % Coefficients of the quadrature function
-      B = zeros(d+1, 1);
-
-      % Construct polynomial basis
-      for j=1:d+1
-        % Construct Lagrange polynomials to get the polynomial basis at the collocation point
-        coeff = 1;
-        for r=1:d+1
-          if r ~= j
-            coeff = conv(coeff, [1, -self.tau_root(r)]);
-            coeff = coeff / (self.tau_root(j)-self.tau_root(r));
-          end
-        end
-        % Evaluate the polynomial at the final time to get the coefficients of the continuity equation
-        D(j) = polyval(coeff, 1.0);
-
-        % Evaluate the time derivative of the polynomial at all collocation points to get the coefficients of the continuity equation
-        pder = polyder(coeff);
-        for r=1:d+1
-          C(j,r) = polyval(pder, self.tau_root(r));
-        end
-
-        % Evaluate the integral of the polynomial to get the coefficients of the quadrature function
-        pint = polyint(coeff);
-        B(j) = polyval(pint, 1.0);
-      end
-    end
-
-  end
-
-  methods (Static)
-    function [ times ] = colpoints( d )
-      if d == 2
-        times = [0 0.33333333333333333333333333333333, 1.0];
-      elseif d == 3
-        times = [0 0.15505102572168222296866701981344, 0.64494897427831787695140519645065, 1.0];
-      elseif d == 4
-        times = [0 0.088587959512704206321842548277345, 0.4094668644407346569380479195388, 0.7876594617608470016989485884551, 1.0];
-      elseif d == 5
-        times = [0 0.057104196114518224192124762339517, 0.27684301363812369167760607524542, 0.5835904323689168338162858162832, 0.86024013565621926247217743366491, 1.0];
-      else
-        error('Only collocation order between 2 and 5 is supported.');
-      end
     end
   end
 

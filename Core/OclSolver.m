@@ -42,10 +42,13 @@ classdef OclSolver < handle
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
         p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
+        
         p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
         
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
         p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
+        
+        p.addKeyword('pointcosts', {}, @(el) iscell(el) && (isempty(el) || isa(el{1}, 'ocl.Pointcost')));
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
@@ -58,7 +61,7 @@ classdef OclSolver < handle
         r = p.parse(varargin{:});
         
         stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
-                              r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
+                              r.callback_setup, r.callback, r.pointcosts, 'N', r.N, 'd', r.d)};
         transitionList = {};
         
         nlp_casadi_mx = r.nlp_casadi_mx;

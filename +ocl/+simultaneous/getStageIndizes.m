@@ -2,7 +2,7 @@ function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getStageIndiz
 
 N = length(stage.H_norm);
 nx = stage.nx;
-ni = stage.integrator.ni;
+ni = stage.integrator.num_i;
 nu = stage.nu;
 np = stage.np;
 

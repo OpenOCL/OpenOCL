@@ -5,7 +5,7 @@ function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
 H_norm = stage.H_norm;
 T = stage.T;
 nx = stage.nx;
-ni = stage.integrator.ni;
+ni = stage.integrator.num_i;
 nu = stage.nu;
 np = stage.np;
 gridcost_fun = @stage.gridcostfun;
@@ -28,6 +28,19 @@ gridcost = 0;
 for k=1:N+1
   [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridcon_fun(k, N+1, X(:,k), P(:,k));
   gridcost = gridcost + gridcost_fun(k, N+1, X(:,k), P(:,k));
+end
+
+% point costs
+grid = ocl.simultaneous.normalizedStateTimes(stage);
+grid_N = grid(1:end-1,:);
+grid_collocation = ocl.simultaneous.normalizedIntegratorTimes(stage);
+
+grid_merged = [grid_N,grid_collocation];
+
+for k=1:length(stage.pointcostsarray)
+  point = stage.pointcostsarray{k}.point;
+  fh = stage.pointcostsarray{k}.fh;
+  
 end
 
 gridcon0 = gridcon{1};

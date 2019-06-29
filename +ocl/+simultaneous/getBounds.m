@@ -1,6 +1,6 @@
 function [lb_stage,ub_stage] = getBounds(stage)
 
-[nv_stage,~] = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+[nv_stage,~] = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
 
 lb_stage = -inf * ones(nv_stage,1);
 ub_stage = inf * ones(nv_stage,1);
