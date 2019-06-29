@@ -39,7 +39,7 @@ classdef OclCollocation < handle
     coeff_eval
     coeff_der
     coeff_int
-    collocation_points
+    tau_root
     order
   end
 
@@ -62,7 +62,7 @@ classdef OclCollocation < handle
       self.daefun = daefun;
       self.pathcostsfh = pathcostsfh;
       
-      tau = ocl.collocation.collocationPoints(order);
+      tau = [0 ocl.collocation.collocationPoints(order)];
       
       coeff = ocl.collocation.coefficients(tau);
       self.coeff_eval = ocl.collocation.evalCoefficients(coeff, order, 1.0);
@@ -99,12 +99,8 @@ classdef OclCollocation < handle
       self.num_t = nt;
       self.num_i = ni;
       self.coefficients = coeff;
-      self.collocation_points = tau;
+      self.tau_root = tau;
       self.order = order;
-    end
-    
-    function r = normalized_times(self)
-      r = self.collocation_points(2:end);
     end
 
     function [xF, costs, equations, rel_times] = ...
@@ -113,7 +109,7 @@ classdef OclCollocation < handle
       C = self.coeff_der;
       B = self.coeff_int;
       
-      tau = self.collocation_points;
+      tau = self.tau_root;
       d = self.order;
       
       nx = self.num_x;
@@ -121,32 +117,30 @@ classdef OclCollocation < handle
         
       equations = cell(d,1);
       J = 0;
+      
+      [x_indizes, z_indizes] = ocl.collocation.indizes(nx,nz,d);
 
       % Loop over collocation points
       rel_times = cell(d,1);
       for j=1:d
-
-        rel_times{j} = tau(j+1) * h;
-
-        j_vars = (j-1)*(nx+nz);
-        j_x = j_vars+1:j_vars+nx;
-        j_z = j_vars+nx+1:j_vars+nx+nz;
-
-        xp = C(1,j+1)*x0;
+        
+        x_der = C(1,j+1)*x0;
         for r=1:d
-          r_vars = (r-1)*(nx+nz);
-          r_x = r_vars+1:r_vars+nx;
-          xp = xp + C(r+1,j+1)*vars(r_x);
+          x_r = vars(x_indizes(:,r));
+          x_der = x_der + C(r+1,j+1)*x_r;
         end
+        
+        x_j = vars(x_indizes(:,j));
+        z_j = vars(z_indizes(:,j));
 
-        % Append collocation equations
-        [ode,alg] = self.daefun(vars(j_x), vars(j_z), u, params);
+        [ode,alg] = self.daefun(x_j, z_j, u, params);
 
-        equations{j} = [h*ode-xp; alg];
-
-        % Add contribution to quadrature function
-        qj = self.pathcostfun(vars(j_x),vars(j_z),u,params);
+        qj = self.pathcostfun(x_j, z_j,u,params);
+        
+        equations{j} = [h*ode-x_der; alg];
         J = J + B(j+1)*qj*h;
+        
+        rel_times{j} = tau(j+1) * h;
       end
 
       costs = J;
