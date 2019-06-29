@@ -31,17 +31,17 @@ for k=1:N+1
 end
 
 % point costs
-grid = ocl.simultaneous.normalizedStateTimes(stage);
-grid_N = grid(1:end-1,:);
-grid_collocation = ocl.simultaneous.normalizedIntegratorTimes(stage);
-
-grid_merged = [grid_N,grid_collocation];
-
-for k=1:length(stage.pointcostsarray)
-  point = stage.pointcostsarray{k}.point;
-  fh = stage.pointcostsarray{k}.fh;
-  
-end
+% grid = ocl.simultaneous.normalizedStateTimes(stage);
+% grid_N = grid(1:end-1,:);
+% grid_collocation = ocl.simultaneous.normalizedIntegratorTimes(stage);
+% 
+% grid_merged = [grid_N,grid_collocation];
+% 
+% for k=1:length(stage.pointcostsarray)
+%   point = stage.pointcostsarray{k}.point;
+%   fh = stage.pointcostsarray{k}.fh;
+%   
+% end
 
 gridcon0 = gridcon{1};
 gridcon0_lb = gridcon_lb{1};
