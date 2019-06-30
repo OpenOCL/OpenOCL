@@ -46,9 +46,9 @@ end
 [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints
-h_eq = [];
-h_eq_lb = [];
-h_eq_ub = [];
+h_eq = double.empty(0,N-1);
+h_eq_lb = double.empty(0,N-1);
+h_eq_ub = double.empty(0,N-1);
 if isempty(T)
   % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
   H_ratio = H_norm(1:end-1)./H_norm(2:end);
@@ -74,7 +74,7 @@ for k=1:N-1
   gc_k = gridcon{k};
   gc_lb_k = gridcon_lb{k};
   gc_ub_k = gridcon_ub{k};
-  grid_eq{k} = vertcat(gc_k(:), int_eq_arr(:,k), h_eq(k), p_eq(:,k), continuity(:,k));
+  grid_eq{k} = vertcat(gc_k(:), int_eq_arr(:,k), h_eq(:,k), p_eq(:,k), continuity(:,k));
   grid_eq_lb{k} = vertcat(gc_lb_k(:), zeros(ni,1), h_eq_lb(:,k), p_eq_lb(:,k), zeros(nx,1));
   grid_eq_ub{k} = vertcat(gc_ub_k(:), zeros(ni,1), h_eq_ub(:,k), p_eq_ub(:,k), zeros(nx,1));
 end
@@ -98,7 +98,6 @@ grid_eq_ub{N+1} = gc_ub_k(:);
 constraints = vertcat(grid_eq{:});
 constraints_lb = vertcat(grid_eq_lb{:});
 constraints_ub = vertcat(grid_eq_ub{:});
-
 
 % sum all costs
 costs = sum(cost_arr) + gridcost;
