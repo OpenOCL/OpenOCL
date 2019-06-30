@@ -43,32 +43,12 @@ end
 %   
 % end
 
-gridcon0 = gridcon{1};
-gridcon0_lb = gridcon_lb{1};
-gridcon0_ub = gridcon_ub{1};
-
-gridconF = gridcon{end};
-gridconF_lb = gridcon_lb{end};
-gridconF_ub = gridcon_ub{end};
-
-gridcon = horzcat(gridcon{2:end-1});
-gridcon_lb = horzcat(gridcon_lb{2:end-1});
-gridcon_ub = horzcat(gridcon_ub{2:end-1});
-
-% fix dimensions of empty path constraints
-if isempty(gridcon)
-  gridcon = double.empty(0,N-1);
-  gridcon_lb = double.empty(0,N-1);
-  gridcon_ub = double.empty(0,N-1);
-end
-
 [xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints
 h_eq = [];
 h_eq_lb = [];
 h_eq_ub = [];
-
 if isempty(T)
   % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
   H_ratio = H_norm(1:end-1)./H_norm(2:end);
@@ -86,17 +66,39 @@ p_eq_ub = zeros(np, N);
 % continuity (nx x N)
 continuity = xend_arr - X(:,2:end);
 
-% merge integrator equations, continuity, and path constraints,
-% timesteps constraints
-shooting_eq    = [int_eq_arr(:,1:N-1);   continuity(:,1:N-1);   gridcon;     h_eq;     p_eq(:,1:N-1)];
-shooting_eq_lb = [zeros(ni,N-1);         zeros(nx,N-1);         gridcon_lb;  h_eq_lb;  p_eq_lb(:,1:N-1)];
-shooting_eq_ub = [zeros(ni,N-1);         zeros(nx,N-1);         gridcon_ub;  h_eq_ub;  p_eq_ub(:,1:N-1)];
+% merge all constraints (ordered by apperance in grid)
+grid_eq = cell(N+1,1);
+grid_eq_lb = cell(N+1,1);
+grid_eq_ub = cell(N+1,1);
+for k=1:N-1
+  gc_k = gridcon{k};
+  gc_lb_k = gridcon_lb{k};
+  gc_ub_k = gridcon_ub{k};
+  grid_eq{k} = vertcat(gc_k(:), int_eq_arr(:,k), h_eq(k), p_eq(:,k), continuity(:,k));
+  grid_eq_lb{k} = vertcat(gc_lb_k(:), zeros(ni,1), h_eq_lb(:,k), p_eq_lb(:,k), zeros(nx,1));
+  grid_eq_ub{k} = vertcat(gc_ub_k(:), zeros(ni,1), h_eq_ub(:,k), p_eq_ub(:,k), zeros(nx,1));
+end
 
-% reshape shooting equations to column vector, append lastintegrator and
-% continuity equations
-constraints    = [gridcon0;      shooting_eq(:);    int_eq_arr(:,N); continuity(:,N); gridconF;       p_eq(:,N)    ];
-constraints_lb = [gridcon0_lb;   shooting_eq_lb(:); zeros(ni,1);     zeros(nx,1);     gridconF_lb;    p_eq_lb(:,N) ];
-constraints_ub = [gridcon0_ub;   shooting_eq_ub(:); zeros(ni,1);     zeros(nx,1);     gridconF_ub;    p_eq_ub(:,N) ];
+gc_k = gridcon{N};
+gc_lb_k = gridcon_lb{N};
+gc_ub_k = gridcon_ub{N};
+
+grid_eq{N} = vertcat(gc_k(:), int_eq_arr(:,N), p_eq(:,N), continuity(:,N));
+grid_eq_lb{N} = vertcat(gc_lb_k(:), zeros(ni,1), p_eq_lb(:,N), zeros(nx,1));
+grid_eq_ub{N} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_ub(:,N), zeros(nx,1));
+
+gc_k = gridcon{N+1};
+gc_lb_k = gridcon_lb{N+1};
+gc_ub_k = gridcon_ub{N+1};
+
+grid_eq{N+1} = gc_k(:);
+grid_eq_lb{N+1} = gc_lb_k(:);
+grid_eq_ub{N+1} = gc_ub_k(:);
+
+constraints = vertcat(grid_eq{:});
+constraints_lb = vertcat(grid_eq_lb{:});
+constraints_ub = vertcat(grid_eq_ub{:});
+
 
 % sum all costs
 costs = sum(cost_arr) + gridcost;
