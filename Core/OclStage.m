@@ -6,8 +6,10 @@ classdef OclStage < handle
     integrator
     
     pathcostfun
-    pointcostsfh
-    pointconstraintsfh
+    gridcostsfh
+    pointcostsarray
+    
+    gridconstraintsfh
     
     callbacksetupfh
     callbackfh
@@ -48,11 +50,14 @@ classdef OclStage < handle
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pointcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+      p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
+      
+      p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
       
       p.addKeyword('callbacksetup', emptyfh, @oclIsFunHandle);
       p.addKeyword('callback', emptyfh, @oclIsFunHandle);
+      
+      p.addKeyword('pointcosts', {}, @(el) iscell(el) && (isempty(el) || isa(el{1}, 'ocl.Pointcost')));
 
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -61,9 +66,12 @@ classdef OclStage < handle
       
       varsfhInput = r.vars;
       daefhInput = r.dae;
+      
       pathcostsfhInput = r.pathcosts;
-      pointcostsfhInput = r.pointcosts;  
-      pointconstraintsfhInput = r.pointconstraints;
+      gridcostsfhInput = r.gridcosts;  
+      pointcostsarrayInput = r.pointcosts;  
+      
+      gridconstraintsfhInput = r.gridconstraints;
       
       callbacksetupfh = r.callbacksetup;
       callbackfh = r.callback;
@@ -83,7 +91,7 @@ classdef OclStage < handle
         H_normInput = H_normInput/sum(H_normInput);
         oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
                     'N either be a scalar value or a normalized vector with the length ', ...
-                    'of the number of control interval. Check the documentation of N. ', ...
+                    'of the number of control grid. Check the documentation of N. ', ...
                     'Make sure the timesteps sum up to 1, and contain the relative ', ...
                     'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
       end
@@ -95,17 +103,20 @@ classdef OclStage < handle
       
       self.H_norm = H_normInput;
       self.integrator = colocation;
+      
       self.pathcostfun = @colocation.pathcostfun;
-      self.pointcostsfh = pointcostsfhInput;
-      self.pointconstraintsfh = pointconstraintsfhInput;
+      self.gridcostsfh = gridcostsfhInput;
+      self.pointcostsarray = pointcostsarrayInput;
+      
+      self.gridconstraintsfh = gridconstraintsfhInput;
       
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
       
-      self.nx = colocation.nx;
-      self.nz = colocation.nz;
-      self.nu = colocation.nu;
-      self.np = colocation.np;
+      self.nx = colocation.num_x;
+      self.nz = colocation.num_z;
+      self.nu = colocation.num_u;
+      self.np = colocation.num_p;
       
       self.states = system.states;
       self.algvars = system.algvars;
@@ -214,27 +225,39 @@ classdef OclStage < handle
       self.parameterBounds.upper = p_ub.value;
     end
     
-    function r = pointcostfun(self,k,N,x,p)
-      pointCostHandler = OclCost();
+    function r = gridcostfun(self,k,N,x,p)
+      gridCostHandler = OclCost();
       
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pointcostsfh(pointCostHandler,k,N,x,p);
+      self.gridcostsfh(gridCostHandler,k,N,x,p);
       
-      r = pointCostHandler.value;
+      r = gridCostHandler.value;
     end
     
-    function [val,lb,ub] = pointconstraintfun(self,k,N,x,p)
-      pointConHandler = OclConstraint();
+    function r = pointcostfun(self, k, x, p)
+      ch = OclCost();
+      
       x = Variable.create(self.states,x);
       p = Variable.create(self.parameters,p);
       
-      self.pointconstraintsfh(pointConHandler,k,N,x,p);
+      fh = self.pointcostsarray{k};
+      fh(ch, x, p);
       
-      val = pointConHandler.values;
-      lb = pointConHandler.lowerBounds;
-      ub = pointConHandler.upperBounds;
+      r = ch.value;
+    end
+    
+    function [val,lb,ub] = gridconstraintfun(self,k,N,x,p)
+      gridConHandler = OclConstraint();
+      x = Variable.create(self.states,x);
+      p = Variable.create(self.parameters,p);
+      
+      self.gridconstraintsfh(gridConHandler,k,N,x,p);
+      
+      val = gridConHandler.values;
+      lb = gridConHandler.lowerBounds;
+      ub = gridConHandler.upperBounds;
     end
     
     function callbacksetupfun(self)

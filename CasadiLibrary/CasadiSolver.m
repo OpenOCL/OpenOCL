@@ -4,6 +4,8 @@ classdef CasadiSolver < handle
     timeMeasures
     stageList
     nlpData
+    gridpoints
+    gridpoints_integrator
   end
   
   properties (Access = private)
@@ -39,35 +41,39 @@ classdef CasadiSolver < handle
       constraints_LB = cell(length(stageList), 1);
       constraints_UB = cell(length(stageList), 1);
       
+      gridpoints = cell(length(stageList), 1);
+      gridpoints_integrator = cell(length(stageList), 1);
+      
       v_stage = [];
       
       for k=1:length(stageList)
         stage = stageList{k};
         
-        x = expr(['x','_ph',mat2str(k)], stage.nx);
-        vi = expr(['vi','_ph',mat2str(k)], stage.integrator.ni);
-        u = expr(['u','_ph',mat2str(k)], stage.nu);
-        h = expr(['h','_ph',mat2str(k)]);
-        p = expr(['p','_ph',mat2str(k)], stage.np);
+        x = expr(['x','_s',mat2str(k)], stage.nx);
+        vi = expr(['vi','_s',mat2str(k)], stage.integrator.num_i);
+        u = expr(['u','_s',mat2str(k)], stage.nu);
+        h = expr(['h','_s',mat2str(k)]);
+        p = expr(['p','_s',mat2str(k)], stage.np);
         
         [statesEnd, cost_integr, equations, rel_times] = stage.integrator.integratorfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, cost_integr, equations, rel_times});
         
         stage.integratormap = integrator_fun.map(stage.N,'serial');
         
-        nv_stage = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
         v_last_stage = v_stage;
-        v_stage = expr(['v','_ph',mat2str(k)], nv_stage);
+        v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
-        [costs_stage,constraints_stage,constraints_LB_stage,constraints_UB_stage,~] = Simultaneous.simultaneous(stage, v_stage, ...
+        [costs_stage,constraints_stage,constraints_LB_stage, ...
+          constraints_UB_stage] = ocl.simultaneous.equations(stage, v_stage, ...
               controls_regularization, controls_regularization_value);
         
         transition_eq = [];
         transition_lb = [];
         transition_ub = [];
         if k >= 2
-          x0s = Simultaneous.first_state(stageList{k}, v_stage);
-          xfs = Simultaneous.last_state(stageList{k-1}, v_last_stage);
+          x0s = ocl.simultaneous.getFirstState(stageList{k}, v_stage);
+          xfs = ocl.simultaneous.getLastState(stageList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
           tansition_handler = OclConstraint();
           
@@ -86,6 +92,9 @@ classdef CasadiSolver < handle
         constraints{k} = vertcat(transition_eq, constraints_stage);
         constraints_LB{k} = vertcat(transition_lb, constraints_LB_stage);
         constraints_UB{k} = vertcat(transition_ub, constraints_UB_stage);
+        
+        gridpoints_integrator{k} = ocl.simultaneous.normalizedIntegratorTimes(stage);
+        gridpoints{k} = ocl.simultaneous.normalizedStateTimes(stage);
       end
       
       v = vertcat(vars{:});
@@ -117,6 +126,8 @@ classdef CasadiSolver < handle
       self.stageList = stageList;
       self.nlpData = nlpData;
       self.timeMeasures = timeMeasures;
+      self.gridpoints = gridpoints;
+      self.gridpoints_integrator = gridpoints_integrator;
     end
     
     function [sol,times,objective,constraints] = solve(self,v0)
@@ -131,7 +142,7 @@ classdef CasadiSolver < handle
       lbv = cell(length(pl),1);
       ubv = cell(length(pl),1);
       for k=1:length(pl)
-        [lbv_stage,ubv_stage] = Simultaneous.getBounds(pl{k});
+        [lbv_stage,ubv_stage] = ocl.simultaneous.getBounds(pl{k});
         lbv{k} = lbv_stage;
         ubv{k} = ubv_stage;
       end
@@ -163,7 +174,7 @@ classdef CasadiSolver < handle
       i = 1;
       for k=1:length(pl)
         stage = pl{k};
-        nv_stage = Simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.ni, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
         sol{k} = sol_values(i:i+nv_stage-1);
         i = i + nv_stage;
       end
@@ -174,9 +185,9 @@ classdef CasadiSolver < handle
       constraints = cell(length(pl),1);
       for k=1:length(pl)
         stage = pl{k};
-        [objective{k},constraints{k},~,~,times{k}] = Simultaneous.simultaneous(stage, sol{k}, ...
-                                                                               uregu, ...
-                                                                               uregu_value);
+        [objective{k},constraints{k},~,~,times{k}] = ocl.simultaneous.equations(stage, sol{k}, ...
+                                                                                uregu, ...
+                                                                                uregu_value);
         objective{k} = full(objective{k});
         constraints{k} = full(constraints{k});
         times{k} = full(times{k});

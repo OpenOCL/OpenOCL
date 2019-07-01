@@ -2,8 +2,8 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function varargout = OCP(varargin)
+function varargout = Simulator(varargin)
   ocl.utils.checkStartup()
   varargout = cell(nargout,1);
-  [varargout{:}] = OclOCP(varargin{:});
+  [varargout{:}] = OclSimulator(varargin{:});
 end

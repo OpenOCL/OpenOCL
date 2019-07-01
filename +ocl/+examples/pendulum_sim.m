@@ -10,7 +10,7 @@ function xVec = pendulum_sim
                       @ocl.examples.pendulum.icfun, ...
                       'callbacksetup', @ocl.examples.pendulum.simcallbacksetup, ...
                       'callback', @ocl.examples.pendulum.simcallback);
-  simulator = Simulator(system);
+  simulator = ocl.Simulator(system);
 
   states = simulator.getStates();
   states.p.set([0,1]);
@@ -22,14 +22,12 @@ function xVec = pendulum_sim
 
   times = 0:0.1:4;
 
-  % simulate without control inputs
-  %simulator.simulate(states,times,p);
-
-  % simulate again using a given series of control inputs
+  % simulate using a given series of control inputs
   controlsSeries = simulator.getControlsVec(length(times)-1);
   controlsSeries.F.set(10);
 
-  [xVec,~,~] = simulator.simulate(states,times,controlsSeries,p);
+  figure
+  [xVec,~,~] = simulator.simulate(states,times,controlsSeries,p,true);
   snapnow;
 end
 
