@@ -28,7 +28,7 @@ classdef OclSolver < handle
         oclDeprecation(['This way of creating the solver ', ...
                         'is deprecated. It will be removed from version >5.01']);
         oclError('OclSystem is not supported anymore!');
-      elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
+      elseif nargin >= 1 && isnumeric(varargin{1}) && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
         %           'pathcosts', @pathcostfun, options
