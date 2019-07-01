@@ -44,15 +44,15 @@ classdef OclSystem < handle
       
       r = p.parse(varargin{:});
 
-      varsfun = r.vars;
-      daefun = r.dae;
-      icfun = r.ic;
+      varsfh = r.vars;
+      daefh = r.dae;
+      icfh = r.ic;
       callbacksetupfh = r.callbacksetup;
       callbackfh = r.callback;
 
-      self.varsfh = varsfun;
-      self.daefh = daefun;
-      self.icfh = icfun;
+      self.varsfh = varsfh;
+      self.daefh = daefh;
+      self.icfh = icfh;
 
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
@@ -97,21 +97,6 @@ classdef OclSystem < handle
       % simulationCallback(states,algVars,controls,timeBegin,timesEnd,parameters)
     end
 
-    function [ode,alg] = daefun(self,x,z,u,p)
-      % evaluate the system equations for the assigned variables
-
-      x = Variable.create(self.states,x);
-      z = Variable.create(self.algvars,z);
-      u = Variable.create(self.controls,u);
-      p = Variable.create(self.parameters,p);
-
-      daehandler = OclDaeHandler();
-      self.daefh(daehandler,x,z,u,p);
-
-      ode = daehandler.getOde(self.nx, self.statesOrder);
-      alg = daehandler.getAlg(self.nz);
-    end
-
     function ic = icfun(self,x,p)
       icHandler = OclConstraint();
       x = Variable.create(self.states,x);
@@ -126,14 +111,14 @@ classdef OclSystem < handle
       self.callbacksetupfh();
     end
 
-    function u = callbackfun(self,states,algVars,controls,timesBegin,timesEnd,parameters)
-      x = Variable.create(self.states,states);
-      z = Variable.create(self.algvars,algVars);
-      u = Variable.create(self.controls,controls);
-      p = Variable.create(self.parameters,parameters);
+    function u = callbackfun(self,x,z,u,t0,t1,p)
+      x = Variable.create(self.states,x);
+      z = Variable.create(self.algvars,z);
+      u = Variable.create(self.controls,u);
+      p = Variable.create(self.parameters,p);
 
-      t0 = Variable.Matrix(timesBegin);
-      t1 = Variable.Matrix(timesEnd);
+      t0 = Variable.Matrix(t0);
+      t1 = Variable.Matrix(t1);
 
       self.callbackfh(x,z,u,t0,t1,p);
       u = Variable.getValueAsColumn(u);
