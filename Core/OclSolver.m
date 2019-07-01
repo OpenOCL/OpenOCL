@@ -4,7 +4,7 @@
 %
 classdef OclSolver < handle
 
-  properties (Access = private)
+  properties
     bounds
     initialBounds
     endBounds
@@ -17,66 +17,17 @@ classdef OclSolver < handle
   methods
 
     function self = OclSolver(varargin)
-      % OclSolver(T, system, ocp, options, H_norm)
       % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
       %           'pathcosts', @pathcostfun,
-      %           'pointcosts', @pointcostfun,
-      %           'pointconstraints', @pointconstraintsfun, casadi_options)
+      %           'gridcosts', @gridcostfun,
+      %           'gridconstraints', @gridconstraintsfun, casadi_options)
       % OclSolver(stages, transitions, casadi_options)
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % OclSolver(T, system, ocp, options, H_norm)
-
         oclDeprecation(['This way of creating the solver ', ...
                         'is deprecated. It will be removed from version >5.01']);
-
-        T = varargin{1};
-        system = varargin{2};
-        ocp = varargin{3};
-        options = varargin{4};
-
-        N = options.nlp.controlIntervals;
-        d = options.nlp.collocationOrder;
-
-        if nargin >= 5
-          H_norm = varargin{5};
-        else
-          H_norm = repmat(1/N,1,N);
-        end
-
-        % for compatibility with older versions
-        if length(T) == 1
-          % T = final time
-        elseif length(T) == N+1
-          % T = N+1 timepoints at states
-          OclDeprecation('Setting of multiple timepoints is deprecated, use the discretization parameter N instead.');
-          H_norm = (T(2:N+1)-T(1:N))/ T(end);
-          T = T(end);
-        elseif length(T) == N
-          % T = N timesteps
-          OclDeprecation('Setting of multiple timesteps is deprecated, use the discretization parameter N instead.');
-          H_norm = T/sum(T);
-          T = sum(T);
-        elseif isempty(T)
-          % T = [] free end time
-        else
-          oclError('Dimension of T does not match the number of control intervals.')
-        end
-
-        stage = OclStage(T, system.varsfh, system.daefh, ocp.pathcostsfh, ...
-                         ocp.pointcostsfh, ocp.pointconstraintsfh, ...
-                         system.callbacksetupfh, system.callbackfh, 'N', H_norm, 'd', d);
-
-        stageList = {stage};
-        transitionList = {};
-        
-        nlp_casadi_mx = options.nlp_casadi_mx;
-        controls_regularization = options.controls_regularization;
-        controls_regularization_value = options.controls_regularization_value;
-        
-        casadi_options = options.nlp.casadi;
-        casadi_options.ipopt = options.nlp.ipopt;
-        
+        oclError('OclSystem is not supported anymore!');
       elseif nargin >= 1 && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % OclSolver(T, 'vars', @varsfun, 'dae', @daefun,
         %           'lagrangecost', @lagrangefun,
@@ -90,11 +41,14 @@ classdef OclSolver < handle
         p.addKeyword('vars', emptyfh, @oclIsFunHandle);
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('pointcosts', zerofh, @oclIsFunHandle);
-        p.addKeyword('pointconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
+        
+        p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
         
         p.addKeyword('callback', emptyfh, @oclIsFunHandle);
         p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
+        
+        p.addKeyword('pointcosts', {}, @(el) iscell(el) && (isempty(el) || isa(el{1}, 'ocl.Pointcost')));
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
@@ -106,8 +60,8 @@ classdef OclSolver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.pointcosts, r.pointconstraints, ...
-                              r.callback_setup, r.callback, 'N', r.N, 'd', r.d)};
+        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
+                              r.callback_setup, r.callback, r.pointcosts, 'N', r.N, 'd', r.d)};
         transitionList = {};
         
         nlp_casadi_mx = r.nlp_casadi_mx;
@@ -170,10 +124,19 @@ classdef OclSolver < handle
 
       s = self.solver;
       st_list = self.stageList;
-
-      ig_list = cell(length(st_list),1);
-      for k=1:length(st_list)
-        ig_list{k} = ig{k}.value;
+      
+      if isa(ig, 'OclAssignment')
+        ig_list = cell(length(st_list),1);
+        for k=1:length(st_list)
+          ig_list{k} = ig{k}.value;
+        end
+      else
+        % ig InitialGuess
+        ig_list = cell(length(st_list),1);
+        for k=1:length(st_list)
+          ig_stage = ocl.simultaneous.getInitialGuessWithUserData(st_list{k}, ig{k});
+          ig_list{k} = ig_stage.value;
+        end
       end
 
       [sol,times,objective,constraints] = s.solve(ig_list);
@@ -185,8 +148,8 @@ classdef OclSolver < handle
 
       for k=1:length(st_list)
         stage = st_list{k};
-        vars_structure = Simultaneous.vars(stage);
-        times_structure = Simultaneous.times(stage);
+        vars_structure = ocl.simultaneous.variables(stage);
+        times_structure = ocl.simultaneous.times(stage);
         sol_list{k} = Variable.create(vars_structure, sol{k});
         times_list{k} = Variable.create(times_structure, times{k});
         obj_list{k} = objective{k};
@@ -204,6 +167,13 @@ classdef OclSolver < handle
     function r = timeMeasures(self)
       r = self.solver.timeMeasures;
     end
+    
+    function ig_list = initialGuess(self)
+      ig_list = cell(length(self.stageList), 1);
+      for k=1:length(ig_list)
+        ig_list{k} = ocl.InitialGuess(self.stageList{k}.states);
+      end
+    end
 
     function ig = ig(self)
       ig = self.getInitialGuess();
@@ -216,8 +186,8 @@ classdef OclSolver < handle
       igList = cell(length(pl),1);
       for k=1:length(pl)
         stage = pl{k};
-        varsStruct = Simultaneous.vars(stage);
-        ig = Simultaneous.getInitialGuess(stage);
+        varsStruct = ocl.simultaneous.variables(stage);
+        ig = ocl.simultaneous.getInitialGuess(stage);
         igList{k} = Variable.create(varsStruct, ig);
       end
 
@@ -268,6 +238,8 @@ classdef OclSolver < handle
           self.stageList{1}.setControlBounds(id, varargin{:});
         elseif oclFieldnamesContain(self.stageList{1}.parameters.getNames(), id)
           self.stageList{1}.setParameterBounds(id, varargin{:});
+        else
+          oclWarning(['You specified a bound for a variable that does not exist: ', id]);
         end
 
       else

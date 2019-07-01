@@ -134,7 +134,7 @@ function bbanimate(times,rTrajectory,thetaTrajectory,c)
     set(Ball, 'XData', Xball);
     set(Ball, 'YData', Yball);
 
-    if ~oclIsTestRun()
+    if ~ocl.utils.isTestRun()
       pause(times(i)-times(i-1));
     end
 
