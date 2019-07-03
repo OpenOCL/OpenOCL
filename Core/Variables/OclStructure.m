@@ -91,6 +91,10 @@ classdef OclStructure < handle
       p = self.merge(pos,p);
     end
     
+    function r = length(self)
+      r = self.len;
+    end
+    
     function [N,M,K] = size(self)
       if nargout>1
         N = self.len;
