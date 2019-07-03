@@ -64,31 +64,27 @@ classdef OclStage < handle
       
       r = p.parse(varargin{:});
       
-      varsfhInput = r.vars;
-      daefhInput = r.dae;
-      
-      pathcostsfhInput = r.pathcosts;
-      gridcostsfhInput = r.gridcosts;  
-      pointcostsarrayInput = r.pointcosts;  
-      
-      gridconstraintsfhInput = r.gridconstraints;
-      
-      callbacksetupfh = r.callbacksetup;
-      callbackfh = r.callback;
-      
-      H_normInput = r.N;
-      dInput = r.d;
+      varsfh_in = r.vars;
+      daefh_in = r.dae;
+      pathcostsfh_in = r.pathcosts;
+      gridcostsfh_in = r.gridcosts;  
+      pointcostsarray_in = r.pointcosts;  
+      gridconstraintsfh_in = r.gridconstraints;
+      callbacksetupfh_in = r.callbacksetup;
+      callbackfh_in = r.callback;
+      H_norm_in = r.N;
+      d_in = r.d;
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
       self.T = T;
       
-      oclAssert( (isscalar(H_normInput) || isnumeric(H_normInput)) && isreal(H_normInput), ...
+      oclAssert( (isscalar(H_norm_in) || isnumeric(H_norm_in)) && isreal(H_norm_in), ...
         ['Invalid value for parameter N.', oclDocMessage()] );
-      if isscalar(H_normInput)
-        H_normInput = repmat(1/H_normInput, 1, H_normInput);
-      elseif abs(sum(H_normInput)-1) > 1e-6 
-        H_normInput = H_normInput/sum(H_normInput);
+      if isscalar(H_norm_in)
+        H_norm_in = repmat(1/H_norm_in, 1, H_norm_in);
+      elseif abs(sum(H_norm_in)-1) > 1e-6 
+        H_norm_in = H_norm_in/sum(H_norm_in);
         oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
                     'N either be a scalar value or a normalized vector with the length ', ...
                     'of the number of control grid. Check the documentation of N. ', ...
@@ -96,26 +92,26 @@ classdef OclStage < handle
                     'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
       end
       
-      system = OclSystem(varsfhInput, daefhInput);
-      daefun = @(x,z,u,p) ocl.model.daefun(system.states, system.algvars, system.controls, ...
-                                           system.parameters, system.statesOrder, ...
-                                           x, z, u, p);
-                                         
-      colocation = OclCollocation(system.states, system.algvars, system.controls, ...
-                                  system.parameters, daefun, pathcostsfhInput, dInput, ...
-                                  system.stateBounds, system.algvarBounds);
+%       system = OclSystem(varsfh_in, daefh_in);
+%       daefun = @(x,z,u,p) ocl.model.daefun(system.states, system.algvars, system.controls, ...
+%                                            system.parameters, system.statesOrder, ...
+%                                            x, z, u, p);
+%                                          
+%       colocation = OclCollocation(system.states, system.algvars, system.controls, ...
+%                                   system.parameters, daefun, pathcostsfh_in, d_in, ...
+%                                   system.stateBounds, system.algvarBounds);
       
-      self.H_norm = H_normInput;
+      self.H_norm = H_norm_in;
       self.integrator = colocation;
       
       self.pathcostfun = @colocation.pathcostfun;
-      self.gridcostsfh = gridcostsfhInput;
-      self.pointcostsarray = pointcostsarrayInput;
+      self.gridcostsfh = gridcostsfh_in;
+      self.pointcostsarray = pointcostsarray_in;
       
-      self.gridconstraintsfh = gridconstraintsfhInput;
+      self.gridconstraintsfh = gridconstraintsfh_in;
       
-      self.callbacksetupfh = callbacksetupfh;
-      self.callbackfh = callbackfh;
+      self.callbacksetupfh = callbacksetupfh_in;
+      self.callbackfh = callbackfh_in;
       
       self.nx = colocation.num_x;
       self.nz = colocation.num_z;
@@ -228,18 +224,7 @@ classdef OclStage < handle
       self.parameterBounds.lower = p_lb.value;
       self.parameterBounds.upper = p_ub.value;
     end
-    
-    function r = gridcostfun(self,k,N,x,p)
-      gridCostHandler = OclCost();
-      
-      x = Variable.create(self.states,x);
-      p = Variable.create(self.parameters,p);
-      
-      self.gridcostsfh(gridCostHandler,k,N,x,p);
-      
-      r = gridCostHandler.value;
-    end
-    
+        
     function r = pointcostfun(self, k, x, p)
       ch = OclCost();
       
@@ -250,18 +235,6 @@ classdef OclStage < handle
       fh(ch, x, p);
       
       r = ch.value;
-    end
-    
-    function [val,lb,ub] = gridconstraintfun(self,k,N,x,p)
-      gridConHandler = OclConstraint();
-      x = Variable.create(self.states,x);
-      p = Variable.create(self.parameters,p);
-      
-      self.gridconstraintsfh(gridConHandler,k,N,x,p);
-      
-      val = gridConHandler.values;
-      lb = gridConHandler.lowerBounds;
-      ub = gridConHandler.upperBounds;
     end
     
     function callbacksetupfun(self)
