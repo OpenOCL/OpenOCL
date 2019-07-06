@@ -1,7 +1,7 @@
 function initialize( ...
     T, N, ...
     varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
-    x_bounds, z_bounds, u_bounds)
+    x0_bounds, x_bounds, u_bounds)
   
 vars = ocl.model.vars(varsfh);
 x_struct = vars.states;
@@ -65,11 +65,11 @@ mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
     gridconstraintsfun(N+1, N+1, x_sym, []);
 
 % bounds
-x_lb = stateBounds.lower;
-x_ub = stateBounds.upper;
+x_lb = x_bounds.lower;
+x_ub = x_bounds.upper;
 
-u_lb = controlBounds.lower;
-u_ub = controlBounds.upper;
+u_lb = u_bounds.lower;
+u_ub = u_bounds.upper;
 
 x_bounds_select = ~isinf(x_lb) | ~isinf(x_ub);
 u_bounds_select = ~isinf(u_lb) | ~isinf(u_ub);
