@@ -11,5 +11,8 @@ p = Variable.create(p_struct,p);
 daehandler = OclDaeHandler();
 daefh(daehandler,x,z,u,p);
 
-ode = daehandler.getOde(self.nx, x_order);
-alg = daehandler.getAlg(self.nz);
+nx = length(x_struct);
+nz = length(z_struct);
+
+ode = daehandler.getOde(nx, x_order);
+alg = daehandler.getAlg(nz);

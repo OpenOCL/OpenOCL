@@ -5,7 +5,10 @@ classdef OclStage < handle
     H_norm
     integrator
     
-    pathcostfun
+    varsfh
+    daefh
+    
+    pathcostsfh
     gridcostsfh
     pointcostsarray
     
@@ -15,7 +18,6 @@ classdef OclStage < handle
     callbackfh
     
     integratormap
-    
     
     stateBounds
 
@@ -102,9 +104,9 @@ classdef OclStage < handle
 %                                   system.stateBounds, system.algvarBounds);
       
       self.H_norm = H_norm_in;
-      self.integrator = colocation;
+%       self.integrator = colocation;
       
-      self.pathcostfun = @colocation.pathcostfun;
+      self.pathcostfh = @colocation.pathcostfun;
       self.gridcostsfh = gridcostsfh_in;
       self.pointcostsarray = pointcostsarray_in;
       

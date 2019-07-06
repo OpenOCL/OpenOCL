@@ -5,11 +5,6 @@
 classdef OclSolver < handle
 
   properties
-    bounds
-    initialBounds
-    endBounds
-    igParameters
-
     solver
     stageList
   end
