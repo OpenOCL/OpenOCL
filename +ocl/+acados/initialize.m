@@ -1,6 +1,14 @@
 function initialize( ...
-    T, N, x_struct, z_struct, u_struct, p_struct, x_order, ...
-    daefh, gridcostsfh, pathcostsfh, gridconstraintsfh )
+    T, N, ...
+    varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
+    x_bounds, z_bounds, u_bounds)
+  
+vars = ocl.model.vars(varsfh);
+x_struct = vars.states;
+z_struct = vars.algvars;
+u_struct = vars.controls;
+p_struct = vars.parameters;
+x_order = vars.statesOrder;
 
 nx = length(x_struct);
 nz = length(z_struct);
@@ -15,7 +23,7 @@ daefun = @(x,z,u,p) ocl.model.dae( ...
   x_struct, ...
   z_struct, ...
   u_struct, ...
-  p.p_struct, ...
+  p_struct, ...
   x_order, ...
   x, z, u, p);
 
@@ -50,11 +58,11 @@ xd_sym = casadi_sym('xd', nx);
 f_expl = ode;
 
 lagrange_cost = pathcostfun(x_sym, [], u_sym, []);
-mayer_cost = gridcostfun(stage, N+1, N+1, x_sym, []);
+mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
 
 % end constraints
 [gridconstraints, gridconstraints_lb, gridconstraints_ub] = ...
-    gridconstraintsfun(ch, N+1, N+1, x_sym, []);
+    gridconstraintsfun(N+1, N+1, x_sym, []);
 
 % bounds
 x_lb = stateBounds.lower;
@@ -82,7 +90,7 @@ ocp_model.set('T', T);
 ocp_model.set('dim_nx', nx);
 ocp_model.set('dim_nu', nu);
 ocp_model.set('dim_nbx', sum(x_bounds_select));
-ocp_model.set('dim_nbu', sum(u_bounds_select);
+ocp_model.set('dim_nbu', sum(u_bounds_select));
 ocp_model.set('dim_ng', 0);
 ocp_model.set('dim_ng_e', 0);
 ocp_model.set('dim_nh', 0);
