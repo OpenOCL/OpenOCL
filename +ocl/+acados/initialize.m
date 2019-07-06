@@ -155,3 +155,15 @@ ocp_opts.set('sim_method_num_stages', sim_method_num_stages);
 ocp_opts.set('sim_method_num_steps', sim_method_num_steps);
 
 disp('initialize done')
+
+ocp = acados_ocp(ocp_model, ocp_opts);
+
+x_traj_init = zeros(nx, N+1);
+u_traj_init = zeros(nu, N);
+ocp.set('init_x', x_traj_init);
+ocp.set('init_u', u_traj_init);
+
+% solve
+tic;
+ocp.solve();
+time_ext = toc
