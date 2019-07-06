@@ -132,11 +132,12 @@ sim_method_num_stages = 4;
 sim_method_num_steps = 3;
 
 ocp_opts = acados_ocp_opts();
+nlp_solver = 'sqp';
 ocp_opts.set('compile_mex', 'true');
 ocp_opts.set('codgen_model', 'true');
 ocp_opts.set('param_scheme', 'multiple_shooting_unif_grid');
 ocp_opts.set('param_scheme_N', N);
-ocp_opts.set('nlp_solver', 'sqp');
+ocp_opts.set('nlp_solver', nlp_solver);
 ocp_opts.set('nlp_solver_exact_hessian', 'true');
 ocp_opts.set('regularize_method', 'project_reduc_hess');
 ocp_opts.set('nlp_solver_ext_qp_res', nlp_solver_ext_qp_res);
