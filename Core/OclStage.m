@@ -125,11 +125,11 @@ classdef OclStage < handle
       self.controls = system.controls;
       self.parameters = system.parameters;
       
-      self.stateBounds = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
-      self.stateBounds0 = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
-      self.stateBoundsF = OclBounds(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
-      self.controlBounds = OclBounds(-inf * ones(self.nu, 1), inf * ones(self.nu, 1));
-      self.parameterBounds = OclBounds(-inf * ones(self.np, 1), inf * ones(self.np, 1));
+      self.stateBounds = OclBoundsValues(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
+      self.stateBounds0 = OclBoundsValues(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
+      self.stateBoundsF = OclBoundsValues(-inf * ones(self.nx, 1), inf * ones(self.nx, 1));
+      self.controlBounds = OclBoundsValues(-inf * ones(self.nu, 1), inf * ones(self.nu, 1));
+      self.parameterBounds = OclBoundsValues(-inf * ones(self.np, 1), inf * ones(self.np, 1));
       
       names = fieldnames(system.stateBounds);
       for k=1:length(names)
@@ -162,7 +162,7 @@ classdef OclStage < handle
       x_lb = Variable.create(self.states, self.stateBounds.lower);
       x_ub = Variable.create(self.states, self.stateBounds.upper);
       
-      bounds = OclBounds(varargin{:});
+      bounds = OclBoundsValues(varargin{:});
       
       x_lb.get(id).set(bounds.lower);
       x_ub.get(id).set(bounds.upper);
@@ -175,7 +175,7 @@ classdef OclStage < handle
       x0_lb = Variable.create(self.states, self.stateBounds0.lower);
       x0_ub = Variable.create(self.states, self.stateBounds0.upper);
       
-      bounds = OclBounds(varargin{:});
+      bounds = OclBoundsValues(varargin{:});
       
       x0_lb.get(id).set(bounds.lower);
       x0_ub.get(id).set(bounds.upper);
@@ -188,7 +188,7 @@ classdef OclStage < handle
       xF_lb = Variable.create(self.states, self.stateBoundsF.lower);
       xF_ub = Variable.create(self.states, self.stateBoundsF.upper);
       
-      bounds = OclBounds(varargin{:});
+      bounds = OclBoundsValues(varargin{:});
       
       xF_lb.get(id).set(bounds.lower);
       xF_ub.get(id).set(bounds.upper);
@@ -205,7 +205,7 @@ classdef OclStage < handle
       u_lb = Variable.create(self.controls, self.controlBounds.lower);
       u_ub = Variable.create(self.controls, self.controlBounds.upper);
       
-      bounds = OclBounds(varargin{:});
+      bounds = OclBoundsValues(varargin{:});
       
       u_lb.get(id).set(bounds.lower);
       u_ub.get(id).set(bounds.upper);
@@ -218,7 +218,7 @@ classdef OclStage < handle
       p_lb = Variable.create(self.parameters, self.parameterBounds.lower);
       p_ub = Variable.create(self.parameters, self.parameterBounds.upper);
       
-      bounds = OclBounds(varargin{:});
+      bounds = OclBoundsValues(varargin{:});
       
       p_lb.get(id).set(bounds.lower);
       p_ub.get(id).set(bounds.upper);

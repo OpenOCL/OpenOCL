@@ -1,4 +1,4 @@
-function b = OclBounds(varargin)
+function b = boundValues(varargin)
   b = struct;
   b.lower = -inf;
   b.upper = inf;
