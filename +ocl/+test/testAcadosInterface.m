@@ -5,7 +5,22 @@ daefh = @(h,x,z,u,p) ocl.examples.linear_mass_spring.dae(h,x,u);
 pathcostsfh = @(h,x,z,u,p) ocl.examples.linear_mass_spring.pathcosts(h,x,u);
 gridcostsfh = @(h,k,K,x,p) ocl.examples.linear_mass_spring.gridcosts(h,k,K,x);
 gridconstraintsfh = @(varargin) [];
+
+x0 = zeros(2*num_masses, 1); 
+x0(1) = 2.5; 
+x0(2) = 2.5;
+
+x_lb = -4 * ones(2*num_masses, 1);
+x_ub = 4 * ones(2*num_masses, 1);
+
+u_lb = -0.5 * ones(num_masses-1, 1);
+u_ub = 0.5 * ones(num_masses-1, 1);
+
   
 ocl.acados.initialize( ...
     10, 30, ...
-    varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh )
+    varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
+    x0, x_lb, x_ub, u_lb, u_ub);
+  
+  
+  

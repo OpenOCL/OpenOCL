@@ -6,12 +6,12 @@ classdef Bounds < handle
   
   methods 
     function self = Bounds()
-      self.data = struct;
+      self.data = {};
     end
     
     function set(self, id, varargin)
       
-      bv = boundValues(varargin{:});
+      bv = ocl.types.boundValues(varargin{:});
       
       d = struct;
       d.id = id;
