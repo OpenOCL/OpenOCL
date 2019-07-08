@@ -16,7 +16,12 @@ x_ub = 4 * ones(2*num_masses, 1);
 u_lb = -0.5 * ones(num_masses-1, 1);
 u_ub = 0.5 * ones(num_masses-1, 1);
 
-solver = ocl.acados.Solver(10, 30, varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh);
-solver.setInitialState('x', x0);
-solver.setBounds('x', x_lb, x_ub);
-solver.setBounds('u', u_lb, u_ub);
+bounds = ocl.Bounds();
+bounds.set('x', x_lb, x_ub);
+bounds.set('u', u_lb, u_ub);
+
+x0bounds = ocl.Bounds();
+x0bounds.set('x', x0, x0);
+
+solver = ocl.acados.Solver(10, 30, varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
+                           x0bounds, bounds);

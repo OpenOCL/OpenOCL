@@ -2,6 +2,8 @@ classdef Solver < handle
 
   properties
     acados_ocp
+
+    state_bounds
   end
 
 
@@ -12,12 +14,15 @@ classdef Solver < handle
       emptyfh = @(varargin) [];
       p = ocl.utils.ArgumentParser;
 
-      p.addRequired('T', @(el)isnumeric(el) || isempty(el) );
+      p.addRequired('T', @(el) isnumeric(el) || isempty(el) );
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
       p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
       p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
+
+      p.addKeyword('x0', ocl.Bounds(), @(el) isa(el, 'ocl.Bounds'));
+      p.addKeyword('bounds', ocl.Bounds(), @(el) isa(el, 'ocl.Bounds'));
 
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -50,7 +55,7 @@ classdef Solver < handle
 
     function setInitialState(self, id, value)
 
-      
+
 
     end
 
