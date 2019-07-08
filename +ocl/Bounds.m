@@ -1,18 +1,18 @@
 classdef Bounds < handle
-  
+
   properties
     data
   end
-  
-  methods 
+
+  methods
     function self = Bounds()
       self.data = {};
     end
-    
+
     function set(self, id, varargin)
-      
+
       bv = ocl.types.boundValues(varargin{:});
-      
+
       d = struct;
       d.id = id;
       d.lower = bv.lower;
@@ -20,6 +20,6 @@ classdef Bounds < handle
       self.data{end+1} = d;
     end
   end
-  
-  
+
+
 end
