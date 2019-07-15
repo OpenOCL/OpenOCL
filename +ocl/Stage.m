@@ -109,6 +109,27 @@ classdef Stage < handle
       self.controls = u_struct;
       self.parameters = p_struct;
       self.statesOrder = x_order;
+      
+      self.stateBounds = ocl.Bounds();
+      self.stateBounds0 = ocl.Bounds();
+      self.controlBounds = ocl.Bounds();
+      self.parameterBounds = ocl.Bounds();
+    end
+    
+    function setStateBounds(self, id, varargin)
+      self.stateBounds.set(id, varargin{:});
+    end
+    
+    function setInitialStateBounds(self, id, varargin)
+      self.stateBounds0.set(id, varargin{:});
+    end
+    
+    function setControlBounds(self, id, varargin)
+      self.controlBounds.set(id, varargin{:});
+    end
+    
+    function setParameterBounds(self, id, varargin)
+      self.parameterBounds.set(id, varargin{:});
     end
     
   end

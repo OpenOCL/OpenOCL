@@ -161,6 +161,27 @@ classdef Solver < handle
       self.gridpoints_integrator = gridpoints_integrator;
     end
     
+    function getInitialGuess(self)
+      stage_list = self.stageList;
+
+      igList = cell(length(stage_list),1);
+      for k=1:length(stage_list)
+        stage = stage_list{k};
+        
+        colloc = self.collocationList{k};
+        
+        N = stage.N;
+        states = stage.states;
+        integrator_vars = colloc.vars;
+        controls = stage.controls;
+        parameters = stage.parameters;
+        
+        varsStruct = ocl.simultaneous.variables(N, states, integrator_vars, controls, parameters);
+        ig = ocl.simultaneous.getInitialGuess(stage);
+        igList{k} = Variable.create(varsStruct, ig);
+      end
+    end
+    
     function [sol,times,objective,constraints] = solve(self,v0)
       % solve(initialGuess)
       

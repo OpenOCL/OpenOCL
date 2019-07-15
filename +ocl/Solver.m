@@ -172,11 +172,18 @@ classdef Solver < handle
 
     function igAssignment = getInitialGuess(self)
 
-      pl = self.stageList;
+      stage_list = self.stageList;
 
-      igList = cell(length(pl),1);
-      for k=1:length(pl)
-        stage = pl{k};
+      igList = cell(length(stage_list),1);
+      for k=1:length(stage_list)
+        stage = stage_list{k};
+        
+        N = stage.N;
+        states = stage.states;
+        controls = stage.controls;
+        algvars = stage.algvars;
+        states = stage.parameters;
+        
         varsStruct = ocl.simultaneous.variables(stage);
         ig = ocl.simultaneous.getInitialGuess(stage);
         igList{k} = Variable.create(varsStruct, ig);

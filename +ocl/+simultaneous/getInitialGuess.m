@@ -1,10 +1,16 @@
-function ig_stage = getInitialGuess(stage)
+function ig_stage = getInitialGuess(stage, colloc)
 % creates an initial guess from the information that we have about
 % bounds in the stage
 
-[nv_stage,N] = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
+H_norm = stage.H_norm;
+nx = stage.nx;
+nu = stage.nu;
+np = stage.np;
+ni = colloc.num_i;
 
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
+[nv_stage,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
+
+[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
 
 ig_stage = 0 * ones(nv_stage,1);
 
