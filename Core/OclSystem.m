@@ -5,8 +5,8 @@
 classdef OclSystem < handle
 
   properties
-    varsfh
-    daefh
+    daefun
+    
     icfh
     callbackfh
     callbacksetupfh
@@ -50,43 +50,45 @@ classdef OclSystem < handle
       callbacksetupfh = r.callbacksetup;
       callbackfh = r.callback;
 
-      self.varsfh = varsfh;
-      self.daefh = daefh;
       self.icfh = icfh;
 
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
       
       svh = OclSysvarsHandler;
-      self.varsfh(svh);
+      varsfh(svh);
+     
+      self.daefun = @(x,z,u,p) ocl.model.dae(daefh, svh.states, svh.algvars, ...
+                                             svh.controls, svh.parameters, ...
+                                             svh.statesOrder, x, z, u, p);
       
       self.states = svh.states;
       self.algvars = svh.algvars;
       self.controls = svh.controls;
       self.parameters = svh.parameters;
+      
+      self.statesOrder = svh.statesOrder;
+      
       self.stateBounds = svh.stateBounds;
       self.algvarBounds = svh.algvarBounds;
       self.controlBounds = svh.controlBounds;
       self.parameterBounds = svh.parameterBounds;
-      
-      self.statesOrder = svh.statesOrder;
-
     end
 
     function r = nx(self)
-      r = prod(self.states.size());
+      r = length(self.states);
     end
 
     function r = nz(self)
-      r = prod(self.algvars.size());
+      r = length(self.algvars);
     end
 
     function r = nu(self)
-      r = prod(self.controls.size());
+      r = length(self.controls);
     end
 
     function r = np(self)
-      r = prod(self.parameters.size());
+      r = length(self.parameters);
     end
     
     function simulationCallbackSetup(~)

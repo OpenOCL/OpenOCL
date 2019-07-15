@@ -6,11 +6,11 @@
 function testOclIntegrator
 
 % linear system defined below
-s = OclSystem(@linearVars,@linearEq);
+s = ocl.System(@linearVars,@linearEq);
 
 d = 2;
-integ = OclCollocation(s.states, s.algvars, s.controls, s.parameters, @s.daefun, @(varargin)0, d, ...
-                       s.stateBounds, s.algvarBounds);
+collocation = ocl.Collocation(s.states, s.algvars, s.controls, s.parameters, s.statesOrder, ...
+                              @linearEq, @(varargin)0, d);
 
 N = 60;
 T = 1;
@@ -20,7 +20,7 @@ xsym = casadi.SX.sym('x',s.nx);
 xisym = casadi.SX.sym('xi',s.nx*d);
 usym = casadi.SX.sym('u',s.nu);
 
-[~, ~, equations, ~] = integ.integratorfun(xsym,xisym,usym,h,[]);
+[~, ~, equations, ~] = ocl.collocation.equations(collocation, xsym, xisym, usym, h, []);
 
 nlp    = struct('x', vertcat(xsym,xisym,usym), 'f', 0, 'g', equations);
 
