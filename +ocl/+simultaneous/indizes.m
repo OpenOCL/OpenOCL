@@ -1,10 +1,4 @@
-function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = getStageIndizes(stage)
-
-N = length(stage.H_norm);
-nx = stage.nx;
-ni = stage.integrator.num_i;
-nu = stage.nu;
-np = stage.np;
+function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = indizes(N, nx, ni, nu, np)
 
 % number of variables in one control interval
 % + 1 for the timestep

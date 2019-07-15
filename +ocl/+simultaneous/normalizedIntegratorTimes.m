@@ -1,11 +1,9 @@
-function r = normalizedIntegratorTimes(stage)
-H_norm = stage.H_norm;
-integrator = stage.integrator;
+function r = normalizedIntegratorTimes(H_norm, nt, order)
 
-r = zeros(length(H_norm), integrator.num_t);
+r = zeros(length(H_norm), nt);
 time = 0;
 for k=1:length(H_norm)
   h = H_norm(k);
-  r(k,:) = time + h * ocl.collocation.collocationPoints(stage.integrator.order);
+  r(k,:) = time + h * ocl.collocation.collocationPoints(order);
   time = time + H_norm(k);
 end
