@@ -23,6 +23,7 @@ classdef Solver < handle
         oclDeprecation(['This way of creating the solver ', ...
                         'is deprecated. It will be removed from version >5.01']);
         oclError('OclSystem is not supported anymore!');
+        
       elseif nargin >= 1 && isnumeric(varargin{1}) && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % ocl.Solver(T, 'vars', @varsfun, 'dae', @daefun,
         %            'lagrangecost', @lagrangefun,
@@ -37,13 +38,7 @@ classdef Solver < handle
         p.addKeyword('dae', emptyfh, @oclIsFunHandle);
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
         p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
-        
         p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
-        
-        p.addKeyword('callback', emptyfh, @oclIsFunHandle);
-        p.addKeyword('callback_setup', emptyfh, @oclIsFunHandle);
-        
-        p.addKeyword('pointcosts', {}, @(el) iscell(el) && (isempty(el) || isa(el{1}, 'ocl.Pointcost')));
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
@@ -55,8 +50,7 @@ classdef Solver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
-                              r.callback_setup, r.callback, r.pointcosts, 'N', r.N, 'd', r.d)};
+        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, r.pointcosts)};
         transitionList = {};
         
         nlp_casadi_mx = r.nlp_casadi_mx;
@@ -90,8 +84,9 @@ classdef Solver < handle
         casadi_options = r.casadi_options;
       end
 
-      solver = CasadiSolver(stageList, transitionList, ...
-            nlp_casadi_mx, controls_regularization, controls_regularization_value, casadi_options);
+      solver = ocl.casadi.Solver(stageList, transitionList, ...
+                                 nlp_casadi_mx, controls_regularization, ...
+                                 controls_regularization_value, casadi_options);
 
       % set instance variables
       self.stageList = stageList;
