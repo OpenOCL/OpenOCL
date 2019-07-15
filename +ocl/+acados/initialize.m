@@ -61,7 +61,7 @@ lagrange_cost = pathcostfun(x_sym, [], u_sym, []);
 mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
 
 % end constraints
-[gridconstraints, gridconstraints_lb, gridconstraints_ub] = ...
+[endconstraints, endconstraints_lb, endconstraints_ub] = ...
     gridconstraintsfun(N+1, N+1, x_sym, []);
 
 % bounds
