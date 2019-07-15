@@ -105,6 +105,7 @@ classdef Solver < handle
           x0s = ocl.simultaneous.getFirstState(stageList{k}, v_stage);
           xfs = ocl.simultaneous.getLastState(stageList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
+          
           tansition_handler = OclConstraint();
           
           x0 = Variable.create(stageList{k}.states, x0s);
