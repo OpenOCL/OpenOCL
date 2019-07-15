@@ -54,11 +54,12 @@ classdef Solver < handle
         controls = stage.controls;
         parameters = stage.parameters;
         daefun = stage.daefun;
-        pathcostsfun = stage.pathcostsfun;
-        order = stage.order;
+        pathcostfun = stage.pathcostfun;
+        statesOrder = stage.statesOrder;
+        d = stage.d;
         
-        collocation = ocl.Collocation(states, algvars, controls, parameters, daefun, pathcostsfun, order);
-        collocationfun = @(x,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, params);
+        collocation = ocl.Collocation(states, algvars, controls, parameters, statesOrder, daefun, pathcostfun, d);
+        collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
         
         nx = stage.nx;
         nu = stage.nu;

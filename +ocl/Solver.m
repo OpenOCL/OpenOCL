@@ -50,7 +50,8 @@ classdef Solver < handle
         
         r = p.parse(varargin{:});
         
-        stageList = {OclStage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, r.pointcosts)};
+        stageList = {ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
+                               'N', r.N, 'd', r.d)};
         transitionList = {};
         
         nlp_casadi_mx = r.nlp_casadi_mx;
