@@ -34,7 +34,9 @@ classdef Solver < handle
       varsfh = r.vars;
       daefh = r.dae;
       gridcostsfh = r.gridcosts;
-      gridconstraints = r.gridconstraints;
+      gridconstraintsfh = r.gridconstraints;
+      
+      x_lb = bounds.lower;
 
       ocp = ocl.acados.initialize( ...
                 T, N, ...
