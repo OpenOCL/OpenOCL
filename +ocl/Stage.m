@@ -42,7 +42,6 @@ classdef Stage < handle
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
-      
       p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
       
       r = p.parse(varargin{:});
@@ -63,7 +62,7 @@ classdef Stage < handle
       z_struct = vars.algvars;
       u_struct = vars.controls;
       p_struct = vars.parameters;
-      x_order = vars.x_order;
+      x_order = vars.statesOrder;
       
       self.daefun = @(x,z,u,p) ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
       self.pathcostfun = @(x,z,u,p) ocl.model.pathcosts(pathcostsfh, x_struct, z_struct, u_struct, p_struct, x, z, u, p);
