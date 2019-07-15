@@ -1,2 +1,2 @@
-function r = normalizedStateTimes(stage)
-r = [0, cumsum(stage.H_norm)]';
+function r = normalizedStateTimes(H_norm)
+r = [0, cumsum(H_norm)]';

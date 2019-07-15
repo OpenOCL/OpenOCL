@@ -53,20 +53,25 @@ classdef Solver < handle
         algvars = stage.algvars;
         controls = stage.controls;
         parameters = stage.parameters;
-        daefun = stage.daefun;
-        pathcostfun = stage.pathcostfun;
         statesOrder = stage.statesOrder;
-        d = stage.d;
         
-        collocation = ocl.Collocation(states, algvars, controls, parameters, statesOrder, daefun, pathcostfun, d);
-        collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
+        daefh = stage.daefh;
+        pathcostsfh = stage.pathcostsfh;
+        gridcostsfh = stage.gridcostsfh;
+        gridconstraintsfh = stage.gridconstraintsfh;
         
         nx = stage.nx;
         nu = stage.nu;
         np = stage.np;
-        ni = collocation.num_i;
-        
+        d = stage.d;
         H_norm = stage.H_norm;
+        T = stage.T;
+        
+        collocation = ocl.Collocation(states, algvars, controls, parameters, statesOrder, daefh, pathcostsfh, d);
+        
+        ni = collocation.num_i;
+        nt = collocation.num_t;
+        collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
         
         x = expr(['x','_s',mat2str(k)], nx);
         vi = expr(['vi','_s',mat2str(k)], ni);
@@ -82,10 +87,15 @@ classdef Solver < handle
         nv_stage = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
+        
+        gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, states, parameters, k, K, x, p);
+        gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, states, parameters, k, K, x, p);
           
         [costs_stage, constraints_stage, ...
          constraints_LB_stage, constraints_UB_stage] = ...
-            ocl.simultaneous.equations(stage, collocation, integratormap, v_stage, ...
+            ocl.simultaneous.equations(H_norm, T, nx, ni, nu, np, ...
+                                       gridcostfun, gridconstraintfun, ...
+                                       integratormap, v_stage, ...
                                        controls_regularization, controls_regularization_value);
         
         transition_eq = [];
@@ -113,8 +123,8 @@ classdef Solver < handle
         constraints_LB{k} = vertcat(transition_lb, constraints_LB_stage);
         constraints_UB{k} = vertcat(transition_ub, constraints_UB_stage);
         
-        gridpoints_integrator{k} = ocl.simultaneous.normalizedIntegratorTimes(stage);
-        gridpoints{k} = ocl.simultaneous.normalizedStateTimes(stage);
+        gridpoints_integrator{k} = ocl.simultaneous.normalizedIntegratorTimes(H_norm, nt, d);
+        gridpoints{k} = ocl.simultaneous.normalizedStateTimes(H_norm);
       end
       
       v = vertcat(vars{:});

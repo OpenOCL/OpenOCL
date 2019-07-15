@@ -1,18 +1,10 @@
 function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-  equations(stage, colloc, integratormap, stage_vars, controls_regularization, ...
+  equations(H_norm, T, nx, ni, nu, np, gridcostfun, gridconstraintfun, ...
+            integratormap, stage_vars, controls_regularization, ...
             controls_regularization_value)
 
-H_norm = stage.H_norm;
-T = stage.T;
-nx = stage.nx;
-ni = colloc.num_i;
-nu = stage.nu;
-np = stage.np;
-gridcost_fun = @stage.gridcostfun;
-gridcon_fun = @stage.gridconstraintfun;
-
-[~,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
+N = length(H_norm);
+[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
 
 X = reshape(stage_vars(X_indizes), nx, N+1);
 I = reshape(stage_vars(I_indizes), ni, N);
@@ -26,8 +18,8 @@ gridcon_lb = cell(1,N+1);
 gridcon_ub = cell(1,N+1);
 gridcost = 0;
 for k=1:N+1
-  [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridcon_fun(k, N+1, X(:,k), P(:,k));
-  gridcost = gridcost + gridcost_fun(k, N+1, X(:,k), P(:,k));
+  [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridconstraintfun(k, N+1, X(:,k), P(:,k));
+  gridcost = gridcost + gridcostfun(k, N+1, X(:,k), P(:,k));
 end
 
 % point costs
