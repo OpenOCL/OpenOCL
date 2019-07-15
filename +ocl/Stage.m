@@ -6,10 +6,12 @@ classdef Stage < handle
     N
     d
     
-    daefun
-    pathcostfun
-    gridcostfun
-    gridconstraintfun
+    H_norm
+    
+    daefh
+    pathcostsfh
+    gridcostsfh
+    gridconstraintsfh
     
     stateBounds
 
@@ -27,6 +29,7 @@ classdef Stage < handle
     algvars
     controls
     parameters
+    statesOrder
   end
   
   properties (Access = private)
@@ -57,13 +60,31 @@ classdef Stage < handle
       pathcostsfh = r.pathcosts;
       gridcostsfh = r.gridcosts;  
       gridconstraintsfh = r.gridconstraints;
+      H_norm_in = r.N;
+      d_in = r.d;
 
+      % arguments consistency checks
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
       
+      oclAssert( (isscalar(H_norm_in) || isnumeric(H_norm_in)) && isreal(H_norm_in), ...
+        ['Invalid value for parameter N.', oclDocMessage()] );
+      
+      if isscalar(H_norm_in)
+        H_norm_in = repmat(1/H_norm_in, 1, H_norm_in);
+      elseif abs(sum(H_norm_in)-1) > 1e-6 
+        H_norm_in = H_norm_in/sum(H_norm_in);
+        oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
+                    'N either be a scalar value or a normalized vector with the length ', ...
+                    'of the number of control grid. Check the documentation of N. ', ...
+                    'Make sure the timesteps sum up to 1, and contain the relative ', ...
+                    'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
+      end
+      
       self.T = T;
-      self.N = r.N;
-      self.d = r.d;
+      self.H_norm = H_norm_in;
+      self.N = length(H_norm_in);
+      self.d = d_in;
       
       vars = ocl.model.vars(varsfh);
       
@@ -73,10 +94,10 @@ classdef Stage < handle
       p_struct = vars.parameters;
       x_order = vars.statesOrder;
       
-      self.daefun = @(x,z,u,p) ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
-      self.pathcostfun = @(x,z,u,p) ocl.model.pathcosts(pathcostsfh, x_struct, z_struct, u_struct, p_struct, x, z, u, p);
-      self.gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
-      self.gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
+      self.daefh = daefh;
+      self.pathcostsfh = pathcostsfh;
+      self.gridcostsfh = gridcostsfh;
+      self.gridconstraintsfh = gridconstraintsfh;
       
       self.nx = length(x_struct);
       self.nz = length(z_struct);
@@ -87,6 +108,7 @@ classdef Stage < handle
       self.algvars = z_struct;
       self.controls = u_struct;
       self.parameters = p_struct;
+      self.statesOrder = x_order;
     end
     
   end

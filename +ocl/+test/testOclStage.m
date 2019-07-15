@@ -2,10 +2,22 @@ function testOclStage
 
 % stage empty test
 stage = ocl.Stage(1, @emptyVars, @emptyDae);
-assertEqual(stage.pathcostfun([],[],[],[]),0);
-assertEqual(stage.gridcostfun(1,10,[],[]),0);
 
-[val,lb,ub] = stage.gridconstraintfun(1,10,[],[]);
+pathcostfun = @(x,z,u,p) ocl.model.pathcosts(stage.pathcostsfh, ...
+                                             stage.states, ...
+                                             stage.algvars, ...
+                                             stage.controls, ...
+                                             stage.parameters, ...
+                                             x, z, u, p);
+                                           
+gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.states, stage.parameters, k, K, x, p);
+gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.states, stage.parameters, k, K, x, p);
+      
+                                           
+assertEqual(pathcostfun([],[],[],[]),0);
+assertEqual(gridcostfun(1,10,[],[]),0);
+
+[val,lb,ub] = gridconstraintfun(1,10,[],[]);
 assertEqual(val,[]);
 assertEqual(lb,[]);
 assertEqual(ub,[]);
@@ -13,15 +25,26 @@ assertEqual(ub,[]);
 % stage valid test
 stage = ocl.Stage(1, @validVars, @validDae, ...
                   @validPathCosts, @validgridCosts, @validgridConstraints);
+                
 
-c = stage.pathcostfun(ones(stage.nx,1),ones(stage.nz,1),ones(stage.nu,1),ones(stage.np,1));
+pathcostfun = @(x,z,u,p) ocl.model.pathcosts(stage.pathcostsfh, ...
+                                             stage.states, ...
+                                             stage.algvars, ...
+                                             stage.controls, ...
+                                             stage.parameters, ...
+                                             x, z, u, p);
+                                           
+gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.states, stage.parameters, k, K, x, p);
+gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.states, stage.parameters, k, K, x, p);
+
+c = pathcostfun(ones(stage.nx,1),ones(stage.nz,1),ones(stage.nu,1),ones(stage.np,1));
 assertEqual(c,26+1e-3*12);
 
-c = stage.gridcostfun(5,5,ones(stage.nx,1),ones(stage.np,1));
+c = gridcostfun(5,5,ones(stage.nx,1),ones(stage.np,1));
 assertEqual(c, -1);
 
 % path constraints in the form of : -inf <= val <= 0 or 0 <= val <= 0
-[val,lb,ub] = stage.gridconstraintfun(2,5,ones(stage.nx,1),ones(stage.np,1));
+[val,lb,ub] = gridconstraintfun(2,5,ones(stage.nx,1),ones(stage.np,1));
 % ub all zero
 assertEqual(ub,zeros(36,1));
 % lb either zero for eq or -inf for ineq
@@ -30,7 +53,7 @@ assertEqual(lb,[-inf,-inf,0,0,-inf,-inf,-inf*ones(1,5),0,-inf*ones(1,12),-inf*on
 assertEqual(val,[0,0,0,0,0,-1,2,2,2,2,2,0,-3*ones(1,12),zeros(1,12)].');
 
 % bc
-[val,lb,ub] = stage.gridconstraintfun(1,5,2*ones(stage.nx,1),ones(stage.np,1));
+[val,lb,ub] = gridconstraintfun(1,5,2*ones(stage.nx,1),ones(stage.np,1));
 assertEqual(ub,zeros(3,1));
 assertEqual(lb,[0,-inf,-inf].');
 assertEqual(val,[-1,1,-4].');

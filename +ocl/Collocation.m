@@ -37,18 +37,18 @@ classdef Collocation < handle
 
   methods
 
-    function self = Collocation(states, algvars, controls, parameters, statesOrder, daefh, pathcostsfh, order)
+    function self = Collocation(states, algvars, controls, parameters, statesOrder, daefh, pathcostsfh, d)
 
       nx = length(states);
       nz = length(algvars);
       nu = length(controls);
       np = length(parameters);
-      nt = order;
+      nt = d;
       
       v = OclStructure();
-      v.addRepeated({'states', 'algvars'}, {states, algvars}, order);
+      v.addRepeated({'states', 'algvars'}, {states, algvars}, d);
 
-      tau = [0 ocl.collocation.collocationPoints(order)];
+      tau = [0 ocl.collocation.collocationPoints(d)];
       
       coeff = ocl.collocation.coefficients(tau);
       
@@ -56,9 +56,9 @@ classdef Collocation < handle
       self.pathcostfun = @(x,z,u,p) ocl.model.pathcosts(pathcostsfh, states, algvars, controls, parameters, x, z, u, p);
       
       self.coefficients = coeff;
-      self.coeff_eval = ocl.collocation.evalCoefficients(coeff, order, 1.0);
-      self.coeff_der = ocl.collocation.evalCoefficientsDerivative(coeff, tau, order);
-      self.coeff_int = ocl.collocation.evalCoefficientsIntegral(coeff, order, 1.0);
+      self.coeff_eval = ocl.collocation.evalCoefficients(coeff, d, 1.0);
+      self.coeff_der = ocl.collocation.evalCoefficientsDerivative(coeff, tau, d);
+      self.coeff_int = ocl.collocation.evalCoefficientsIntegral(coeff, d, 1.0);
 
       self.vars = v;
       self.num_x = nx;
@@ -70,7 +70,7 @@ classdef Collocation < handle
       self.num_i = length(v);
       
       self.tau_root = tau;
-      self.order = order;
+      self.order = d;
       
     end
 
