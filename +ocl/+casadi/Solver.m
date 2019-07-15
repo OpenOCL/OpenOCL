@@ -49,24 +49,43 @@ classdef Solver < handle
       for k=1:length(stageList)
         stage = stageList{k};
         
-        x = expr(['x','_s',mat2str(k)], stage.nx);
-        vi = expr(['vi','_s',mat2str(k)], stage.integrator.num_i);
-        u = expr(['u','_s',mat2str(k)], stage.nu);
+        states = stage.states;
+        algvars = stage.algvars;
+        controls = stage.controls;
+        parameters = stage.parameters;
+        daefun = stage.daefun;
+        pathcostsfun = stage.pathcostsfun;
+        order = stage.order;
+        
+        collocation = ocl.Collocation(states, algvars, controls, parameters, daefun, pathcostsfun, order);
+        collocationfun = @(x,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, params);
+        
+        nx = stage.nx;
+        nu = stage.nu;
+        np = stage.np;
+        ni = collocation.num_i;
+        
+        H_norm = stage.H_norm;
+        
+        x = expr(['x','_s',mat2str(k)], nx);
+        vi = expr(['vi','_s',mat2str(k)], ni);
+        u = expr(['u','_s',mat2str(k)], nu);
         h = expr(['h','_s',mat2str(k)]);
-        p = expr(['p','_s',mat2str(k)], stage.np);
+        p = expr(['p','_s',mat2str(k)], np);
         
-        [statesEnd, cost_integr, equations, rel_times] = stage.integrator.integratorfun(x, vi, u, h, p);
-        integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {statesEnd, cost_integr, equations, rel_times});
+        [xF, cost_integr, equations, rel_times] = collocationfun(x, vi, u, h, p);
+        integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {xF, cost_integr, equations, rel_times});
         
-        stage.integratormap = integrator_fun.map(stage.N,'serial');
+        integratormap = integrator_fun.map(stage.N, 'serial');
         
-        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
+        nv_stage = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
           
-        [costs_stage,constraints_stage,constraints_LB_stage, ...
-          constraints_UB_stage] = ocl.simultaneous.equations(stage, v_stage, ...
-              controls_regularization, controls_regularization_value);
+        [costs_stage, constraints_stage, ...
+         constraints_LB_stage, constraints_UB_stage] = ...
+            ocl.simultaneous.equations(stage, collocation, integratormap, v_stage, ...
+                                       controls_regularization, controls_regularization_value);
         
         transition_eq = [];
         transition_lb = [];

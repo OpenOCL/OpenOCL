@@ -1,5 +1,5 @@
 function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-  equations(stage, colloc, stage_vars, controls_regularization, ...
+  equations(stage, colloc, integratormap, stage_vars, controls_regularization, ...
             controls_regularization_value)
 
 H_norm = stage.H_norm;
@@ -43,7 +43,7 @@ end
 %   
 % end
 
-[xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
+[xend_arr, cost_arr, int_eq_arr, int_times] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints
 h_eq = double.empty(0,N-1);

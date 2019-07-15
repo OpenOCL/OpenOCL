@@ -1,7 +1,7 @@
 function testOclStage
 
 % stage empty test
-stage = OclStage(1, @emptyVars, @emptyDae);
+stage = ocl.Stage(1, @emptyVars, @emptyDae);
 assertEqual(stage.pathcostfun([],[],[],[]),0);
 assertEqual(stage.gridcostfun(1,10,[],[]),0);
 
@@ -11,7 +11,7 @@ assertEqual(lb,[]);
 assertEqual(ub,[]);
 
 % stage valid test
-stage = OclStage(1, @validVars, @validDae, ...
+stage = ocl.Stage(1, @validVars, @validDae, ...
                   @validPathCosts, @validgridCosts, @validgridConstraints);
 
 c = stage.pathcostfun(ones(stage.nx,1),ones(stage.nz,1),ones(stage.nu,1),ones(stage.np,1));
