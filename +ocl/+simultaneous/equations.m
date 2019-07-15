@@ -1,11 +1,11 @@
 function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-  equations(stage, stage_vars, controls_regularization, ...
+  equations(stage, colloc, stage_vars, controls_regularization, ...
             controls_regularization_value)
 
 H_norm = stage.H_norm;
 T = stage.T;
 nx = stage.nx;
-ni = stage.integrator.num_i;
+ni = colloc.num_i;
 nu = stage.nu;
 np = stage.np;
 gridcost_fun = @stage.gridcostfun;
