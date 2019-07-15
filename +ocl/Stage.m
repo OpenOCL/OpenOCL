@@ -3,6 +3,9 @@ classdef Stage < handle
   properties
     T
     
+    N
+    d
+    
     daefun
     pathcostfun
     gridcostfun
@@ -44,6 +47,9 @@ classdef Stage < handle
       p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
       
+      p.addParameter('N', 20, @isnumeric);
+      p.addParameter('d', 3, @isnumeric);
+      
       r = p.parse(varargin{:});
       
       varsfh = r.vars;
@@ -54,7 +60,10 @@ classdef Stage < handle
 
       oclAssert( (isscalar(T) || isempty(T)) && isreal(T), ... 
         ['Invalid value for parameter T.', oclDocMessage()] );
+      
       self.T = T;
+      self.N = r.N;
+      self.d = r.d;
       
       vars = ocl.model.vars(varsfh);
       
@@ -66,8 +75,8 @@ classdef Stage < handle
       
       self.daefun = @(x,z,u,p) ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
       self.pathcostfun = @(x,z,u,p) ocl.model.pathcosts(pathcostsfh, x_struct, z_struct, u_struct, p_struct, x, z, u, p);
-      self.gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, N, x, p);
-      self.gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, N, x, p);
+      self.gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
+      self.gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
       
       self.nx = length(x_struct);
       self.nz = length(z_struct);
@@ -78,7 +87,6 @@ classdef Stage < handle
       self.algvars = z_struct;
       self.controls = u_struct;
       self.parameters = p_struct;
-      
     end
     
   end

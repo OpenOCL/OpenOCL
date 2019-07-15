@@ -1,9 +1,9 @@
-function r = gridcosts(fh, x_struct, p_struct, k, N, x, p)
+function r = gridcosts(fh, x_struct, p_struct, k, K, x, p)
 gridCostHandler = OclCost();
 
 x = Variable.create(x_struct,x);
 p = Variable.create(p_struct,p);
 
-fh(gridCostHandler,k,N,x,p);
+fh(gridCostHandler,k,K,x,p);
 
 r = gridCostHandler.value;
