@@ -23,10 +23,10 @@ classdef OclSysvarsHandler < handle
       self.controls = OclStructure();
       self.parameters = OclStructure();
             
-      self.stateBounds = struct;
-      self.algvarBounds = struct;
-      self.controlBounds = struct;
-      self.parameterBounds = struct;
+      self.stateBounds = ocl.Bounds();
+      self.algvarBounds = ocl.Bounds();
+      self.controlBounds = ocl.Bounds();
+      self.parameterBounds = ocl.Bounds();
     end
     
     function addState(self,id,varargin)
@@ -44,7 +44,7 @@ classdef OclSysvarsHandler < handle
       id = p.Results.id;
 
       self.states.add(id, p.Results.s);
-      self.stateBounds.(id) = ocl.types.boundValues(p.Results.lb, p.Results.ub);
+      self.stateBounds.set(id, p.Results.lb, p.Results.ub);
       
       self.statesOrder{end+1} = id;
       
@@ -63,7 +63,7 @@ classdef OclSysvarsHandler < handle
       id = p.Results.id;
 
       self.algvars.add(id, p.Results.s);
-      self.algvarBounds.(id) = ocl.types.boundValues(p.Results.lb, p.Results.ub);
+      self.algvarBounds.set(id, p.Results.lb, p.Results.ub);
     end
     function addControl(self,id,varargin)
       % addControl(id)
@@ -79,7 +79,7 @@ classdef OclSysvarsHandler < handle
       id = p.Results.id;
 
       self.controls.add(id,p.Results.s);
-      self.controlBounds.(id) = ocl.types.boundValues(p.Results.lb, p.Results.ub);
+      self.controlBounds.set(id, p.Results.lb, p.Results.ub);
     end
     function addParameter(self,id,varargin)
       % addParameter(id)
@@ -94,7 +94,7 @@ classdef OclSysvarsHandler < handle
       id = p.Results.id;
 
       self.parameters.add(id,p.Results.s);
-      self.parameterBounds.(id) = ocl.types.boundValues(p.Results.default);
+      self.parameterBounds.set(id, p.Results.default);
     end
   end
 end

@@ -1,12 +1,16 @@
 classdef Bounds < handle
 
   properties
-    data
+    data_p
   end
 
   methods
     function self = Bounds()
-      self.data = {};
+      self.data_p = {};
+    end
+    
+    function r = data(self)
+      r = self.data_p;
     end
 
     function set(self, id, varargin)
@@ -17,9 +21,7 @@ classdef Bounds < handle
       d.id = id;
       d.lower = bv.lower;
       d.uppoer = bv.upper;
-      self.data{end+1} = d;
+      self.data_p{end+1} = d;
     end
   end
-
-
 end

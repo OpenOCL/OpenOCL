@@ -2,19 +2,19 @@ function solve(acados_ocp)
 
 % solve
 tic;
-ocp.solve();
+acados_ocp.solve();
 time_ext = toc;
 
-status = ocp.get('status');
-sqp_iter = ocp.get('sqp_iter');
-time_tot = ocp.get('time_tot');
-time_lin = ocp.get('time_lin');
-time_reg = ocp.get('time_reg');
-time_qp_sol = ocp.get('time_qp_sol');
+status = acados_ocp.get('status');
+sqp_iter = acados_ocp.get('sqp_iter');
+time_tot = acados_ocp.get('time_tot');
+time_lin = acados_ocp.get('time_lin');
+time_reg = acados_ocp.get('time_reg');
+time_qp_sol = acados_ocp.get('time_qp_sol');
 
 fprintf('\nstatus = %d, sqp_iter = %d, time_ext = %f [ms], time_int = %f [ms] (time_lin = %f [ms], time_qp_sol = %f [ms], time_reg = %f [ms])\n', status, sqp_iter, time_ext*1e3, time_tot*1e3, time_lin*1e3, time_qp_sol*1e3, time_reg*1e3);
 
-stat = ocp.get('stat');
+stat = acados_ocp.get('stat');
 fprintf('\niter\tres_g\t\tres_b\t\tres_d\t\tres_m\t\tqp_stat\tqp_iter');
 if size(stat,2)>7
   fprintf('\tqp_res_g\tqp_res_b\tqp_res_d\tqp_res_m');
