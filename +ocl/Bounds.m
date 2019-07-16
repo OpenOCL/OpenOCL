@@ -20,7 +20,7 @@ classdef Bounds < handle
       d = struct;
       d.id = id;
       d.lower = bv.lower;
-      d.uppoer = bv.upper;
+      d.upper = bv.upper;
       self.data_p{end+1} = d;
     end
   end
