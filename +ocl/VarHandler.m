@@ -1,4 +1,4 @@
-classdef OclSysvarsHandler < handle
+classdef VarHandler < handle
   
   properties
     x_struct
@@ -16,7 +16,7 @@ classdef OclSysvarsHandler < handle
   
   methods
     
-    function self = OclSysvarsHandler()
+    function self = VarHandler()
       
       self.x_struct = OclStructure();
       self.z_struct = OclStructure();
