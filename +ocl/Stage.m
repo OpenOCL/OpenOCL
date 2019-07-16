@@ -86,13 +86,9 @@ classdef Stage < handle
       self.N = length(H_norm_in);
       self.d = d_in;
       
-      vars = ocl.model.vars(varsfh);
-      
-      x_struct = vars.states;
-      z_struct = vars.algvars;
-      u_struct = vars.controls;
-      p_struct = vars.parameters;
-      x_order = vars.statesOrder;
+      [x_struct, z_struct, u_struct, p_struct, ...
+          x_bounds, z_bounds, u_bounds, p_bounds, ...
+          x_order] = ocl.model.vars(varsfh);
       
       self.daefh = daefh;
       self.pathcostsfh = pathcostsfh;
