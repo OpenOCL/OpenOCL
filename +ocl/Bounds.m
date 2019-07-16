@@ -15,12 +15,21 @@ classdef Bounds < handle
 
     function set(self, id, varargin)
 
-      bv = ocl.types.boundValues(varargin{:});
+      lower = -inf;
+      upper = inf;
+
+      if nargin >= 1
+        lower = varargin{1};
+        upper = varargin{1};
+      end
+      if nargin >= 2
+        upper = varargin{2};
+      end
 
       d = struct;
       d.id = id;
-      d.lower = bv.lower;
-      d.upper = bv.upper;
+      d.lower = lower;
+      d.upper = upper;
       self.data_p{end+1} = d;
     end
   end
