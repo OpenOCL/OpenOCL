@@ -40,7 +40,7 @@ lb_stage(P_indizes(:,1)) = p_lb;
 ub_stage(P_indizes(:,1)) = p_ub;
 
 % timesteps
-if isempty(stage.T)
+if isempty(T)
   lb_stage(H_indizes) = 0.0;
 else
   lb_stage(H_indizes) = H_norm * T;

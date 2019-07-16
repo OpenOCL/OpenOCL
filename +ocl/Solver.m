@@ -132,25 +132,10 @@ classdef Solver < handle
 
       [sol,times,objective,constraints] = s.solve(ig_list);
 
-      sol_list = cell(length(st_list));
-      times_list = cell(length(st_list));
-      obj_list = cell(length(st_list));
-      con_list = cell(length(st_list));
-
-      for k=1:length(st_list)
-        stage = st_list{k};
-        vars_structure = ocl.simultaneous.variables(stage);
-        times_structure = ocl.simultaneous.times(stage);
-        sol_list{k} = Variable.create(vars_structure, sol{k});
-        times_list{k} = Variable.create(times_structure, times{k});
-        obj_list{k} = objective{k};
-        con_list{k} = constraints{k};
-      end
-
-      sol_ass = OclAssignment(sol_list);
-      times_ass = OclAssignment(times_list);
-      objective_ass = OclAssignment(obj_list);
-      constraints_ass = OclAssignment(con_list);
+      sol_ass = OclAssignment(sol);
+      times_ass = OclAssignment(times);
+      objective_ass = OclAssignment(objective);
+      constraints_ass = OclAssignment(constraints);
 
       oclWarningNotice()
     end
@@ -171,24 +156,7 @@ classdef Solver < handle
     end
 
     function igAssignment = getInitialGuess(self)
-
-      stage_list = self.stageList;
-
-      igList = cell(length(stage_list),1);
-      for k=1:length(stage_list)
-        stage = stage_list{k};
-        
-        N = stage.N;
-        states = stage.states;
-        controls = stage.controls;
-        algvars = stage.algvars;
-        states = stage.parameters;
-        
-        varsStruct = ocl.simultaneous.variables(stage);
-        ig = ocl.simultaneous.getInitialGuess(stage);
-        igList{k} = Variable.create(varsStruct, ig);
-      end
-
+      igList = self.solver.getInitialGuess();
       igAssignment = OclAssignment(igList);
     end
 
