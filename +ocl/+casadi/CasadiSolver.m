@@ -49,11 +49,11 @@ classdef CasadiSolver < handle
       for k=1:length(stageList)
         stage = stageList{k};
         
-        states = stage.states;
-        algvars = stage.algvars;
-        controls = stage.controls;
-        parameters = stage.parameters;
-        statesOrder = stage.statesOrder;
+        x_struct = stage.x_struct;
+        z_struct = stage.z_struct;
+        u_struct = stage.u_struct;
+        p_struct = stage.p_struct;
+        x_order = stage.x_order;
         
         daefh = stage.daefh;
         pathcostsfh = stage.pathcostsfh;
@@ -67,7 +67,7 @@ classdef CasadiSolver < handle
         H_norm = stage.H_norm;
         T = stage.T;
         
-        collocation = ocl.Collocation(states, algvars, controls, parameters, statesOrder, daefh, pathcostsfh, d);
+        collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
         
         ni = collocation.num_i;
         nt = collocation.num_t;
@@ -88,8 +88,8 @@ classdef CasadiSolver < handle
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
         
-        gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, states, parameters, k, K, x, p);
-        gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, states, parameters, k, K, x, p);
+        gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
+        gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
           
         [costs_stage, constraints_stage, ...
          constraints_LB_stage, constraints_UB_stage] = ...
@@ -187,14 +187,32 @@ classdef CasadiSolver < handle
       
       solveTotalTic = tic;
       
-      pl = self.stageList;
+      stage_list = self.stageList;
       uregu = self.controls_regularization;
       uregu_value = self.controls_regularization_value;
       
-      lbv = cell(length(pl),1);
-      ubv = cell(length(pl),1);
-      for k=1:length(pl)
-        [lbv_stage,ubv_stage] = ocl.simultaneous.getBounds(pl{k});
+      lbv = cell(length(stage_list),1);
+      ubv = cell(length(stage_list),1);
+      for k=1:length(stage_list)
+        
+        stage = stage_list{k};
+        
+        x_bounds = stage.x_bounds;
+        x_bounds0 = stage.x0_bounds;
+        x_boundsF = stage.xF_bounds;
+        z_bounds = stage.z_bounds;
+        u_bounds = stage.u_bounds;
+        p_bounds = stage.p_bounds;
+        
+        [x_lb, x_ub] = ocl.model.bounds(x_struct, x_bounds);
+        [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
+        [xF_lb, xF_ub] = ocl.model.bounds(x_struct, xF_bounds);
+        
+        [z_lb, z_ub] = ocl.model.bounds(z_struct, z_bounds);
+        [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
+        [p_lb, p_ub] = ocl.model.bounds(p_struct, p_bounds);
+        
+        [lbv_stage,ubv_stage] = ocl.simultaneous.stageBounds(stage_list{k});
         lbv{k} = lbv_stage;
         ubv{k} = ubv_stage;
       end
@@ -222,21 +240,21 @@ classdef CasadiSolver < handle
       
       sol_values = sol.x.full();
       
-      sol = cell(length(pl),1);
+      sol = cell(length(stage_list),1);
       i = 1;
-      for k=1:length(pl)
-        stage = pl{k};
+      for k=1:length(stage_list)
+        stage = stage_list{k};
         nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
         sol{k} = sol_values(i:i+nv_stage-1);
         i = i + nv_stage;
       end
       
       nlpFunEvalTic = tic;
-      times = cell(length(pl),1);
-      objective = cell(length(pl),1);
-      constraints = cell(length(pl),1);
-      for k=1:length(pl)
-        stage = pl{k};
+      times = cell(length(stage_list),1);
+      objective = cell(length(stage_list),1);
+      constraints = cell(length(stage_list),1);
+      for k=1:length(stage_list)
+        stage = stage_list{k};
         [objective{k},constraints{k},~,~,times{k}] = ocl.simultaneous.equations(stage, sol{k}, ...
                                                                                 uregu, ...
                                                                                 uregu_value);
