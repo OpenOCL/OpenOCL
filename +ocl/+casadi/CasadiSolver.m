@@ -196,13 +196,27 @@ classdef CasadiSolver < handle
       for k=1:length(stage_list)
         
         stage = stage_list{k};
+        colloc = self.collocationList{k};
+        
+        nx = stage.nx;
+        nu = stage.nu;
+        np = stage.np;
+        H_norm = stage.H_norm;
+        T = stage.T;
+        
+        x_struct = stage.x_struct;
+        z_struct = stage.z_struct;
+        u_struct = stage.u_struct;
+        p_struct = stage.p_struct;
         
         x_bounds = stage.x_bounds;
-        x_bounds0 = stage.x0_bounds;
-        x_boundsF = stage.xF_bounds;
+        x0_bounds = stage.x0_bounds;
+        xF_bounds = stage.xF_bounds;
         z_bounds = stage.z_bounds;
         u_bounds = stage.u_bounds;
         p_bounds = stage.p_bounds;
+        
+        vi_struct = colloc.vars;
         
         [x_lb, x_ub] = ocl.model.bounds(x_struct, x_bounds);
         [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
@@ -212,7 +226,11 @@ classdef CasadiSolver < handle
         [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
         [p_lb, p_ub] = ocl.model.bounds(p_struct, p_bounds);
         
-        [lbv_stage,ubv_stage] = ocl.simultaneous.stageBounds(stage_list{k});
+        [vi_lb, vi_ub] = ocl.collocation.bounds(vi_struct, x_lb, x_ub, z_lb, z_ub);
+        
+        [lbv_stage,ubv_stage] = ocl.simultaneous.bounds(H_norm, T, nx, ni, nu, np, ...
+                                      x_lb, x_ub, x0_lb, x0_ub, xF_lb, xF_ub, ...
+                                      vi_lb, vi_ub, u_lb, u_ub, p_lb, p_ub);
         lbv{k} = lbv_stage;
         ubv{k} = ubv_stage;
       end
