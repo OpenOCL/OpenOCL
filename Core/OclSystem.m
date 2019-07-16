@@ -13,16 +13,16 @@ classdef OclSystem < handle
     
     thisInitialConditions
     
-    states
-    algvars
-    controls
-    parameters
-    stateBounds
-    algvarBounds
-    controlBounds
-    parameterBounds
+    x_struct
+    z_struct
+    u_struct
+    p_struct
+    x_bounds
+    z_bounds
+    u_bounds
+    p_bounds
     
-    statesOrder
+    x_order
   end
 
   methods
@@ -55,40 +55,40 @@ classdef OclSystem < handle
       self.callbacksetupfh = callbacksetupfh;
       self.callbackfh = callbackfh;
       
-      svh = OclSysvarsHandler;
+      svh = ocl.VarHandler;
       varsfh(svh);
      
-      self.daefun = @(x,z,u,p) ocl.model.dae(daefh, svh.states, svh.algvars, ...
-                                             svh.controls, svh.parameters, ...
-                                             svh.statesOrder, x, z, u, p);
+      self.daefun = @(x,z,u,p) ocl.model.dae(daefh, svh.x_struct, svh.z_struct, ...
+                                             svh.u_struct, svh.p_struct, ...
+                                             svh.x_order, x, z, u, p);
       
-      self.states = svh.states;
-      self.algvars = svh.algvars;
-      self.controls = svh.controls;
-      self.parameters = svh.parameters;
+      self.x_struct = svh.x_struct;
+      self.z_struct = svh.z_struct;
+      self.u_struct = svh.u_struct;
+      self.p_struct = svh.p_struct;
       
-      self.statesOrder = svh.statesOrder;
+      self.x_order = svh.x_order;
       
-      self.stateBounds = svh.stateBounds;
-      self.algvarBounds = svh.algvarBounds;
-      self.controlBounds = svh.controlBounds;
-      self.parameterBounds = svh.parameterBounds;
+      self.x_bounds = svh.x_bounds;
+      self.z_bounds = svh.z_bounds;
+      self.u_bounds = svh.u_bounds;
+      self.p_bounds = svh.p_bounds;
     end
 
     function r = nx(self)
-      r = length(self.states);
+      r = length(self.x_struct);
     end
 
     function r = nz(self)
-      r = length(self.algvars);
+      r = length(self.z_struct);
     end
 
     function r = nu(self)
-      r = length(self.controls);
+      r = length(self.u_struct);
     end
 
     function r = np(self)
-      r = length(self.parameters);
+      r = length(self.p_struct);
     end
     
     function simulationCallbackSetup(~)
@@ -101,8 +101,8 @@ classdef OclSystem < handle
 
     function ic = icfun(self,x,p)
       icHandler = OclConstraint();
-      x = Variable.create(self.states,x);
-      p = Variable.create(self.parameters,p);
+      x = Variable.create(self.x_struct,x);
+      p = Variable.create(self.p_struct,p);
       self.icfh(icHandler,x,p)
       ic = icHandler.values;
       assert(all(icHandler.lowerBounds==0) && all(icHandler.upperBounds==0),...
@@ -114,10 +114,10 @@ classdef OclSystem < handle
     end
 
     function u = callbackfun(self,x,z,u,t0,t1,p)
-      x = Variable.create(self.states,x);
-      z = Variable.create(self.algvars,z);
-      u = Variable.create(self.controls,u);
-      p = Variable.create(self.parameters,p);
+      x = Variable.create(self.x_struct,x);
+      z = Variable.create(self.z_struct,z);
+      u = Variable.create(self.u_struct,u);
+      p = Variable.create(self.p_struct,p);
 
       t0 = Variable.Matrix(t0);
       t1 = Variable.Matrix(t1);
