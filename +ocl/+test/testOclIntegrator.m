@@ -9,7 +9,7 @@ function testOclIntegrator
 s = ocl.System(@linearVars,@linearEq);
 
 d = 2;
-collocation = ocl.Collocation(s.states, s.algvars, s.controls, s.parameters, s.statesOrder, ...
+collocation = ocl.Collocation(s.x_struct, s.z_struct, s.u_struct, s.p_struct, s.x_order, ...
                               @linearEq, @(varargin)0, d);
 
 N = 60;

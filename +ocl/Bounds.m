@@ -18,11 +18,11 @@ classdef Bounds < handle
       lower = -inf;
       upper = inf;
 
-      if nargin >= 1
+      if nargin >= 3
         lower = varargin{1};
         upper = varargin{1};
       end
-      if nargin >= 2
+      if nargin >= 4
         upper = varargin{2};
       end
 

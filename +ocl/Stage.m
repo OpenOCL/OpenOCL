@@ -15,8 +15,8 @@ classdef Stage < handle
     
     x_bounds
 
-    x_bounds0
-    x_boundsF
+    x0_bounds
+    xF_bounds
     z_bounds
     u_bounds
     p_bounds
@@ -108,8 +108,8 @@ classdef Stage < handle
       self.x_order = x_order;
       
       self.x_bounds = x_bounds_v;
-      self.x_bounds0 = ocl.Bounds();
-      self.x_boundsF = ocl.Bounds();
+      self.x0_bounds = ocl.Bounds();
+      self.xF_bounds = ocl.Bounds();
       self.z_bounds = z_bounds_v;
       self.u_bounds = u_bounds_v;
       self.p_bounds = p_bounds_v;
@@ -120,11 +120,11 @@ classdef Stage < handle
     end
     
     function setInitialStateBounds(self, id, varargin)
-      self.x_bounds0.set(id, varargin{:});
+      self.x0_bounds.set(id, varargin{:});
     end
     
     function setEndStateBounds(self, id, varargin)
-      self.x_boundsF.set(id, varargin{:});
+      self.xF_bounds.set(id, varargin{:});
     end
     
     function setControlBounds(self, id, varargin)
