@@ -13,23 +13,24 @@ classdef Stage < handle
     gridcostsfh
     gridconstraintsfh
     
-    stateBounds
+    x_bounds
 
-    stateBounds0
-    stateBoundsF
-    controlBounds
-    parameterBounds
+    x_bounds0
+    x_boundsF
+    z_bounds
+    u_bounds
+    p_bounds
     
     nx
     nz
     nu
     np
     
-    states
-    algvars
-    controls
-    parameters
-    statesOrder
+    x_struct
+    z_struct
+    u_struct
+    p_struct
+    x_order
   end
   
   properties (Access = private)
@@ -81,14 +82,14 @@ classdef Stage < handle
                     'length of the timesteps. OpenOCL normalizes the timesteps and proceeds.']);
       end
       
+      [x_struct, z_struct, u_struct, p_struct, ...
+          x_bounds_v, z_bounds_v, u_bounds_v, p_bounds_v, ...
+          x_order] = ocl.model.vars(varsfh);
+      
       self.T = T;
       self.H_norm = H_norm_in;
       self.N = length(H_norm_in);
       self.d = d_in;
-      
-      [x_struct, z_struct, u_struct, p_struct, ...
-          x_bounds, z_bounds, u_bounds, p_bounds, ...
-          x_order] = ocl.model.vars(varsfh);
       
       self.daefh = daefh;
       self.pathcostsfh = pathcostsfh;
@@ -100,32 +101,38 @@ classdef Stage < handle
       self.nu = length(u_struct);
       self.np = length(p_struct);
       
-      self.states = x_struct;
-      self.algvars = z_struct;
-      self.controls = u_struct;
-      self.parameters = p_struct;
-      self.statesOrder = x_order;
+      self.x_struct = x_struct;
+      self.z_struct = z_struct;
+      self.u_struct = u_struct;
+      self.p_struct = p_struct;
+      self.x_order = x_order;
       
-      self.stateBounds = ocl.Bounds();
-      self.stateBounds0 = ocl.Bounds();
-      self.controlBounds = ocl.Bounds();
-      self.parameterBounds = ocl.Bounds();
+      self.x_bounds = x_bounds_v;
+      self.x_bounds0 = ocl.Bounds();
+      self.x_boundsF = ocl.Bounds();
+      self.z_bounds = z_bounds_v;
+      self.u_bounds = u_bounds_v;
+      self.p_bounds = p_bounds_v;
     end
     
     function setStateBounds(self, id, varargin)
-      self.stateBounds.set(id, varargin{:});
+      self.x_bounds.set(id, varargin{:});
     end
     
     function setInitialStateBounds(self, id, varargin)
-      self.stateBounds0.set(id, varargin{:});
+      self.x_bounds0.set(id, varargin{:});
+    end
+    
+    function setEndStateBounds(self, id, varargin)
+      self.x_boundsF.set(id, varargin{:});
     end
     
     function setControlBounds(self, id, varargin)
-      self.controlBounds.set(id, varargin{:});
+      self.u_bounds.set(id, varargin{:});
     end
     
     function setParameterBounds(self, id, varargin)
-      self.parameterBounds.set(id, varargin{:});
+      self.p_bounds.set(id, varargin{:});
     end
     
   end
