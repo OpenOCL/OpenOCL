@@ -3,6 +3,7 @@ classdef CasadiSolver < handle
   properties
     timeMeasures
     stageList
+    collocationList
     nlpData
     gridpoints
     gridpoints_integrator
@@ -45,6 +46,8 @@ classdef CasadiSolver < handle
       gridpoints_integrator = cell(length(stageList), 1);
       
       v_stage = [];
+      
+      collocationList = cell(length(stageList), 1);
       
       for k=1:length(stageList)
         stage = stageList{k};
@@ -126,6 +129,8 @@ classdef CasadiSolver < handle
         
         gridpoints_integrator{k} = ocl.simultaneous.normalizedIntegratorTimes(H_norm, nt, d);
         gridpoints{k} = ocl.simultaneous.normalizedStateTimes(H_norm);
+        
+        collocationList{k} = collocation;
       end
       
       v = vertcat(vars{:});
@@ -159,9 +164,10 @@ classdef CasadiSolver < handle
       self.timeMeasures = timeMeasures;
       self.gridpoints = gridpoints;
       self.gridpoints_integrator = gridpoints_integrator;
+      self.collocationList = collocationList;
     end
     
-    function getInitialGuess(self)
+    function igList = getInitialGuess(self)
       stage_list = self.stageList;
 
       igList = cell(length(stage_list),1);
@@ -171,13 +177,42 @@ classdef CasadiSolver < handle
         colloc = self.collocationList{k};
         
         N = stage.N;
-        states = stage.states;
-        integrator_vars = colloc.vars;
-        controls = stage.controls;
-        parameters = stage.parameters;
+        x_struct = stage.x_struct;
+        z_struct = stage.z_struct;
+        u_struct = stage.u_struct;
+        p_struct = stage.p_struct;
         
-        varsStruct = ocl.simultaneous.variables(N, states, integrator_vars, controls, parameters);
-        ig = ocl.simultaneous.getInitialGuess(stage);
+        nx = stage.nx;
+        nu = stage.nu;
+        np = stage.np;
+        H_norm = stage.H_norm;
+        T = stage.T;
+        
+        vi_struct = colloc.vars;
+        ni = colloc.num_i;
+        
+        x_bounds = stage.x_bounds;
+        x0_bounds = stage.x0_bounds;
+        xF_bounds = stage.xF_bounds;
+        z_bounds = stage.z_bounds;
+        u_bounds = stage.u_bounds;
+        p_bounds = stage.p_bounds;
+        
+        [x_lb, x_ub] = ocl.model.bounds(x_struct, x_bounds);
+        [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
+        [xF_lb, xF_ub] = ocl.model.bounds(x_struct, xF_bounds);
+        
+        [z_lb, z_ub] = ocl.model.bounds(z_struct, z_bounds);
+        [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
+        [p_lb, p_ub] = ocl.model.bounds(p_struct, p_bounds);
+        
+        varsStruct = ocl.simultaneous.variables(N, x_struct, vi_struct, u_struct, p_struct);
+        
+        ig = ocl.simultaneous.getInitialGuess(H_norm, T, nx, ni, nu, np, ...
+                                    x0_lb, x0_ub, xF_lb, xF_ub, x_lb, x_ub, ...
+                                    z_lb, z_ub, u_lb, u_ub, p_lb, p_ub, ...
+                                    vi_struct);
+                                  
         igList{k} = Variable.create(varsStruct, ig);
       end
     end
@@ -188,6 +223,7 @@ classdef CasadiSolver < handle
       solveTotalTic = tic;
       
       stage_list = self.stageList;
+      collocation_list = self.collocationList;
       uregu = self.controls_regularization;
       uregu_value = self.controls_regularization_value;
       
@@ -196,7 +232,7 @@ classdef CasadiSolver < handle
       for k=1:length(stage_list)
         
         stage = stage_list{k};
-        colloc = self.collocationList{k};
+        colloc = collocation_list{k};
         
         nx = stage.nx;
         nu = stage.nu;
@@ -217,6 +253,7 @@ classdef CasadiSolver < handle
         p_bounds = stage.p_bounds;
         
         vi_struct = colloc.vars;
+        ni = colloc.num_i;
         
         [x_lb, x_ub] = ocl.model.bounds(x_struct, x_bounds);
         [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
@@ -259,11 +296,33 @@ classdef CasadiSolver < handle
       sol_values = sol.x.full();
       
       sol = cell(length(stage_list),1);
+      times = cell(length(stage_list),1);
       i = 1;
       for k=1:length(stage_list)
+        
         stage = stage_list{k};
-        nv_stage = ocl.simultaneous.nvars(stage.H_norm, stage.nx, stage.integrator.num_i, stage.nu, stage.np);
-        sol{k} = sol_values(i:i+nv_stage-1);
+        colloc = collocation_list{k};
+        
+        nx = stage.nx;
+        nu = stage.nu;
+        np = stage.np;
+        H_norm = stage.H_norm;
+        N = stage.N;
+        
+        x_struct = stage.x_struct;
+        u_struct = stage.u_struct;
+        p_struct = stage.p_struct;
+        
+        ni = colloc.num_i;
+        vi_struct = colloc.vars;
+
+        nv_stage = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
+        v_struct = ocl.simultaneous.variables(N, x_struct, vi_struct, u_struct, p_struct);
+        
+        t_struct = ocl.simultaneous.times(stage, colloc);
+        
+        sol{k} = Variable.create(v_struct, sol_values(i:i+nv_stage-1));
+        times{k} = Variable.create(t_struct, times{k});
         i = i + nv_stage;
       end
       
@@ -271,15 +330,28 @@ classdef CasadiSolver < handle
       times = cell(length(stage_list),1);
       objective = cell(length(stage_list),1);
       constraints = cell(length(stage_list),1);
-      for k=1:length(stage_list)
-        stage = stage_list{k};
-        [objective{k},constraints{k},~,~,times{k}] = ocl.simultaneous.equations(stage, sol{k}, ...
-                                                                                uregu, ...
-                                                                                uregu_value);
-        objective{k} = full(objective{k});
-        constraints{k} = full(constraints{k});
-        times{k} = full(times{k});
-      end
+%       for k=1:length(stage_list)
+%         
+%         stage = stage_list{k};
+%         colloc = collocation_list{k};
+%         
+%         nx = stage.nx;
+%         nu = stage.nu;
+%         np = stage.np;
+%         H_norm = stage.H_norm;
+%         T = stage.T;
+%         ni = colloc.num_i;
+%         
+%         [objective{k},constraints{k},~,~,times{k}] = ...
+%             ocl.simultaneous.equations(H_norm, T, nx, ni, nu, np, ...
+%                                        gridcostfun, gridconstraintfun, ...
+%                                        integratormap, v_stage, ...
+%                                        uregu, uregu_value);
+%                                      
+%         objective{k} = full(objective{k});
+%         constraints{k} = full(constraints{k});
+%         times{k} = full(times{k});
+%       end
       nlpFunEvalTime = toc(nlpFunEvalTic);
       
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
