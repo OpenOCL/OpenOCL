@@ -1,20 +1,17 @@
-function guess = igFromBounds(bounds)
+function guess = igFromBounds(lower, upper)
 % Averages the bounds to get an initial guess value.
 % Makes sure no nan values are produced, defaults to 0.
 
-lowVal  = bounds.lower;
-upVal   = bounds.upper;
-
-guess = (lowVal + upVal) / 2;
+guess = (lower + upper) / 2;
 
 % set to lowerBounds if upperBounds are inf
-indizes = isinf(upVal);
-guess(indizes) = lowVal(indizes);
+indizes = isinf(upper);
+guess(indizes) = lower(indizes);
 
 % set to upperBounds of lowerBoudns are inf
-indizes = isinf(lowVal);
-guess(indizes) = upVal(indizes);
+indizes = isinf(lower);
+guess(indizes) = upper(indizes);
 
 % set to zero if both lower and upper bounds are inf
-indizes = isinf(lowVal) & isinf(upVal);
+indizes = isinf(lower) & isinf(upper);
 guess(indizes) = 0;
