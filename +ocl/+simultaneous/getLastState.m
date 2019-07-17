@@ -7,3 +7,4 @@ np = stage.np;
 
 [X_indizes, ~, ~, ~, ~] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
 x = stageVars(X_indizes(:,end));
+

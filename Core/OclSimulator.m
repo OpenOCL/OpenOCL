@@ -34,25 +34,25 @@ classdef OclSimulator < handle
 
     function controlsVec = getControlsVec(self,N)
         controlsVecStruct  = OclStructure();
-        controlsVecStruct.addRepeated({'u'},{self.system.controls},N);
+        controlsVecStruct.addRepeated({'u'},{self.system.u_struct},N);
         controlsVec = Variable.create(controlsVecStruct,0);
         controlsVec = controlsVec.u;
     end
 
-    function controls = getControls(self)
-      controls = Variable.create(self.system.controls,0);
-    end
-
     function states = getStates(self)
-      states = Variable.create(self.system.states,0);
+      states = Variable.create(self.system.x_struct,0);
+    end
+    
+    function z = getAlgebraicStates(self)
+      z = Variable.create(self.system.z_struct,0);
+    end
+    
+    function controls = getControls(self)
+      controls = Variable.create(self.system.u_struct,0);
     end
 
     function states = getParameters(self)
-      states = Variable.create(self.system.parameters,0);
-    end
-
-    function z = getAlgebraicStates(self)
-      z = Variable.create(self.system.algvars,0);
+      states = Variable.create(self.system.p_struct,0);
     end
 
     function [x] = reset(self,varargin)
@@ -168,10 +168,10 @@ classdef OclSimulator < handle
       useCallback = args.callback;
 
       statesVecStruct = OclStructure();
-      statesVecStruct.addRepeated({'x'},{self.system.states},N+1);
+      statesVecStruct.addRepeated({'x'},{self.system.x_struct},N+1);
 
       algVarsVecStruct = OclStructure();
-      algVarsVecStruct.addRepeated({'z'},{self.system.algvars},N);
+      algVarsVecStruct.addRepeated({'z'},{self.system.z_struct},N);
 
       statesVec = Variable.create(statesVecStruct,0);
       statesVec = statesVec.x;
