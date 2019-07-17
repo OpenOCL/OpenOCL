@@ -20,7 +20,7 @@ xsym = casadi.SX.sym('x',s.nx);
 xisym = casadi.SX.sym('xi',s.nx*d);
 usym = casadi.SX.sym('u',s.nu);
 
-[~, ~, equations, ~] = ocl.collocation.equations(collocation, xsym, xisym, usym, h, []);
+[~, ~, equations] = ocl.collocation.equations(collocation, xsym, xisym, usym, h, []);
 
 nlp    = struct('x', vertcat(xsym,xisym,usym), 'f', 0, 'g', equations);
 
