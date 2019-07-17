@@ -10,13 +10,12 @@
 % Copyright (C) 2011-2014 Greg Horn
 % Under GNU Lesser General Public License
 %
-function [xF, costs, equations, rel_times] = ...
+function [xF, costs, equations] = ...
   equations(colloc, x0, vars, u, h, params)
 
 C = colloc.coeff_der;
 B = colloc.coeff_int;
 
-tau = colloc.tau_root;
 d = colloc.order;
 
 nx = colloc.num_x;
@@ -28,7 +27,6 @@ J = 0;
 [x_indizes, z_indizes] = ocl.collocation.indizes(nx,nz,d);
 
 % Loop over collocation points
-rel_times = cell(d,1);
 for j=1:d
   
   x_der = C(1,j+1)*x0;
@@ -46,14 +44,9 @@ for j=1:d
   
   equations{j} = [h*ode-x_der; alg];
   J = J + B(j+1)*qj*h;
-  
-  rel_times{j} = tau(j+1) * h;
 end
 
 costs = J;
 equations = vertcat(equations{:});
-rel_times = vertcat(rel_times{:});
 
 xF = ocl.collocation.getStateAtPoint(colloc, x0, vars, 1.0);
-
-end

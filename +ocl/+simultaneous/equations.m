@@ -1,4 +1,4 @@
-function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
+function [costs,constraints,constraints_lb,constraints_ub,x0,p0] = ...
   equations(H_norm, T, nx, ni, nu, np, gridcostfun, gridconstraintfun, ...
             integratormap, stage_vars, controls_regularization, ...
             controls_regularization_value)
@@ -35,7 +35,7 @@ end
 %   
 % end
 
-[xend_arr, cost_arr, int_eq_arr, int_times] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
+[xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints
 h_eq = double.empty(0,N-1);
@@ -99,14 +99,6 @@ if controls_regularization && numel(U)>0
   Uvec = U(:);
   costs = costs + controls_regularization_value*(Uvec'*Uvec);
 end
-
-% times output
-T0 = [0, cumsum(H(:,1:end-1))];
-for k=1:size(int_times,1)
-  int_times(k,:) = T0 + int_times(k,:);
-end
-times = [T0; int_times; T0];
-times = [times(:); T0(end)+H(end)];
 
 x0 = X(:,1);
 p0 = P(:,1);
