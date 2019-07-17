@@ -68,7 +68,6 @@ classdef CasadiSolver < handle
         collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
         
         ni = collocation.num_i;
-        nt = collocation.num_t;
         collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
         
         x = expr(['x','_s',mat2str(k)], nx);
@@ -96,18 +95,20 @@ classdef CasadiSolver < handle
                                        integratormap, v_stage, ...
                                        controls_regularization, controls_regularization_value);
         
+        collocationList{k} = collocation;
+                                     
         transition_eq = [];
         transition_lb = [];
         transition_ub = [];
         if k >= 2
-          x0s = ocl.simultaneous.getFirstState(stageList{k}, v_stage);
-          xfs = ocl.simultaneous.getLastState(stageList{k-1}, v_last_stage);
+          x0s = ocl.simultaneous.getFirstState(stageList{k}, collocationList{k}, v_stage);
+          xfs = ocl.simultaneous.getLastState(stageList{k-1}, collocationList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
           
           tansition_handler = OclConstraint();
           
-          x0 = Variable.create(stageList{k}.states, x0s);
-          xf = Variable.create(stageList{k-1}.states, xfs);
+          x0 = Variable.create(stageList{k}.x_struct, x0s);
+          xf = Variable.create(stageList{k-1}.x_struct, xfs);
           
           transition_fun(tansition_handler,x0,xf);
           
@@ -122,7 +123,6 @@ classdef CasadiSolver < handle
         constraints_LB{k} = vertcat(transition_lb, constraints_LB_stage);
         constraints_UB{k} = vertcat(transition_ub, constraints_UB_stage);
         
-        collocationList{k} = collocation;
       end
       
       v = vertcat(vars{:});
