@@ -23,5 +23,5 @@ bounds.set('u', u_lb, u_ub);
 x0bounds = ocl.Bounds();
 x0bounds.set('x', x0, x0);
 
-solver = ocl.acados.Solver(10, 30, varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
-                           x0bounds, bounds);
+solver = ocl.acados.Solver(10, varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
+                           x0bounds, bounds, 'N', 30);
