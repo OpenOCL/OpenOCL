@@ -35,6 +35,11 @@ classdef Solver < handle
       daefh = r.dae;
       gridcostsfh = r.gridcosts;
       gridconstraintsfh = r.gridconstraints;
+      bounds = r.bounds;
+      x0 = r.x0;
+      
+      
+      oclAssert(x0.lower == x0.upper, '')
       
       x_lb = bounds.lower;
 
