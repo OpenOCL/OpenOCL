@@ -1,8 +1,8 @@
-function x = getFirstState(stage, stage_vars)
+function x = getFirstState(stage, colloc, stage_vars)
 
 N = stage.N;
 nx = stage.nx;
-ni = stage.ni;
+ni = colloc.num_i;
 nu = stage.nu;
 np = stage.np;
 

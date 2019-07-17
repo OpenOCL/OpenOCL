@@ -10,7 +10,7 @@ function [sol,times,solver] = bouncingball
   
   after_contact.setEndStateBounds('s', 1);
 
-  solver = OclSolver({before_contact, after_contact}, {@stage_transition});
+  solver = ocl.Solver({before_contact, after_contact}, {@stage_transition});
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 

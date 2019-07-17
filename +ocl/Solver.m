@@ -194,13 +194,13 @@ classdef Solver < handle
       if length(self.stageList) == 1
 
         % check if id is a state, control, algvar or parameter
-        if oclFieldnamesContain(self.stageList{1}.states.getNames(), id)
+        if oclFieldnamesContain(self.stageList{1}.x_struct.getNames(), id)
           self.stageList{1}.setStateBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.stageList{1}.algvars.getNames(), id)
+        elseif oclFieldnamesContain(self.stageList{1}.z_struct.getNames(), id)
           self.stageList{1}.setAlgvarBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.stageList{1}.controls.getNames(), id)
+        elseif oclFieldnamesContain(self.stageList{1}.u_struct.getNames(), id)
           self.stageList{1}.setControlBounds(id, varargin{:});
-        elseif oclFieldnamesContain(self.stageList{1}.parameters.getNames(), id)
+        elseif oclFieldnamesContain(self.stageList{1}.p_struct.getNames(), id)
           self.stageList{1}.setParameterBounds(id, varargin{:});
         else
           oclWarning(['You specified a bound for a variable that does not exist: ', id]);

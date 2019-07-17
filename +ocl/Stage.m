@@ -127,6 +127,10 @@ classdef Stage < handle
       self.xF_bounds.set(id, varargin{:});
     end
     
+    function setAlgvarBounds(self, id, varargin)
+      self.z_bounds.set(id, varargin{:});
+    end
+    
     function setControlBounds(self, id, varargin)
       self.u_bounds.set(id, varargin{:});
     end

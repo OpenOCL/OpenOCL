@@ -1,7 +1,7 @@
-function x = getLastState(stage,stageVars)
+function x = getLastState(stage,colloc,stageVars)
 N = stage.N;
 nx = stage.nx;
-ni = stage.ni;
+ni = colloc.num_i;
 nu = stage.nu;
 np = stage.np;
 
