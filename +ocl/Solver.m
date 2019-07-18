@@ -46,7 +46,7 @@ classdef Solver < handle
         p.addParameter('controls_regularization', true, @islogical);
         p.addParameter('controls_regularization_value', 1e-6, @isnumeric);
         
-        p.addParameter('casadi_options', CasadiOptions(), @(el) isstruct(el));
+        p.addParameter('casadi_options', ocl.casadi.CasadiOptions(), @(el) isstruct(el));
         p.addParameter('N', 20, @isnumeric);
         p.addParameter('d', 3, @isnumeric);
         

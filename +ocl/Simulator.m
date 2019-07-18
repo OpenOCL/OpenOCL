@@ -25,7 +25,7 @@ classdef Simulator < handle
         self.options = options;
       end
 
-      self.integrator = CasadiIntegrator(system);
+      self.integrator = ocl.casadi.CasadiIntegrator(system);
       self.system = system;
 
       self.current_state = [];
