@@ -17,6 +17,7 @@ classdef Simulator < handle
   methods
 
     function self = Simulator(system,options)
+      ocl.utils.checkStartup()
 
       if nargin==1
         self.options = struct;

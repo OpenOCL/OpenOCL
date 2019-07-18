@@ -10,8 +10,8 @@ h_line = plot([0,p(1)],[0,p(2)],'-k', 'LineWidth', 4);
 h_bob = plot(p(1),p(2),'ok', 'MarkerSize', 22, 'MarkerFaceColor','r');
 hold off
 
-xlim([-l,l])
-ylim([-l,l])
+xlim([-l-0.1,l+0.1])
+ylim([-l-0.1,l+0.1])
 
 for k=1:size(p_traj, 2)-1
   tic;

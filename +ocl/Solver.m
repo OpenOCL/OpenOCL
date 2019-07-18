@@ -17,6 +17,8 @@ classdef Solver < handle
       %            'gridcosts', @gridcostfun,
       %            'gridconstraints', @gridconstraintsfun, casadi_options)
       % ocl.Solver(stages, transitions, casadi_options)
+      
+      ocl.utils.checkStartup()
 
       if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
         % ocl.Solver(T, system, ocp, options, H_norm)

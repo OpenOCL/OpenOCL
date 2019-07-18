@@ -14,19 +14,18 @@ solver = ocl.Solver([], ...
   @(h,x,z,u,p) ocl.examples.pendulum.daefun(h,x,z,u,conf), ...
   @ocl.examples.pendulum.pathcosts, ...
   @ocl.examples.pendulum.gridcosts, ...
-  'N', 40);
+  'N', 100);
 
 solver.setBounds('time', 0, 15);
 
 solver.setBounds('v',       -[3;3], [3;3]);
-solver.setBounds('F',       -25, 25);
-solver.setBounds('lambda',  -50, 50);
+solver.setBounds('F',       -40, 40);
 
 solver.setInitialBounds('time', 0);
 solver.setInitialBounds('p', [0; -conf.l]);
 solver.setInitialBounds('v', [0.5;0]);
 
-%   solver.setEndBounds('p',     [0,0], [0,inf]);
+solver.setEndBounds('p',     [0,0], [0,inf]);
 solver.setEndBounds('v',     [-1;-1], [1;1]);
 
 ig = solver.getInitialGuess();

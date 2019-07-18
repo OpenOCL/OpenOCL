@@ -41,6 +41,8 @@ classdef Stage < handle
     
     function self = Stage(T, varargin)
       
+      ocl.utils.checkStartup()
+      
       emptyfh = @(varargin)[];
       
       p = ocl.utils.ArgumentParser;
