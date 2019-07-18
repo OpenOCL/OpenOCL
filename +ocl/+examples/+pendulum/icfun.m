@@ -1,6 +1,6 @@
-function icfun(ic,x,p)
+function icfun(ic,x,conf)
   % initial condition function
-  l = p.l;
+  l = conf.l;
   p = x.p;
   v = x.v;
 
