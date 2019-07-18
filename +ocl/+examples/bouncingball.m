@@ -14,9 +14,6 @@ function [sol,times,solver] = bouncingball
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 
-  figure
-  spy(full(solver.jacobian_pattern(sol)))
-  
   % stage 1
   figure; 
   subplot(1,2,1)
@@ -34,7 +31,7 @@ function [sol,times,solver] = bouncingball
   hold on; grid on;
   oclPlot(times{2}.states, sol{2}.states.s)
   oclPlot(times{2}.states, sol{2}.states.v)
-  oclStairs(times{2}.states, [sol{2}.controls.F;sol{2}.controls.F(end)])
+  oclStairs(times{2}.controls, sol{2}.controls.F)
   legend({'s','v','F'})
   xlabel('time [s]');
   ylim([-5 3])

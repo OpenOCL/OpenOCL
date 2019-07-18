@@ -17,9 +17,7 @@ function [sol,times,solver] = bouncingball_sim
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 
-  figure
-  spy(full(solver.jacobian_pattern(sol)))
-  
+
   vw = VideoWriter(fullfile(getenv('OPENOCL_WORK'),'bouncingball.avi'));
   vw.FrameRate = 30;
   open(vw)

@@ -96,23 +96,6 @@ classdef Solver < handle
       self.solver = solver;
     end
 
-    function r = jacobian_pattern(self, assignment)
-
-      s = self.solver;
-      st_list = self.stageList;
-
-      v = s.nlpData.casadiNLP.x;
-      g = s.nlpData.casadiNLP.g;
-      jac_fun = casadi.Function('j', {v}, {jacobian(g, v)});
-
-      values = cell(length(st_list),1);
-      for k=1:length(st_list)
-        values{k} = assignment{k}.value;
-      end
-      values = vertcat(values{:});
-      r = jac_fun(values);
-    end
-
     function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
 
       s = self.solver;
