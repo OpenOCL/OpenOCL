@@ -15,16 +15,12 @@ classdef CasadiVariable < Variable
       oclValue = OclValue(value);
       [N,M,K] = size(type);
       p = reshape(1:N*M*K,N,M,K);
-      var = CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
+      var = ocl.casadi.CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
     end
     
     function var = create(type,mx)
-      if isa(type,'OclTree')
-        names = fieldnames(type.children);
-        id = [names{:}];
-      else
-        id = class(type);
-      end
+      
+      id = class(type);
       
       [N,M,K] = size(type);
       assert(K==1,'Not supported.');
@@ -37,14 +33,14 @@ classdef CasadiVariable < Variable
       end
       val = OclValue(vv);
       p = reshape(1:N*M*K,N,M,K);
-      var = CasadiVariable(type,p,mx,val);
+      var = ocl.casadi.CasadiVariable(type,p,mx,val);
     end
     
     function obj = Matrix(size,mx)
       if nargin==1
         mx = false;
       end
-      obj = CasadiVariable.create(OclMatrix(size),mx);
+      obj = ocl.casadi.CasadiVariable.create(OclMatrix(size),mx);
     end
   end
   

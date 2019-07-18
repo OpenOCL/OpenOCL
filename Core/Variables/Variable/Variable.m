@@ -26,7 +26,7 @@ classdef Variable < handle
       if isnumeric(value)
         var = Variable.createNumeric(type,value);
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
-        var = CasadiVariable.createFromValue(type,value);
+        var = ocl.casadi.CasadiVariable.createFromValue(type,value);
       else
         oclError('Not implemented for this type of variable.')
       end
@@ -34,7 +34,7 @@ classdef Variable < handle
     
     function var = createFromVar(type,pos,var)
       if isa(var, 'CasadiVariable')
-        var = CasadiVariable(type,pos,var.mx,var.val);
+        var = ocl.casadi.CasadiVariable(type,pos,var.mx,var.val);
       elseif isa(var,'SymVariable')
         var = SymVariable(type,pos,var.val);
       else
