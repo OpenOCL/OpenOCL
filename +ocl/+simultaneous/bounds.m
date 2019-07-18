@@ -2,7 +2,8 @@ function [lb_stage,ub_stage] = bounds(H_norm, T, nx, ni, nu, np, ...
                                       x_lb, x_ub, x0_lb, x0_ub, xF_lb, xF_ub, ...
                                       vi_lb, vi_ub, u_lb, u_ub, p_lb, p_ub)
 
-[nv_stage,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
+N = length(H_norm);
+nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
 
 lb_stage = -inf * ones(nv_stage,1);
 ub_stage = inf * ones(nv_stage,1);

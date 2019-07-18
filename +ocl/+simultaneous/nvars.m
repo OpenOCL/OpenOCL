@@ -1,6 +1,4 @@
-function [nv_stage,N] = nvars(H_norm, nx, ni, nu, np)
-% number of control intervals
-N = length(H_norm);
+function [nv_stage] = nvars(N, nx, ni, nu, np)
 
 % N control interval which each have states, integrator vars,
 % controls, parameters, and timesteps.

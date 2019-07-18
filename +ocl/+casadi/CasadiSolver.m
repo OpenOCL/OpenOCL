@@ -64,6 +64,7 @@ classdef CasadiSolver < handle
         d = stage.d;
         H_norm = stage.H_norm;
         T = stage.T;
+        N = stage.N;
         
         collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
         
@@ -79,9 +80,9 @@ classdef CasadiSolver < handle
         [xF, cost_integr, equations] = collocationfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {xF, cost_integr, equations});
         
-        integratormap = integrator_fun.map(stage.N, 'serial');
+        integratormap = integrator_fun.map(N, 'serial');
         
-        nv_stage = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
+        nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
         v_last_stage = v_stage;
         v_stage = expr(['v','_s',mat2str(k)], nv_stage);
         
@@ -297,7 +298,6 @@ classdef CasadiSolver < handle
         nx = stage.nx;
         nu = stage.nu;
         np = stage.np;
-        H_norm = stage.H_norm;
         N = stage.N;
         
         x_struct = stage.x_struct;
@@ -307,7 +307,7 @@ classdef CasadiSolver < handle
         ni = colloc.num_i;
         vi_struct = colloc.vars;
 
-        nv_stage = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
+        nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
         v_struct = ocl.simultaneous.variablesStruct(N, x_struct, vi_struct, u_struct, p_struct);
         t_struct = ocl.simultaneous.timesStruct(stage, colloc);
         
