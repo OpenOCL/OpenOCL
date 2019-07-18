@@ -25,7 +25,7 @@ function [vars,times,solver] = pendulum
   solver.setInitialBounds('p', [0;-length]);
   solver.setInitialBounds('v', [0.5;0]);
 
-  solver.setEndBounds('p',     [0,0], [0,inf]);
+%   solver.setEndBounds('p',     [0,0], [0,inf]);
   solver.setEndBounds('v',     [-1;-1], [1;1]);
 
   vars = solver.getInitialGuess();
