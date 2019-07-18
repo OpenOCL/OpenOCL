@@ -3,31 +3,38 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function xVec = pendulum_sim
+function p_vec = pendulum_sim
+
+  conf = struct;
+  conf.l = 1;
+  conf.m = 1;
 
   system = ocl.System(@ocl.examples.pendulum.varsfun, ...
-                      @ocl.examples.pendulum.daefun, ...
-                      @ocl.examples.pendulum.icfun, ...
-                      'callbacksetup', @ocl.examples.pendulum.simcallbacksetup, ...
-                      'callback', @ocl.examples.pendulum.simcallback);
+                      @(h,x,z,u,p) ocl.examples.pendulum.daefun(h,x,z,u,conf), ...
+                      @(h,x,p) ocl.examples.pendulum.icfun(h,x,conf));
   simulator = ocl.Simulator(system);
 
-  states = simulator.getStates();
-  states.p.set([0,1]);
-  states.v.set([-0.5,-1]);
-
-  p = simulator.getParameters();
-  p.m.set(1);
-  p.l.set(1);
+  x0 = simulator.getStates();
+  x0.p.set([0,conf.l]);
+  x0.v.set([-0.5,-1]);
 
   times = 0:0.1:4;
-
-  % simulate using a given series of control inputs
-  controlsSeries = simulator.getControlsVec(length(times)-1);
-  controlsSeries.F.set(10);
-
+ 
   figure
-  [xVec,~,~] = simulator.simulate(states,times,controlsSeries,p,true);
+  simulator.reset(x0);
+  
+  p_vec = zeros(2,length(times));
+  p_vec(:,1) = x0.p.value; 
+  
+  for k=1:length(times)-1
+    
+    dt = times(k+1)-times(k);
+    [x,~] = simulator.step(10, dt);
+    
+    p_vec(:,k+1) = x.p.value;
+  end
+  
+  ocl.examples.pendulum.animate(conf.l, p_vec, times);
   snapnow;
 end
 

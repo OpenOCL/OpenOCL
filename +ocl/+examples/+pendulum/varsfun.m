@@ -5,7 +5,4 @@ function varsfun(sh)
   
   sh.addControl('F');
   sh.addAlgVar('lambda');
-
-  sh.addParameter('m');
-  sh.addParameter('l');
 end
