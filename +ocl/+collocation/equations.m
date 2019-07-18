@@ -24,19 +24,19 @@ nz = colloc.num_z;
 equations = cell(d,1);
 J = 0;
 
-[x_indizes, z_indizes] = ocl.collocation.indizes(nx,nz,d);
+[x,z] = ocl.collocation.variablesUnpack(vars, nx, nz, d);
 
 % Loop over collocation points
 for j=1:d
   
   x_der = C(1,j+1)*x0;
   for r=1:d
-    x_r = vars(x_indizes(:,r));
+    x_r = x(:,r);
     x_der = x_der + C(r+1,j+1)*x_r;
   end
   
-  x_j = vars(x_indizes(:,j));
-  z_j = vars(z_indizes(:,j));
+  x_j = x(:,j);
+  z_j = z(:,j);
   
   [ode,alg] = colloc.daefun(x_j, z_j, u, params);
   

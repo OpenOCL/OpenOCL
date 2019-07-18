@@ -4,13 +4,7 @@ function [costs,constraints,constraints_lb,constraints_ub,x0,p0] = ...
             controls_regularization_value)
 
 N = length(H_norm);
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
-
-X = reshape(stage_vars(X_indizes), nx, N+1);
-I = reshape(stage_vars(I_indizes), ni, N);
-U = reshape(stage_vars(U_indizes), nu, N);
-P = reshape(stage_vars(P_indizes), np, N+1);
-H = reshape(stage_vars(H_indizes), 1 , N);
+[X,I,U,P,H] = ocl.simultaneous.variablesUnpack(stage_vars, N, nx, ni, nu, np);
 
 % grid constraints, grid costs
 gridcon = cell(1,N+1);
