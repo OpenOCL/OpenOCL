@@ -33,13 +33,6 @@ classdef Simulator < handle
       self.parameters = [];
     end
 
-    function controlsVec = getControlsVec(self,N)
-        controlsVecStruct  = OclStructure();
-        controlsVecStruct.addRepeated({'u'},{self.system.u_struct},N);
-        controlsVec = Variable.create(controlsVecStruct,0);
-        controlsVec = controlsVec.u;
-    end
-
     function states = getStates(self)
       states = Variable.create(self.system.x_struct,0);
     end
@@ -61,7 +54,6 @@ classdef Simulator < handle
       p = ocl.utils.ArgumentParser;
       p.addRequired('x0', @(el) isa(el, 'Variable') || isnumeric(el) );
       p.addKeyword('parameters', [], @(el) isa(el, 'Variable') || isnumeric(el));
-      p.addKeyword('callback', false, @islogical);
 
       args = p.parse(varargin{:});
 
@@ -77,8 +69,6 @@ classdef Simulator < handle
         params.set(args.parameters);
       end
 
-      useCallback = args.callback;
-
       nz = self.system.nz;
 
       z = zeros(nz,1);
@@ -87,11 +77,6 @@ classdef Simulator < handle
 
       [x,z] = self.getConsistentIntitialCondition(x0,z,p);
       initialStates.set(x);
-
-      % setup callback
-      if useCallback && ~oclIsTestRun
-        self.system.callbacksetupfun();
-      end
 
       self.current_state = x;
       self.algebraic_guess = z;
@@ -125,89 +110,6 @@ classdef Simulator < handle
 
       self.current_state = x;
       self.algebraic_guess = z;
-
-    end
-
-    function [statesVec,algVarsVec,controlsVec] = simulate(self,varargin)
-      % [statesVec,algVarsVec,controlsVec] = 
-      %     simulate(initialState, times, parameters=[], controlsVec=0, callback=false)
-
-      p = ocl.utils.ArgumentParser;
-      p.addRequired('x0', @(el) isa(el, 'Variable') || isnumeric(el) );
-      p.addRequired('times', @isnumeric)
-
-      p.addKeyword('controls', 0, @(el) isa(el, 'Variable') || isnumeric(el));
-      p.addKeyword('parameters', [], @(el) isa(el, 'Variable') || isnumeric(el));
-      p.addKeyword('callback', false, @islogical);
-
-      args = p.parse(varargin{:});
-
-      x0 = args.x0;
-      if isnumeric(args.x0)
-        x0 = self.getStates();
-        x0.set(x0_in);
-      end
-
-      times = args.times;
-
-      p = args.parameters;
-      if isnumeric(args.parameters)
-        p = self.getParameters();
-        p.set(args.parameters);
-      end
-
-      N = length(times)-1; % number of control intervals
-
-      controlsVec = args.controls;
-      if isnumeric(args.controls)
-        controlsVec = self.getControlsVec(N);
-        controlsVec.set(args.controls);
-      end
-
-      x0 = self.reset(x0, p);
-
-      useCallback = args.callback;
-
-      statesVecStruct = OclStructure();
-      statesVecStruct.addRepeated({'x'},{self.system.x_struct},N+1);
-
-      algVarsVecStruct = OclStructure();
-      algVarsVecStruct.addRepeated({'z'},{self.system.z_struct},N);
-
-      statesVec = Variable.create(statesVecStruct,0);
-      statesVec = statesVec.x;
-      algVarsVec = Variable.create(algVarsVecStruct,0);
-      algVarsVec = algVarsVec.z;
-      
-      statesVec(:,:,1).set(x0);
-
-      for k=1:N-1
-
-        x = self.current_state;
-        z = self.algebraic_guess;
-        p = self.parameters;
-
-        t = times(k+1)-times(k);
-        u = Variable.getValueAsColumn(controlsVec(:,:,k));
-
-        if useCallback && ~ocl.utils.isTestRun
-          u = self.system.callbackfun(x,z,u,times(k),times(k+1),p);
-        end
-
-        [x,z] = self.integrator.evaluate(x,z,u,t,p);
-
-        self.current_state = x;
-        self.algebraic_guess = z;
-
-        statesVec(:,:,k+1).set(x);
-        algVarsVec(:,:,k).set(z);
-        controlsVec(:,:,k).set(u);
-
-      end
-
-      if useCallback && ~ocl.utils.isTestRun
-        [~] = self.system.callbackfun(x,z,u,times(k),times(k+1),p);
-      end
 
     end
 
