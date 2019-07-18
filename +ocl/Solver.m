@@ -160,26 +160,6 @@ classdef Solver < handle
       igAssignment = OclAssignment(igList);
     end
 
-    function solutionCallback(self,times,solution)
-      
-      for st_idx=1:length(self.stageList)
-        sN = size(solution{st_idx}.states);
-        N = sN(3);
-
-        t = times{st_idx}.states;
-
-        self.stageList{st_idx}.callbacksetupfun()
-
-        for k=1:N-1
-          x = solution{st_idx}.states(:,:,k+1);
-          z = solution{st_idx}.integrator(:,:,k).algvars;
-          u = solution{st_idx}.controls(:,:,k);
-          p = solution{st_idx}.parameters(:,:,k);
-          self.stageList{st_idx}.callbackfh(x,z,u,t(:,:,k),t(:,:,k+1),p);
-        end
-      end
-    end
-
     function setParameter(self,id,varargin)
       if length(self.stageList) == 1
         self.stageList{1}.setParameterBounds(id, varargin{:});

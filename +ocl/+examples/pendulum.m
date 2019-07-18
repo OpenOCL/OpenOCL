@@ -10,21 +10,22 @@ function [vars,times,solver] = pendulum
                       @ocl.examples.pendulum.daefun, ...
                       @pathcosts, @gridcosts, ...
                       'N', 40);
+                    
+  length = 1;
   
   solver.setBounds('time', 0, 15);
   
-  solver.setBounds('p',       -[1;1], [1;1]);
   solver.setBounds('v',       -[3;3], [3;3]);
   solver.setBounds('F',       -25, 25);
   solver.setBounds('lambda',  -50, 50);
   solver.setBounds('m',       1);
-  solver.setBounds('l',       1);
+  solver.setBounds('l',       length);
 
   solver.setInitialBounds('time', 0);
-  solver.setInitialBounds('p', [0;-1],[0;-1]);
+  solver.setInitialBounds('p', [0;-length]);
   solver.setInitialBounds('v', [0.5;0]);
 
-  solver.setEndBounds('p',     [0,1]);
+  solver.setEndBounds('p',     [0,0], [0,inf]);
   solver.setEndBounds('v',     [-1;-1], [1;1]);
 
   vars = solver.getInitialGuess();
@@ -35,7 +36,7 @@ function [vars,times,solver] = pendulum
   [solution,times] = solver.solve(vars);
 
   figure
-  solver.solutionCallback(times,solution);
+  ocl.examples.pendulum.animate(length, solution.states.p.value, times.value);
 
   snapnow;
 end
