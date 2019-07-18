@@ -91,8 +91,8 @@ function handles = animate(sol,times)
   handles = {};
   pmax = max(abs(sol.states.p.value));
   
-  states = sol.integrator.states.value;
-  times = times.integrator.value;
+  states = sol.states.value;
+  times = times.states.value;
   times = times(:);
   
   snap_at = floor(linspace(2,length(times),4));
