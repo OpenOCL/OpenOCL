@@ -38,10 +38,11 @@ classdef Solver < handle
       bounds = r.bounds;
       x0 = r.x0;
       
+      [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0);
+      [x_lb, x_ub] = ocl.model.bounds(x_struct, x0);
+      [u_lb, u_ub] = ocl.model.bounds(u_struct, x0);
       
-      oclAssert(x0.lower == x0.upper, '')
-      
-      x_lb = bounds.lower;
+      oclAssert(x0_lb == x0_ub, 'Need to set a fixed initial state x0 in the acados interface.');
 
       ocp = ocl.acados.initialize( ...
                 T, N, ...
