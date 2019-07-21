@@ -91,6 +91,7 @@ classdef Solver < handle
                                        nlp_casadi_mx, controls_regularization, ...
                                        controls_regularization_value, casadi_options);
 
+                                     
       % set instance variables
       self.stageList = stageList;
       self.solver = solver;
@@ -128,13 +129,6 @@ classdef Solver < handle
     function r = timeMeasures(self)
       r = self.solver.timeMeasures;
     end
-    
-    function ig_list = initialGuess(self)
-      ig_list = cell(length(self.stageList), 1);
-      for k=1:length(ig_list)
-        ig_list{k} = ocl.InitialGuess(self.stageList{k}.states);
-      end
-    end
 
     function ig = ig(self)
       ig = self.getInitialGuess();
@@ -144,12 +138,20 @@ classdef Solver < handle
       igList = self.solver.getInitialGuess();
       igAssignment = OclAssignment(igList);
     end
+    
+    function setGuess(self, id, gridpoints, values)
+      if length(self.stageList) == 1
+        self.initial_guess.set(id, gridpoints, values);
+      else
+        oclError('For multi-stage problems, set the guess to the stages directly.')
+      end
+    end
 
     function setParameter(self,id,varargin)
       if length(self.stageList) == 1
         self.stageList{1}.setParameterBounds(id, varargin{:});
       else
-        oclError('For multi-stage problems, set the bounds to the stages directlly.')
+        oclError('For multi-stage problems, set the bounds to the stages directly.')
       end
     end
 

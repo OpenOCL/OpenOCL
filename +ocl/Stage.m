@@ -31,10 +31,9 @@ classdef Stage < handle
     u_struct
     p_struct
     x_order
-  end
-  
-  properties (Access = private)
-
+    
+    initial_guess
+    
   end
   
   methods
@@ -115,6 +114,12 @@ classdef Stage < handle
       self.z_bounds = z_bounds_v;
       self.u_bounds = u_bounds_v;
       self.p_bounds = p_bounds_v;
+      
+%       self.initial_guess = ocl.types.InitialGuess();
+    end
+    
+    function setGuess(self, id, gridpoints, values)
+      self.initial_guess.set(id, gridpoints, values);
     end
     
     function setStateBounds(self, id, varargin)
