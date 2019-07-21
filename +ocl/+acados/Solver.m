@@ -18,6 +18,8 @@ classdef Solver < handle
   methods
     function self = Solver(varargin)
       
+      ocl.utils.checkStartup()
+      
       zerofh = @(varargin) 0;
       emptyfh = @(varargin) [];
       
@@ -39,6 +41,7 @@ classdef Solver < handle
       N = r.N;
       varsfh = r.vars;
       daefh = r.dae;
+      pathcostsfh = r.pathcosts;
       gridcostsfh = r.gridcosts;
       gridconstraintsfh = r.gridconstraints;
       
@@ -142,13 +145,19 @@ classdef Solver < handle
       end
     end
     
-    function setInitialState(self, id, value)
+    function setInitialStateBounds(self, id, varargin)
+      % bounds
+      self.x0_bounds.set(id, varargin{:});
       
-      self.x0_bounds.set(id, value);
       [x0_lb, x0_ub] = ocl.model.bounds(self.x_struct, self.x0_bounds);
       
       oclAssert(x0_lb == x0_ub, 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
-      ocp_model.set('constr_x0', x0_lb);
+      
+      self.acados_ocp.set('constr_x0', x0_lb);
+    end
+    
+    function setInitialState(self, id, value)
+      self.setInitialStateBounds(id, value);
     end
     
   end

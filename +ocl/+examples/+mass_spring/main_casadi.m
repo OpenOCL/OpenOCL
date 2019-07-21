@@ -7,9 +7,9 @@ gridcostsfh = @(h,k,K,x,p) ocl.examples.mass_spring.gridcosts(h,k,K,x);
 
 solver = ocl.Solver(10, varsfh, daefh, pathcostsfh, gridcostsfh, 'N', 30, 'd', 2);
 
-x0 = zeros(2*num_masses, 1); 
-x0(1)=2.5; 
-x0(2)=2.5;
+x0 = zeros(2*num_masses, 1);
+x0(1) = 2.5;
+x0(2) = 2.5;
 
 solver.setInitialBounds('x', x0);
 
