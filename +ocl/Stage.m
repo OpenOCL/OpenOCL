@@ -110,8 +110,8 @@ classdef Stage < handle
       self.x_order = x_order;
       
       self.x_bounds = x_bounds_v;
-      self.x0_bounds = ocl.Bounds();
-      self.xF_bounds = ocl.Bounds();
+      self.x0_bounds = ocl.types.Bounds();
+      self.xF_bounds = ocl.types.Bounds();
       self.z_bounds = z_bounds_v;
       self.u_bounds = u_bounds_v;
       self.p_bounds = p_bounds_v;

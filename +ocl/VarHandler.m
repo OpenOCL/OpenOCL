@@ -23,10 +23,10 @@ classdef VarHandler < handle
       self.u_struct = OclStructure();
       self.p_struct = OclStructure();
             
-      self.x_bounds = ocl.Bounds();
-      self.z_bounds = ocl.Bounds();
-      self.u_bounds = ocl.Bounds();
-      self.p_bounds = ocl.Bounds();
+      self.x_bounds = ocl.types.Bounds();
+      self.z_bounds = ocl.types.Bounds();
+      self.u_bounds = ocl.types.Bounds();
+      self.p_bounds = ocl.types.Bounds();
       
       self.x_order = {};
     end
