@@ -20,10 +20,10 @@ solver.setBounds('u', -0.5, 0.5);
 
 figure()
 subplot(2, 1, 1)
-oclPlot(times.states, sol.states.x);
+ocl.plot(times.states, sol.states.x);
 title('trajectory')
 ylabel('x')
 subplot(2, 1, 2)
-oclStairs(times.controls, sol.controls.u.');
+ocl.stairs(times.controls, sol.controls.u.');
 ylabel('u')
 xlabel('sample')
