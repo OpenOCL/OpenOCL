@@ -1,51 +1,7 @@
 function initialize( ...
+    nx, nu, ...
     T, N, ...
-    varsfh, daefh, gridcostsfh, pathcostsfh, gridconstraintsfh, ...
-    x0, x_lb, x_ub, u_lb, u_ub)
-
-vars = ocl.model.vars(varsfh);
-x_struct = vars.states;
-z_struct = vars.algvars;
-u_struct = vars.controls;
-p_struct = vars.parameters;
-x_order = vars.statesOrder;
-
-nx = length(x_struct);
-nz = length(z_struct);
-nu = length(u_struct);
-np = length(p_struct);
-
-oclAssert(nz==0, 'No algebraic variable are currently support in the acados interface.');
-oclAssert(np==0, 'No parameters are currently support in the acados interface.');
-
-daefun = @(x,z,u,p) ocl.model.dae( ...
-  daefh, ...
-  x_struct, ...
-  z_struct, ...
-  u_struct, ...
-  p_struct, ...
-  x_order, ...
-  x, z, u, p);
-
-gridcostfun = @(k,K,x,p) ocl.model.gridcosts( ...
-  gridcostsfh, ...
-  x_struct, ...
-  p_struct, ...
-  k, K, x, p);
-
-pathcostfun = @(x,z,u,p) ocl.model.pathcosts( ...
-  pathcostsfh, ...
-  x_struct, ...
-  z_struct, ...
-  u_struct, ...
-  p_struct, ...
-  x, z, u, p);
-
-gridconstraintsfun = @(k,K,x,p) ocl.model.gridconstraints( ...
-  gridconstraintsfh, ...
-  x_struct, ...
-  p_struct, ...
-  k, K, x, p);
+    daefun, gridcostfun, pathcostfun, gridconstraintfun)
 
 casadi_sym = @casadi.SX.sym;
 
@@ -62,23 +18,7 @@ mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
 
 % end constraints
 [endconstraints, endconstraints_lb, endconstraints_ub] = ...
-    gridconstraintsfun(N+1, N+1, x_sym, []);
-
-% bounds
-x_bounds_select = ~isinf(x_lb) | ~isinf(x_ub);
-u_bounds_select = ~isinf(u_lb) | ~isinf(u_ub);
-
-Jbx = diag(x_bounds_select);
-Jbu = diag(u_bounds_select);
-
-Jbx = Jbx(any(Jbx,2),:);
-Jbu = Jbu(any(Jbu,2),:);
-
-lbx = x_lb(x_bounds_select);
-ubx = x_ub(x_bounds_select);
-
-lbu = u_lb(u_bounds_select);
-ubu = u_ub(u_bounds_select);
+    gridconstraintfun(N+1, N+1, x_sym, []);
 
 ocp_model = acados_ocp_model();
 
@@ -109,13 +49,13 @@ ocp_model.set('dyn_type', 'explicit');
 ocp_model.set('dyn_expr_f', f_expl);
 
 % constraints
-ocp_model.set('constr_x0', x0);
-ocp_model.set('constr_Jbx', Jbx);
-ocp_model.set('constr_lbx', lbx);
-ocp_model.set('constr_ubx', ubx);
-ocp_model.set('constr_Jbu', Jbu);
-ocp_model.set('constr_lbu', lbu);
-ocp_model.set('constr_ubu', ubu);
+% ocp_model.set('constr_x0', x0);
+% ocp_model.set('constr_Jbx', Jbx);
+% ocp_model.set('constr_lbx', lbx);
+% ocp_model.set('constr_ubx', ubx);
+% ocp_model.set('constr_Jbu', Jbu);
+% ocp_model.set('constr_lbu', lbu);
+% ocp_model.set('constr_ubu', ubu);
 
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;
