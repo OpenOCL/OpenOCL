@@ -1,11 +1,5 @@
 function setup()
 
-global ocl_casadi_setup_completed
-ocl_casadi_setup_completed = false;
-
-clear classes
-clear all 
-
 oclPath  = fileparts(which('ocl'));
 
 addpath(fullfile(oclPath, 'Lib', 'casadi'));
@@ -19,4 +13,5 @@ end
 
 addpath(fullfile(acados_dir, 'external', 'casadi-matlab'))
 addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'))
+
 
