@@ -9,3 +9,4 @@ octave-workspace
 Workspace
 Lib/casadi
 doc/html
+build/

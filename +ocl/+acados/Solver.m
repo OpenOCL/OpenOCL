@@ -17,6 +17,7 @@ classdef Solver < handle
     function self = Solver(varargin)
       
       ocl.utils.checkStartup()
+      ocl.acados.setup();
       
       zerofh = @(varargin) 0;
       emptyfh = @(varargin) [];

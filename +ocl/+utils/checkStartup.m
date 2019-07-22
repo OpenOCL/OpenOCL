@@ -3,10 +3,10 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function checkStartup()
-  persistent been_here
-  if isempty(been_here) || ~been_here
+  global ocl_casadi_setup_completed
+  if isempty(ocl_casadi_setup_completed) || ~ocl_casadi_setup_completed
     disp('Running OpenOCL setup procedure. This may required your input, and may take a while at the first time.')
     ocl.utils.StartupOCL();
-    been_here = true;
+    ocl_casadi_setup_completed = true;
   end
 end
