@@ -26,13 +26,13 @@ function [sol,times,solver] = cartpole
 
   % visualize solution
   figure; hold on; grid on;
-  oclStairs(times.controls, sol.controls.F/10.)
+  ocl.stairs(times.controls, sol.controls.F/10.)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.p)
+  ocl.plot(times.states, sol.states.p)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.v)
+  ocl.plot(times.states, sol.states.v)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.theta)
+  ocl.plot(times.states, sol.states.theta)
   legend({'force [10*N]','position [m]','velocity [m/s]','theta [rad]'})
   xlabel('time [s]');
 
