@@ -13,9 +13,6 @@ x0(2) = 2.5;
 
 solver.setInitialBounds('x', x0);
 
-solver.setBounds('x', -4, 4);
-solver.setBounds('u', -0.5, 0.5);
-
 [sol,times] = solver.solve(solver.ig());
 
 figure()

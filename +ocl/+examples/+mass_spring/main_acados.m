@@ -13,11 +13,8 @@ x0(2) = 2.5;
 
 solver.setInitialState('x', x0);
 
-solver.setBounds('x', -4, 4);
-solver.setBounds('u', -0.5, 0.5);
-
-ig = solver.getInitialGuess();
-[sol, times] = solver.solve(ig);
+% ig = solver.getInitialGuess();
+[sol, times] = solver.solve();
 
 figure()
 subplot(2, 1, 1)
