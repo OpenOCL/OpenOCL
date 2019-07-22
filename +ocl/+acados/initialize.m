@@ -50,10 +50,10 @@ ocp_model.set('dyn_type', 'explicit');
 ocp_model.set('dyn_expr_f', f_expl);
 
 % constraints
-x0 = zeros(nx,1);
-x0(1) = 2.5;
-x0(2) = 2.5;
-ocp_model.set('constr_x0', x0);
+% x0 = zeros(nx,1);
+% x0(1) = 2.5;
+% x0(2) = 2.5;
+% ocp_model.set('constr_x0', x0);
 
 ocp_model.set('constr_lbx', lbx);
 ocp_model.set('constr_ubx', ubx);

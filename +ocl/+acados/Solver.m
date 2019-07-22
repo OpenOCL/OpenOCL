@@ -106,9 +106,11 @@ classdef Solver < handle
       self.x0_bounds = ocl.types.Bounds();
     end
     
-    function solve(self)
+    function [x,u] = solve(self)
       ocp = self.acados_ocp;
       ocl.acados.solve(ocp);
+      x = ocp.get('x');
+      u = ocp.get('u');
     end
     
     function setInitialStateBounds(self, id, varargin)
