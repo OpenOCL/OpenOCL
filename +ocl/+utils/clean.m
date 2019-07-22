@@ -1,5 +1,7 @@
 function clean
 
+  setenv('OCL_CASADI_SETUP', 'false');
+
   oclPath  = fileparts(which('ocl'));
   addpath(fullfile(oclPath,'Lib','casadi'));
   rmpath(fullfile(oclPath,'Lib','casadi'));
