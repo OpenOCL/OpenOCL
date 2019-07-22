@@ -18,8 +18,8 @@ function [sol,times,solver] = bouncingball
   figure; 
   subplot(1,2,1)
   hold on; grid on;
-  oclPlot(times{1}.states, sol{1}.states.s)
-  oclPlot(times{1}.states, sol{1}.states.v)
+  ocl.plot(times{1}.states, sol{1}.states.s)
+  ocl.plot(times{1}.states, sol{1}.states.v)
   legend({'s','v'})
   xlabel('time [s]');
   ylim([-5 3])
@@ -29,9 +29,9 @@ function [sol,times,solver] = bouncingball
   % stage 2
   subplot(1,2,2)
   hold on; grid on;
-  oclPlot(times{2}.states, sol{2}.states.s)
-  oclPlot(times{2}.states, sol{2}.states.v)
-  oclStairs(times{2}.controls, sol{2}.controls.F)
+  ocl.plot(times{2}.states, sol{2}.states.s)
+  ocl.plot(times{2}.states, sol{2}.states.v)
+  ocl.stairs(times{2}.controls, sol{2}.controls.F)
   legend({'s','v','F'})
   xlabel('time [s]');
   ylim([-5 3])
