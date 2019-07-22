@@ -11,10 +11,20 @@ x0 = zeros(2*num_masses, 1);
 x0(1) = 2.5;
 x0(2) = 2.5;
 
-% solver.setInitialState('x', x0);
+solver.setInitialState('x', x0);
 
 % ig = solver.getInitialGuess();
-solver.solve();
+[x,u] = solver.solve();
+
+figure()
+subplot(2, 1, 1)
+plot(0:20, x);
+title('trajectory')
+ylabel('x')
+subplot(2, 1, 2)
+plot(1:N, u);
+ylabel('u')
+xlabel('sample')
 
 % figure()
 % subplot(2, 1, 1)
