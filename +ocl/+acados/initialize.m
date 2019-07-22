@@ -27,8 +27,8 @@ ocp_model = acados_ocp_model();
 ocp_model.set('T', T);
 ocp_model.set('dim_nx', nx);
 ocp_model.set('dim_nu', nu);
-% ocp_model.set('dim_nbx', sum(x_bounds_select));
-% ocp_model.set('dim_nbu', sum(u_bounds_select));
+ocp_model.set('dim_nbx', length(lbx));
+ocp_model.set('dim_nbu', length(lbu));
 ocp_model.set('dim_ng', 0);
 ocp_model.set('dim_ng_e', 0);
 ocp_model.set('dim_nh', 0);
@@ -50,7 +50,10 @@ ocp_model.set('dyn_type', 'explicit');
 ocp_model.set('dyn_expr_f', f_expl);
 
 % constraints
-% ocp_model.set('constr_x0', x0);
+x0 = zeros(nx,1);
+x0(1) = 2.5;
+x0(2) = 2.5;
+ocp_model.set('constr_x0', x0);
 
 ocp_model.set('constr_lbx', lbx);
 ocp_model.set('constr_ubx', ubx);
