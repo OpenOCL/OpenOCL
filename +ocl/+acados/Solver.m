@@ -10,8 +10,6 @@ classdef Solver < handle
     u_struct
     p_struct
     
-    x_bounds
-    u_bounds
     x0_bounds
   end
   
@@ -85,11 +83,18 @@ classdef Solver < handle
         x_struct, ...
         p_struct, ...
         k, K, x, p);
+    
+      [x_lb, x_ub] = ocl.model.bounds(x_struct, x_bounds);
+      [lbx, ubx, Jbx] = ocl.acados.bounds(x_lb, x_ub);
+      
+      [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
+      [lbu, ubu, Jbu] = ocl.acados.bounds(u_lb, u_ub);
       
       ocp = ocl.acados.initialize( ...
         nx, nu, ...
         T, N, ...
-        daefun, gridcostfun, pathcostfun, gridconstraintfun);
+        daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
+        lbx, ubx, Jbx, lbu, ubu, Jbu);
       
       self.acados_ocp = ocp;
       self.x_struct = x_struct;
@@ -97,8 +102,6 @@ classdef Solver < handle
       self.u_struct = u_struct;
       self.p_struct = p_struct;
       
-      self.x_bounds = x_bounds;
-      self.u_bounds = u_bounds;
       self.x0_bounds = ocl.types.Bounds();
     end
     
@@ -107,51 +110,13 @@ classdef Solver < handle
       ocl.acados.solve(ocp);
     end
     
-    function setStateBounds(self, id, varargin)
-      % bounds
-      self.x_bounds.set(id, varargin{:})
-      
-      [x_lb, x_ub] = ocl.model.bounds(self.x_struct, self.x_bounds);
-      [lbx, ubx, Jbx] = ocl.acados.bounds(x_lb, x_ub);
-      
-      self.acados_ocp.set('constr_Jbx', Jbx);
-      self.acados_ocp.set('constr_lbx', lbx);
-      self.acados_ocp.set('constr_ubx', ubx);
-    end
-    
-    function setControlBounds(self, id, varargin)
-      % bounds
-      self.u_bounds.set(id, varargin{:})
-      
-      [u_lb, u_ub] = ocl.model.bounds(self.u_struct, self.u_bounds);
-      [lbu, ubu, Jbu] = ocl.acados.bounds(u_lb, u_ub);
-      
-      self.acados_ocp.set('constr_Jbx', Jbu);
-      self.acados_ocp.set('constr_lbx', lbu);
-      self.acados_ocp.set('constr_ubx', ubu);
-    end
-    
-    function setBounds(self,id,varargin)
-      % setBounds(id,value)
-      % setBounds(id,lower,upper)
-      
-      % check if id is a state, control, algvar or parameter
-      if oclFieldnamesContain(self.x_struct.getNames(), id)
-        self.setStateBounds(id, varargin{:});
-      elseif oclFieldnamesContain(self.u_struct.getNames(), id)
-        self.setControlBounds(id, varargin{:});
-      else
-        oclWarning(['You specified a bound for a variable that does not exist: ', id]);
-      end
-    end
-    
     function setInitialStateBounds(self, id, varargin)
       % bounds
       self.x0_bounds.set(id, varargin{:});
       
       [x0_lb, x0_ub] = ocl.model.bounds(self.x_struct, self.x0_bounds);
       
-      oclAssert(x0_lb == x0_ub, 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
+      oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
       
       self.acados_ocp.set('constr_x0', x0_lb);
     end

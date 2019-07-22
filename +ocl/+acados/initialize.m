@@ -1,7 +1,8 @@
 function ocp = initialize( ...
     nx, nu, ...
     T, N, ...
-    daefun, gridcostfun, pathcostfun, gridconstraintfun)
+    daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
+    lbx, ubx, Jbx, lbu, ubu, Jbu)
 
 casadi_sym = @casadi.SX.sym;
 
@@ -26,8 +27,8 @@ ocp_model = acados_ocp_model();
 ocp_model.set('T', T);
 ocp_model.set('dim_nx', nx);
 ocp_model.set('dim_nu', nu);
-ocp_model.set('dim_nbx', sum(x_bounds_select));
-ocp_model.set('dim_nbu', sum(u_bounds_select));
+% ocp_model.set('dim_nbx', sum(x_bounds_select));
+% ocp_model.set('dim_nbu', sum(u_bounds_select));
 ocp_model.set('dim_ng', 0);
 ocp_model.set('dim_ng_e', 0);
 ocp_model.set('dim_nh', 0);
@@ -50,12 +51,14 @@ ocp_model.set('dyn_expr_f', f_expl);
 
 % constraints
 % ocp_model.set('constr_x0', x0);
-% ocp_model.set('constr_Jbx', Jbx);
-% ocp_model.set('constr_lbx', lbx);
-% ocp_model.set('constr_ubx', ubx);
-% ocp_model.set('constr_Jbu', Jbu);
-% ocp_model.set('constr_lbu', lbu);
-% ocp_model.set('constr_ubu', ubu);
+
+ocp_model.set('constr_lbx', lbx);
+ocp_model.set('constr_ubx', ubx);
+ocp_model.set('constr_Jbx', Jbx);
+
+ocp_model.set('constr_lbu', lbu);
+ocp_model.set('constr_ubu', ubu);
+ocp_model.set('constr_Jbu', Jbu);
 
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;

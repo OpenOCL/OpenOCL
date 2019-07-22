@@ -80,9 +80,9 @@ function daefun(sh,x,~,u,~)
   
 end
 
-function gridcosts(self,k,K,x,~)
+function gridcosts(ocl,k,K,x,~)
   if k == K
-    self.add( x.time );
+    ocl.add( x.time );
   end
 end
 
