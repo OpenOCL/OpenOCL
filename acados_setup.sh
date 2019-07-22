@@ -40,7 +40,7 @@ else
   OCL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
   export ENV_RUN=true
-  export ACADOS_INSTALL_DIR=$OCL_DIR/Lib/acados
+  export ACADOS_INSTALL_DIR
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${ACADOS_INSTALL_DIR}/lib:"./build"
 
   echo "Setup of acados done."
