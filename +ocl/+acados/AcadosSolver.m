@@ -1,20 +1,21 @@
-classdef Solver < handle
+classdef AcadosSolver < handle
   
   properties
-    acados_ocp
+    acados_ocp_p
     
-    state_bounds
+    x_struct_p
+    z_struct_p
+    u_struct_p
+    p_struct_p
     
-    x_struct
-    z_struct
-    u_struct
-    p_struct
+    x0_bounds_p
     
-    x0_bounds
+    N_p
+    T_p
   end
   
   methods
-    function self = Solver(varargin)
+    function self = AcadosSolver(varargin)
       
       ocl.acados.setup();
       ocl.utils.checkStartup();
@@ -24,7 +25,7 @@ classdef Solver < handle
       
       p = ocl.utils.ArgumentParser;
       
-      p.addRequired('T', @(el) isnumeric(el) || isempty(el) );
+      p.addRequired('T', @(el) isnumeric(el) );
       p.addKeyword('vars', emptyfh, @oclIsFunHandle);
       p.addKeyword('dae', emptyfh, @oclIsFunHandle);
       p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
@@ -97,31 +98,70 @@ classdef Solver < handle
         daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
         lbx, ubx, Jbx, lbu, ubu, Jbu);
       
-      self.acados_ocp = ocp;
-      self.x_struct = x_struct;
-      self.z_struct = z_struct;
-      self.u_struct = u_struct;
-      self.p_struct = p_struct;
+      self.acados_ocp_p = ocp;
+      self.x_struct_p = x_struct;
+      self.z_struct_p = z_struct;
+      self.u_struct_p = u_struct;
+      self.p_struct_p = p_struct;
       
-      self.x0_bounds = ocl.types.Bounds();
+      self.x0_bounds_p = ocl.types.Bounds();
+      self.N_p = N;
+      self.T_p = T;
     end
     
-    function [x,u] = solve(self)
-      ocp = self.acados_ocp;
+    function [sol_out,times_out] = solve(self)
+      
+      ocp = self.acados_ocp_p;
+      x_struct = self.x_struct_p;
+      u_struct = self.u_struct_p;
+      N = self.N_p;
+      T = self.T_p;
+      
       ocl.acados.solve(ocp);
-      x = ocp.get('x');
-      u = ocp.get('u');
+      x_traj = ocp.get('x');
+      u_traj = ocp.get('u');
+      
+      sol_struct = OclStructure();
+      times_struct = OclStructure();
+
+      sol_struct.add('states', x_struct);
+      times_struct.add('states', [1,1]);
+      for j=1:N
+        sol_struct.add('states', x_struct);
+        times_struct.add('states', [1,1]);
+      end
+
+      for j=1:N
+        sol_struct.add('controls', u_struct);
+        times_struct.add('controls', [1,1]);
+      end
+
+      sol_out = Variable.create(sol_struct, 0);
+      sol_out.states.set(x_traj);
+      sol_out.controls.set(u_traj);
+      
+      x_times = linspace(0,T,N+1);
+      u_times = x_times(1:end-1);
+
+      times_out = Variable.create(times_struct, 0);        
+      times_out.states.set(x_times);
+      times_out.controls.set(u_times);
+      
     end
     
     function setInitialStateBounds(self, id, varargin)
-      % bounds
-      self.x0_bounds.set(id, varargin{:});
+
+      x0_bounds = self.x0_bounds_p;
+      x_struct = self.x_struct_p;
+      ocp = self.acados_ocp_p;
+
+      x0_bounds.set(id, varargin{:});
       
-      [x0_lb, x0_ub] = ocl.model.bounds(self.x_struct, self.x0_bounds);
+      [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
       
       oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
       
-      self.acados_ocp.set('constr_x0', x0_lb);
+      ocp.set('constr_x0', x0_lb);
     end
     
     function setInitialState(self, id, value)

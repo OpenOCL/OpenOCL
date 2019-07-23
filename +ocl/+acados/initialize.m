@@ -18,8 +18,8 @@ lagrange_cost = pathcostfun(x_sym, [], u_sym, []);
 mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
 
 % end constraints
-[endconstraints, endconstraints_lb, endconstraints_ub] = ...
-    gridconstraintfun(N+1, N+1, x_sym, []);
+% [endconstraints, endconstraints_lb, endconstraints_ub] = ...
+%     gridconstraintfun(N+1, N+1, x_sym, []);
 
 ocp_model = acados_ocp_model();
 
@@ -48,12 +48,6 @@ ocp_model.set('cost_expr_ext_cost_e', mayer_cost);
 % dynamics
 ocp_model.set('dyn_type', 'explicit');
 ocp_model.set('dyn_expr_f', f_expl);
-
-% constraints
-% x0 = zeros(nx,1);
-% x0(1) = 2.5;
-% x0(2) = 2.5;
-% ocp_model.set('constr_x0', x0);
 
 ocp_model.set('constr_lbx', lbx);
 ocp_model.set('constr_ubx', ubx);
@@ -100,8 +94,6 @@ ocp_opts.set('qp_solver_warm_start', qp_solver_warm_start);
 ocp_opts.set('sim_method', 'erk');
 ocp_opts.set('sim_method_num_stages', sim_method_num_stages);
 ocp_opts.set('sim_method_num_steps', sim_method_num_steps);
-
-disp('initialize done')
 
 ocp = acados_ocp(ocp_model, ocp_opts);
 
