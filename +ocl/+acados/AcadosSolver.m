@@ -126,6 +126,7 @@ classdef AcadosSolver < handle
 
       sol_struct.add('states', x_struct);
       times_struct.add('states', [1,1]);
+      
       for j=1:N
         sol_struct.add('states', x_struct);
         times_struct.add('states', [1,1]);
