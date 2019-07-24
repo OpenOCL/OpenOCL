@@ -19,8 +19,23 @@ lagrange_cost = pathcostfun(x_sym, [], u_sym, []);
 mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
 
 % end constraints
-% [endconstraints, endconstraints_lb, endconstraints_ub] = ...
-%     gridconstraintfun(N+1, N+1, x_sym, []);
+[endconstraints, endconstraints_lb, endconstraints_ub] = ...
+    gridconstraintfun(N+1, N+1, x_sym, []);
+
+% interface compatibility checks
+oclAssert(~isempty(T), 'Free endtime is not supported in the acados interface. In most cases it is possible to reformulate a time-optimal control problem by doing a coordinate transformation.')
+
+for k=1:N
+  gridcost = gridcostfun(k, N+1, x_sym, []);
+  oclAssert(gridcost == 0, 'In the gridcosts only terminal cost (mayer cost) are supported in the acados interface.');
+end
+
+for k=1:N
+  [gridconstraint,~,~] = gridconstraintfun(k, N+1, x_sym, []);
+  oclAssert(isempty(gridconstraint), 'In the gridconstraints only terminal constraints are supported in the acados interface.');
+end
+
+n_endconstraints = length(endconstraints);
 
 ocp_model = acados_ocp_model();
 
@@ -33,7 +48,7 @@ ocp_model.set('dim_nbu', length(lbu));
 ocp_model.set('dim_ng', 0);
 ocp_model.set('dim_ng_e', 0);
 ocp_model.set('dim_nh', 0);
-ocp_model.set('dim_nh_e', 0);
+ocp_model.set('dim_nh_e', n_endconstraints);
 
 % symbolics
 ocp_model.set('sym_x', x_sym);
@@ -50,6 +65,7 @@ ocp_model.set('cost_expr_ext_cost_e', mayer_cost);
 ocp_model.set('dyn_type', 'explicit');
 ocp_model.set('dyn_expr_f', f_expl);
 
+% bounds
 ocp_model.set('constr_lbx', lbx);
 ocp_model.set('constr_ubx', ubx);
 ocp_model.set('constr_Jbx', Jbx);
@@ -57,6 +73,11 @@ ocp_model.set('constr_Jbx', Jbx);
 ocp_model.set('constr_lbu', lbu);
 ocp_model.set('constr_ubu', ubu);
 ocp_model.set('constr_Jbu', Jbu);
+
+% constraints (non-linear terminal)
+ocp_model.set('constr_expr_h_e', endconstraints);
+ocp_model.set('constr_lh_e', endconstraints_lb);
+ocp_model.set('constr_uh_e', endconstraints_ub);
 
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;

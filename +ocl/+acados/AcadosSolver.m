@@ -57,8 +57,8 @@ classdef AcadosSolver < handle
       nu = length(u_struct);
       np = length(p_struct);
       
-      oclAssert(nz==0, 'No algebraic variable are currently support in the acados interface.');
-      oclAssert(np==0, 'No parameters are currently support in the acados interface.');
+      oclAssert(nz==0, 'Algebraic variable are currently not support in the acados interface.');
+      oclAssert(np==0, 'Parameters are currently not support in the acados interface.');
       
       daefun = @(x,z,u,p) ocl.model.dae( ...
         daefh, ...
@@ -76,7 +76,7 @@ classdef AcadosSolver < handle
         k, K, x, p);
       
       pathcostfun = @(x,z,u,p) ocl.model.pathcosts( ...
-        pathcostsfh, ...0
+        pathcostsfh, ...
         x_struct, ...
         z_struct, ...
         u_struct, ...
@@ -120,6 +120,11 @@ classdef AcadosSolver < handle
       u_struct = self.u_struct_p;
       N = self.N_p;
       T = self.T_p;
+      x0_bounds = self.x0_bounds_p;
+      
+      [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
+      oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
+      ocp.set('constr_x0', x0_lb);
       
       ocl.acados.solve(ocp);
       x_traj = ocp.get('x');
@@ -157,16 +162,7 @@ classdef AcadosSolver < handle
     function setInitialStateBounds(self, id, varargin)
 
       x0_bounds = self.x0_bounds_p;
-      x_struct = self.x_struct_p;
-      ocp = self.acados_ocp_p;
-
       x0_bounds.set(id, varargin{:});
-      
-      [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
-      
-      oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
-      
-      ocp.set('constr_x0', x0_lb);
     end
     
     function setInitialState(self, id, value)
