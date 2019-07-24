@@ -75,9 +75,11 @@ ocp_model.set('constr_ubu', ubu);
 ocp_model.set('constr_Jbu', Jbu);
 
 % constraints (non-linear terminal)
-ocp_model.set('constr_expr_h_e', endconstraints);
-ocp_model.set('constr_lh_e', endconstraints_lb);
-ocp_model.set('constr_uh_e', endconstraints_ub);
+if ~isempty(endconstraints)
+  ocp_model.set('constr_expr_h_e', endconstraints);
+  ocp_model.set('constr_lh_e', endconstraints_lb);
+  ocp_model.set('constr_uh_e', endconstraints_ub);
+end
 
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;
