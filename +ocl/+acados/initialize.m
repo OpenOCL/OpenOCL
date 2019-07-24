@@ -2,7 +2,8 @@ function ocp = initialize( ...
     nx, nu, ...
     T, N, ...
     daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
-    lbx, ubx, Jbx, lbu, ubu, Jbu)
+    lbx, ubx, Jbx, lbu, ubu, Jbu, ...
+    acados_build_dir)
 
 casadi_sym = @casadi.SX.sym;
 
@@ -95,7 +96,7 @@ ocp_opts.set('sim_method', 'erk');
 ocp_opts.set('sim_method_num_stages', sim_method_num_stages);
 ocp_opts.set('sim_method_num_steps', sim_method_num_steps);
 
-ocp = acados_ocp(ocp_model, ocp_opts);
+ocp = acados_ocp(ocp_model, ocp_opts, acados_build_dir);
 
 x_traj_init = zeros(nx, N+1);
 u_traj_init = zeros(nu, N);
