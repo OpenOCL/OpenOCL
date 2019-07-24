@@ -20,6 +20,9 @@ classdef AcadosSolver < handle
       ocl.acados.setup();
       ocl.utils.checkStartup();
       
+      wsp = ocl.utils.workspacePath();
+      acados_build_dir = fullfile(wsp, 'export');
+      
       zerofh = @(varargin) 0;
       emptyfh = @(varargin) [];
       
@@ -96,7 +99,8 @@ classdef AcadosSolver < handle
         nx, nu, ...
         T, N, ...
         daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
-        lbx, ubx, Jbx, lbu, ubu, Jbu);
+        lbx, ubx, Jbx, lbu, ubu, Jbu, ...
+        acados_build_dir);
       
       self.acados_ocp_p = ocp;
       self.x_struct_p = x_struct;
