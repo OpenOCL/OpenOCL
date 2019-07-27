@@ -98,22 +98,20 @@ classdef Solver < handle
     end
 
     function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
+      % [sol, times] = solve()
+      % [sol, times] = solve(ig)
 
       s = self.solver;
       st_list = self.stageList;
-      
-      if isa(ig, 'OclAssignment')
-        ig_list = cell(length(st_list),1);
-        for k=1:length(st_list)
-          ig_list{k} = ig{k}.value;
-        end
-      else
+
+      if nargin==1
         % ig InitialGuess
-        ig_list = cell(length(st_list),1);
-        for k=1:length(st_list)
-          ig_stage = ocl.simultaneous.getInitialGuessWithUserData(st_list{k}, ig{k});
-          ig_list{k} = ig_stage.value;
-        end
+        ig = self.solver.getInitialGuessWithUserData();
+      end
+      
+      ig_list = cell(length(st_list),1);
+      for k=1:length(st_list)
+        ig_list{k} = ig{k}.value;
       end
 
       [sol,times,objective,constraints] = s.solve(ig_list);
@@ -139,9 +137,9 @@ classdef Solver < handle
       igAssignment = OclAssignment(igList);
     end
     
-    function setGuess(self, id, gridpoints, values)
+    function initialize(self, id, gridpoints, values)
       if length(self.stageList) == 1
-        self.initial_guess.set(id, gridpoints, values);
+        self.stageList{1}.initialize(id, gridpoints, values);
       else
         oclError('For multi-stage problems, set the guess to the stages directly.')
       end
@@ -173,6 +171,15 @@ classdef Solver < handle
           oclWarning(['You specified a bound for a variable that does not exist: ', id]);
         end
 
+      else
+        oclError('For multi-stage problems, set the bounds to the stages directly.')
+      end
+    end
+    
+    function setInitialState(self,id,value)
+      % setInitialState(id,value)
+      if length(self.stageList) == 1
+        self.stageList{1}.setInitialStateBounds(id, value);
       else
         oclError('For multi-stage problems, set the bounds to the stages directly.')
       end

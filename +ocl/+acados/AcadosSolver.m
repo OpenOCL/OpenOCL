@@ -12,6 +12,8 @@ classdef AcadosSolver < handle
     
     N_p
     T_p
+    
+    x_guess_p
   end
   
   methods
@@ -111,6 +113,12 @@ classdef AcadosSolver < handle
       self.x0_bounds_p = ocl.types.Bounds();
       self.N_p = N;
       self.T_p = T;
+      
+      self.x_guess_p = ocl.types.InitialGuess(x_struct);
+    end
+    
+    function initialize(self, id, points, values)
+      self.x_guess_p.set(id, points, values);
     end
     
     function [sol_out,times_out] = solve(self)
@@ -121,10 +129,24 @@ classdef AcadosSolver < handle
       N = self.N_p;
       T = self.T_p;
       x0_bounds = self.x0_bounds_p;
+      x_guess = self.x_guess_p.data;
       
+      % x0
       [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
       oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
       ocp.set('constr_x0', x0_lb);
+      
+      % init x
+      times_target = linspace(0,T,N+1);
+      names = fieldnames(x_guess);
+      for k=1:length(names)
+        xdata = x_guess.(names{k}).x;
+        ydata = x_guess.(names{k}).y;
+        
+        ytarget = interp1(xdata, ydata, times_target,'linear','extrap');
+        ocp.set('init_x', ytarget);
+        
+      end
       
       ocl.acados.solve(ocp);
       x_traj = ocp.get('x');

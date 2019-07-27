@@ -2,8 +2,8 @@
 function dae(sh,x,~,u,~)
 
 g = 9.8;
-cm = 1.0;
-pm = 0.1;
+cm = 5.0;
+pm = 0.3;
 phl = 0.5; % pole half length
 
 m = cm+pm;
@@ -22,5 +22,3 @@ sh.setODE('p',x.v);
 sh.setODE('theta',x.omega);
 sh.setODE('v',a);
 sh.setODE('omega',domega);
-
-sh.setODE('time', 1);

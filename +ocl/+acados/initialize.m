@@ -119,7 +119,9 @@ ocp_opts.set('sim_method', 'erk');
 ocp_opts.set('sim_method_num_stages', sim_method_num_stages);
 ocp_opts.set('sim_method_num_steps', sim_method_num_steps);
 
-ocp = acados_ocp(ocp_model, ocp_opts, acados_build_dir);
+ocp_opts.set('output_dir', acados_build_dir);
+
+ocp = acados_ocp(ocp_model, ocp_opts);
 
 x_traj_init = zeros(nx, N+1);
 u_traj_init = zeros(nu, N);
