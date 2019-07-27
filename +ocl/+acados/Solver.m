@@ -14,6 +14,7 @@ classdef Solver < handle
     T_p
     
     x_guess_p
+    u_guess_p
   end
   
   methods
@@ -115,10 +116,28 @@ classdef Solver < handle
       self.T_p = T;
       
       self.x_guess_p = ocl.types.InitialGuess(x_struct);
+      self.u_guess_p = ocl.types.InitialGuess(u_struct);
     end
     
-    function initialize(self, id, points, values)
-      self.x_guess_p.set(id, points, values);
+    function initialize(self, id, points, values, T)
+      
+      points = Variable.getValue(points);
+      values = Variable.getValue(values);
+      
+      if nargin==5
+        points = points / T;
+      end
+      
+      x_ids = self.x_struct_p.getNames();
+      u_ids = self.u_struct_p.getNames();
+      
+      if oclFieldnamesContain(x_ids, id)
+        self.x_guess_p.set(id, points, values);
+      elseif oclFieldnamesContain(u_ids, id)
+        self.u_guess_p.set(id, points, values);
+      else
+        oclError(['Unknown id: ' , id, ' (not a state and not a control)']);
+      end
     end
     
     function [sol_out,times_out] = solve(self)
@@ -130,6 +149,7 @@ classdef Solver < handle
       T = self.T_p;
       x0_bounds = self.x0_bounds_p;
       x_guess = self.x_guess_p.data;
+      u_guess = self.u_guess_p.data;
       
       % x0
       [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
@@ -143,6 +163,7 @@ classdef Solver < handle
       end
       x_traj = Variable.create(x_traj_structure, 0);
       x_traj = x_traj.x;
+      x_traj.set(ocp.get('x'));
       
       times_target = linspace(0,1,N+1);
       names = fieldnames(x_guess);
@@ -156,6 +177,28 @@ classdef Solver < handle
         x_traj.get(id).set(ytarget);
       end
       ocp.set('init_x', x_traj.value);
+      
+      % init u
+      u_traj_structure = OclStructure();
+      for k=1:N
+        u_traj_structure.add('u', u_struct);
+      end
+      u_traj = Variable.create(u_traj_structure, 0);
+      u_traj = u_traj.u;
+      u_traj.set(ocp.get('u'));
+      
+      times_target = linspace(0,1,N);
+      names = fieldnames(u_guess);
+      for k=1:length(names)
+        id = names{k};
+        xdata = u_guess.(id).x;
+        ydata = u_guess.(id).y;
+        
+        ytarget = interp1(xdata, ydata, times_target,'linear','extrap');
+        
+        u_traj.get(id).set(ytarget);
+      end
+      ocp.set('init_u', u_traj.value);
       
       % solve
       ocl.acados.solve(ocp);
@@ -188,6 +231,10 @@ classdef Solver < handle
       times_out = Variable.create(times_struct, 0);        
       times_out.states.set(x_times);
       times_out.controls.set(u_times);
+      
+      % clear initial guess
+      self.x_guess_p = ocl.types.InitialGuess(x_struct);
+      self.u_guess_p = ocl.types.InitialGuess(u_struct);
       
     end
     
