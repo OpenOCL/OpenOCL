@@ -32,7 +32,10 @@ classdef Stage < handle
     p_struct
     x_order
     
-    initial_guess
+    x_guess
+    z_guess
+    u_guess
+    p_guess
     
   end
   
@@ -115,13 +118,49 @@ classdef Stage < handle
       self.u_bounds = u_bounds_v;
       self.p_bounds = p_bounds_v;
       
-%       self.initial_guess = ocl.types.InitialGuess();
+      self.x_guess = ocl.types.InitialGuess(x_struct);
+      self.z_guess = ocl.types.InitialGuess(z_struct);
+      self.u_guess = ocl.types.InitialGuess(u_struct);
+      self.p_guess = ocl.types.InitialGuess(p_struct);
     end
     
-    function setGuess(self, id, gridpoints, values)
-      self.initial_guess.set(id, gridpoints, values);
+    %%% Initial guess
+    function initialize(self, id, varargin)
+      % setGuess(id, points, values)
+      % setGuess(id, values)
+
+      % check if id is a state, control, algvar or parameter
+      if oclFieldnamesContain(self.x_struct.getNames(), id)
+        self.setStateGuess(id, varargin{:});
+      elseif oclFieldnamesContain(self.z_struct.getNames(), id)
+        self.setAlgvarGuess(id, varargin{:});
+      elseif oclFieldnamesContain(self.u_struct.getNames(), id)
+        self.setControlGuess(id, varargin{:});
+      elseif oclFieldnamesContain(self.p_struct.getNames(), id)
+        self.setParameterGuess(id, varargin{:});
+      else
+        oclWarning(['You specified a guess for a variable that does not exist: ', id]);
+      end
+      
     end
     
+    function setStateGuess(self, id, points, values)
+      self.x_guess.set(id, points, values);
+    end
+    
+    function setAlgvarGuess(self, id, points, values)
+      self.z_guess.set(id, points, values);
+    end
+    
+    function setControlGuess(self, id, points, values)
+      self.u_guess.set(id, points, values);
+    end
+    
+    function setParameterGuess(self, id, points, values)
+      self.p_guess.set(id, points, values);
+    end
+    
+    %%% Bounds
     function setStateBounds(self, id, varargin)
       self.x_bounds.set(id, varargin{:});
     end

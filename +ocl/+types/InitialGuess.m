@@ -9,9 +9,10 @@ classdef InitialGuess < handle
 
     function self = InitialGuess(states_struct)
       self.states_struct = states_struct;
+      self.data = struct;
     end
     
-    function add(self, id, xdata, ydata)
+    function set(self, id, xdata, ydata)
       
       % check if id is a state id
       trajectory_structure = OclStructure();

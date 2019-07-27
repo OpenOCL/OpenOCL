@@ -158,6 +158,22 @@ classdef CasadiSolver < handle
       self.collocationList = collocationList;
     end
     
+    function igMerged = getInitialGuessWithUserData(self)
+      
+      stage_list = self.stageList;
+      colloc_list = self.collocationList;
+      
+      igMerged = cell(length(stage_list), 1);
+      
+      ig = self.getInitialGuess();
+      for k=1:length(stage_list)
+        stage = stage_list{k};
+        colloc = colloc_list{k};
+        
+        igMerged{k} = ocl.simultaneous.getInitialGuessWithUserData(ig{k}, stage, colloc);
+      end
+    end
+    
     function igList = getInitialGuess(self)
       stage_list = self.stageList;
 

@@ -3,29 +3,24 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-solver = ocl.Solver([], ...
+solver = ocl.Solver(3, ...
   'vars', @ocl.examples.cartpole.vars, ...
   'dae', @ocl.examples.cartpole.dae, ...
-  'gridcosts', @ocl.examples.cartpole.gridcosts, ...
-  'N', 40, 'd', 3);
+  'pathcosts', @ocl.examples.cartpole.pathcosts, ...
+  'N', 80, 'd', 3);
 
 p0 = 0; v0 = 0;
 theta0 = 180*pi/180; omega0 = 0;
 
-solver.setInitialBounds('p', p0);
-solver.setInitialBounds('v', v0);
-solver.setInitialBounds('theta', theta0);
-solver.setInitialBounds('omega', omega0);
+solver.setInitialState('p', p0);
+solver.setInitialState('v', v0);
+solver.setInitialState('theta', theta0);
+solver.setInitialState('omega', omega0);
 
-solver.setInitialBounds('time', 0);
-
-solver.setEndBounds('p', 0);
-solver.setEndBounds('v', 0);
-solver.setEndBounds('theta', 0);
-solver.setEndBounds('omega', 0);
+solver.initialize('theta', [0 1], [pi 0]);
 
 % Run solver to obtain solution
-[sol,times] = solver.solve(solver.ig());
+[sol,times] = solver.solve();
 
 % visualize solution
 figure; hold on; grid on;
