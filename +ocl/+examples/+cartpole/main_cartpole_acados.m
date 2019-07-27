@@ -5,19 +5,16 @@
 clear all;
 
 solver = ocl.acados.AcadosSolver( ...
-  1, ...
+  3, ...
   'vars', @ocl.examples.cartpole.vars, ...
   'dae', @ocl.examples.cartpole.dae, ...
   'pathcosts', @ocl.examples.cartpole.pathcosts, ...
-  'N', 80, 'd', 3);
+  'N', 80);
 
-p0 = 0; v0 = 0;
-theta0 = 180*pi/180; omega0 = 0;
-
-solver.setInitialState('p', p0);
-solver.setInitialState('v', v0);
-solver.setInitialState('theta', theta0);
-solver.setInitialState('omega', omega0);
+solver.setInitialState('p', 0);
+solver.setInitialState('v', 0);
+solver.setInitialState('theta', pi);
+solver.setInitialState('omega', 0);
 
 solver.initialize('theta', [0 1], [pi 0]);
 

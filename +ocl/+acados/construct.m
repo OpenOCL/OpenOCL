@@ -83,7 +83,7 @@ end
 
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;
-nlp_solver_max_iter = 300;
+nlp_solver_max_iter = 500;
 nlp_solver_tol_stat = 1e-8;
 nlp_solver_tol_eq   = 1e-8;
 nlp_solver_tol_ineq = 1e-8;
@@ -102,8 +102,8 @@ ocp_opts.set('codgen_model', 'true');
 ocp_opts.set('param_scheme', 'multiple_shooting_unif_grid');
 ocp_opts.set('param_scheme_N', N);
 ocp_opts.set('nlp_solver', nlp_solver);
-ocp_opts.set('nlp_solver_exact_hessian', 'true');
-ocp_opts.set('regularize_method', 'project_reduc_hess');
+ocp_opts.set('nlp_solver_exact_hessian', 'false');
+ocp_opts.set('regularize_method', 'no_regularize');
 ocp_opts.set('nlp_solver_ext_qp_res', nlp_solver_ext_qp_res);
 ocp_opts.set('nlp_solver_max_iter', nlp_solver_max_iter);
 ocp_opts.set('nlp_solver_tol_stat', nlp_solver_tol_stat);

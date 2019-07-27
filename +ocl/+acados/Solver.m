@@ -1,4 +1,4 @@
-classdef AcadosSolver < handle
+classdef Solver < handle
   
   properties
     acados_ocp_p
@@ -17,7 +17,7 @@ classdef AcadosSolver < handle
   end
   
   methods
-    function self = AcadosSolver(varargin)
+    function self = Solver(varargin)
       
       ocl.acados.setup();
       ocl.utils.checkStartup();
