@@ -97,7 +97,7 @@ classdef AcadosSolver < handle
       [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
       [lbu, ubu, Jbu] = ocl.acados.bounds(u_lb, u_ub);
       
-      ocp = ocl.acados.initialize( ...
+      ocp = ocl.acados.construct( ...
         nx, nu, ...
         T, N, ...
         daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
@@ -137,17 +137,27 @@ classdef AcadosSolver < handle
       ocp.set('constr_x0', x0_lb);
       
       % init x
-      times_target = linspace(0,T,N+1);
+      x_traj_structure = OclStructure();
+      for k=1:N+1
+        x_traj_structure.add('x', x_struct);
+      end
+      x_traj = Variable.create(x_traj_structure, 0);
+      x_traj = x_traj.x;
+      
+      times_target = linspace(0,1,N+1);
       names = fieldnames(x_guess);
       for k=1:length(names)
-        xdata = x_guess.(names{k}).x;
-        ydata = x_guess.(names{k}).y;
+        id = names{k};
+        xdata = x_guess.(id).x;
+        ydata = x_guess.(id).y;
         
         ytarget = interp1(xdata, ydata, times_target,'linear','extrap');
-        ocp.set('init_x', ytarget);
         
+        x_traj.get(id).set(ytarget);
       end
+      ocp.set('init_x', x_traj.value);
       
+      % solve
       ocl.acados.solve(ocp);
       x_traj = ocp.get('x');
       u_traj = ocp.get('u');

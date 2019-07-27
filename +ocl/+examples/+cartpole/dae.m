@@ -2,9 +2,9 @@
 function dae(sh,x,~,u,~)
 
 g = 9.8;
-cm = 5.0;
-pm = 0.3;
-phl = 0.5; % pole half length
+cm = 1.0;
+pm = 0.1;
+phl = 0.4; % pole half length
 
 m = cm+pm;
 pml = pm*phl; % pole mass length
