@@ -84,10 +84,10 @@ end
 %% acados ocp opts
 nlp_solver_ext_qp_res = 1;
 nlp_solver_max_iter = 500;
-nlp_solver_tol_stat = 1e-6;
-nlp_solver_tol_eq   = 1e-6;
-nlp_solver_tol_ineq = 1e-6;
-nlp_solver_tol_comp = 1e-6;
+nlp_solver_tol_stat = 1e-8;
+nlp_solver_tol_eq   = 1e-8;
+nlp_solver_tol_ineq = 1e-8;
+nlp_solver_tol_comp = 1e-8;
 qp_solver_cond_N = 5;
 qp_solver_cond_ric_alg = 0;
 qp_solver_ric_alg = 0;
