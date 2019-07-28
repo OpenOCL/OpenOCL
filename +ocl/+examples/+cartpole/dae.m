@@ -1,22 +1,18 @@
 function dae(daeh,x,z,u,p)
 
-g = 9.8;
-cm = 5.0;
-pm = 0.3;
-phl = 0.5;
+M = 1;    % mass of the cart [kg]
+m = 0.1;  % mass of the ball [kg]
+l = 0.8;  % length of the rod [m]
+g = 9.81; % gravity constant [m/s^2]
 
 v = x.v;
 theta = x.theta;
 omega = x.omega;
+F = u.F;
 
-m = cm+pm;
-pml = pm*phl;
+a = (- l*m*sin(theta)*omega.^2 + F + g*m*cos(theta)*sin(theta))/(M + m - m*cos(theta).^2);
 
-domega = (g*sin(theta) + ...
-  cos(theta) * (-u.F-pml*omega^2*sin(theta)) / m) / ...
-  (phl * (4.0 / 3.0 - pm * cos(theta)^2 / m));
-
-a = (u.F + pml*(omega^2*sin(theta)-domega*cos(theta))) / m;
+domega = (- l*m*cos(theta)*sin(theta)*omega.^2 + F*cos(theta) + g*m*sin(theta) + M*g*sin(theta))/(l*(M + m - m*cos(theta).^2));
 
 daeh.setODE('p',     v);
 daeh.setODE('theta', omega);

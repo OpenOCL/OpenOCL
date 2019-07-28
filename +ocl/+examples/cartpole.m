@@ -4,7 +4,8 @@
 %
 function [sol,times,solver] = cartpole
 
-  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'gridcosts', @gridcosts, 'N', 40, 'd', 3);
+  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, ...
+    'terminalcost', @terminalcost, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
@@ -80,10 +81,8 @@ function daefun(sh,x,~,u,~)
   
 end
 
-function gridcosts(ocl,k,K,x,~)
-  if k == K
-    ocl.add( x.time );
-  end
+function terminalcost(ocl,x,~)
+  ocl.add( x.time );
 end
 
 function handles = animate(sol,times)
