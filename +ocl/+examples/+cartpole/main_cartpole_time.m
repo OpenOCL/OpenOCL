@@ -4,7 +4,8 @@
 %
 function [sol,times,solver] = main_cartpole_time
 
-  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'gridcosts', @gridcosts, 'N', 40, 'd', 3);
+  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, ...
+    'terminalcost', @terminalcost, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
@@ -42,48 +43,43 @@ end
 
 function varsfun(sh)
 
-  sh.addState('p', 'lb', -5, 'ub', 5);
-  sh.addState('theta', 'lb', -2*pi, 'ub', 2*pi);
+  sh.addState('p');
+  sh.addState('theta');
   sh.addState('v');
   sh.addState('omega');
   
   sh.addState('time', 'lb', 0, 'ub', 10);
 
-  sh.addControl('F', 'lb', -60, 'ub', 60);
+  sh.addControl('F', 'lb', -15, 'ub', 15);
 end
 
-function daefun(sh,x,~,u,~)
+function daefun(daeh,x,~,u,~)
 
-  g = 9.8;
-  cm = 5.0;
-  pm = 0.3;
-  phl = 0.5; % pole half length
+M = 1;    % mass of the cart [kg]
+m = 0.1;  % mass of the ball [kg]
+l = 0.8;  % length of the rod [m]
+g = 9.81; % gravity constant [m/s^2]
 
-  m = cm+pm;
-  pml = pm*phl; % pole mass length
+v = x.v;
+theta = x.theta;
+omega = x.omega;
+F = u.F;
 
-  ctheta = cos(x.theta);
-  stheta = sin(x.theta);
+a = (- l*m*sin(theta)*omega.^2 + F + g*m*cos(theta)*sin(theta))/(M + m - m*cos(theta).^2);
 
-  domega = (g*stheta + ...
-            ctheta * (-u.F-pml*x.omega^2*stheta) / m) / ...
-            (phl * (4.0 / 3.0 - pm * ctheta^2 / m));
+domega = (- l*m*cos(theta)*sin(theta)*omega.^2 + F*cos(theta) + g*m*sin(theta) + M*g*sin(theta))/(l*(M + m - m*cos(theta).^2));
 
-  a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
+daeh.setODE('p',     v);
+daeh.setODE('theta', omega);
+daeh.setODE('v',     a);
+daeh.setODE('omega', domega);
 
-  sh.setODE('p',x.v);
-  sh.setODE('theta',x.omega);
-  sh.setODE('v',a);
-  sh.setODE('omega',domega);
-  
-  sh.setODE('time', 1);
+daeh.setODE('time', 1);
   
 end
 
-function gridcosts(ocl,k,K,x,~)
-  if k == K
-    ocl.add( x.time );
-  end
+function terminalcost(ocl,x,~)
+  ocl.add( x.time );
 end
 
 function handles = animate(sol,times)
@@ -117,7 +113,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
   theta = x(2);
   t = time;
 
-  l = 1.0;
+  l = 0.8;
   ms = 10;
 
   if isempty(handles)
@@ -154,7 +150,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
   else
     [h2,h3,h4,h5] = handles{:};
 
-    xB = p+l*sin(theta);
+    xB = p-l*sin(theta);
     yB = l*cos(theta);
 
     set(h2, 'String', sprintf('%.2f s', t));

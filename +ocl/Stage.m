@@ -12,6 +12,7 @@ classdef Stage < handle
     pathcostsfh
     gridcostsfh
     gridconstraintsfh
+    terminalcostfh
     
     x_bounds
 
@@ -54,6 +55,7 @@ classdef Stage < handle
       p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
       p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
+      p.addKeyword('terminalcost', emptyfh, @oclIsFunHandle);
       
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -65,6 +67,7 @@ classdef Stage < handle
       pathcostsfh = r.pathcosts;
       gridcostsfh = r.gridcosts;  
       gridconstraintsfh = r.gridconstraints;
+      terminalcostfh = r.terminalcost;
       H_norm_in = r.N;
       d_in = r.d;
 
@@ -99,6 +102,7 @@ classdef Stage < handle
       self.pathcostsfh = pathcostsfh;
       self.gridcostsfh = gridcostsfh;
       self.gridconstraintsfh = gridconstraintsfh;
+      self.terminalcostfh = terminalcostfh;
       
       self.nx = length(x_struct);
       self.nz = length(z_struct);

@@ -57,6 +57,7 @@ classdef CasadiSolver < handle
         pathcostsfh = stage.pathcostsfh;
         gridcostsfh = stage.gridcostsfh;
         gridconstraintsfh = stage.gridconstraintsfh;
+        terminalcostfh = stage.terminalcostfh;
         
         nx = stage.nx;
         nu = stage.nu;
@@ -88,11 +89,13 @@ classdef CasadiSolver < handle
         
         gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
         gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
-          
+        terminalcostfun = @(x,p) ocl.model.terminalcost(terminalcostfh, x_struct, p_struct, x, p);
+        
         [costs_stage, constraints_stage, ...
          constraints_LB_stage, constraints_UB_stage] = ...
             ocl.simultaneous.equations(H_norm, T, nx, ni, nu, np, ...
                                        gridcostfun, gridconstraintfun, ...
+                                       terminalcostfun, ...
                                        integratormap, v_stage, ...
                                        controls_regularization, controls_regularization_value);
         

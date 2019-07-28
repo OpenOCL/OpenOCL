@@ -1,6 +1,6 @@
 function [costs,constraints,constraints_lb,constraints_ub,x0,p0] = ...
   equations(H_norm, T, nx, ni, nu, np, gridcostfun, gridconstraintfun, ...
-            integratormap, stage_vars, controls_regularization, ...
+            terminalcostfun, integratormap, stage_vars, controls_regularization, ...
             controls_regularization_value)
 
 N = length(H_norm);
@@ -15,6 +15,8 @@ for k=1:N+1
   [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridconstraintfun(k, N+1, X(:,k), P(:,k));
   gridcost = gridcost + gridcostfun(k, N+1, X(:,k), P(:,k));
 end
+
+gridcost = gridcost + terminalcostfun(X(:,N+1), P(:,N+1));
 
 % point costs
 % grid = ocl.simultaneous.normalizedStateTimes(stage);

@@ -41,6 +41,7 @@ classdef Solver < handle
         p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
         p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
         p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
+        p.addKeyword('terminalcost', zerofh, @oclIsFunHandle);
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
         p.addParameter('controls_regularization', true, @islogical);
@@ -53,6 +54,7 @@ classdef Solver < handle
         r = p.parse(varargin{:});
         
         stageList = {ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
+                               r.terminalcost, ...
                                'N', r.N, 'd', r.d)};
         transitionList = {};
         
