@@ -1,8 +1,8 @@
-function vars(sh)
+function vars(vh)
 
-sh.addState('p', 'lb', -5, 'ub', 5);
-sh.addState('theta', 'lb', -2*pi, 'ub', 2*pi);
-sh.addState('v');
-sh.addState('omega');
+vh.addState('p');
+vh.addState('theta');
+vh.addState('v');
+vh.addState('omega');
 
-sh.addControl('F', 'lb', -60, 'ub', 60);
+vh.addControl('F', 'lb', -15, 'ub', 15);

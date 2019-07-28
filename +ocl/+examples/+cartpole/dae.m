@@ -1,23 +1,24 @@
-function dae(sh,x,~,u,~)
+function dae(daeh,x,z,u,p)
 
 g = 9.8;
 cm = 5.0;
 pm = 0.3;
-phl = 0.5; % pole half length
+phl = 0.5;
+
+v = x.v;
+theta = x.theta;
+omega = x.omega;
 
 m = cm+pm;
-pml = pm*phl; % pole mass length
+pml = pm*phl;
 
-ctheta = cos(x.theta);
-stheta = sin(x.theta);
+domega = (g*sin(theta) + ...
+  cos(theta) * (-u.F-pml*omega^2*sin(theta)) / m) / ...
+  (phl * (4.0 / 3.0 - pm * cos(theta)^2 / m));
 
-domega = (g*stheta + ...
-  ctheta * (-u.F-pml*x.omega^2*stheta) / m) / ...
-  (phl * (4.0 / 3.0 - pm * ctheta^2 / m));
+a = (u.F + pml*(omega^2*sin(theta)-domega*cos(theta))) / m;
 
-a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
-
-sh.setODE('p',     x.v);
-sh.setODE('theta', x.omega);
-sh.setODE('v',     a);
-sh.setODE('omega', domega);
+daeh.setODE('p',     v);
+daeh.setODE('theta', omega);
+daeh.setODE('v',     a);
+daeh.setODE('omega', domega);

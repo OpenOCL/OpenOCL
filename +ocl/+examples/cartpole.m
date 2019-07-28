@@ -136,7 +136,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
     h2 = text(-0.3,pmax, '0.00 s','FontSize',15);
     h3 = plot(p,0,'ks','MarkerSize',ms,'Linewidth',3);
 
-    xB = p-l*sin(theta);
+    xB = p+l*sin(theta);
     yB = l*cos(theta);
 
     h4 = line([p xB], [0 yB],'color',[38,124,185]/255,'Linewidth',2);

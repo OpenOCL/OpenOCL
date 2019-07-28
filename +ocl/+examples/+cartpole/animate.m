@@ -29,8 +29,9 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
   p = x(1);
   theta = x(2);
   t = time;
+  
+  l = 0.8;
 
-  l = 1.0;
   ms = 10;
 
   if isempty(handles)
@@ -67,7 +68,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
   else
     [h2,h3,h4,h5] = handles{:};
 
-    xB = p+l*sin(theta);
+    xB = p-l*sin(theta);
     yB = l*cos(theta);
 
     set(h2, 'String', sprintf('%.2f s', t));
