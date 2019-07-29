@@ -196,7 +196,8 @@ classdef Solver < handle
       u_traj = u_traj.u;
       u_traj.set(ocp.get('u'));
       
-      times_target = linspace(0,1,N);
+      times_target = linspace(0,1,N+1);
+      times_target = times_target(1:end-1);
       names = fieldnames(u_guess);
       for k=1:length(names)
         id = names{k};
