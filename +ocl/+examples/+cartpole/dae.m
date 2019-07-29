@@ -10,9 +10,12 @@ theta = x.theta;
 omega = x.omega;
 F = u.F;
 
-a = (- l*m*sin(theta)*omega.^2 + F + g*m*cos(theta)*sin(theta))/(M + m - m*cos(theta).^2);
+a = (- l*m*sin(theta)*omega.^2 + F ...
+  + g*m*cos(theta)*sin(theta))/(M + m - m*cos(theta).^2);
 
-domega = (- l*m*cos(theta)*sin(theta)*omega.^2 + F*cos(theta) + g*m*sin(theta) + M*g*sin(theta))/(l*(M + m - m*cos(theta).^2));
+domega = (- l*m*cos(theta)*sin(theta)*omega.^2 + ...
+  F*cos(theta) + g*m*sin(theta) + ...
+  M*g*sin(theta))/(l*(M + m - m*cos(theta).^2));
 
 daeh.setODE('p',     v);
 daeh.setODE('theta', omega);

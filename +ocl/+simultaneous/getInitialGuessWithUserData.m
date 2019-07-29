@@ -7,11 +7,11 @@ x_guess = stage.x_guess.data;
 
 x_times = [0, cumsum(H_norm)]';
 
-colloc_times = zeros(length(H_norm), nt);
+colloc_times = zeros(nt, length(H_norm));
 time = 0;
 for k=1:length(H_norm)
   h = H_norm(k);
-  colloc_times(k,:) = time + ocl.collocation.times(colloc.tau_root, h);
+  colloc_times(:,k) = time + ocl.collocation.times(colloc.tau_root, h);
   time = time + H_norm(k);
 end
 colloc_times = colloc_times(:);
