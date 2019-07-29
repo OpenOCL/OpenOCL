@@ -8,20 +8,12 @@ function handles = animate(sol,times)
   times = times.states.value;
   times = times(:);
   
-  snap_at = floor(linspace(2,length(times),4));
-  
   for k=2:length(times)
     t = times(k);
     x = states(:,k);
     dt = t-times(k-1);
     
     handles = draw(t, dt, x, [0,0,0,0], pmax, handles);
-    
-    % record image for docs
-    if k == snap_at(1)
-      snapnow;
-      snap_at = snap_at(2:end);
-    end
   end
 end
 
