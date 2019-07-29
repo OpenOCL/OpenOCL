@@ -3,6 +3,7 @@ jit_tmp.c
 *.asv
 *.m~
 *.mex*
+*.lib
 slprj/
 octave-workspace
 .autosave
