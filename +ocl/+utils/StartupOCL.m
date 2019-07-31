@@ -50,8 +50,6 @@ function StartupOCL(in)
   addpath(fullfile(oclPath,'doc'))
 
   addpath(fullfile(oclPath,'Core'))
-  addpath(fullfile(oclPath,'Core','Variables'))
-  addpath(fullfile(oclPath,'Core','Variables','Variable'))
   addpath(fullfile(oclPath,'Core','utils'))
   
   if ~exist(fullfile(oclPath,'Lib','casadi'), 'dir')
