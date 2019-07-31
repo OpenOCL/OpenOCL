@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef CasadiVariable < Variable
+classdef CasadiVariable < ocl.Variable
   
   properties
     mx
@@ -49,7 +49,7 @@ classdef CasadiVariable < Variable
     function self = CasadiVariable(type,positions,mx,val)
       % CasadiVariable(type,positions,mx,val)
       narginchk(4,4);      
-      self = self@Variable(type,positions,val);
+      self = self@ocl.Variable(type,positions,val);
       self.mx = mx;      
     end
     

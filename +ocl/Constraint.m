@@ -57,9 +57,9 @@ classdef Constraint < handle
     
     function addWithBounds(self,lb,expr,ub)
       
-      lb = Variable.getValueAsColumn(lb);
-      expr = Variable.getValueAsColumn(expr);
-      ub = Variable.getValueAsColumn(ub);
+      lb = ocl.Variable.getValueAsColumn(lb);
+      expr = ocl.Variable.getValueAsColumn(expr);
+      ub = ocl.Variable.getValueAsColumn(ub);
       
       self.lowerBounds  = [self.lowerBounds;lb];
       self.values       = [self.values;expr];
@@ -68,8 +68,8 @@ classdef Constraint < handle
     
     function addWithOperator(self, lhs, op, rhs)
       
-      lhs = Variable.getValueAsColumn(lhs);
-      rhs = Variable.getValueAsColumn(rhs);
+      lhs = ocl.Variable.getValueAsColumn(lhs);
+      rhs = ocl.Variable.getValueAsColumn(rhs);
       
       % Create new constraint entry
       if strcmp(op,'==')

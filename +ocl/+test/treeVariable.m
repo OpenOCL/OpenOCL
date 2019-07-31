@@ -9,7 +9,7 @@ xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
 xStruct.add('x1',[1,2]);
 
-x = Variable.create(xStruct,4);
+x = ocl.Variable.create(xStruct,4);
 
 %%% set
 x(:) = (1:10).';
@@ -32,7 +32,7 @@ u = ocl.types.Structure();
 u.add('elev',[1,1]);
 u.add('ail',[1,1]);
 
-state = Variable.create(x,0);
+state = ocl.Variable.create(x,0);
 
 state.R = eye(3);
 state.p = [100;0;-50];
@@ -53,7 +53,7 @@ ocpVar = ocl.types.Structure();
 ocpVar.addRepeated({'x','u'},{x,u},5);
 ocpVar.add('x',x);
 
-v = Variable.create(ocpVar,0);
+v = ocl.Variable.create(ocpVar,0);
 v.x.R.set(eye(3));
 v.x.p.set([100;0;50]);
 v.x.v.set([20;0;0]);

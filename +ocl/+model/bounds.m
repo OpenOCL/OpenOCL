@@ -1,7 +1,7 @@
 function [lb, ub] = bounds(var_struct, bounds)
 
-lb_var = Variable.create(var_struct, -inf);
-ub_var = Variable.create(var_struct, inf);
+lb_var = ocl.Variable.create(var_struct, -inf);
+ub_var = ocl.Variable.create(var_struct, inf);
 
 for k=1:length(bounds.data)
   

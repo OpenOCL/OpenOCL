@@ -24,7 +24,7 @@ classdef Variable < handle
     %%% factory methods
     function var = create(type,value)
       if isnumeric(value)
-        var = Variable.createNumeric(type,value);
+        var = ocl.Variable.createNumeric(type,value);
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
         var = ocl.casadi.CasadiVariable.createFromValue(type,value);
       else
@@ -35,49 +35,47 @@ classdef Variable < handle
     function var = createFromVar(type,pos,var)
       if isa(var, 'CasadiVariable')
         var = ocl.casadi.CasadiVariable(type,pos,var.mx,var.val);
-      elseif isa(var,'SymVariable')
-        var = SymVariable(type,pos,var.val);
       else
-        var = Variable(type,pos,var.val);
+        var = ocl.Variable(type,pos,var.val);
       end
     end
 
     function obj = Matrix(value)
       % obj = createMatrixLike(input,value)
       t = ocl.types.Matrix(size(value));
-      obj = Variable.create(t,value);
+      obj = ocl.Variable.create(t,value);
     end
     
     function var = createNumeric(type,value)
         [N,M,K] = type.size();
         v = ocl.types.Value(zeros(1,N,M,K));
         p = reshape(1:N*M*K,N,M,K);
-        var = Variable(type,p,v);
+        var = ocl.Variable(type,p,v);
         var.set(value);
     end
     
     function v = createFromHandleOne(fh, a, varargin)
-      a = Variable.getValue(a);
-      v = Variable.Matrix( fh(a, varargin{:}) );
+      a = ocl.Variable.getValue(a);
+      v = ocl.Variable.Matrix( fh(a, varargin{:}) );
     end
     
     function v = createFromHandleTwo(fh, a, b, varargin)
-      a = Variable.getValue(a);
-      b = Variable.getValue(b);
+      a = ocl.Variable.getValue(a);
+      b = ocl.Variable.getValue(b);
       if isnumeric(a) && ((isa(b,'casadi.SX')||isa(b,'casadi.MX')))
         a = casadi.DM(a);  
       end
-      v = Variable.Matrix(fh(a,b,varargin{:}));
+      v = ocl.Variable.Matrix(fh(a,b,varargin{:}));
     end
     %%% end factory methods   
     function value = getValue(value)
-      if isa(value,'Variable')
+      if isa(value,'ocl.Variable')
         value = value.value;
       end
     end
     
     function value = getValueAsColumn(value)
-      value = Variable.getValue(value);
+      value = ocl.Variable.getValue(value);
       value = value(:);
     end
   end % methods(static)
@@ -97,7 +95,7 @@ classdef Variable < handle
       if nargin==1
         value = self.value;
         if isnumeric(value)
-          valueStr = mat2str(self.value,Variable.DISP_FLOAT_PREC);
+          valueStr = mat2str(self.value, ocl.Variable.DISP_FLOAT_PREC);
         else
           % cell array
           cell2str = cellfun(@(v)[mat2str(v),','],value, 'UniformOutput',false);
@@ -107,8 +105,8 @@ classdef Variable < handle
       end
       
       dotsStr = '';
-      if numel(valueStr) >= Variable.MAX_DISP_LENGTH 
-        valueStr = valueStr(1:Variable.MAX_DISP_LENGTH);
+      if numel(valueStr) >= ocl.Variable.MAX_DISP_LENGTH 
+        valueStr = valueStr(1:ocl.Variable.MAX_DISP_LENGTH);
         dotsStr = '...';
       end
       
@@ -187,7 +185,7 @@ classdef Variable < handle
       if numel(s)==1 && strcmp(s(1).type,'.') && ~isfield(self.type.children,s(1).subs)
         self = builtin('subsasgn',self,s,v);
       else
-        v = Variable.getValue(v);
+        v = ocl.Variable.getValue(v);
         subVar = subsref(self,s);
         subVar.set(v);
       end
@@ -225,13 +223,13 @@ classdef Variable < handle
     function r = get(self,id)
       % r = get(id)
       [t,p] = self.type.get(id,self.positions);
-      r = Variable.createFromVar(t,p,self);
+      r = ocl.Variable.createFromVar(t,p,self);
     end
     
     function r = slice(self,varargin)
       % r = get(dim1,dim2,dim3)
       p = self.positions(varargin{:});
-      r = Variable.createFromVar(self.type,p,self);
+      r = ocl.Variable.createFromVar(self.type,p,self);
     end
 
     function toJSON(self,path,name,varargin)
@@ -259,10 +257,10 @@ classdef Variable < handle
     %%% operators
     % single argument
     function v = uplus(self)
-      v = Variable.createFromHandleOne(@(self,varargin)uplus(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)uplus(self),self);
     end
     function v = uminus(self)
-      v = Variable.createFromHandleOne(@(self,varargin)uminus(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)uminus(self),self);
     end
    
     function v = ctranspose(self)
@@ -271,182 +269,182 @@ classdef Variable < handle
       v = self.transpose();
     end
     function v = transpose(self)
-      v = Variable.createFromHandleOne(@(self,varargin)transpose(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)transpose(self),self);
     end
     
     function v = reshape(self,varargin)
-      v = Variable.createFromHandleOne(@(self,varargin)reshape(self,varargin{:}),self,varargin{:});
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)reshape(self,varargin{:}),self,varargin{:});
     end
     
     function v = triu(self)
-      v = Variable.createFromHandleOne(@(self,varargin)triu(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)triu(self),self);
     end
     
     function v = repmat(self,varargin)
-      v = Variable.createFromHandleOne(@(self,varargin)repmat(self,varargin{:}),self,varargin{:});
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)repmat(self,varargin{:}),self,varargin{:});
     end
     
     function v = sum(self)
-      v = Variable.createFromHandleOne(@(self,varargin)sum(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)sum(self),self);
     end
     
     function v = norm(self,varargin)
-      v = Variable.createFromHandleOne(@(self,varargin)norm(self,varargin{:}),self,varargin{:});
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)norm(self,varargin{:}),self,varargin{:});
     end
     
     function v = inv(self)
-      v = Variable.createFromHandleOne(@(self,varargin)inv(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)inv(self),self);
     end
     
     function v = det(self)
-      v = Variable.createFromHandleOne(@(self,varargin)det(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)det(self),self);
     end
     
     function v = trace(self)
-      v = Variable.createFromHandleOne(@(self,varargin)trace(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)trace(self),self);
     end
     
     function v = diag(self)
-      v = Variable.createFromHandleOne(@(self,varargin)diag(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)diag(self),self);
     end
     
     function v = abs(self)
-      v = Variable.createFromHandleOne(@(self,varargin)abs(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)abs(self),self);
     end
 
     function v = sqrt(self)
-      v = Variable.createFromHandleOne(@(self,varargin)sqrt(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)sqrt(self),self);
     end
     
     function v = sin(self)
-      v = Variable.createFromHandleOne(@(self,varargin)sin(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)sin(self),self);
     end
     
     function v = cos(self)
-      v = Variable.createFromHandleOne(@(self,varargin)cos(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)cos(self),self);
     end
     
     function v = tan(self)
-      v = Variable.createFromHandleOne(@(self,varargin)tan(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)tan(self),self);
     end
     
     function v = atan(self)
-      v = Variable.createFromHandleOne(@(self,varargin)atan(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)atan(self),self);
     end
     
     function v = asin(self)
-      v = Variable.createFromHandleOne(@(self,varargin)asin(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)asin(self),self);
     end
     
     function v = acos(self)
-      v = Variable.createFromHandleOne(@(self,varargin)acos(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)acos(self),self);
     end
     
     function v = tanh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)tanh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)tanh(self),self);
     end
     
     function v = cosh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)cosh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)cosh(self),self);
     end
     
     function v = sinh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)sinh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)sinh(self),self);
     end
     
     function v = atanh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)atanh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)atanh(self),self);
     end
     
     function v = asinh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)asinh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)asinh(self),self);
     end
     
     function v = acosh(self)
-      v = Variable.createFromHandleOne(@(self,varargin)acosh(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)acosh(self),self);
     end
     
     function v = exp(self)
-      v = Variable.createFromHandleOne(@(self,varargin)exp(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)exp(self),self);
     end
     
     function v = log(self)
-      v = Variable.createFromHandleOne(@(self,varargin)log(self),self);
+      v = ocl.Variable.createFromHandleOne(@(self,varargin)log(self),self);
     end
     
     % two arguments
     function v = mtimes(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)mtimes(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)mtimes(a,b),a,b);
     end
     
     function v = mpower(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)mpower(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)mpower(a,b),a,b);
     end
     
     function v = mldivide(a,b)
-      a = Variable.getValue(a);
-      b = Variable.getValue(b);
+      a = ocl.Variable.getValue(a);
+      b = ocl.Variable.getValue(b);
       if (numel(a) > 1) && (numel(b) > 1)
-        v = Variable.Matrix(solve(a,b));
+        v = ocl.Variable.Matrix(solve(a,b));
       else
-        v = Variable.Matrix(mldivide(a,b));
+        v = ocl.Variable.Matrix(mldivide(a,b));
       end
     end
     
     function v = mrdivide(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)mrdivide(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)mrdivide(a,b),a,b);
     end
     
     function v = cross(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)cross(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)cross(a,b),a,b);
     end
     
     function v = dot(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)dot(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)dot(a,b),a,b);
     end
     
     function v = polyval(p,a)
-      v = Variable.createFromHandleTwo(@(p,a,varargin)polyval(p,a),p,a);
+      v = ocl.Variable.createFromHandleTwo(@(p,a,varargin)polyval(p,a),p,a);
     end
     
     function v = jacobian(ex,arg)
-      v = Variable.createFromHandleTwo(@(ex,arg,varargin)jacobian(ex,arg),ex,arg);
+      v = ocl.Variable.createFromHandleTwo(@(ex,arg,varargin)jacobian(ex,arg),ex,arg);
     end
     
     function v = plus(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)plus(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)plus(a,b),a,b);
     end
     
     function v = minus(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)minus(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)minus(a,b),a,b);
     end
     
     function v = times(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)times(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)times(a,b),a,b);
     end
     
     function v = power(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)power(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)power(a,b),a,b);
     end
     
     function v = rdivide(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)rdivide(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)rdivide(a,b),a,b);
     end
     
     function v = ldivide(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)ldivide(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)ldivide(a,b),a,b);
     end
     
     function v = atan2(a,b)
-      v = Variable.createFromHandleTwo(@(a,b,varargin)atan2(a,b),a,b);
+      v = ocl.Variable.createFromHandleTwo(@(a,b,varargin)atan2(a,b),a,b);
     end
     
     % three arguments
     function r = jtimes(ex,arg,v)
-      ex = Variable.getValue(ex);
-      arg = Variable.getValue(arg);
-      v = Variable.getValue(v);
-      r = Variable.Matrix(jtimes(ex,arg,v));
+      ex = ocl.Variable.getValue(ex);
+      arg = ocl.Variable.getValue(arg);
+      v = ocl.Variable.getValue(v);
+      r = ocl.Variable.Matrix(jtimes(ex,arg,v));
     end
     
     % lists
@@ -454,18 +452,18 @@ classdef Variable < handle
       N = numel(varargin);
       outValues = cell(1,N);
       for k=1:numel(varargin)
-        outValues{k} = Variable.getValue(varargin{k});
+        outValues{k} = ocl.Variable.getValue(varargin{k});
       end    
-      v = Variable.Matrix(horzcat(outValues{:}));
+      v = ocl.Variable.Matrix(horzcat(outValues{:}));
     end
     
     function v = vertcat(varargin)
       N = numel(varargin);
       outValues = cell(1,N);
       for k=1:numel(varargin)
-        outValues{k} = Variable.getValue(varargin{k});
+        outValues{k} = ocl.Variable.getValue(varargin{k});
       end
-      v = Variable.Matrix(vertcat(outValues{:}));
+      v = ocl.Variable.Matrix(vertcat(outValues{:}));
     end
     
     %%% element wise operations
@@ -474,7 +472,7 @@ classdef Variable < handle
       % It is automatically renamed for Octave as properties is not 
       % allowed as a function name.
       %
-      % Tab completion in Matlab for custom variables
+      % Tab completion in Matlab for custom ocl.Variables
       n = [fieldnames(self);fieldnames(self.type.children)];	
     end
   end

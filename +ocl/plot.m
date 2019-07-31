@@ -5,8 +5,8 @@
 function plot(x,y,varargin)
   ocl.utils.checkStartup()
   
-  x = Variable.getValue(x);
-  y = Variable.getValue(y);
+  x = ocl.Variable.getValue(x);
+  y = ocl.Variable.getValue(y);
   
   plot(x,y,'LineWidth', 3, varargin{:})
   

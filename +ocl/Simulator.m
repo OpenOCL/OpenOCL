@@ -77,26 +77,26 @@ classdef Simulator < handle
     end
 
     function states = getStates(self)
-      states = Variable.create(self.x_struct,0);
+      states = ocl.Variable.create(self.x_struct,0);
     end
     
     function z = getAlgebraicStates(self)
-      z = Variable.create(self.z_struct,0);
+      z = ocl.Variable.create(self.z_struct,0);
     end
     
     function controls = getControls(self)
-      controls = Variable.create(self.u_struct,0);
+      controls = ocl.Variable.create(self.u_struct,0);
     end
 
     function states = getParameters(self)
-      states = Variable.create(self.p_struct,0);
+      states = ocl.Variable.create(self.p_struct,0);
     end
 
     function [x] = reset(self,varargin)
 
       p = ocl.utils.ArgumentParser;
-      p.addRequired('x0', @(el) isa(el, 'Variable') || isnumeric(el) );
-      p.addKeyword('parameters', [], @(el) isa(el, 'Variable') || isnumeric(el));
+      p.addRequired('x0', @(el) isa(el, 'ocl.Variable') || isnumeric(el) );
+      p.addKeyword('parameters', [], @(el) isa(el, 'ocl.Variable') || isnumeric(el));
 
       args = p.parse(varargin{:});
 
@@ -115,8 +115,8 @@ classdef Simulator < handle
       nz = length(self.z_struct);
 
       z = zeros(nz,1);
-      x0 = Variable.getValueAsColumn(initialStates);
-      p = Variable.getValueAsColumn(params);
+      x0 = ocl.Variable.getValueAsColumn(initialStates);
+      p = ocl.Variable.getValueAsColumn(params);
 
       [x,z] = self.getConsistentIntitialCondition(x0,z,p);
       initialStates.set(x);
@@ -141,7 +141,7 @@ classdef Simulator < handle
       z0 = self.algebraic_guess;
       p = self.parameters;
 
-      u = Variable.getValueAsColumn(controls);
+      u = ocl.Variable.getValueAsColumn(controls);
 
       [x,z] = self.integrator.evaluate(x,z0,u,dt,p);
 

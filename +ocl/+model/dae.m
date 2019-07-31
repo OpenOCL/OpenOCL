@@ -3,10 +3,10 @@ function [ode,alg] = dae(daefh, ...
   x, z, u, p)
 % evaluate the system equations for the assigned variables
 
-x = Variable.create(x_struct,x);
-z = Variable.create(z_struct,z);
-u = Variable.create(u_struct,u);
-p = Variable.create(p_struct,p);
+x = ocl.Variable.create(x_struct,x);
+z = ocl.Variable.create(z_struct,z);
+u = ocl.Variable.create(u_struct,u);
+p = ocl.Variable.create(p_struct,p);
 
 daehandler = ocl.DaeHandler();
 daefh(daehandler,x,z,u,p);
