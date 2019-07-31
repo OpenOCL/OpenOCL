@@ -12,7 +12,7 @@ classdef CasadiVariable < Variable
   
   
     function var = createFromValue(type,value)
-      oclValue = OclValue(value);
+      oclValue = ocl.types.Value(value);
       [N,M,K] = size(type);
       p = reshape(1:N*M*K,N,M,K);
       var = ocl.casadi.CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
@@ -31,7 +31,7 @@ classdef CasadiVariable < Variable
       else
         vv = casadi.SX.sym(id,N,M);
       end
-      val = OclValue(vv);
+      val = ocl.types.Value(vv);
       p = reshape(1:N*M*K,N,M,K);
       var = ocl.casadi.CasadiVariable(type,p,mx,val);
     end
@@ -40,7 +40,7 @@ classdef CasadiVariable < Variable
       if nargin==1
         mx = false;
       end
-      obj = ocl.casadi.CasadiVariable.create(OclMatrix(size),mx);
+      obj = ocl.casadi.CasadiVariable.create(ocl.types.Matrix(size),mx);
     end
   end
   

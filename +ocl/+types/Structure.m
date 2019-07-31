@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef OclStructure < handle
+classdef Structure < handle
   % OCLTREE Basic datatype represent variables in a tree like structure.
   %
   properties
@@ -11,7 +11,7 @@ classdef OclStructure < handle
   end
 
   methods
-    function self = OclStructure()
+    function self = Structure()
       % OclTree()
       narginchk(0,0);
       self.children = struct;
@@ -32,19 +32,19 @@ classdef OclStructure < handle
         N = 1;
         M = 1;
         K = 1;
-        obj = OclMatrix([N,M]);
+        obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
         N = in2;
         M = 1;
         K = 1;
-        obj = OclMatrix([N,M]);
+        obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2)
         % args:(id,size)
         N = in2(1);
         M = in2(2);
         K = 1;
-        obj = OclMatrix([N,M]);
+        obj = ocl.types.Matrix([N,M]);
       else
         % args:(id,obj)
         [N,M,K] = in2.size;
@@ -124,7 +124,7 @@ classdef OclStructure < handle
     
 
     function tree = flat(self)
-      tree = OclStructure();
+      tree = ocl.types.Structure();
       self.iterateLeafs((1:self.len).',tree);
     end
     
@@ -134,9 +134,9 @@ classdef OclStructure < handle
       for k=1:length(childrenIds)
         id = childrenIds{k};
         [child,pos] = self.get(id,positions);
-        if isa(child,'OclMatrix')
+        if isa(child,'ocl.types.Matrix')
           treeOut.addObject(id,child,pos);
-        elseif isa(child,'OclStructure')
+        elseif isa(child,'ocl.types.Structure')
           child.iterateLeafs(pos,treeOut);
         end
       end

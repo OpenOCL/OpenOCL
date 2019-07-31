@@ -18,10 +18,10 @@ classdef VarHandler < handle
     
     function self = VarHandler()
       
-      self.x_struct = OclStructure();
-      self.z_struct = OclStructure();
-      self.u_struct = OclStructure();
-      self.p_struct = OclStructure();
+      self.x_struct = ocl.types.Structure();
+      self.z_struct = ocl.types.Structure();
+      self.u_struct = ocl.types.Structure();
+      self.p_struct = ocl.types.Structure();
             
       self.x_bounds = ocl.types.Bounds();
       self.z_bounds = ocl.types.Bounds();

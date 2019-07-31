@@ -44,13 +44,13 @@ classdef Variable < handle
 
     function obj = Matrix(value)
       % obj = createMatrixLike(input,value)
-      t = OclMatrix(size(value));
+      t = ocl.types.Matrix(size(value));
       obj = Variable.create(t,value);
     end
     
     function var = createNumeric(type,value)
         [N,M,K] = type.size();
-        v = OclValue(zeros(1,N,M,K));
+        v = ocl.types.Value(zeros(1,N,M,K));
         p = reshape(1:N*M*K,N,M,K);
         var = Variable(type,p,v);
         var.set(value);
@@ -85,9 +85,9 @@ classdef Variable < handle
   methods
     function self = Variable(type,positions,val)
       narginchk(3,3);
-      assert(isa(type,'OclStructure'));
+      assert(isa(type,'ocl.types.Structure'));
       assert(isnumeric(positions));
-      assert(isa(val,'OclValue'));
+      assert(isa(val,'ocl.types.Value'));
       self.type = type;
       self.positions = positions;
       self.val = val;
@@ -198,7 +198,7 @@ classdef Variable < handle
       n=1;
     end	
 
-    %%% delegate methods to OclValue
+    %%% delegate methods to ocl.types.Value
     function set(self,val,varargin)
       % set(value)
       % set(value,slice1,slice2,slice3)

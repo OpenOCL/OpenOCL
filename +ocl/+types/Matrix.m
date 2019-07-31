@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef OclMatrix < OclStructure
+classdef Matrix < ocl.types.Structure
   %OCLMATRIX Matrix valued structure for variables
   %
   properties
@@ -11,7 +11,7 @@ classdef OclMatrix < OclStructure
   
   methods
     
-    function self = OclMatrix(size)
+    function self = Matrix(size)
       % OclMatrix(size)
       self.msize = size;
     end
