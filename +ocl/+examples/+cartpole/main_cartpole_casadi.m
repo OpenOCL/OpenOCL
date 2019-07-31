@@ -1,4 +1,4 @@
-solver = ocl.Solver( ...
+solver = ocl.acados.Solver( ...
   3, ...
   'vars', @ocl.examples.cartpole.vars, ...
   'dae', @ocl.examples.cartpole.dae, ...
@@ -13,10 +13,8 @@ solver.setInitialState('omega', 0);
 
 solver.initialize('theta', [0 1], [pi 0]);
 
-% Run solver to obtain solution
 [sol,times] = solver.solve();
 
-% visualize solution
 figure; hold on; grid on;
 ocl.stairs(times.controls, sol.controls.F/10.)
 xlabel('time [s]');

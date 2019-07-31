@@ -100,7 +100,7 @@ classdef OclSystem < handle
     end
 
     function ic = icfun(self,x,p)
-      icHandler = OclConstraint();
+      icHandler = ocl.Constraint();
       x = Variable.create(self.x_struct,x);
       p = Variable.create(self.p_struct,p);
       self.icfh(icHandler,x,p)

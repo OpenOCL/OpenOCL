@@ -2,14 +2,14 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef OclCost < handle
+classdef Cost < handle
   properties
     value
   end
   
   methods
     
-    function self = OclCost()
+    function self = Cost()
       self.value = 0;
     end
     
