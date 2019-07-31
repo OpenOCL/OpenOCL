@@ -36,15 +36,15 @@ function [nFails] = core(testExamples,saveLog,suffix)
   
   ocl.utils.setTestRun(true)
   
-  tests{1}.name = 'Variable';         tests{end}.file = 'ocl.test.variable';
-  tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'ocl.test.treeVariable';
-  tests{end+1}.name = 'VarStructure'; tests{end}.file = 'ocl.test.structure';
-  tests{end+1}.name = 'ocl.Model';    tests{end}.file = 'ocl.test.model';
-  tests{end+1}.name = 'ocl.Stage';       tests{end}.file = 'ocl.test.stage';
-  tests{end+1}.name = 'ocl.Integrator';   tests{end}.file = 'ocl.test.integrator';
+  tests{1}.name = 'Variable';         tests{end}.file = 'ocl.tests.variable';
+  tests{end+1}.name = 'TreeVariable'; tests{end}.file = 'ocl.tests.treeVariable';
+  tests{end+1}.name = 'VarStructure'; tests{end}.file = 'ocl.tests.structure';
+  tests{end+1}.name = 'ocl.Model';    tests{end}.file = 'ocl.tests.model';
+  tests{end+1}.name = 'ocl.Stage';       tests{end}.file = 'ocl.tests.stage';
+  tests{end+1}.name = 'ocl.Integrator';   tests{end}.file = 'ocl.tests.integrator';
   
   if testExamples
-    tests{end+1}.name = 'Examples';      tests{end}.file = 'ocl.test.examples';
+    tests{end+1}.name = 'Examples';      tests{end}.file = 'ocl.tests.examples';
   end
   
   NTests = length(tests);

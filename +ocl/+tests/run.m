@@ -4,4 +4,4 @@
 %
 
 function [nFails] = run()
-  nFails = ocl.test.run.core();
+  nFails = ocl.tests.run.core();
