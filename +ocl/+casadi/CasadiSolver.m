@@ -109,7 +109,7 @@ classdef CasadiSolver < handle
           xfs = ocl.simultaneous.getLastState(stageList{k-1}, collocationList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
           
-          tansition_handler = OclConstraint();
+          tansition_handler = ocl.Constraint();
           
           x0 = Variable.create(stageList{k}.x_struct, x0s);
           xf = Variable.create(stageList{k-1}.x_struct, xfs);
