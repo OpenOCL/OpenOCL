@@ -12,7 +12,7 @@
 %
 function r = evalCoefficients(coeff, d, point)
 
-oclAssert(point<=1 && point >=0);
+ocl.utils.assert(point<=1 && point >=0);
 
 r = zeros(d+1, 1);
 for j=1:d+1
