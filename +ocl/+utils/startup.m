@@ -4,7 +4,6 @@
 %
 function startup(in)
   % ocl.utils.startup(workingDirLocation)
-  % ocl.utils.startup(octaveClear)
   %
   % Startup script for OpenOCL
   % Adds required directories to the path. Sets up a folder for the results
@@ -21,11 +20,8 @@ function startup(in)
   end
 
   workspaceLocation = fullfile(oclPath, 'Workspace');
-  octaveClear = false;
 
-  if nargin == 1 && (islogical(in)||isnumeric(in))
-    octaveClear = in;
-  elseif nargin == 1 && ischar(in)
+  if nargin == 1 && ischar(in)
     workspaceLocation = in;
   elseif nargin == 1
     oclError('Invalid argument.')
@@ -124,47 +120,6 @@ function startup(in)
     ocl.utils.info('CasADi is up and running!')
   else
     ocl.utils.error('Go to https://web.casadi.org/get/ and setup CasADi.');
-  end
-
-  % remove properties function in Variable.m for Octave which gives a
-  % parse error
-  if ocl.utils.isOctave()
-    variableDir = fullfile(oclPath,'Core','Variables','Variable');
-    %rmpath(variableDir);
-
-    vFilePath = fullfile(exportDir, 'Variable','Variable.m');
-    if ~exist(vFilePath,'file') || octaveClear
-      delete(fullfile(exportDir, 'Variable','V*.m'))
-      status = copyfile(variableDir,exportDir);
-      assert(status, 'Could not copy Variables folder');
-    end
-
-    vFileText = fileread(vFilePath);
-    searchPattern = 'function n = properties(self)';
-    replacePattern = 'function n = ppp(self)';
-    pIndex = strfind(vFileText,searchPattern);
-
-    if ~isempty(pIndex)
-      assert(length(pIndex)==1, ['Found multiple occurences of properties ',...
-                                 'function in Variable.m; Please reinstall ',...
-                                 'OpenOCL.'])
-      newText = strrep(vFileText,searchPattern,replacePattern);
-      fid=fopen(vFilePath,'w');
-      fwrite(fid, newText);
-      fclose(fid);
-    end
-    addpath(fullfile(exportDir,'Variable'));
-  end
-
-  % travis-ci
-  if ocl.utils.isOctave()
-    args = argv();
-    if length(args)>0 && args{1} == '1'
-      nFails = runTests(1);
-      if nFails > 0
-        exit(nFails);
-      end
-    end
   end
 
   ocl.utils.info('OpenOCL startup procedure finished successfully.')
