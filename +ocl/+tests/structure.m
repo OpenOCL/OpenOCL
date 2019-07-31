@@ -4,6 +4,10 @@
 %
 
 function structure
+
+assertEqual = @ocl.utils.assertEqual;
+assertSqueezeEqual = @ocl.utils.assertSqueezeEqual;
+assertSetEqual = @ocl.utils.assertSetEqual;
  
 x = ocl.types.Structure();
 assertEqual(x.size,[0 1]);

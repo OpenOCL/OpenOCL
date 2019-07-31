@@ -18,6 +18,6 @@ b = squeeze(b);
 a = a(:);
 b = b(:);
 
-assertEqual(a,b,varargin{:})
+ocl.utils.assertEqual(a,b,varargin{:})
   
 end

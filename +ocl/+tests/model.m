@@ -23,12 +23,12 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertEqual(nx,0);
-assertEqual(nz,0);
-assertEqual(nu,0);
-assertEqual(np,0);
+ocl.utils.assertEqual(nx,0);
+ocl.utils.assertEqual(nz,0);
+ocl.utils.assertEqual(nu,0);
+ocl.utils.assertEqual(np,0);
 
-assertEqual(daefun([],[],[],[]),[]);
+ocl.utils.assertEqual(daefun([],[],[],[]),[]);
 
 % valid dae test
 [x_struct, z_struct, u_struct, p_struct, ...
@@ -48,13 +48,13 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertEqual(nx,32);
-assertEqual(nu,31);
-assertEqual(np,31);
-assertEqual(nz,31);
+ocl.utils.assertEqual(nx,32);
+ocl.utils.assertEqual(nu,31);
+ocl.utils.assertEqual(np,31);
+ocl.utils.assertEqual(nz,31);
 [dx,alg] = daefun(ones(nx,1),ones(nz,1),ones(nu,1),ones(np,1));
-assertEqual(dx,[1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1].')
-assertEqual(alg,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,5,6,7,2,2,2,11,12,13,1,1,1].')
+ocl.utils.assertEqual(dx,[1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1].')
+ocl.utils.assertEqual(alg,[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,5,6,7,2,2,2,11,12,13,1,1,1].')
 
 
 % miss ode test
@@ -75,7 +75,7 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertException('ode', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
+ocl.utils.assertException('ode', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
 
 
 % double ode test
@@ -96,7 +96,7 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertException('ode', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
+ocl.utils.assertException('ode', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
 
 % wrong ode test
 [x_struct, z_struct, u_struct, p_struct, ...
@@ -116,7 +116,7 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertException('exist', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
+ocl.utils.assertException('exist', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
 
 % missing dae test
 [x_struct, z_struct, u_struct, p_struct, ...
@@ -136,7 +136,7 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertException('algebraic equations', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
+ocl.utils.assertException('algebraic equations', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
 
 % too many dae test
 [x_struct, z_struct, u_struct, p_struct, ...
@@ -156,7 +156,7 @@ nz = length(z_struct);
 nu = length(u_struct);
 np = length(p_struct);
 
-assertException('algebraic equations', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
+ocl.utils.assertException('algebraic equations', daefun, zeros(nx,1), zeros(nz,1), zeros(nu,1), zeros(np,1));
 
 end
 
