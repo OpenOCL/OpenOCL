@@ -12,7 +12,7 @@
 %s
 function r = evalCoefficientsIntegral(coeff, d, point)
 
-oclAssert(point<=1 && point >=0);
+ocl.utils.assert(point<=1 && point >=0);
 
 r = zeros(d+1, 1);
 for k=1:d+1
