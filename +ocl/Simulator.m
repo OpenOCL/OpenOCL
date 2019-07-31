@@ -6,8 +6,13 @@ classdef Simulator < handle
 
   properties
     integrator
-    system
-    options
+    icfun
+    daefun
+    
+    x_struct
+    z_struct
+    u_struct
+    p_struct
 
     current_state
     algebraic_guess
@@ -16,17 +21,55 @@ classdef Simulator < handle
 
   methods
 
-    function self = Simulator(system,options)
+    function self = Simulator(varargin)
       ocl.utils.checkStartup()
+      
+      emptyfh = @(varargin)[];
+      
+      p = ocl.utils.ArgumentParser;
+      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
+      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
+      p.addKeyword('ic', emptyfh, @oclIsFunHandle);
+      
+      r = p.parse(varargin{:});
 
-      if nargin==1
-        self.options = struct;
-      else
-        self.options = options;
-      end
+      varsfh = r.vars;
+      daefh = r.dae;
+      icfh = r.ic;
+      
+      [x_struct, z_struct, u_struct, p_struct, ...
+          ~, ~, ~, ~, ...
+          x_order] = ocl.model.vars(varsfh);
+      
+      daefun = @(x,z,u,p) ocl.model.dae( ...
+        daefh, ...
+        x_struct, ...
+        z_struct, ...
+        u_struct, ...
+        p_struct, ...
+        x_order, x, z, u, p);
+      
+      icfun = @(x,p) ocl.model.ic( ...
+        icfh, ...
+        x_struct, ...
+        p_struct, ...
+        x, p);
 
-      self.integrator = ocl.casadi.CasadiIntegrator(system);
-      self.system = system;
+      nx = length(x_struct);
+      nz = length(z_struct);
+      nu = length(u_struct);
+      np = length(p_struct);
+
+      self.integrator = ocl.casadi.CasadiIntegrator( ...
+        nx, nz, nu, np, daefun);
+      
+      self.daefun = daefun;
+      self.icfun = icfun;
+      
+      self.x_struct = x_struct;
+      self.z_struct = z_struct;
+      self.u_struct = u_struct;
+      self.p_struct = p_struct;
 
       self.current_state = [];
       self.algebraic_guess = 0;
@@ -34,19 +77,19 @@ classdef Simulator < handle
     end
 
     function states = getStates(self)
-      states = Variable.create(self.system.x_struct,0);
+      states = Variable.create(self.x_struct,0);
     end
     
     function z = getAlgebraicStates(self)
-      z = Variable.create(self.system.z_struct,0);
+      z = Variable.create(self.z_struct,0);
     end
     
     function controls = getControls(self)
-      controls = Variable.create(self.system.u_struct,0);
+      controls = Variable.create(self.u_struct,0);
     end
 
     function states = getParameters(self)
-      states = Variable.create(self.system.p_struct,0);
+      states = Variable.create(self.p_struct,0);
     end
 
     function [x] = reset(self,varargin)
@@ -69,7 +112,7 @@ classdef Simulator < handle
         params.set(args.parameters);
       end
 
-      nz = self.system.nz;
+      nz = length(self.z_struct);
 
       z = zeros(nz,1);
       x0 = Variable.getValueAsColumn(initialStates);
@@ -118,8 +161,8 @@ classdef Simulator < handle
       xSymb  = casadi.SX.sym('x',size(x));
       zSymb  = casadi.SX.sym('z',size(z));
 
-      ic = self.system.icfun(xSymb,p);
-      [~,alg] = self.system.daefun(xSymb,zSymb,0,p);
+      ic = self.icfun(xSymb,p);
+      [~,alg] = self.daefun(xSymb,zSymb,0,p);
 
       z = ones(size(z)) * rand;
 
