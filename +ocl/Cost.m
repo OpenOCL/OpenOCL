@@ -15,7 +15,7 @@ classdef Cost < handle
     
     function add(self,val)
       % add(self,val)
-      self.value = self.value + Variable.getValueAsColumn(val);
+      self.value = self.value + ocl.Variable.getValueAsColumn(val);
     end
   end
 end

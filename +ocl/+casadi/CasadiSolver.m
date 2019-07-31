@@ -223,7 +223,7 @@ classdef CasadiSolver < handle
                                     z_lb, z_ub, u_lb, u_ub, p_lb, p_ub, ...
                                     vi_struct);
                                   
-        igList{k} = Variable.create(varsStruct, ig);
+        igList{k} = ocl.Variable.create(varsStruct, ig);
       end
     end
     
@@ -392,14 +392,14 @@ classdef CasadiSolver < handle
           sol_struct.add('h', [1 1]);
         end
         
-        sol_out = Variable.create(sol_struct, 0);
+        sol_out = ocl.Variable.create(sol_struct, 0);
         sol_out.states.set(x_traj);
         sol_out.algvars.set(z_traj);
         sol_out.controls.set(u_traj);
         sol_out.parameters.set(P(:,1));
         sol_out.h.set(H);
         
-        times_out = Variable.create(times_struct, 0);        
+        times_out = ocl.Variable.create(times_struct, 0);        
         times_out.states.set(x_times);
         times_out.algvars.set(z_times);
         times_out.controls.set(u_times);

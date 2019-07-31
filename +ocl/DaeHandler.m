@@ -16,11 +16,11 @@ classdef DaeHandler < handle
       if isfield(self.ode, id)
         oclException(['Ode for var ', id, ' already defined']);
       end
-      self.ode.(id) = Variable.getValueAsColumn(eq);
+      self.ode.(id) = ocl.Variable.getValueAsColumn(eq);
     end
 
     function setAlgEquation(self,eq)
-      self.alg = [self.alg;Variable.getValueAsColumn(eq)];
+      self.alg = [self.alg;ocl.Variable.getValueAsColumn(eq)];
     end
     
     function r = getOde(self, nx, statesOrder)

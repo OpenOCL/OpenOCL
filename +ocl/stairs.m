@@ -5,8 +5,8 @@
 function stairs(x, y, varargin)
   ocl.utils.checkStartup()
   
-  x = Variable.getValue(x);
-  y = Variable.getValue(y);
+  x = ocl.Variable.getValue(x);
+  y = ocl.Variable.getValue(y);
   
   stairs(x,y,'LineWidth', 3, varargin{:})
 end
