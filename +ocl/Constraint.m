@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef OclConstraint < handle
+classdef Constraint < handle
   %CONSTRAINT OclConstraint
   %   Create, store and access constraints with this class
   
@@ -14,7 +14,7 @@ classdef OclConstraint < handle
   
   methods
     
-    function self = OclConstraint()
+    function self = Constraint()
       self.values = [];
       self.lowerBounds = [];
       self.upperBounds = [];

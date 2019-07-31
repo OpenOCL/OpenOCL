@@ -38,10 +38,8 @@ acados_solver.initialize('omega', times.states, sol.states.omega, T);
 
 acados_solver.initialize('F', times.controls, sol.controls.F, T);
 
-% Run solver to obtain solution
 [sol,times] = acados_solver.solve();
 
-% visualize solution
 figure; hold on; grid on;
 ocl.stairs(times.controls, sol.controls.F/10.)
 xlabel('time [s]');
