@@ -14,7 +14,7 @@ classdef DaeHandler < handle
   
      function setODE(self,id,eq)
       if isfield(self.ode, id)
-        oclException(['Ode for var ', id, ' already defined']);
+        ocl.utils.exception(['Ode for var ', id, ' already defined']);
       end
       self.ode.(id) = ocl.Variable.getValueAsColumn(eq);
     end
@@ -29,7 +29,7 @@ classdef DaeHandler < handle
       for k=1:length(statesOrder)
         id = statesOrder{k};
         if ~isfield(self.ode,id)
-          oclException(['Ode for state ', id, ' not defined.']);
+          ocl.utils.exception(['Ode for state ', id, ' not defined.']);
         end
         r{k} = self.ode.(id);
         self.ode = rmfield(self.ode, id);
@@ -37,19 +37,19 @@ classdef DaeHandler < handle
       r = vertcat(r{:});
       
       if length(r) ~= nx
-        oclException(['Number of ode equations does not match ',...
+        ocl.utils.exception(['Number of ode equations does not match ',...
                       'number of state variables.']);
       end
       
       if numel(fieldnames(self.ode)) > 0
-        oclException(['ODE for variables defined that do not exist.']);
+        ocl.utils.exception('ODE for variables defined that do not exist.');
       end
     end
     
     function alg = getAlg(self, nz)
       alg = self.alg;
       if length(alg) ~= nz
-        oclException(['Number of algebraic equations does not match ',...
+        ocl.utils.exception(['Number of algebraic equations does not match ',...
                       'number of algebraic variables.']);
       end
     end

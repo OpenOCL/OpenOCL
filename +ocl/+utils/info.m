@@ -2,5 +2,5 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function oclInfo(msg)
+function info(msg)
   disp(msg)

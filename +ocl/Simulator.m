@@ -24,12 +24,10 @@ classdef Simulator < handle
     function self = Simulator(varargin)
       ocl.utils.checkStartup()
       
-      emptyfh = @(varargin)[];
-      
       p = ocl.utils.ArgumentParser;
-      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
-      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
-      p.addKeyword('ic', emptyfh, @oclIsFunHandle);
+      p.addKeyword('vars', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('dae', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('ic', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
       
       r = p.parse(varargin{:});
 
@@ -135,7 +133,7 @@ classdef Simulator < handle
         controls = controls_in;
       end
 
-      oclAssert(~isempty(self.current_state), 'Call `initialize` before `step`.');
+      ocl.utils.assert(~isempty(self.current_state), 'Call `initialize` before `step`.');
 
       x = self.current_state;
       z0 = self.algebraic_guess;
