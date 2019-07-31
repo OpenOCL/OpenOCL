@@ -118,10 +118,10 @@ classdef Solver < handle
 
       [sol,times,objective,constraints] = s.solve(ig_list);
 
-      sol_ass = OclAssignment(sol);
-      times_ass = OclAssignment(times);
-      objective_ass = OclAssignment(objective);
-      constraints_ass = OclAssignment(constraints);
+      sol_ass = ocl.Assignment(sol);
+      times_ass = ocl.Assignment(times);
+      objective_ass = ocl.Assignment(objective);
+      constraints_ass = ocl.Assignment(constraints);
 
       oclWarningNotice()
     end
@@ -136,7 +136,7 @@ classdef Solver < handle
 
     function igAssignment = getInitialGuess(self)
       igList = self.solver.getInitialGuess();
-      igAssignment = OclAssignment(igList);
+      igAssignment = ocl.Assignment(igList);
     end
     
     function initialize(self, id, gridpoints, values)
