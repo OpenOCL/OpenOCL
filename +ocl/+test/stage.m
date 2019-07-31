@@ -1,4 +1,4 @@
-function testOclStage
+function stage
 
 % stage empty test
 stage = ocl.Stage(1, @emptyVars, @emptyDae);
