@@ -123,7 +123,7 @@ classdef Solver < handle
       objective_ass = ocl.Assignment(objective);
       constraints_ass = ocl.Assignment(constraints);
 
-      oclWarningNotice()
+      ocl.utils.warningNotice()
     end
 
     function r = timeMeasures(self)
