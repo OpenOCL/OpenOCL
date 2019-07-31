@@ -8,21 +8,18 @@ classdef CasadiIntegrator < handle
   
   properties
     casadiIntegrator
-    system
   end
   
   methods
-    function self = CasadiIntegrator(system)
+    function self = CasadiIntegrator(nx, nz, nu, np, daefun)
       
-      self.system = system;
+      states = casadi.SX.sym('x', nx);
+      algVars = casadi.SX.sym('z', nz);
+      controls = casadi.SX.sym('u', nu);
+      h = casadi.SX.sym('h');
+      parameters = casadi.SX.sym('p', np);
       
-      states = casadi.SX.sym('x',system.nx,1);
-      algVars = casadi.SX.sym('z',system.nz,1);
-      controls = casadi.SX.sym('u',system.nu,1);
-      h = casadi.SX.sym('h',1,1);
-      parameters = casadi.SX.sym('p',system.np,1);
-      
-      [ode,alg] = system.daefun(states,algVars,controls,parameters);
+      [ode,alg] = daefun(states,algVars,controls,parameters);
 
       dae = struct;
       dae.x = states;

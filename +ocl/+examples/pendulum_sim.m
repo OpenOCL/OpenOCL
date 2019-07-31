@@ -8,11 +8,10 @@ function p_vec = pendulum_sim
   conf = struct;
   conf.l = 1;
   conf.m = 1;
-
-  system = ocl.System(@ocl.examples.pendulum.varsfun, ...
+  
+  simulator = ocl.Simulator(@ocl.examples.pendulum.varsfun, ...
                       @(h,x,z,u,p) ocl.examples.pendulum.daefun(h,x,z,u,conf), ...
                       @(h,x,p) ocl.examples.pendulum.icfun(h,x,conf));
-  simulator = ocl.Simulator(system);
 
   x0 = simulator.getStates();
   x0.p.set([0,conf.l]);

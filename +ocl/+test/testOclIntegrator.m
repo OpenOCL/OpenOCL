@@ -6,19 +6,21 @@
 function testOclIntegrator
 
 % linear system defined below
-s = ocl.System(@linearVars,@linearEq);
+[x_struct, z_struct, u_struct, p_struct, ...
+          ~, ~, ~, ~, ...
+          x_order] = ocl.model.vars(@linearVars);
 
 d = 2;
-collocation = ocl.Collocation(s.x_struct, s.z_struct, s.u_struct, s.p_struct, s.x_order, ...
+collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, ...
                               @linearEq, @(varargin)0, d);
 
 N = 60;
 T = 1;
 h = T/N;
 
-xsym = casadi.SX.sym('x',s.nx);
-xisym = casadi.SX.sym('xi',s.nx*d);
-usym = casadi.SX.sym('u',s.nu);
+xsym = casadi.SX.sym('x', length(x_struct));
+xisym = casadi.SX.sym('xi', length(x_struct)*d);
+usym = casadi.SX.sym('u', length(u_struct));
 
 [~, ~, equations] = ocl.collocation.equations(collocation, xsym, xisym, usym, h, []);
 
