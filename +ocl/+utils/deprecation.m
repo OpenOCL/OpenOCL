@@ -2,5 +2,5 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function oclError(msg)
-  error(msg)
+function deprecation(msg)
+  ocl.utils.warning(msg);

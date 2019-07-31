@@ -2,5 +2,5 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function r = oclIsFunHandleOrEmpty(v)
-r = isa(v,'function_handle') || isempty(v);
+function error(msg)
+  error(msg)

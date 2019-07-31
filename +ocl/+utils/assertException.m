@@ -8,7 +8,7 @@ function assertException(compStr,fh, varargin)
     fh(varargin{:});
   catch e
     thrown = true;
-    assert(contains(e.message,'oclException'),['Wrong exception raised. Not an oclException! ', e.message]);
+    assert(contains(e.message,'OCL EXCEPTION'),['Wrong exception raised. Not an ocl.utils.exception! ', e.message]);
     assert(contains(e.message,compStr), ['Wrong exception raised.', e.message]);
   end
   if ~thrown

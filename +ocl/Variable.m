@@ -33,7 +33,7 @@ classdef Variable < handle
     end
     
     function var = createFromVar(type,pos,var)
-      if isa(var, 'CasadiVariable')
+      if isa(var, 'ocl.casadi.CasadiVariable')
         var = ocl.casadi.CasadiVariable(type,pos,var.mx,var.val);
       else
         var = ocl.Variable(type,pos,var.val);

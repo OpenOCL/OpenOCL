@@ -26,12 +26,12 @@ function [nFails] = core(testExamples,saveLog,suffix)
   cd(oclDir);
   [status,version] = system('git rev-parse HEAD');
   if status~=0
-    oclInfo('Could not get git hash, log filename will not include the hash. This is not a problem.')
+    ocl.utils.info('Could not get git hash, log filename will not include the hash. This is not a problem.')
     version='nogithash';  
   end
   
   if isempty(testDir)
-    error('Test directory not set. Run StartupOCL again.')
+    ocl.utils.error('Test directory not set. Run StartupOCL again.')
   end
   
   ocl.utils.setTestRun(true)

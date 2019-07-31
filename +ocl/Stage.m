@@ -46,16 +46,14 @@ classdef Stage < handle
       
       ocl.utils.checkStartup()
       
-      emptyfh = @(varargin)[];
-      
       p = ocl.utils.ArgumentParser;
       
-      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
-      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pathcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('gridcosts', emptyfh, @oclIsFunHandle);
-      p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
-      p.addKeyword('terminalcost', emptyfh, @oclIsFunHandle);
+      p.addKeyword('vars', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('dae', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('pathcosts', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('gridcosts', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('gridconstraints', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('terminalcost', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
       
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -73,16 +71,16 @@ classdef Stage < handle
 
       % arguments consistency checks
       ocl.utils.assert( (isscalar(T) || isempty(T)) && isreal(T), ... 
-        ['Invalid value for parameter T.', oclDocMessage()] );
+        ['Invalid value for parameter T.', ocl.utils.docMessage()] );
       
       ocl.utils.assert( (isscalar(H_norm_in) || isnumeric(H_norm_in)) && isreal(H_norm_in), ...
-        ['Invalid value for parameter N.', oclDocMessage()] );
+        ['Invalid value for parameter N.', ocl.utils.docMessage()] );
       
       if isscalar(H_norm_in)
         H_norm_in = repmat(1/H_norm_in, 1, H_norm_in);
       elseif abs(sum(H_norm_in)-1) > 1e-6 
         H_norm_in = H_norm_in/sum(H_norm_in);
-        oclWarning(['Timesteps given in pararmeter N are not normalized! ', ...
+        ocl.utils.warning(['Timesteps given in pararmeter N are not normalized! ', ...
                     'N either be a scalar value or a normalized vector with the length ', ...
                     'of the number of control grid. Check the documentation of N. ', ...
                     'Make sure the timesteps sum up to 1, and contain the relative ', ...
@@ -143,7 +141,7 @@ classdef Stage < handle
       elseif oclFieldnamesContain(self.p_struct.getNames(), id)
         self.setParameterGuess(id, varargin{:});
       else
-        oclWarning(['You specified a guess for a variable that does not exist: ', id]);
+        ocl.utils.warning(['You specified a guess for a variable that does not exist: ', id]);
       end
       
     end
