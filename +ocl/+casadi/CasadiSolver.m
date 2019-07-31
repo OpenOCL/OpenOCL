@@ -111,8 +111,8 @@ classdef CasadiSolver < handle
           
           tansition_handler = ocl.Constraint();
           
-          x0 = Variable.create(stageList{k}.x_struct, x0s);
-          xf = Variable.create(stageList{k-1}.x_struct, xfs);
+          x0 = ocl.Variable.create(stageList{k}.x_struct, x0s);
+          xf = ocl.Variable.create(stageList{k-1}.x_struct, xfs);
           
           transition_fun(tansition_handler,x0,xf);
           
