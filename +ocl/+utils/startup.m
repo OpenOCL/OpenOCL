@@ -2,9 +2,9 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function StartupOCL(in)
-  % StartupOCL(workingDirLocation)
-  % StartupOCL(octaveClear)
+function startup(in)
+  % ocl.utils.startup(workingDirLocation)
+  % ocl.utils.startup(octaveClear)
   %
   % Startup script for OpenOCL
   % Adds required directories to the path. Sets up a folder for the results
@@ -17,7 +17,7 @@ function StartupOCL(in)
   oclPath  = fileparts(which('ocl'));
 
   if isempty(oclPath)
-    error('Can not find OpenOCL. Add root directory of OpenOCL to the path.')
+    ocl.utils.error('Can not find OpenOCL. Add root directory of OpenOCL to the path.')
   end
 
   workspaceLocation = fullfile(oclPath, 'Workspace');
@@ -48,9 +48,6 @@ function StartupOCL(in)
   addpath(exportDir)
   
   addpath(fullfile(oclPath,'doc'))
-
-  addpath(fullfile(oclPath,'Core'))
-  addpath(fullfile(oclPath,'Core','utils'))
   
   if ~exist(fullfile(oclPath,'Lib','casadi'), 'dir')
     r = mkdir(fullfile(oclPath,'Lib','casadi'));
@@ -114,7 +111,7 @@ function StartupOCL(in)
       filename = 'casadi-osx-matlabR2014a-v3.4.5.tar.gz';
       downloadCasadi(oclPath, path, filename, fullfile(oclPath,'Lib','casadi'));
     else
-      oclInfo(['Could not set up CasADi for you system.', ...
+      ocl.utils.info(['Could not set up CasADi for you system.', ...
                'You need to install CasADi yourself and add it to your path.'])
     end
     % add Lib and Lib/casadi to path
@@ -124,14 +121,14 @@ function StartupOCL(in)
   
   casadiFound = checkCasadiWorking();
   if casadiFound
-    oclInfo('CasADi is up and running!')
+    ocl.utils.info('CasADi is up and running!')
   else
-    oclError('Go to https://web.casadi.org/get/ and setup CasADi.');
+    ocl.utils.error('Go to https://web.casadi.org/get/ and setup CasADi.');
   end
 
   % remove properties function in Variable.m for Octave which gives a
   % parse error
-  if isOctave()
+  if ocl.utils.isOctave()
     variableDir = fullfile(oclPath,'Core','Variables','Variable');
     %rmpath(variableDir);
 
@@ -160,7 +157,7 @@ function StartupOCL(in)
   end
 
   % travis-ci
-  if isOctave()
+  if ocl.utils.isOctave()
     args = argv();
     if length(args)>0 && args{1} == '1'
       nFails = runTests(1);
@@ -170,7 +167,7 @@ function StartupOCL(in)
     end
   end
 
-  oclInfo('OpenOCL startup procedure finished successfully.')
+  ocl.utils.info('OpenOCL startup procedure finished successfully.')
   
 end
 
@@ -206,14 +203,14 @@ function downloadCasadi(oclPath, path, filename, dest)
       return;
     catch e
       warning(e.message)
-      oclError('You did not agree to download CasADi and your version is not compatible. Either run again or set-up a compatible CasADi version manually.');
+      ocl.utils.error('You did not agree to download CasADi and your version is not compatible. Either run again or set-up a compatible CasADi version manually.');
     end
   end
   
   archive_destination = fullfile(oclPath, 'Workspace', filename);
 
   if ~exist(archive_destination, 'file')
-    oclInfo('Downloading...')
+    ocl.utils.info('Downloading...')
     websave(archive_destination, [path,filename]);
   end
   oclInfo('Extracting...')
@@ -260,7 +257,7 @@ function r = verAtLeast(software, version_number)
 end
 
 function casadiNotWorkingError
-  oclError(['Casadi installation not found or it does not ', ...
+  ocl.utils.error(['Casadi installation not found or it does not ', ...
             'work properly. Try restarting Matlab. Remove all ', ...
             'casadi installations from your path. Run ocl.utils.clean. OpenOCL will ', ...
             'then install the correct casadi version for you.']);
