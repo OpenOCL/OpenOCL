@@ -362,8 +362,8 @@ classdef CasadiSolver < handle
         u_times = T0;
         
         % store solution into trajectory structures
-        sol_struct = OclStructure();
-        times_struct = OclStructure();
+        sol_struct = ocl.types.Structure();
+        times_struct = ocl.types.Structure();
         
         sol_struct.add('states', x_struct);
         times_struct.add('states', [1,1]);

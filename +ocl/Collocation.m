@@ -45,7 +45,7 @@ classdef Collocation < handle
       np = length(parameters);
       nt = d;
       
-      v = OclStructure();
+      v = ocl.types.Structure();
       v.addRepeated({'states', 'algvars'}, {states, algvars}, d);
 
       tau = [0 ocl.collocation.collocationPoints(d)];

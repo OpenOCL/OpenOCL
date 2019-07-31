@@ -2,7 +2,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-classdef OclValue < handle
+classdef Value < handle
   % OCLVALUE Class for storing values (numeric or symbolic)
   properties
     val
@@ -20,7 +20,7 @@ classdef OclValue < handle
   end
   
   methods
-    function self = OclValue(v)
+    function self = Value(v)
       narginchk(1,1); 
       self.val = v;
     end
@@ -33,8 +33,8 @@ classdef OclValue < handle
       % set(type,positions,value)
       if ~iscell(value)
         % value is numeric or casadi
-        pos = OclValue.squeeze(pos);
-        value = OclValue.squeeze(value);
+        pos = ocl.types.Value.squeeze(pos);
+        value = ocl.types.Value.squeeze(value);
         [Np,Mp,Kp] = size(pos);
         [Nv,Mv] = size(value);
         if isempty(value) || Nv*Mv==0
