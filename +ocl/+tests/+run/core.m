@@ -141,7 +141,7 @@ function [nFails] = core(testExamples,saveLog,suffix)
       outputString = sprintf('%s Tests failed\n',testResult.name);
       fprintf(resultsFile,outputString);fprintf(outputString);
       
-      if isOctave()
+      if ocl.utils.isOctave()
         disp(getReportOctave(testResult.exception))  %% OCTAVE
       else
         disp(getReport(testResult.exception))  %% MATLAB

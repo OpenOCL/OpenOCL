@@ -121,7 +121,7 @@ assertEqual(v.x.R(:,:,3).value, A(:,:,3));
 assertEqual(v.x.R(:,2).value, A(:,2));
 
 % set tests
-if ~isOctave()
+if ~ocl.utils.isOctave()
   v.x.R(:,:,end) = eye(3);
   assertEqual( v.x.R(:,:,end).value, eye(3) );
 end
