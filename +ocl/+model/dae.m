@@ -8,7 +8,7 @@ z = Variable.create(z_struct,z);
 u = Variable.create(u_struct,u);
 p = Variable.create(p_struct,p);
 
-daehandler = OclDaeHandler();
+daehandler = ocl.DaeHandler();
 daefh(daehandler,x,z,u,p);
 
 nx = length(x_struct);
