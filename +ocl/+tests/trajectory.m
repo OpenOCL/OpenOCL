@@ -1,5 +1,6 @@
+assertEqual = @ocl.utils.assertEqual;
 
-x_struct = OclStructure;
+x_struct = ocl.types.Structure;
 x_struct.add('p',[3,1]);
 x_struct.add('w',[1,1]);
 x_struct.add('R',[3,3]);
@@ -10,7 +11,7 @@ w = tanh(t);
 R = [t;t;t;2*t;2*t;2*t;3*t;3*t;3*t];
 x_data = [p;w;R];
 
-x_traj = ocl.Trajectory(x_struct, t, x_data);
+x_traj = ocl.types.Trajectory(x_struct, t, x_data);
 
 assertEqual(x_traj.gridpoints, t);
 

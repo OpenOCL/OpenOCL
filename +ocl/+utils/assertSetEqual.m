@@ -5,7 +5,7 @@
 function assertSetEqual(A,B)
   if iscell(A);A=cell2mat(A);end
   if iscell(B);B=cell2mat(B);end
-  assertEqual(numel(A), numel(B))
-  assertEqual(numel(intersect(A,B)), numel(A))
+  ocl.utils.assertEqual(numel(A), numel(B))
+  ocl.utils.assertEqual(numel(intersect(A,B)), numel(A))
   
   

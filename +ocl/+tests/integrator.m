@@ -46,7 +46,7 @@ for i=1:N
   x = v(2+d*2-1:2+d*2);
 end
 
-assertAlmostEqual(x,[1;1],'Integrator test (constant velocity) failed');
+ocl.utils.assertAlmostEqual(x,[1;1],'Integrator test (constant velocity) failed');
 
 % constant start velocity, constant acceleration
 p0 = 2;
@@ -64,7 +64,7 @@ end
 pEnd = p0 + v0*T + 0.5*u*T^2;
 vEnd = v0 + u*T;
 
-assertAlmostEqual(x,[pEnd;vEnd],'Integrator test (constant acceleration) failed',0.1);
+ocl.utils.assertAlmostEqual(x,[pEnd;vEnd],'Integrator test (constant acceleration) failed',0.1);
 
 end
 

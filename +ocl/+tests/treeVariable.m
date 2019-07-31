@@ -4,6 +4,9 @@
 %
 function treeVariable
 
+assertEqual = @ocl.utils.assertEqual;
+assertSqueezeEqual = @ocl.utils.assertSqueezeEqual;
+
 xStruct = ocl.types.Structure();
 xStruct.add('x1',[1,2]);
 xStruct.add('x2',[3,2]);
