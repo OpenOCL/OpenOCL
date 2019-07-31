@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-function testVariable
+function variable
 
 % small number of numeric value comparison
 mx = false;

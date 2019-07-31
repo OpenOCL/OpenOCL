@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-function testOclIntegrator
+function integrator
 
 % linear system defined below
 [x_struct, z_struct, u_struct, p_struct, ...

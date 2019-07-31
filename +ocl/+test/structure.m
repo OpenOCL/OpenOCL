@@ -3,8 +3,8 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 
-function testVarStructure
-  
+function structure
+ 
 x = OclStructure();
 assertEqual(x.size,[0 1]);
 x.add('x1',[1,2]);
