@@ -3,4 +3,4 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function [nFails] = log(suffix)
- nFails = ocl.test.run.core(1,1,suffix);
+ nFails = ocl.tests.run.core(1,1,suffix);

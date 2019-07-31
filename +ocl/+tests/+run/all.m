@@ -3,4 +3,4 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function [nFails] = all
- nFails = ocl.test.run.core(1);
+ nFails = ocl.tests.run.core(1);
