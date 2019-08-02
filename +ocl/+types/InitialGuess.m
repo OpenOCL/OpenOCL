@@ -15,12 +15,12 @@ classdef InitialGuess < handle
     function set(self, id, xdata, ydata)
       
       % check if id is a state id
-      trajectory_structure = OclStructure();
+      trajectory_structure = ocl.types.Structure();
       trajectory_structure.addRepeated({'states'}, ...
                                        {self.states_struct.get(id)}, ...
                                        length(xdata));
       
-      trajectory = Variable.create(trajectory_structure, 0);
+      trajectory = ocl.Variable.create(trajectory_structure, 0);
       states = trajectory.states;
       states.set(ydata);
       

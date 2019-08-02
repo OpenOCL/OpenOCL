@@ -24,16 +24,16 @@ mayer_cost = gridcostfun(N+1, N+1, x_sym, []);
     gridconstraintfun(N+1, N+1, x_sym, []);
 
 % interface compatibility checks
-oclAssert(~isempty(T), 'Free endtime is not supported in the acados interface. In most cases it is possible to reformulate a time-optimal control problem by doing a coordinate transformation.')
+ocl.utils.assert(~isempty(T), 'Free endtime is not supported in the acados interface. In most cases it is possible to reformulate a time-optimal control problem by doing a coordinate transformation.')
 
 for k=1:N
   gridcost = gridcostfun(k, N+1, x_sym, []);
-  oclAssert(gridcost == 0, 'In the gridcosts only terminal cost (mayer cost) are supported in the acados interface.');
+  ocl.utils.assert(gridcost == 0, 'In the gridcosts only terminal cost (mayer cost) are supported in the acados interface.');
 end
 
 for k=1:N
   [gridconstraint,~,~] = gridconstraintfun(k, N+1, x_sym, []);
-  oclAssert(isempty(gridconstraint), 'In the gridconstraints only terminal constraints are supported in the acados interface.');
+  ocl.utils.assert(isempty(gridconstraint), 'In the gridconstraints only terminal constraints are supported in the acados interface.');
 end
 
 mayer_cost = mayer_cost + terminalcostfun(x_sym, []);
