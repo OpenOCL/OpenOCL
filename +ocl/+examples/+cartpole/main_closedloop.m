@@ -1,4 +1,4 @@
-function t = main_closedloop
+function control_timer = main_closedloop
 
 solver = ocl.Solver( ...
   3, ...
@@ -24,22 +24,36 @@ log_window = uicontrol(log_fig, 'Style', 'listbox', ...
   'Min', 0, 'Max', 2, ...
   'Value', []);
 
+log_str = ocl.utils.Reference([]);
 
 % control loop
-log_str = ocl.utils.Reference([]);
-t = timer('TimerFcn', @(t,d)loop(t,d,solver,log_window,log_str), 'ExecutionMode', 'fixedRate', 'Period', 1, 'UserData', []);
-start(t);
+control_timer = timer('TimerFcn', @(t,d) controller(t, d, solver, log_str), ...
+  'ExecutionMode', 'fixedRate', 'Period', 1);
 
+% logger loop
+log_timer = timer('TimerFcn', @(t,d) logger(t, d, log_window, log_str), ...
+  'ExecutionMode', 'fixedRate', 'Period', 1);
+
+start(control_timer);
+start(log_timer);
+
+pause(5)
+
+stop(control_timer)
+stop(log_timer)
 
 end
 
-function loop(~, ~, solver, log_window, log_str)
+function controller(~, ~, solver, log_str)
 
-output_str = evalc('[sol,times] = solver.solve();');
+output_str = evalc('[sol,times] = solver.solve();'); [~] = solver;
+
 log_str.set([log_str.get(), output_str]);
+end
+
+function logger(~, ~, log_window, log_str)
 
 lines = splitlines(log_str.get());
-
 set(log_window, 'String', lines);
 drawnow
 set(log_window, 'ListboxTop', numel(lines));
