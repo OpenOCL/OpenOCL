@@ -26,18 +26,15 @@ classdef Solver < handle
       wsp = ocl.utils.workspacePath();
       acados_build_dir = fullfile(wsp, 'export');
       
-      zerofh = @(varargin) 0;
-      emptyfh = @(varargin) [];
-      
       p = ocl.utils.ArgumentParser;
       
       p.addRequired('T', @(el) isnumeric(el) );
-      p.addKeyword('vars', emptyfh, @oclIsFunHandle);
-      p.addKeyword('dae', emptyfh, @oclIsFunHandle);
-      p.addKeyword('pathcosts', zerofh, @oclIsFunHandle);
-      p.addKeyword('gridcosts', zerofh, @oclIsFunHandle);
-      p.addKeyword('gridconstraints', emptyfh, @oclIsFunHandle);
-      p.addKeyword('terminalcost', emptyfh, @oclIsFunHandle);
+      p.addKeyword('vars', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('dae', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('pathcosts', ocl.utils.zerofh, @ocl.utils.isFunHandle);
+      p.addKeyword('gridcosts', ocl.utils.zerofh, @ocl.utils.isFunHandle);
+      p.addKeyword('gridconstraints', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('terminalcost', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
       
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
@@ -62,8 +59,8 @@ classdef Solver < handle
       nu = length(u_struct);
       np = length(p_struct);
       
-      oclAssert(nz==0, 'Algebraic variable are currently not support in the acados interface.');
-      oclAssert(np==0, 'Parameters are currently not support in the acados interface.');
+      ocl.utils.assert(nz==0, 'Algebraic variable are currently not support in the acados interface.');
+      ocl.utils.assert(np==0, 'Parameters are currently not support in the acados interface.');
       
       daefun = @(x,z,u,p) ocl.model.dae( ...
         daefh, ...
@@ -130,8 +127,8 @@ classdef Solver < handle
     
     function initialize(self, id, points, values, T)
       
-      points = Variable.getValue(points);
-      values = Variable.getValue(values);
+      points = ocl.Variable.getValue(points);
+      values = ocl.Variable.getValue(values);
       
       if nargin==5
         points = points / T;
@@ -140,12 +137,12 @@ classdef Solver < handle
       x_ids = self.x_struct_p.getNames();
       u_ids = self.u_struct_p.getNames();
       
-      if oclFieldnamesContain(x_ids, id)
+      if ocl.utils.fieldnamesContain(x_ids, id)
         self.x_guess_p.set(id, points, values);
-      elseif oclFieldnamesContain(u_ids, id)
+      elseif ocl.utils.fieldnamesContain(u_ids, id)
         self.u_guess_p.set(id, points, values);
       else
-        oclError(['Unknown id: ' , id, ' (not a state and not a control)']);
+        ocl.utils.error(['Unknown id: ' , id, ' (not a state and not a control)']);
       end
     end
     
@@ -162,15 +159,15 @@ classdef Solver < handle
       
       % x0
       [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
-      oclAssert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
+      ocl.utils.assert(all(x0_lb == x0_ub), 'Initial state must be a fixed value (not a box constraint) in the acados interface.');
       ocp.set('constr_x0', x0_lb);
       
       % init x
-      x_traj_structure = OclStructure();
+      x_traj_structure = ocl.types.Structure();
       for k=1:N+1
         x_traj_structure.add('x', x_struct);
       end
-      x_traj = Variable.create(x_traj_structure, 0);
+      x_traj = ocl.Variable.create(x_traj_structure, 0);
       x_traj = x_traj.x;
       x_traj.set(ocp.get('x'));
       
@@ -188,11 +185,11 @@ classdef Solver < handle
       ocp.set('init_x', x_traj.value);
       
       % init u
-      u_traj_structure = OclStructure();
+      u_traj_structure = ocl.types.Structure();
       for k=1:N
         u_traj_structure.add('u', u_struct);
       end
-      u_traj = Variable.create(u_traj_structure, 0);
+      u_traj = ocl.Variable.create(u_traj_structure, 0);
       u_traj = u_traj.u;
       u_traj.set(ocp.get('u'));
       
@@ -215,8 +212,8 @@ classdef Solver < handle
       x_traj = ocp.get('x');
       u_traj = ocp.get('u');
       
-      sol_struct = OclStructure();
-      times_struct = OclStructure();
+      sol_struct = ocl.types.Structure();
+      times_struct = ocl.types.Structure();
 
       sol_struct.add('states', x_struct);
       times_struct.add('states', [1,1]);
@@ -231,14 +228,14 @@ classdef Solver < handle
         times_struct.add('controls', [1,1]);
       end
 
-      sol_out = Variable.create(sol_struct, 0);
+      sol_out = ocl.Variable.create(sol_struct, 0);
       sol_out.states.set(x_traj);
       sol_out.controls.set(u_traj);
       
       x_times = linspace(0,T,N+1);
       u_times = x_times(1:end-1);
 
-      times_out = Variable.create(times_struct, 0);        
+      times_out = ocl.Variable.create(times_struct, 0);        
       times_out.states.set(x_times);
       times_out.controls.set(u_times);
       

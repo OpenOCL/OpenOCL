@@ -132,13 +132,13 @@ classdef Stage < handle
       % setGuess(id, values)
 
       % check if id is a state, control, algvar or parameter
-      if oclFieldnamesContain(self.x_struct.getNames(), id)
+      if ocl.utils.fieldnamesContain(self.x_struct.getNames(), id)
         self.setStateGuess(id, varargin{:});
-      elseif oclFieldnamesContain(self.z_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.z_struct.getNames(), id)
         self.setAlgvarGuess(id, varargin{:});
-      elseif oclFieldnamesContain(self.u_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.u_struct.getNames(), id)
         self.setControlGuess(id, varargin{:});
-      elseif oclFieldnamesContain(self.p_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.p_struct.getNames(), id)
         self.setParameterGuess(id, varargin{:});
       else
         ocl.utils.warning(['You specified a guess for a variable that does not exist: ', id]);
