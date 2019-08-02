@@ -13,7 +13,7 @@ function checkStartup()
   
   if isempty(ocl_casadi_setup_completed) || ~ocl_casadi_setup_completed
     disp('Running OpenOCL setup procedure. This may required your input, and may take a while at the first time.')
-    ocl.utils.StartupOCL();
+    ocl.utils.startup();
     setenv('OCL_CASADI_SETUP', 'true');
   end
 end
