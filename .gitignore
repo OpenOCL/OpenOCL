@@ -9,5 +9,6 @@ octave-workspace
 .autosave
 Workspace
 Lib/casadi
+Lib/acados
 doc/html
 build/
