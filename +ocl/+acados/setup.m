@@ -2,7 +2,7 @@ function setup()
 
 ocl.utils.checkStartup;
 
-latest_acados_version = '41d8e7_v3';
+latest_acados_version = '41d8e7_v4';
 
 % check if MinGW compiler is setup
 c_compiler = mex.getCompilerConfigurations('C','Selected').ShortName;
@@ -61,19 +61,19 @@ ocl.utils.info(['We are now downloading binaries of acados for you. ', ...
   'ACADOS_INSTALL_DIR environment variable. ']);
 
 if ispc
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v3/acados-41d8e7_win.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v4/acados-41d8e7_win.zip';
 elseif isunix && ~ismac
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v3/acados-41d8e7_linux.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v4/acados-41d8e7_linux.zip';
 else
   ocl.utils.error(['Your system is not supported to setup acados automatically. ', ...
-    'Please tell us if you want you configuration supported. You can also ', ...
+    'Please tell us if you want your configuration to be supported. You can also ', ...
     'download and compile acados yourself, and set the ACADOS_INSTALL_DIR ', ...
     'environment variable.']);
 end
 
 % download and unzip acados
 downlad_destination = fullfile(ocl_dir, 'Workspace', 'acados-download.zip');
-ocl.utils.info('Downloading acados (~150MB) ...');
+ocl.utils.info('Downloading acados (~32MB) ...');
 websave(downlad_destination, download_url);
 ocl.utils.info('Unpacking acados ...');
 unzip(downlad_destination, fullfile(ocl_dir,'Lib','acados'))
