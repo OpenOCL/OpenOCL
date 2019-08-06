@@ -1,6 +1,6 @@
 function [lb_stage,ub_stage] = bounds(H_norm, T, nx, ni, nu, np, ...
                                       x_lb, x_ub, x0_lb, x0_ub, xF_lb, xF_ub, ...
-                                      vi_lb, vi_ub, u_lb, u_ub, p_lb, p_ub)
+                                      vi_lb, vi_ub, u_lb_traj, u_ub_traj, p_lb, p_ub)
 
 N = length(H_norm);
 nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
@@ -31,10 +31,8 @@ for m=1:size(I_indizes,2)
 end
 
 % controls
-for m=1:size(U_indizes,2)
-  lb_stage(U_indizes(:,m)) = u_lb;
-  ub_stage(U_indizes(:,m)) = u_ub;
-end
+lb_stage(U_indizes) = u_lb_traj;
+ub_stage(U_indizes) = u_ub_traj;
 
 % parameters (only set the initial parameters)
 lb_stage(P_indizes(:,1)) = p_lb;

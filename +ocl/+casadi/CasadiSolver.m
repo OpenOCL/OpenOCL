@@ -213,14 +213,14 @@ classdef CasadiSolver < handle
         [xF_lb, xF_ub] = ocl.model.bounds(x_struct, xF_bounds);
         
         [z_lb, z_ub] = ocl.model.bounds(z_struct, z_bounds);
-        [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
+        [u_lb_traj, u_ub_traj] = ocl.model.boundsTrajectory(u_struct, u_bounds, N);
         [p_lb, p_ub] = ocl.model.bounds(p_struct, p_bounds);
         
         varsStruct = ocl.simultaneous.variablesStruct(N, x_struct, vi_struct, u_struct, p_struct);
         
         ig = ocl.simultaneous.getInitialGuess(H_norm, T, nx, ni, nu, np, ...
                                     x0_lb, x0_ub, xF_lb, xF_ub, x_lb, x_ub, ...
-                                    z_lb, z_ub, u_lb, u_ub, p_lb, p_ub, ...
+                                    z_lb, z_ub, u_lb_traj, u_ub_traj, p_lb, p_ub, ...
                                     vi_struct);
                                   
         igList{k} = ocl.Variable.create(varsStruct, ig);
@@ -247,6 +247,7 @@ classdef CasadiSolver < handle
         np = stage.np;
         H_norm = stage.H_norm;
         T = stage.T;
+        N = length(H_norm);
         
         x_struct = stage.x_struct;
         z_struct = stage.z_struct;
@@ -268,14 +269,14 @@ classdef CasadiSolver < handle
         [xF_lb, xF_ub] = ocl.model.bounds(x_struct, xF_bounds);
         
         [z_lb, z_ub] = ocl.model.bounds(z_struct, z_bounds);
-        [u_lb, u_ub] = ocl.model.bounds(u_struct, u_bounds);
+        [u_lb_traj, u_ub_traj] = ocl.model.boundsTrajectory(u_struct, u_bounds, N);
         [p_lb, p_ub] = ocl.model.bounds(p_struct, p_bounds);
         
         [vi_lb, vi_ub] = ocl.collocation.bounds(vi_struct, x_lb, x_ub, z_lb, z_ub);
         
-        [lbv_stage,ubv_stage] = ocl.simultaneous.bounds(H_norm, T, nx, ni, nu, np, ...
+        [lbv_stage, ubv_stage] = ocl.simultaneous.bounds(H_norm, T, nx, ni, nu, np, ...
                                       x_lb, x_ub, x0_lb, x0_ub, xF_lb, xF_ub, ...
-                                      vi_lb, vi_ub, u_lb, u_ub, p_lb, p_ub);
+                                      vi_lb, vi_ub, u_lb_traj, u_ub_traj, p_lb, p_ub);
         lbv{k} = lbv_stage;
         ubv{k} = ubv_stage;
       end
