@@ -21,7 +21,6 @@ classdef Solver < handle
     function self = Solver(varargin)
       
       ocl.acados.setup();
-      ocl.utils.checkStartup();
       
       wsp = ocl.utils.workspacePath();
       acados_build_dir = fullfile(wsp, 'export');
