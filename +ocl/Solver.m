@@ -137,7 +137,12 @@ classdef Solver < handle
       igAssignment = ocl.Assignment(igList);
     end
     
-    function initialize(self, id, gridpoints, values)
+    function initialize(self, id, gridpoints, values, T)
+      
+      if nargin==5
+        gridpoints = gridpoints / T;
+      end
+      
       if length(self.stageList) == 1
         self.stageList{1}.initialize(id, gridpoints, values);
       else

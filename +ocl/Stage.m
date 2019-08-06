@@ -127,19 +127,22 @@ classdef Stage < handle
     end
     
     %%% Initial guess
-    function initialize(self, id, varargin)
+    function initialize(self, id, points, values, T)
       % setGuess(id, points, values)
-      % setGuess(id, values)
+      
+      if nargin==5
+        points = points / T;
+      end
 
       % check if id is a state, control, algvar or parameter
       if ocl.utils.fieldnamesContain(self.x_struct.getNames(), id)
-        self.setStateGuess(id, varargin{:});
+        self.setStateGuess(id, points, values);
       elseif ocl.utils.fieldnamesContain(self.z_struct.getNames(), id)
-        self.setAlgvarGuess(id, varargin{:});
+        self.setAlgvarGuess(id, points, values);
       elseif ocl.utils.fieldnamesContain(self.u_struct.getNames(), id)
-        self.setControlGuess(id, varargin{:});
+        self.setControlGuess(id, points, values);
       elseif ocl.utils.fieldnamesContain(self.p_struct.getNames(), id)
-        self.setParameterGuess(id, varargin{:});
+        self.setParameterGuess(id, points, values);
       else
         ocl.utils.warning(['You specified a guess for a variable that does not exist: ', id]);
       end
