@@ -28,6 +28,8 @@ addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
 
 setenv('ENV_RUN','true')
 
+ocl.utils.info('Acados setup procedure finished. ')
+
 end
 
 function r = acados_installed(ocl_dir, version)
@@ -45,13 +47,16 @@ if r
     acados_dir = fullfile(ocl_dir,'Lib','acados');
     addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
     rmpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
-    rmdir(acados_dir, 's');
+    s = rmdir(acados_dir, 's');
+    if ~s
+      ocl.utils.error(['Could not remove acados. Restart Matlab and try ', ...
+        'again or remove the Lib/acados directory manually.']);
+    end
     r = false;
   end
 end
 
 end
-
 
 function install_acados(ocl_dir, latest_acados_version)
 
