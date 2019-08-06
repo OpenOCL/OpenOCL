@@ -28,7 +28,7 @@ classdef Variable < handle
       elseif isa(value,'casadi.MX') || isa(value,'casadi.SX')
         var = ocl.casadi.CasadiVariable.createFromValue(type,value);
       else
-        oclError('Not implemented for this type of variable.')
+        ocl.utils.error('Not implemented for this type of variable.')
       end
     end
     
@@ -172,7 +172,7 @@ classdef Variable < handle
       elseif isempty(s)
         [varargout{1}] = self;
       else
-        oclError('Not supported.');
+        ocl.utils.error('Not supported.');
       end
     end % subsref
     
@@ -264,7 +264,7 @@ classdef Variable < handle
     end
    
     function v = ctranspose(self)
-      oclWarning(['Complex transpose is not defined. Using matrix transpose ', ...
+      ocl.utils.warning(['Complex transpose is not defined. Using matrix transpose ', ...
                   'instead. Use the .'' operator instead on the '' operator!']);
       v = self.transpose();
     end

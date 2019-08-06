@@ -12,7 +12,7 @@ classdef Matrix < ocl.types.Structure
   methods
     
     function self = Matrix(size)
-      % OclMatrix(size)
+      % ocl.types.Matrix(size)
       self.msize = size;
     end
     function [N,M,K] = size(self)

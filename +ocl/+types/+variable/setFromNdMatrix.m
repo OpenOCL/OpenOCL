@@ -7,7 +7,7 @@ value = permute(value,[2,3,1]);
 [Nv,Mv,Kv] = size(value);
 
 if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0 || mod(Kp,Kv)~=0
-  oclError('Can not set values to variable. Dimensions do not match.')
+  ocl.utils.error('Can not set values to variable. Dimensions do not match.')
 end
 
 val = variable.val;

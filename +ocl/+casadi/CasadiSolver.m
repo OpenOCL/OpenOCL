@@ -299,7 +299,7 @@ classdef CasadiSolver < handle
       solveCasadiTime = toc(solveCasadiTic);
       
       if strcmp(self.nlpData.solver.stats().return_status, 'NonIpopt_Exception_Thrown')
-        oclWarning('Solver was interrupted by user.');
+        ocl.utils.warning('Solver was interrupted by user.');
       end
       
       sol_values = sol.x.full();

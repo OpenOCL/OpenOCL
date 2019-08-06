@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 classdef Constraint < handle
-  %CONSTRAINT OclConstraint
+  %CONSTRAINT ocl.Constraint
   %   Create, store and access constraints with this class
   
   properties
@@ -21,17 +21,17 @@ classdef Constraint < handle
     end
     
     function setInitialCondition(self,varargin)
-      oclDeprecation('Using of setInitialCondition is deprecated. Just use add instead.');
+      ocl.utils.deprecation('Using of setInitialCondition is deprecated. Just use add instead.');
       self.add(varargin{:});
     end
     
     function addPathConstraint(self,varargin)
-      oclDeprecation('Using of addPathConstraint is deprecated. Just use add instead.');
+      ocl.utils.deprecation('Using of addPathConstraint is deprecated. Just use add instead.');
       self.add(varargin{:});
     end
     
     function addBoundaryCondition(self,varargin)
-      oclDeprecation('Using of addBoundaryCondition is deprecated. Just use add instead.');
+      ocl.utils.deprecation('Using of addBoundaryCondition is deprecated. Just use add instead.');
       self.add(varargin{:});
     end
     
