@@ -42,7 +42,7 @@ classdef Value < handle
         end
 
         if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0
-          oclError('Can not set values to variable. Dimensions do not match.')
+          ocl.utils.error('Can not set values to variable. Dimensions do not match.')
         end
         
         for k=1:Kp

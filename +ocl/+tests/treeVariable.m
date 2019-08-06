@@ -16,14 +16,14 @@ x = ocl.Variable.create(xStruct,4);
 
 %%% set
 x(:) = (1:10).';
-assert(isequal(x.value,(1:10)'))
+assertEqual(x.value,(1:10)');
 
 %%% get by id
-assert(isequal(x.get('x1').value,[1,9;2,10]));
-assert(isequal(x.x1.value,[1,9;2,10]));
+assertEqual(x.get('x1').value,[1,9;2,10]);
+assertEqual(x.x1.value,[1,9;2,10]);
 
 %%% slice
-assert(isequal(x.x1(1,1,:).value,[1;9]));
+assertEqual(x.x1(1,:).value,[1,9]);
 
 x = ocl.types.Structure();
 x.add('p',[3,1]);

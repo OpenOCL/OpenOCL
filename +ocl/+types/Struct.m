@@ -21,37 +21,51 @@ classdef Struct < handle
       r = self.len_p;
     end
     
-    function add(self, id, s, names)
+    function r = elements(self)
+      r = self.elements_p;
+    end
+    
+    function add(self, id, dimensions, subvars)
       
       elements = self.elements_p;
+      len = self.len_p;
       
-      N = prod(s);
+      N = prod(dimensions);
       
       if nargin == 3
-        names = cell(1,N);
+        subvars = cell(1,N);
         for k=1:N
-          names{k} = [id, num2str(k)];
+          subvars{k} = [id, num2str(k)];
         end
       end
       
-      ocl.utils.assertEqual(length(names), N, ...
+      ocl.utils.assertEqual(length(subvars), N, ...
         'Must specify names for each element.');
       
       ocl.utils.assert( ...
         ~ocl.utils.fieldnamesContain(fieldnames(elements), id), ...
         'Name already exists.');
-      elements.(id) = self.len_p+1:self.len_p+N;
+      
+      elements.(id) = struct;
+      elements.(id).positions = len+1:len+N;
+      elements.(id).dimensions = dimensions;
       
       % insert sub-names
       for k=1:N
         ocl.utils.assert( ...
-          ~ocl.utils.fieldnamesContain(fieldnames(elements), names{k}), ...
+          ~ocl.utils.fieldnamesContain(fieldnames(elements), subvars{k}), ...
           'Name already exists.');
-        elements.(names{k}) = self.len_p+k;
+        elements.(subvars{k}) = struct;
+        elements.(subvars{k}).positions = len+k;
+        elements.(subvars{k}).dimensions = dimensions;
+        elements.(subvars{k}).children = {};
       end
       
-      self.len_p = self.len_p + N;
+      self.len_p = len + N;
       self.elements_p = elements;
+    end
+    
+    function [t,p] = get(self, id)
       
     end
     

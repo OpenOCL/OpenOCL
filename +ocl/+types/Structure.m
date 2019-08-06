@@ -31,34 +31,30 @@ classdef Structure < handle
         % add(id)
         N = 1;
         M = 1;
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
         N = in2;
         M = 1;
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2)
         % args:(id,size)
         N = in2(1);
         M = in2(2);
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       else
         % args:(id,obj)
-        [N,M,K] = in2.size;
+        [N,M] = in2.size;
         obj = in2;
       end
-      pos = self.len+1:self.len+N*M*K;
-      pos = reshape(pos,N,M,K);
+      pos = (self.len+1:self.len+N*M)';
       self.addObject(id,obj,pos);
     end
     
-    function addRepeated(self,names,arr,N)
-      % addRepeated(self,arr,N)
+    function addRepeated(self, names, arr, N)
+      % addRepeated(self,names, arr, N)
       %   Adds repeatedly a list of structure objects
-      %     e.g. ocpVar.addRepeated([stateStructure,controlStructure],20);
+      %     e.g. ocpVar.addRepeated({'states','controls'}, {stateStructure,controlStructure}, 20);
       for i=1:N
         for j=1:length(arr)
           self.add(names{j},arr{j})
@@ -70,14 +66,14 @@ classdef Structure < handle
       % addVar(id, obj)
       %   Adds a structure object
       
-      [N,M,K] = size(pos);
-      self.len = self.len+N*M*K;
+      N = length(pos);
+      self.len = self.len+N;
       
       if ~isfield(self.children, id)
         self.children.(id).type = obj;
         self.children.(id).positions = pos;
       else
-        self.children.(id).positions(:,:,end+1:end+K) = pos;
+        self.children.(id).positions(:,end+1) = pos;
       end
     end
     
@@ -105,64 +101,22 @@ classdef Structure < handle
       end
     end
 
-    function pout = merge(self,p1,p2)
+    function pout = merge(~,p1,p2)
       % merge(p1,p2)
-      % Combine arrays of positions on the third dimension
+      % Combine arrays of positions on the second dimension
       % p2 are relative to p1
       % Returns: absolute p2
-      [~,~,K1] = size(p1);
-      [N2,M2,K2] = size(p2);
+      [~,M1] = size(p1);
+      [N2,M2] = size(p2);
       
-      pout = zeros(N2,M2,K1*K2);
-      for k=1:K1
-       ap1 =  p1(:,:,k);
-       for l=1:K2
-         pout(:,:,l+(k-1)*K2) = ap1(p2(:,:,l));
+      pout = zeros(N2,M1*M2);
+      for k=1:M1
+       ap1 =  p1(:,k);
+       for l=1:M2
+         pout(:,l+(k-1)*M2) = ap1(p2(:,l));
        end
       end
     end % merge
-    
-
-    function tree = flat(self)
-      tree = ocl.types.Structure();
-      self.iterateLeafs((1:self.len).',tree);
-    end
-    
-    
-    function iterateLeafs(self,positions,treeOut)
-      childrenIds = fieldnames(self.children);
-      for k=1:length(childrenIds)
-        id = childrenIds{k};
-        [child,pos] = self.get(id,positions);
-        if isa(child,'ocl.types.Matrix')
-          treeOut.addObject(id,child,pos);
-        elseif isa(child,'ocl.types.Structure')
-          child.iterateLeafs(pos,treeOut);
-        end
-      end
-    end 
-    
-    function valueStruct = toStruct(self,value)
-      positions = (1:self.len).';
-      valueStruct = self.iterateStruct(positions,value);
-    end
-    
-    function [valueStruct,posStruct] = iterateStruct(self,positions,value)
-      
-      valueStruct = struct;
-      valueStruct.value = value(positions);
-      valueStruct.positions = positions;
-      childrenIds = fieldnames(self.children);
-      for k=1:length(childrenIds)
-        id = childrenIds{k};
-        [child,pos] = self.get(id,positions);
-        if isa(child,'OclStructure')
-          childValueStruct = child.iterateStruct(pos,value);
-          valueStruct.(id) = childValueStruct;
-        end
-      end
-    end
-    
     
   end % methods
 end % class
