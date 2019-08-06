@@ -15,6 +15,14 @@ classdef Solver < handle
     
     x_guess_p
     u_guess_p
+    
+    x_traj_p
+    u_traj_p
+    
+    sol_out_p
+    times_out_p
+    
+    verbose_p
   end
   
   methods
@@ -38,6 +46,8 @@ classdef Solver < handle
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
       
+      p.addParameter('verbose', true, @islogical);
+      
       r = p.parse(varargin{:});
       
       T = r.T;
@@ -48,6 +58,7 @@ classdef Solver < handle
       gridcostsfh = r.gridcosts;
       gridconstraintsfh = r.gridconstraints;
       terminalcostfh = r.terminalcost;
+      verbose = r.verbose;
       
       [x_struct, z_struct, u_struct, p_struct, ...
         x_bounds, ~, u_bounds, ~, ...
@@ -110,6 +121,47 @@ classdef Solver < handle
         lbx, ubx, Jbx, lbu, ubu, Jbu, ...
         acados_build_dir);
       
+      % ig variables
+      x_traj_structure = ocl.types.Structure();
+      for k=1:N+1
+        x_traj_structure.add('x', x_struct);
+      end
+      x_traj = ocl.Variable.create(x_traj_structure, 0);
+      x_traj = x_traj.x;
+      
+      u_traj_structure = ocl.types.Structure();
+      for k=1:N
+        u_traj_structure.add('u', u_struct);
+      end
+      u_traj = ocl.Variable.create(u_traj_structure, 0);
+      u_traj = u_traj.u;
+      
+      % solution variables
+      sol_struct = ocl.types.Structure();
+      times_struct = ocl.types.Structure();
+
+      sol_struct.add('states', x_struct);
+      times_struct.add('states', [1,1]);
+      
+      for j=1:N
+        sol_struct.add('states', x_struct);
+        times_struct.add('states', [1,1]);
+      end
+
+      for j=1:N
+        sol_struct.add('controls', u_struct);
+        times_struct.add('controls', [1,1]);
+      end
+
+      sol_out = ocl.Variable.create(sol_struct, 0);
+      times_out = ocl.Variable.create(times_struct, 0);
+      
+      self.x_traj_p = x_traj;
+      self.u_traj_p = u_traj;
+      
+      self.sol_out_p = sol_out;
+      self.times_out_p = times_out;
+      
       self.acados_ocp_p = ocp;
       self.x_struct_p = x_struct;
       self.z_struct_p = z_struct;
@@ -122,6 +174,8 @@ classdef Solver < handle
       
       self.x_guess_p = ocl.types.InitialGuess(x_struct);
       self.u_guess_p = ocl.types.InitialGuess(u_struct);
+      
+      self.verbose_p = verbose;
     end
     
     function initialize(self, id, points, values, T)
@@ -155,6 +209,11 @@ classdef Solver < handle
       x0_bounds = self.x0_bounds_p;
       x_guess = self.x_guess_p.data;
       u_guess = self.u_guess_p.data;
+      verbose = self.verbose_p;
+      x_traj = self.x_traj_p;
+      u_traj = self.u_traj_p;
+      sol_out = self.sol_out_p;
+      times_out = self.times_out_p;
       
       % x0
       [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
@@ -162,12 +221,6 @@ classdef Solver < handle
       ocp.set('constr_x0', x0_lb);
       
       % init x
-      x_traj_structure = ocl.types.Structure();
-      for k=1:N+1
-        x_traj_structure.add('x', x_struct);
-      end
-      x_traj = ocl.Variable.create(x_traj_structure, 0);
-      x_traj = x_traj.x;
       x_traj.set(ocp.get('x'));
       
       times_target = linspace(0,1,N+1);
@@ -184,12 +237,6 @@ classdef Solver < handle
       ocp.set('init_x', x_traj.value);
       
       % init u
-      u_traj_structure = ocl.types.Structure();
-      for k=1:N
-        u_traj_structure.add('u', u_struct);
-      end
-      u_traj = ocl.Variable.create(u_traj_structure, 0);
-      u_traj = u_traj.u;
       u_traj.set(ocp.get('u'));
       
       times_target = linspace(0,1,N+1);
@@ -208,33 +255,16 @@ classdef Solver < handle
       
       % solve
       ocl.acados.solve(ocp);
+      
       x_traj = ocp.get('x');
       u_traj = ocp.get('u');
       
-      sol_struct = ocl.types.Structure();
-      times_struct = ocl.types.Structure();
-
-      sol_struct.add('states', x_struct);
-      times_struct.add('states', [1,1]);
-      
-      for j=1:N
-        sol_struct.add('states', x_struct);
-        times_struct.add('states', [1,1]);
-      end
-
-      for j=1:N
-        sol_struct.add('controls', u_struct);
-        times_struct.add('controls', [1,1]);
-      end
-
-      sol_out = ocl.Variable.create(sol_struct, 0);
       sol_out.states.set(x_traj);
       sol_out.controls.set(u_traj);
       
       x_times = linspace(0,T,N+1);
       u_times = x_times(1:end-1);
-
-      times_out = ocl.Variable.create(times_struct, 0);        
+   
       times_out.states.set(x_times);
       times_out.controls.set(u_times);
       
@@ -242,6 +272,48 @@ classdef Solver < handle
       self.x_guess_p = ocl.types.InitialGuess(x_struct);
       self.u_guess_p = ocl.types.InitialGuess(u_struct);
       
+      if verbose
+        self.print_stats()
+      end
+
+    end
+    
+    function setMaxIterations(self, N)
+      self.acados_ocp_p.opts_struct.nlp_solver_max_iter = N;
+    end
+
+    function print_stats(self)
+      acados_ocp = self.acados_ocp_p;
+      
+      status = acados_ocp.get('status');
+      sqp_iter = acados_ocp.get('sqp_iter');
+      time_tot = acados_ocp.get('time_tot');
+      time_lin = acados_ocp.get('time_lin');
+      time_reg = acados_ocp.get('time_reg');
+      time_qp_sol = acados_ocp.get('time_qp_sol');
+      
+      fprintf('\nstatus = %d, sqp_iter = %d, time_int = %f [ms] (time_lin = %f [ms], time_qp_sol = %f [ms], time_reg = %f [ms])\n', status, sqp_iter, time_tot*1e3, time_lin*1e3, time_qp_sol*1e3, time_reg*1e3);
+
+      stat = acados_ocp.get('stat');
+      fprintf('\niter\tres_g\t\tres_b\t\tres_d\t\tres_m\t\tqp_stat\tqp_iter');
+      if size(stat,2)>7
+        fprintf('\tqp_res_g\tqp_res_b\tqp_res_d\tqp_res_m');
+      end
+      fprintf('\n');
+      for ii=1:size(stat,1)
+        fprintf('%d\t%e\t%e\t%e\t%e\t%d\t%d', stat(ii,1), stat(ii,2), stat(ii,3), stat(ii,4), stat(ii,5), stat(ii,6), stat(ii,7));
+        if size(stat,2)>7
+          fprintf('\t%e\t%e\t%e\t%e', stat(ii,8), stat(ii,9), stat(ii,10), stat(ii,11));
+        end
+        fprintf('\n');
+      end
+      fprintf('\n');
+
+      if status==0
+        fprintf('\nsuccess!\n\n');
+      else
+        fprintf('\nsolution failed!\n\n');
+      end
     end
     
     function setInitialStateBounds(self, id, varargin)

@@ -152,7 +152,7 @@ function downloadCasadi(ocl_dir, path, filename, dest)
   
   if strcmp(m, 'n') || strcmp(m, 'no')
     try 
-      ocl.test.testVariable;
+      ocl.tests.variable;
       fid = fopen(fullfile(dest, 'CUSTOM_CASADI'),'w');
       fclose(fid);
       return;

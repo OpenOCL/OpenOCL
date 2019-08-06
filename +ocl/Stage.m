@@ -130,6 +130,9 @@ classdef Stage < handle
     function initialize(self, id, points, values, T)
       % setGuess(id, points, values)
       
+      points = ocl.Variable.getValue(points);
+      values = ocl.Variable.getValue(values);
+      
       if nargin==5
         points = points / T;
       end
