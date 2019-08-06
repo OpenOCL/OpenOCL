@@ -20,13 +20,7 @@ classdef Solver < handle
       
       ocl.utils.checkStartup()
 
-      if isnumeric(varargin{1}) && isa(varargin{2}, 'OclSystem')
-        % ocl.Solver(T, system, ocp, options, H_norm)
-        oclDeprecation(['This way of creating the solver ', ...
-                        'is deprecated. It will be removed from version >5.01']);
-        oclError('OclSystem is not supported anymore!');
-        
-      elseif nargin >= 1 && isnumeric(varargin{1}) && ( isscalar(varargin{1}) || isempty(varargin{1}) )
+      if nargin >= 1 && isnumeric(varargin{1}) && ( isscalar(varargin{1}) || isempty(varargin{1}) )
         % ocl.Solver(T, 'vars', @varsfun, 'dae', @daefun,
         %            'lagrangecost', @lagrangefun,
         %            'pathcosts', @pathcostfun, options
@@ -66,7 +60,7 @@ classdef Solver < handle
         % ocl.Solver(stages, transitions, opt)
         p = ocl.utils.ArgumentParser;
 
-        p.addKeyword('stages', {}, @(el) iscell(el) || isa(el, 'OclStage'));
+        p.addKeyword('stages', {}, @(el) iscell(el) || isa(el, 'ocl.Stage'));
         p.addKeyword('transitions', {}, @(el) iscell(el) || ishandle(el) );
         
         p.addParameter('nlp_casadi_mx', false, @islogical);
@@ -146,7 +140,7 @@ classdef Solver < handle
       if length(self.stageList) == 1
         self.stageList{1}.initialize(id, gridpoints, values);
       else
-        oclError('For multi-stage problems, set the guess to the stages directly.')
+        ocl.utils.error('For multi-stage problems, set the guess to the stages directly.')
       end
     end
 
@@ -154,7 +148,7 @@ classdef Solver < handle
       if length(self.stageList) == 1
         self.stageList{1}.setParameterBounds(id, varargin{:});
       else
-        oclError('For multi-stage problems, set the bounds to the stages directly.')
+        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
       end
     end
 
@@ -173,11 +167,11 @@ classdef Solver < handle
         elseif ocl.utils.fieldnamesContain(self.stageList{1}.p_struct.getNames(), id)
           self.stageList{1}.setParameterBounds(id, varargin{:});
         else
-          ocl.utils.(['You specified a bound for a variable that does not exist: ', id]);
+          ocl.utils.error(['You specified a bound for a variable that does not exist: ', id]);
         end
 
       else
-        oclError('For multi-stage problems, set the bounds to the stages directly.')
+        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
       end
     end
     
@@ -206,7 +200,7 @@ classdef Solver < handle
       if length(self.stageList) == 1
         self.stageList{1}.setEndStateBounds(id, varargin{:});
       else
-        oclError('For multi-stage problems, set the bounds to the stages directlly.')
+        ocl.utils.error('For multi-stage problems, set the bounds to the stages directlly.')
       end
     end
 

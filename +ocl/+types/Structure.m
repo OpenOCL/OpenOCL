@@ -12,7 +12,7 @@ classdef Structure < handle
 
   methods
     function self = Structure()
-      % OclTree()
+      % ocl.types.Structure()
       narginchk(0,0);
       self.children = struct;
       self.len = 0;
@@ -121,48 +121,6 @@ classdef Structure < handle
        end
       end
     end % merge
-    
-
-    function tree = flat(self)
-      tree = ocl.types.Structure();
-      self.iterateLeafs((1:self.len).',tree);
-    end
-    
-    
-    function iterateLeafs(self,positions,treeOut)
-      childrenIds = fieldnames(self.children);
-      for k=1:length(childrenIds)
-        id = childrenIds{k};
-        [child,pos] = self.get(id,positions);
-        if isa(child,'ocl.types.Matrix')
-          treeOut.addObject(id,child,pos);
-        elseif isa(child,'ocl.types.Structure')
-          child.iterateLeafs(pos,treeOut);
-        end
-      end
-    end 
-    
-    function valueStruct = toStruct(self,value)
-      positions = (1:self.len).';
-      valueStruct = self.iterateStruct(positions,value);
-    end
-    
-    function [valueStruct,posStruct] = iterateStruct(self,positions,value)
-      
-      valueStruct = struct;
-      valueStruct.value = value(positions);
-      valueStruct.positions = positions;
-      childrenIds = fieldnames(self.children);
-      for k=1:length(childrenIds)
-        id = childrenIds{k};
-        [child,pos] = self.get(id,positions);
-        if isa(child,'OclStructure')
-          childValueStruct = child.iterateStruct(pos,value);
-          valueStruct.(id) = childValueStruct;
-        end
-      end
-    end
-    
     
   end % methods
 end % class

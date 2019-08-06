@@ -22,14 +22,14 @@ classdef Assignment < handle
       elseif length(vl) == 1
         [varargout{1:nargout}] = subsref(vl{1} ,s);
       else
-        oclError('Not supported.');
+        ocl.utils.error('Not supported.');
       end
       
     end
     
     function disp(self) 
       vs = self.varsList;
-      disp('OclAssignment with content:');
+      disp('ocl.Assignment with content:');
       disp('{');
       disp(' ');
       for k=1:length(vs)
