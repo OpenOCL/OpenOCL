@@ -27,7 +27,7 @@ x0 = [0;0;0;0];
 sim = ocl.Simulator(@ocl.examples.cartpole.vars, @ocl.examples.cartpole.dae);
 sim.reset(x0);
 
-draw_handles = ocl.examples.cartpole.draw_prepare(x0(1), x0(2), 0.8, 4);
+draw_handles = ocl.examples.cartpole.draw_prepare(x0(1), x0(2), 0.8, 2);
 
 % log window
 log_fig = figure('menubar', 'none');
@@ -85,9 +85,9 @@ solver.setInitialState('theta', current_state(2));
 solver.setInitialState('v', current_state(3));
 solver.setInitialState('omega', current_state(4));
 
-control_loop_tic = tic;
+% control_loop_tic = tic;
 [sol,tt] = solver.solve();
-toc(control_loop_tic)
+% toc(control_loop_tic)
 
 u = sol.controls.F.value;
 
@@ -138,7 +138,7 @@ function cli(t)
       t.UserData.current_state = t.UserData.current_state + 1e-1 * (rand(4,1)-.5);
     elseif strcmp(m, 'f')
       disp('force!!')
-      t.UserData.force = 10*sign(rand-0.5);
+      t.UserData.force = 20*sign(rand-0.5);
     end
   end
 
