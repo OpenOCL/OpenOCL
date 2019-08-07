@@ -39,8 +39,6 @@ log_window = uicontrol(log_fig, 'Style', 'listbox', ...
   'Value', []);
 
 data = struct;
-data.sol = [];
-data.times = [];
 data.T = T;
 data.dt = T/N;
 data.draw_handles = draw_handles;
@@ -52,40 +50,26 @@ data.force = 0;
 control_timer = timer('TimerFcn', @(t,d) controller(t, d, solver, sim, log_window), ...
   'ExecutionMode', 'fixedRate', 'Period', data.dt, 'UserData', data);
 
-
 start(control_timer);
 cli(control_timer);
 stop(control_timer);
 
 end
 
-function controller(t, d, solver, sim, log_window)
+function controller(t, ~, solver, sim, log_window)
 
-sol = t.UserData.sol;
-% times = t.UserData.times;
-% T = t.UserData.T;
 dt = t.UserData.dt;
 draw_handles = t.UserData.draw_handles;
 time = t.UserData.t;
 current_state = t.UserData.current_state;
 force = t.UserData.force;
 
-%   if ~isempty(sol)
-%     solver.initialize('p', times.states, sol.states.p, T);
-%     solver.initialize('v', times.states, sol.states.v, T);
-%     solver.initialize('theta', times.states, sol.states.theta, T);
-%     solver.initialize('omega', times.states, sol.states.omega, T);
-%     solver.initialize('F', times.controls, sol.controls.F, T);
-%   end
-
 solver.setInitialState('p', current_state(1));
 solver.setInitialState('theta', current_state(2));
 solver.setInitialState('v', current_state(3));
 solver.setInitialState('omega', current_state(4));
 
-% control_loop_tic = tic;
-[sol,tt] = solver.solve();
-% toc(control_loop_tic)
+[sol,~] = solver.solve();
 
 u = sol.controls.F.value;
 
@@ -98,17 +82,14 @@ if abs(x(1)) > 6
   sim.current_state = [0;0;0;0];
 end
 
-
 % draw
 ocl.examples.cartpole.draw(draw_handles, time, x, 0.8);
 
 lines = splitlines(solver.stats());
 set(log_window, 'String', lines);
 drawnow
-% set(log_window, 'ListboxTop', numel(lines));
 
 t.UserData.sol = sol;
-%   t.UserData.times = tt;
 t.UserData.t = time + dt;
 t.UserData.current_state = sim.current_state;
 t.UserData.force = 0;
