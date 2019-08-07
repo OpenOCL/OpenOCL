@@ -1,24 +1,10 @@
-function [costs,constraints,constraints_lb,constraints_ub,times,x0,p0] = ...
-  equations(stage, stage_vars, controls_regularization, ...
+function [costs,constraints,constraints_lb,constraints_ub,x0,p0] = ...
+  equations(H_norm, T, nx, ni, nu, np, gridcostfun, gridconstraintfun, ...
+            terminalcostfun, integratormap, stage_vars, controls_regularization, ...
             controls_regularization_value)
 
-H_norm = stage.H_norm;
-T = stage.T;
-nx = stage.nx;
-ni = stage.integrator.num_i;
-nu = stage.nu;
-np = stage.np;
-gridcost_fun = @stage.gridcostfun;
-gridcon_fun = @stage.gridconstraintfun;
-
-[~,N] = ocl.simultaneous.nvars(H_norm, nx, ni, nu, np);
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.getStageIndizes(stage);
-
-X = reshape(stage_vars(X_indizes), nx, N+1);
-I = reshape(stage_vars(I_indizes), ni, N);
-U = reshape(stage_vars(U_indizes), nu, N);
-P = reshape(stage_vars(P_indizes), np, N+1);
-H = reshape(stage_vars(H_indizes), 1 , N);
+N = length(H_norm);
+[X,I,U,P,H] = ocl.simultaneous.variablesUnpack(stage_vars, N, nx, ni, nu, np);
 
 % grid constraints, grid costs
 gridcon = cell(1,N+1);
@@ -26,9 +12,11 @@ gridcon_lb = cell(1,N+1);
 gridcon_ub = cell(1,N+1);
 gridcost = 0;
 for k=1:N+1
-  [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridcon_fun(k, N+1, X(:,k), P(:,k));
-  gridcost = gridcost + gridcost_fun(k, N+1, X(:,k), P(:,k));
+  [gridcon{k}, gridcon_lb{k}, gridcon_ub{k}] = gridconstraintfun(k, N+1, X(:,k), P(:,k));
+  gridcost = gridcost + gridcostfun(k, N+1, X(:,k), P(:,k));
 end
+
+gridcost = gridcost + terminalcostfun(X(:,N+1), P(:,N+1));
 
 % point costs
 % grid = ocl.simultaneous.normalizedStateTimes(stage);
@@ -43,7 +31,7 @@ end
 %   
 % end
 
-[xend_arr, cost_arr, int_eq_arr, int_times] = stage.integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
+[xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints
 h_eq = double.empty(0,N-1);
@@ -107,14 +95,6 @@ if controls_regularization && numel(U)>0
   Uvec = U(:);
   costs = costs + controls_regularization_value*(Uvec'*Uvec);
 end
-
-% times output
-T0 = [0, cumsum(H(:,1:end-1))];
-for k=1:size(int_times,1)
-  int_times(k,:) = T0 + int_times(k,:);
-end
-times = [T0; int_times; T0];
-times = [times(:); T0(end)+H(end)];
 
 x0 = X(:,1);
 p0 = P(:,1);

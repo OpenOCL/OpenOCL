@@ -4,7 +4,8 @@
 %
 function [sol,times,solver] = cartpole
 
-  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, 'gridcosts', @gridcosts, 'N', 40, 'd', 3);
+  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, ...
+    'terminalcost', @terminalcost, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
@@ -26,13 +27,13 @@ function [sol,times,solver] = cartpole
 
   % visualize solution
   figure; hold on; grid on;
-  oclStairs(times.controls, sol.controls.F/10.)
+  ocl.stairs(times.controls, sol.controls.F/10.)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.p)
+  ocl.plot(times.states, sol.states.p)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.v)
+  ocl.plot(times.states, sol.states.v)
   xlabel('time [s]');
-  oclPlot(times.states, sol.states.theta)
+  ocl.plot(times.states, sol.states.theta)
   legend({'force [10*N]','position [m]','velocity [m/s]','theta [rad]'})
   xlabel('time [s]');
 
@@ -80,10 +81,8 @@ function daefun(sh,x,~,u,~)
   
 end
 
-function gridcosts(self,k,K,x,~)
-  if k == K
-    self.add( x.time );
-  end
+function terminalcost(ocl,x,~)
+  ocl.add( x.time );
 end
 
 function handles = animate(sol,times)
@@ -91,8 +90,8 @@ function handles = animate(sol,times)
   handles = {};
   pmax = max(abs(sol.states.p.value));
   
-  states = sol.integrator.states.value;
-  times = times.integrator.value;
+  states = sol.states.value;
+  times = times.states.value;
   times = times(:);
   
   snap_at = floor(linspace(2,length(times),4));
@@ -136,7 +135,7 @@ function handles = draw(time, dt, x, Xref, pmax, handles)
     h2 = text(-0.3,pmax, '0.00 s','FontSize',15);
     h3 = plot(p,0,'ks','MarkerSize',ms,'Linewidth',3);
 
-    xB = p-l*sin(theta);
+    xB = p+l*sin(theta);
     yB = l*cos(theta);
 
     h4 = line([p xB], [0 yB],'color',[38,124,185]/255,'Linewidth',2);

@@ -1,28 +1,35 @@
-function ig_stage = getInitialGuessWithUserData(stage, ig_data)
+function ig_stage = getInitialGuessWithUserData(ig_stage, stage, colloc)
 
-ig_values = ocl.simultaneous.getInitialGuess(stage);
-varsStruct = ocl.simultaneous.variables(stage);
-ig_stage = Variable.create(varsStruct, ig_values);
+H_norm = stage.H_norm;
+nt = colloc.num_t;
+
+x_guess = stage.x_guess.data;
+
+x_times = [0, cumsum(H_norm)]';
+
+colloc_times = zeros(nt, length(H_norm));
+time = 0;
+for k=1:length(H_norm)
+  h = H_norm(k);
+  colloc_times(:,k) = time + ocl.collocation.times(colloc.tau_root, h);
+  time = time + H_norm(k);
+end
+colloc_times = colloc_times(:);
 
 % incoorperate user input ig data for state trajectories
-names = fieldnames(ig_data.data);
+names = fieldnames(x_guess);
 for k=1:length(names)
   id = names{k};
   
-  xdata = ig_data.data.(id).x;
-  ydata = ig_data.data.(id).y;
+  xdata = x_guess.(id).x;
+  ydata = x_guess.(id).y;
   
   % state trajectories
-  xtarget = ocl.simultaneous.normalizedStateTimes(stage);
-  ytarget = interp1(xdata,ydata,xtarget,'linear','extrap');
-  
+  ytarget = interp1(xdata, ydata, x_times,'linear','extrap');
   ocl.types.variable.setFromNdMatrix(ig_stage.states.get(id), ytarget);
   
-  xtarget = ocl.simultaneous.normalizedIntegratorTimes(stage);
-  xtarget = xtarget(:);
-  
-  ytarget = interp1(xdata,ydata,xtarget,'linear','extrap');
-  
+  % integrator states
+  ytarget = interp1(xdata, ydata, colloc_times,'linear','extrap');
   ocl.types.variable.setFromNdMatrix(ig_stage.integrator.states.get(id), ytarget);
   
 end

@@ -1,5 +1,5 @@
 function vout = toNdMatrix(variable)
-oclAssert(isa(variable, 'Variable'));   
+ocl.utils.assert(isa(variable, 'ocl.Variable'));   
 p = variable.positions;
 vout = zeros(size(p,3), size(p,1), size(p,2));
 for k=1:size(p,3)

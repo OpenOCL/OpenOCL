@@ -10,19 +10,16 @@ function [sol,times,solver] = bouncingball
   
   after_contact.setEndStateBounds('s', 1);
 
-  solver = OclSolver({before_contact, after_contact}, {@stage_transition});
+  solver = ocl.Solver({before_contact, after_contact}, {@stage_transition});
 
   [sol,times] = solver.solve(solver.getInitialGuess());
 
-  figure
-  spy(full(solver.jacobian_pattern(sol)))
-  
   % stage 1
   figure; 
   subplot(1,2,1)
   hold on; grid on;
-  oclPlot(times{1}.states, sol{1}.states.s)
-  oclPlot(times{1}.states, sol{1}.states.v)
+  ocl.plot(times{1}.states, sol{1}.states.s)
+  ocl.plot(times{1}.states, sol{1}.states.v)
   legend({'s','v'})
   xlabel('time [s]');
   ylim([-5 3])
@@ -32,9 +29,9 @@ function [sol,times,solver] = bouncingball
   % stage 2
   subplot(1,2,2)
   hold on; grid on;
-  oclPlot(times{2}.states, sol{2}.states.s)
-  oclPlot(times{2}.states, sol{2}.states.v)
-  oclStairs(times{2}.states, [sol{2}.controls.F;sol{2}.controls.F(end)])
+  ocl.plot(times{2}.states, sol{2}.states.s)
+  ocl.plot(times{2}.states, sol{2}.states.v)
+  ocl.stairs(times{2}.controls, sol{2}.controls.F)
   legend({'s','v','F'})
   xlabel('time [s]');
   ylim([-5 3])

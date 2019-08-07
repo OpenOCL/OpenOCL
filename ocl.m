@@ -44,4 +44,4 @@
 % <https://openocl.org/bsd-3-clause/>
 
 function ocl
-  ocl.utils.StartupOCL
+  ocl.utils.startup

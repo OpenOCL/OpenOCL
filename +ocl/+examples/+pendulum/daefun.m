@@ -1,6 +1,6 @@
-function daefun(sh,x,z,u,p)
+function daefun(sh,x,z,u,conf)
 
-  ddp = - 1/p.m * z.lambda*x.p - [0;9.81] + [u.F;0];
+  ddp = - 1/conf.m * z.lambda*x.p - [0;9.81] + [u.F;0];
 
   sh.setODE('p',x.v);
   sh.setODE('v',ddp);

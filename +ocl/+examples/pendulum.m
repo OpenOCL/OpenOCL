@@ -3,52 +3,38 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [vars,times,solver] = pendulum
+function [ig,times,solver] = pendulum
 
-  solver = ocl.Solver([], ...
-                      @ocl.examples.pendulum.varsfun, ...
-                      @ocl.examples.pendulum.daefun, ...
-                      @pathcosts, @gridcosts, ...
-                      'callback_setup', @ocl.examples.pendulum.simcallbacksetup, ...
-                      'callback', @ocl.examples.pendulum.simcallback, ...
-                      'N', 40);
-  
-  solver.setBounds('time', 0, 15);
-  
-  solver.setBounds('p',       -[1;1], [1;1]);
-  solver.setBounds('v',       -[3;3], [3;3]);
-  solver.setBounds('F',       -25, 25);
-  solver.setBounds('lambda',  -50, 50);
-  solver.setBounds('m',       1);
-  solver.setBounds('l',       1);
+conf = struct;
+conf.l = 1;
+conf.m = 1;
 
-  solver.setInitialBounds('time', 0);
-  solver.setInitialBounds('p', [0;-1],[0;-1]);
-  solver.setInitialBounds('v', [0.5;0]);
+solver = ocl.Solver([], ...
+  @ocl.examples.pendulum.varsfun, ...
+  @(h,x,z,u,p) ocl.examples.pendulum.daefun(h,x,z,u,conf), ...
+  @ocl.examples.pendulum.pathcosts, ...
+  @ocl.examples.pendulum.gridcosts, ...
+  'N', 100);
 
-  solver.setEndBounds('p',     [0,1]);
-  solver.setEndBounds('v',     [-1;-1], [1;1]);
+solver.setBounds('time', 0, 15);
 
-  vars = solver.getInitialGuess();
-  vars.states.p.set([0;-1]);
-  vars.states.v.set([0.1;0]);
-  vars.controls.F.set(-10);
+solver.setBounds('v',       -[3;3], [3;3]);
+solver.setBounds('F',       -40, 40);
 
-  [solution,times] = solver.solve(vars);
+solver.setInitialBounds('time', 0);
+solver.setInitialBounds('p', [0; -conf.l]);
+solver.setInitialBounds('v', [0.5;0]);
 
-  figure
-  solver.solutionCallback(times,solution);
+solver.setEndBounds('p',     [0,0], [0,inf]);
+solver.setEndBounds('v',     [-1;-1], [1;1]);
 
-  snapnow;
-end
+ig = solver.getInitialGuess();
+ig.states.p.set([0;-1]);
+ig.states.v.set([0.1;0]);
+ig.controls.F.set(-10);
 
-function gridcosts(ch,k,K,x,~)
-  if k==K
-    ch.add(1e-6*x.time);
-  end
-end
+[solution,times] = solver.solve(ig);
 
-function pathcosts(ch,~,~,controls,~)
-  F  = controls.F;
-  ch.add( F^2 );
-end
+ocl.examples.pendulum.animate(conf.l, solution.states.p.value, times.value);
+
+snapnow;

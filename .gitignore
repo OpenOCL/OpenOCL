@@ -3,9 +3,12 @@ jit_tmp.c
 *.asv
 *.m~
 *.mex*
+*.lib
 slprj/
 octave-workspace
 .autosave
 Workspace
 Lib/casadi
+Lib/acados
 doc/html
+build/

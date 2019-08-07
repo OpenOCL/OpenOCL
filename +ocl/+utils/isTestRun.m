@@ -3,6 +3,6 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 function r = isTestRun()
-  global testRun
-  r = ~isempty(testRun) && testRun;
-end
+global testRun
+r = ~isempty(testRun) && testRun;
+
