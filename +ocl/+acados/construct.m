@@ -4,7 +4,8 @@ function ocp = construct( ...
     daefun, gridcostfun, pathcostfun, gridconstraintfun, ...
     terminalcostfun, ...
     lbx, ubx, Jbx, lbu, ubu, Jbu, ...
-    acados_build_dir)
+    acados_build_dir, ...
+    build_model)
 
 casadi_sym = @casadi.SX.sym;
 
@@ -98,10 +99,16 @@ qp_solver_warm_start = 2;
 sim_method_num_stages = 4;
 sim_method_num_steps = 3;
 
+if build_model
+  codgen_model = 'true';
+else
+  codgen_model = 'false';
+end
+
 ocp_opts = acados_ocp_opts();
 nlp_solver = 'sqp';
 ocp_opts.set('compile_mex', 'false');
-ocp_opts.set('codgen_model', 'true');
+ocp_opts.set('codgen_model', codgen_model);
 ocp_opts.set('param_scheme', 'multiple_shooting_unif_grid');
 ocp_opts.set('param_scheme_N', N);
 ocp_opts.set('nlp_solver', nlp_solver);
@@ -125,6 +132,7 @@ ocp_opts.set('sim_method_num_steps', sim_method_num_steps);
 ocp_opts.set('output_dir', acados_build_dir);
 
 ocp = acados_ocp(ocp_model, ocp_opts);
+setenv('OCL_MODEL_DATENUM', num2str(now));
 
 x_traj_init = zeros(nx, N+1);
 u_traj_init = zeros(nu, N);

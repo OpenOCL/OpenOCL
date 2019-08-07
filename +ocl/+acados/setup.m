@@ -37,7 +37,7 @@ if ~exist(fullfile(export_dir, 'ACADOS_MEX_INSTALLED'), 'file')
   opts.output_dir = export_dir;
   opts.qp_solver = 'partial_condensing_hpipm';
   ocp_compile_mex(opts);
-
+  
   fid = fopen(fullfile(export_dir,'ACADOS_MEX_INSTALLED'), 'wt' );
   fclose(fid);
 end
