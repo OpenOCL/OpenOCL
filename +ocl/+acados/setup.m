@@ -56,7 +56,9 @@ if r
   fclose(fid);
   
   if ~strcmp(installed_version, version)
-    [~] = input("Deleting old acados version to replace with a newer version. Press [enter] to proceed.",'s');
+    [~] = input(['Deleting old acados version ', installed_version, newline, ...
+      'to replace with the newer version ', version, newline, ...
+      'Press [enter] to proceed.'], 's');
     
     acados_dir = fullfile(ocl_dir,'Lib','acados');
     addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
