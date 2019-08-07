@@ -2,8 +2,8 @@ function main_closedloop
 clear all;
 close all;
 
-T = 3;
-N = 30;
+T = 2;
+N = 40;
 
 solver = ocl.acados.Solver( ...
   T, ...
@@ -61,8 +61,6 @@ end
 
 function controller(t, d, solver, sim, log_window)
 
-
-
 sol = t.UserData.sol;
 % times = t.UserData.times;
 % T = t.UserData.T;
@@ -104,10 +102,9 @@ end
 % draw
 ocl.examples.cartpole.draw(draw_handles, time, x, 0.8);
 
-
-% lines = splitlines(output_str);
-% set(log_window, 'String', lines);
-% drawnow
+lines = splitlines(solver.stats());
+set(log_window, 'String', lines);
+drawnow
 % set(log_window, 'ListboxTop', numel(lines));
 
 t.UserData.sol = sol;
@@ -116,8 +113,6 @@ t.UserData.t = time + dt;
 t.UserData.current_state = sim.current_state;
 t.UserData.force = 0;
 
-
-  
 end
 
 function cli(t)
@@ -138,7 +133,7 @@ function cli(t)
       t.UserData.current_state = t.UserData.current_state + 1e-1 * (rand(4,1)-.5);
     elseif strcmp(m, 'f')
       disp('force!!')
-      t.UserData.force = 20*sign(rand-0.5);
+      t.UserData.force = 30*sign(rand-0.5);
     end
   end
 
