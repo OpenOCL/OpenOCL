@@ -5,7 +5,7 @@ m = 0.1;  % mass of the ball [kg]
 l = 0.8;  % length of the rod [m]
 g = 9.81; % gravity constant [m/s^2]
 
-v = x.v;
+v = x.v; 
 theta = x.theta;
 omega = x.omega;
 F = u.F;
