@@ -168,7 +168,7 @@ function downloadCasadi(ocl_dir, path, filename, dest)
     ocl.utils.info('Downloading...')
     websave(archive_destination, [path,filename]);
   end
-  oclInfo('Extracting...')
+  ocl.utils.info('Extracting...')
   [~,~,ending] = fileparts(archive_destination);
   if strcmp(ending, '.zip')
     unzip(archive_destination, dest)
@@ -202,7 +202,7 @@ function r = checkCasadiWorking()
     casadi.SX.sym('x');
     r = true;
   catch e
-    oclInfo(e);
+    ocl.utils.warning(e.message);
     casadiNotWorkingError();
   end
 end
