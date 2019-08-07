@@ -26,23 +26,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 	exit
 fi
 
-if [ -n "$1" ]; then
-  ACADOS_INSTALL_DIR=${1}
-  echo "Set acados directory from command line argument: ACADOS_INSTALL_DIR=$ACADOS_INSTALL_DIR"
-fi
-
-if [ -z "$ACADOS_INSTALL_DIR" ] || [ "$ACADOS_INSTALL_DIR" == "" ]; then
-  echo "ERROR: You need to pass the location of the acados root directory to the script or set the ACADOS_INSTALL_DIR environment variable.";
-else
-
 
   # folder location of this file (main directory of OpenOCL)
   OCL_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-  export ENV_RUN=true
-  export ACADOS_INSTALL_DIR
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${ACADOS_INSTALL_DIR}/lib:"./build"
-
-  echo "Setup of acados done."
-  echo "ACADOS_INSTALL_DIR=$ACADOS_INSTALL_DIR"
-fi
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OCL_DIR/Workspace/export/
