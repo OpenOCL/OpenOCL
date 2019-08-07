@@ -2,7 +2,7 @@ function setup()
 
 ocl.utils.checkStartup;
 
-latest_acados_version = '41d8e7_v4';
+latest_acados_version = '1171fa';
 
 % check if MinGW compiler is setup
 c_compiler = mex.getCompilerConfigurations('C','Selected').ShortName;
@@ -56,7 +56,7 @@ if r
   fclose(fid);
   
   if ~strcmp(installed_version, version)
-    [~] = input("Deleting old acados version. Press [enter] to proceed.",'s');
+    [~] = input("Deleting old acados version to replace with a newer version. Press [enter] to proceed.",'s');
     
     acados_dir = fullfile(ocl_dir,'Lib','acados');
     addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
@@ -66,6 +66,9 @@ if r
       ocl.utils.error(['Could not remove acados. Restart Matlab and try ', ...
         'again or remove the Lib/acados directory manually.']);
     end
+    
+    export_dir = fullfile(ocl.utils.workspacePath(), 'export');
+    delete(fullfile(export_dir, 'ACADOS_MEX_INSTALLED'));
     r = false;
   end
 end
@@ -80,9 +83,9 @@ ocl.utils.info(['We are now downloading binaries of acados for you. ', ...
   'ACADOS_INSTALL_DIR environment variable. ']);
 
 if ispc
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v4/acados-41d8e7_win.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/1171fa/acados-1171fa_win.zip';
 elseif isunix && ~ismac
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/41d8e7_v4/acados-41d8e7_linux.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/1171fa/acados-1171fa_linux.zip';
 else
   ocl.utils.error(['Your system is not supported to setup acados automatically. ', ...
     'Please tell us if you want your configuration to be supported. You can also ', ...
