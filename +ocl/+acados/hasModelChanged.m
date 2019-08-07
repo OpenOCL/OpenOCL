@@ -1,8 +1,11 @@
-function r = hasModelChanged(fh_list)
+function r = hasModelChanged(fh_list, N)
 
 cur_model_datenum = getenv('OCL_MODEL_DATENUM');
-if isempty(cur_model_datenum)
-  r = false;
+cur_model_N = getenv('OCL_MODEL_N');
+
+if isempty(cur_model_datenum) || isempty(cur_model_N) || ...
+    str2double(cur_model_N) ~= N
+  r = true;
 else
   cur_model_datenum = str2double(cur_model_datenum);
   r = false;

@@ -6,11 +6,19 @@ classdef Bounds < handle
 
   methods
     function self = Bounds()
-      self.data_p = {};
+      self.data_p = struct;
     end
     
     function r = data(self)
-      r = self.data_p;
+      d = self.data_p;
+      
+      names = fieldnames(d);
+      r = cell(length(names), 1);
+      
+      for k=1:length(names)
+        id = names{k};
+        r{k} = d.(id);
+      end
     end
 
     function set(self, id, varargin)
@@ -30,7 +38,8 @@ classdef Bounds < handle
       d.id = id;
       d.lower = lower;
       d.upper = upper;
-      self.data_p{end+1} = d;
+      
+      self.data_p.(id) = d;
     end
   end
 end
