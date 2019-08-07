@@ -12,7 +12,7 @@ solver.setInitialState('p', 0);
 solver.setInitialState('v', 0);
 solver.setInitialState('theta', pi);
 solver.setInitialState('omega', 0);
-
+ 
 solver.initialize('theta', [0 1], [pi 0]);
 
 [sol,times] = solver.solve();

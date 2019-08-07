@@ -36,12 +36,12 @@ classdef Solver < handle
       p = ocl.utils.ArgumentParser;
       
       p.addRequired('T', @(el) isnumeric(el) );
-      p.addKeyword('vars', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
-      p.addKeyword('dae', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
-      p.addKeyword('pathcosts', ocl.utils.zerofh, @ocl.utils.isFunHandle);
-      p.addKeyword('gridcosts', ocl.utils.zerofh, @ocl.utils.isFunHandle);
-      p.addKeyword('gridconstraints', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
-      p.addKeyword('terminalcost', ocl.utils.emptyfh, @ocl.utils.isFunHandle);
+      p.addKeyword('vars', @ocl.utils.emptyfun, @ocl.utils.isFunHandle);
+      p.addKeyword('dae', @ocl.utils.emptyfun, @ocl.utils.isFunHandle);
+      p.addKeyword('pathcosts', @ocl.utils.zerofun, @ocl.utils.isFunHandle);
+      p.addKeyword('gridcosts', @ocl.utils.zerofun, @ocl.utils.isFunHandle);
+      p.addKeyword('gridconstraints', @ocl.utils.emptyfun, @ocl.utils.isFunHandle);
+      p.addKeyword('terminalcost', @ocl.utils.emptyfun, @ocl.utils.isFunHandle);
       
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);

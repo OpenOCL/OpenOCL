@@ -101,6 +101,7 @@ sim_method_num_steps = 3;
 
 if build_model
   codgen_model = 'true';
+  ocl.utils.info('Compiling model...')
 else
   codgen_model = 'false';
 end
