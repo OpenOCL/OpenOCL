@@ -64,10 +64,6 @@ p = p(:,:,1);
 [~,p] = t.get('x1',p);
 assertSqueezeEqual(p, {[4,5,6],[16,17,18]} );
 
-% flat operator
-f = x.flat();
-[t,p] = f.get('x1');
-assertSetEqual(p,{[1,2,3],[4,5,6],[16,17,18],[28,29,30],[40,41,42],[58,59,60]} );
 
 
 
