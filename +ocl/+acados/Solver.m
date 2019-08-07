@@ -277,7 +277,7 @@ classdef Solver < handle
       self.u_guess_p = ocl.types.InitialGuess(u_struct);
       
       if verbose
-        ocl.utils.info(self.stats())
+        disp(self.stats())
       end
 
     end
