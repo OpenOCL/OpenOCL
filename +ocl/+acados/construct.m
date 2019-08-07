@@ -134,6 +134,7 @@ ocp_opts.set('output_dir', acados_build_dir);
 
 ocp = acados_ocp(ocp_model, ocp_opts);
 setenv('OCL_MODEL_DATENUM', num2str(now));
+setenv('OCL_MODEL_N', num2str(N));
 
 x_traj_init = zeros(nx, N+1);
 u_traj_init = zeros(nu, N);

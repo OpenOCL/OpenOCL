@@ -3,6 +3,7 @@ clear all;
 close all;
 
 T = 3;
+N = 30;
 
 solver = ocl.acados.Solver( ...
   T, ...
@@ -10,7 +11,7 @@ solver = ocl.acados.Solver( ...
   'dae', @ocl.examples.cartpole.dae, ...
   'pathcosts', @ocl.examples.cartpole.pathcosts, ...
   'terminalcost', @ocl.examples.cartpole.terminalcost, ...
-  'N', 30, 'verbose', true);
+  'N', N, 'verbose', false);
 
 solver.setInitialState('p', 0);
 solver.setInitialState('v', 0);
@@ -41,7 +42,7 @@ data = struct;
 data.sol = [];
 data.times = [];
 data.T = T;
-data.dt = 0.1;
+data.dt = T/N;
 data.draw_handles = draw_handles;
 data.t = 0;
 data.current_state = x0;
@@ -60,7 +61,7 @@ end
 
 function controller(t, d, solver, sim, log_window)
 
-control_loop_tic = tic;
+
 
 sol = t.UserData.sol;
 % times = t.UserData.times;
@@ -84,7 +85,9 @@ solver.setInitialState('theta', current_state(2));
 solver.setInitialState('v', current_state(3));
 solver.setInitialState('omega', current_state(4));
 
+control_loop_tic = tic;
 [sol,tt] = solver.solve();
+toc(control_loop_tic)
 
 u = sol.controls.F.value;
 
@@ -113,7 +116,7 @@ t.UserData.t = time + dt;
 t.UserData.current_state = sim.current_state;
 t.UserData.force = 0;
 
-toc(control_loop_tic)
+
   
 end
 
