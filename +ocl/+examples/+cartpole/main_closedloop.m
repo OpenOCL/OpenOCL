@@ -44,7 +44,7 @@ data.dt = T/N;
 data.draw_handles = draw_handles;
 data.t = 0;
 data.current_state = x0;
-data.force = 0;
+data.force = {};
 
 % control loop
 control_timer = timer('TimerFcn', @(t,d) controller(t, d, solver, sim, log_window), ...
@@ -62,7 +62,6 @@ dt = t.UserData.dt;
 draw_handles = t.UserData.draw_handles;
 time = t.UserData.t;
 current_state = t.UserData.current_state;
-force = t.UserData.force;
 
 solver.setInitialState('p', current_state(1));
 solver.setInitialState('theta', current_state(2));
@@ -74,6 +73,12 @@ solver.setInitialState('omega', current_state(4));
 u = sol.controls.F.value;
 
 sim.current_state = current_state;
+
+force = 0;
+if ~isempty(t.UserData.force)
+  force = t.UserData.force{end};
+  t.UserData.force(end) = [];
+end
 
 x = sim.step(u(1) + force, dt);
 x = x.value;
@@ -92,7 +97,6 @@ drawnow
 t.UserData.sol = sol;
 t.UserData.t = time + dt;
 t.UserData.current_state = sim.current_state;
-t.UserData.force = 0;
 
 end
 
@@ -102,7 +106,6 @@ function cli(t)
     'You can make use of ', ...
     'the following commands:', newline, newline, ...
     'q: quits the program', newline, ...
-    'd: disturbs the state', newline, ...
     'f: applies a force of 30N', newline, ... 
     '<number>:  applies a force of <number> Newton', newline]);
 
@@ -114,16 +117,13 @@ function cli(t)
       disp('exiting...')
       stop(t);
       terminated = true;
-    elseif strcmp(m, 'd')
-      disp('disturbance!')
-      t.UserData.current_state = t.UserData.current_state + 1e-1 * (rand(4,1)-.5);
     elseif strcmp(m, 'f')
       disp('force!!')
-      t.UserData.force = 30*sign(rand-0.5);
+      t.UserData.force{end+1} = 30*sign(rand-0.5);
     elseif ~isempty(str2double(m))
       F = str2double(m);
       disp(['force ', m, '!!!']);
-      t.UserData.force = F*sign(rand-0.5);
+      t.UserData.force{end+1} = F*sign(rand-0.5);
     end
   end
 
