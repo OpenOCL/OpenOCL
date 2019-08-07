@@ -116,10 +116,13 @@ classdef Simulator < handle
       x0 = ocl.Variable.getValueAsColumn(initialStates);
       p = ocl.Variable.getValueAsColumn(params);
 
-      [x,z] = self.getConsistentIntitialCondition(x0,z,p);
-      initialStates.set(x);
+      if ~isempty(z)
+        [x0,z] = self.getConsistentIntitialCondition(x0,z,p);
+      end
+      
+      initialStates.set(x0);
 
-      self.current_state = x;
+      self.current_state = x0;
       self.algebraic_guess = z;
       self.parameters = p;
     end

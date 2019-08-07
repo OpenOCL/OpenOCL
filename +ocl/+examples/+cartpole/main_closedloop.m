@@ -1,4 +1,5 @@
 function main_closedloop
+clear all;
 close all;
 
 T = 3;
