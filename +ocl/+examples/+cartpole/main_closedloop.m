@@ -85,6 +85,10 @@ x = x.value;
 
 if abs(x(1)) > 6
   sim.current_state = [0;0;0;0];
+  solver.initialize('p', [0 1], [0 0]);
+  solver.initialize('theta', [0 1], [0 0]);
+  solver.initialize('v', [0 1], [0 0]);
+  solver.initialize('omega', [0 1], [0 0]);
 end
 
 % draw
