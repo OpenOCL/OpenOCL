@@ -2,8 +2,8 @@ function main_closedloop
 clear all;
 close all;
 
-T = 2;
-N = 40;
+T = 3;
+N = 60;
 
 solver = ocl.acados.Solver( ...
   T, ...
@@ -27,7 +27,7 @@ x0 = [0;0;0;0];
 sim = ocl.Simulator(@ocl.examples.cartpole.vars, @ocl.examples.cartpole.dae);
 sim.reset(x0);
 
-draw_handles = ocl.examples.cartpole.draw_prepare(x0(1), x0(2), 0.8, 2);
+draw_handles = ocl.examples.cartpole.draw_prepare(x0(1), x0(2), 0.8, 6);
 
 % log window
 log_fig = figure('menubar', 'none');
@@ -94,7 +94,7 @@ sim.current_state = current_state;
 x = sim.step(u(1) + force, dt);
 x = x.value;
 
-if abs(x(1)) > 4
+if abs(x(1)) > 6
   sim.current_state = [0;0;0;0];
 end
 
@@ -134,6 +134,10 @@ function cli(t)
     elseif strcmp(m, 'f')
       disp('force!!')
       t.UserData.force = 30*sign(rand-0.5);
+    elseif ~isempty(str2double(m))
+      F = str2double(m);
+      disp(['force ', m, '!!!']);
+      t.UserData.force = F*sign(rand-0.5);
     end
   end
 
