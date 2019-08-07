@@ -2,7 +2,7 @@ function setup()
 
 ocl.utils.checkStartup;
 
-latest_acados_version = '1171fa';
+latest_acados_version = 'n3_7a83d3';
 
 % check if MinGW compiler is setup
 c_compiler = mex.getCompilerConfigurations('C','Selected').ShortName;
@@ -83,9 +83,9 @@ ocl.utils.info(['We are now downloading binaries of acados for you. ', ...
   'ACADOS_INSTALL_DIR environment variable. ']);
 
 if ispc
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/1171fa/acados-1171fa_win.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/n3_7a83d3/acados-7a83d3_win.zip';
 elseif isunix && ~ismac
-  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/1171fa/acados-1171fa_linux.zip';
+  download_url = 'https://github.com/jkoendev/acados-deployment/releases/download/n3_7a83d3/acados-7a83d3_linux.zip';
 else
   ocl.utils.error(['Your system is not supported to setup acados automatically. ', ...
     'Please tell us if you want your configuration to be supported. You can also ', ...
