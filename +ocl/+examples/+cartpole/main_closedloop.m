@@ -102,12 +102,14 @@ end
 
 function cli(t)
 
-  disp([newline, 'You are now in the command line interface. ', newline, ...
+  cli_info = [newline, 'You are now in the command line interface. ', newline, ...
     'You can make use of ', ...
     'the following commands:', newline, newline, ...
     'q: quits the program', newline, ...
     'f: applies a force of 30N', newline, ... 
-    '<number>:  applies a force of <number> Newton', newline]);
+    '<number>:  applies a force of <number> Newton', newline];
+
+  disp(cli_info);
 
   terminated = false;
   while ~terminated
@@ -120,10 +122,13 @@ function cli(t)
     elseif strcmp(m, 'f')
       disp('force!!')
       t.UserData.force{end+1} = 30*sign(rand-0.5);
-    elseif ~isempty(str2double(m))
+    elseif ~isnan(str2double(m))
       F = str2double(m);
       disp(['force ', m, '!!!']);
       t.UserData.force{end+1} = F*sign(rand-0.5);
+    else
+      disp('Command not recognized!')
+      disp(cli_info);
     end
   end
 
