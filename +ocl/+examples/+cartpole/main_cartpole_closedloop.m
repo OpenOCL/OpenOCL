@@ -1,4 +1,4 @@
-function main_closedloop
+function main_cartpole_closedloop
 clear all;
 close all;
 
@@ -89,6 +89,7 @@ if abs(x(1)) > 6
   solver.initialize('theta', [0 1], [0 0]);
   solver.initialize('v', [0 1], [0 0]);
   solver.initialize('omega', [0 1], [0 0]);
+  solver.initialize('F', [0 1], [0 0]);
 end
 
 % draw
