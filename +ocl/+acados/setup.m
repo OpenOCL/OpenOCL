@@ -28,6 +28,20 @@ addpath(fullfile(acados_dir, 'interfaces', 'acados_matlab'));
 
 setenv('ENV_RUN','true')
 
+% compile acados mex interface
+export_dir = fullfile(ocl.utils.workspacePath(), 'export');
+if ~exist(fullfile(export_dir, 'ACADOS_MEX_INSTALLED'), 'file')
+  ocl.utils.info('Compiling acados mex interface...')
+
+  opts = struct;
+  opts.output_dir = export_dir;
+  opts.qp_solver = 'partial_condensing_hpipm';
+  ocp_compile_mex(opts);
+
+  fid = fopen(fullfile(export_dir,'ACADOS_MEX_INSTALLED'), 'wt' );
+  fclose(fid);
+end
+
 ocl.utils.info('Acados setup procedure finished. ')
 
 end
