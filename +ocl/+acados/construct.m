@@ -102,6 +102,12 @@ sim_method_num_steps = 3;
 if build_model
   codgen_model = 'true';
   ocl.utils.info('Compiling model...')
+  mex_files = cellstr(ls(fullfile(ocl.utils.workspacePath, 'export', ['*.', mexext])));
+  
+  for k=1:length(mex_files)
+    [~, mex_name] = fileparts(mex_files{k});
+    clear(mex_name)
+  end
 else
   codgen_model = 'false';
 end
