@@ -43,6 +43,8 @@ classdef Solver < handle
         p.addParameter('N', 20, @isnumeric);
         p.addParameter('d', 3, @isnumeric);
         
+        p.addParameter('verbose', true, @islogical);
+        
         r = p.parse(varargin{:});
         
         stageList = {ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
@@ -55,6 +57,7 @@ classdef Solver < handle
         controls_regularization_value = r.controls_regularization_value;
         
         casadi_options = r.casadi_options;
+        verbose = r.verbose;
         
       else
         % ocl.Solver(stages, transitions, opt)
@@ -69,6 +72,8 @@ classdef Solver < handle
         
         p.addParameter('casadi_options', ocl.casadi.CasadiOptions(), @(el) isstruct(el));
         
+        p.addParameter('verbose', true, @islogical);
+        
         r = p.parse(varargin{:});
         
         stageList = r.stages;
@@ -79,11 +84,13 @@ classdef Solver < handle
         controls_regularization_value = r.controls_regularization_value;
         
         casadi_options = r.casadi_options;
+        verbose = r.verbose;
       end
 
       solver = ocl.casadi.CasadiSolver(stageList, transitionList, ...
                                        nlp_casadi_mx, controls_regularization, ...
-                                       controls_regularization_value, casadi_options);
+                                       controls_regularization_value, casadi_options, ...
+                                       verbose);
 
                                      
       % set instance variables
@@ -116,6 +123,10 @@ classdef Solver < handle
       constraints_ass = ocl.Assignment(constraints);
 
       ocl.utils.warningNotice()
+    end
+    
+    function r = stats(self)
+      
     end
 
     function r = timeMeasures(self)

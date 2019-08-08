@@ -190,7 +190,7 @@ function r = checkCasadi(path)
       r = true;
     catch e
       cd(cur_path)
-      oclInfo(e);
+      ocl.utils.warning(e.message);
       casadiNotWorkingError();
     end
   end

@@ -17,7 +17,7 @@ classdef CasadiSolver < handle
     function self = CasadiSolver(stageList, transitionList, ...
                                  nlp_casadi_mx, ...
                                  controls_regularization, controls_regularization_value, ...
-                                 casadi_options)
+                                 casadi_options, verbose)
       
       ocl.utils.assert(length(stageList)==length(transitionList)+1, ...
                 'You need to specify Ns-1 transitions for Ns stages.');
@@ -141,6 +141,11 @@ classdef CasadiSolver < handle
       casadiNLP.f = costs;
       casadiNLP.g = constraints;
       casadiNLP.p = [];
+      
+      if ~verbose
+        casadi_options.ipopt.print_level = 0;
+        casadi_options.print_time = 0;
+      end
       
       constructSolverTic = tic;
       casadiSolver = casadi.nlpsol('my_solver', 'ipopt', casadiNLP, casadi_options);
