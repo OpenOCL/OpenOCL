@@ -23,6 +23,7 @@ classdef Solver < handle
     times_out_p
     
     verbose_p
+    print_level_p
   end
   
   methods
@@ -47,6 +48,7 @@ classdef Solver < handle
       p.addParameter('d', 3, @isnumeric);
       
       p.addParameter('verbose', true, @islogical);
+      p.addParameter('print_level', 1, @isnumeric);
       
       r = p.parse(varargin{:});
       
@@ -59,6 +61,7 @@ classdef Solver < handle
       gridconstraintsfh = r.gridconstraints;
       terminalcostfh = r.terminalcost;
       verbose = r.verbose;
+      print_level = r.print_level;
       
       model_changed = ocl.acados.hasModelChanged({varsfh, daefh, pathcostsfh, ...
         gridcostsfh, gridconstraintsfh, terminalcostfh}, N);
@@ -123,7 +126,8 @@ classdef Solver < handle
         terminalcostfun, ...
         lbx, ubx, Jbx, lbu, ubu, Jbu, ...
         acados_build_dir, ...
-        model_changed);
+        model_changed, ...
+        print_level);
       
       % ig variables
       x_traj_structure = ocl.types.Structure();
@@ -180,6 +184,7 @@ classdef Solver < handle
       self.u_guess_p = ocl.types.InitialGuess(u_struct);
       
       self.verbose_p = verbose;
+      self.print_level_p = print_level;
     end
     
     function initialize(self, id, points, values, T)
@@ -218,6 +223,7 @@ classdef Solver < handle
       u_traj = self.u_traj_p;
       sol_out = self.sol_out_p;
       times_out = self.times_out_p;
+      print_level = self.print_level_p;
       
       % x0
       [x0_lb, x0_ub] = ocl.model.bounds(x_struct, x0_bounds);
@@ -238,7 +244,8 @@ classdef Solver < handle
         
         x_traj.get(id).set(ytarget);
       end
-      ocp.set('init_x', x_traj.value);
+      init_x = x_traj.value;
+      ocp.set('init_x', init_x);
       
       % init u
       u_traj.set(ocp.get('u'));
@@ -255,7 +262,19 @@ classdef Solver < handle
         
         u_traj.get(id).set(ytarget);
       end
-      ocp.set('init_u', u_traj.value);
+      init_u = u_traj.value;
+      ocp.set('init_u', init_u);
+      
+      if print_level > 2
+        ocl.utils.debug('Acados debug constr_x0: ');
+        ocl.utils.debug(x0_lb);
+        
+        ocl.utils.debug('Acados debug init_x: ');
+        ocl.utils.debug(init_x);
+        
+        ocl.utils.debug('Acados debug init_u: ');
+        ocl.utils.debug(init_u);
+      end
       
       % solve
       ocl.acados.solve(ocp);

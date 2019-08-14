@@ -5,7 +5,8 @@ function ocp = construct( ...
     terminalcostfun, ...
     lbx, ubx, Jbx, lbu, ubu, Jbu, ...
     acados_build_dir, ...
-    build_model)
+    build_model, ...
+    print_level)
 
 casadi_sym = @casadi.SX.sym;
 
@@ -146,3 +147,23 @@ x_traj_init = zeros(nx, N+1);
 u_traj_init = zeros(nu, N);
 ocp.set('init_x', x_traj_init);
 ocp.set('init_u', u_traj_init);
+
+
+if print_level > 2 
+  ocl.utils.debug('Acados debug ocp model: ');
+  names = fieldnames(ocp_model.model_struct);
+  for k=1:length(names)
+    ocl.utils.debug([names{k}, ': ']);
+    ocl.utils.debug(ocp_model.model_struct.(names{k}));
+    ocl.utils.debug(' ');
+  end
+  
+  ocl.utils.debug('Acados debug ocp options: ');
+  names = fieldnames(ocp_opts.opts_struct);
+  for k=1:length(names)
+    ocl.utils.debug([names{k}, ': ']);
+    ocl.utils.debug(ocp_opts.opts_struct.(names{k}));
+    ocl.utils.debug(' ');
+  end
+  
+end
