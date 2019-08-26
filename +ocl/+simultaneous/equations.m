@@ -18,19 +18,6 @@ end
 
 gridcost = gridcost + terminalcostfun(X(:,N+1), P(:,N+1));
 
-% point costs
-% grid = ocl.simultaneous.normalizedStateTimes(stage);
-% grid_N = grid(1:end-1,:);
-% grid_collocation = ocl.simultaneous.normalizedIntegratorTimes(stage);
-% 
-% grid_merged = [grid_N,grid_collocation];
-% 
-% for k=1:length(stage.pointcostsarray)
-%   point = stage.pointcostsarray{k}.point;
-%   fh = stage.pointcostsarray{k}.fh;
-%   
-% end
-
 [xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
 
 % timestep constraints

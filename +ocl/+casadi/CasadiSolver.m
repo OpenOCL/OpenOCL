@@ -5,6 +5,8 @@ classdef CasadiSolver < handle
     stageList
     collocationList
     nlpData
+    
+    varsStructList
   end
   
   properties (Access = private)
@@ -67,7 +69,7 @@ classdef CasadiSolver < handle
         T = stage.T;
         N = stage.N;
         
-        collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
+        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
         
         ni = collocation.num_i;
         collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
@@ -98,7 +100,7 @@ classdef CasadiSolver < handle
                                        terminalcostfun, ...
                                        integratormap, v_stage, ...
                                        controls_regularization, controls_regularization_value);
-        
+
         collocationList{k} = collocation;
                                      
         transition_eq = [];
@@ -184,6 +186,7 @@ classdef CasadiSolver < handle
     
     function igList = getInitialGuess(self)
       stage_list = self.stageList;
+      vs_list = self.varsStructList;
 
       igList = cell(length(stage_list),1);
       for k=1:length(stage_list)
@@ -229,7 +232,12 @@ classdef CasadiSolver < handle
                                     vi_struct);
                                   
         igList{k} = ocl.Variable.create(varsStruct, ig);
+        
+        vs_list{k} = varsStruct;
       end
+      
+      self.varsStructList = vs_list;
+      
     end
     
     function [sol,times,objective,constraints] = solve(self,v0)
@@ -239,6 +247,7 @@ classdef CasadiSolver < handle
       
       stage_list = self.stageList;
       collocation_list = self.collocationList;
+      vs_list = self.varsStructList;
       
       lbv = cell(length(stage_list),1);
       ubv = cell(length(stage_list),1);
@@ -322,93 +331,22 @@ classdef CasadiSolver < handle
         
         nx = stage.nx;
         nu = stage.nu;
-        nz = stage.nz;
         np = stage.np;
         N = stage.N;
         
-        x_struct = stage.x_struct;
-        u_struct = stage.u_struct;
-        p_struct = stage.p_struct;
-        
         ni = colloc.num_i;
-        d = colloc.order;
-        tau_root = colloc.tau_root;
+        nt = colloc.num_t;
         
         nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
         
         % unpack solution of this stage to state/controls trajectories
         V = sol_values(i_stage:i_stage+nv_stage-1);
-        [X,I,U,P,H] = ocl.simultaneous.variablesUnpack(V, N, nx, ni, nu, np);
-        
-        T0 = [0, cumsum(H(:,1:end-1))];
-        
-        x_times = zeros(1, 1+d*N);
-        x_traj = zeros(nx, 1+d*N);
-        x_traj(:,1) = X(:,1);
-        x_times(1) = T0(1);
-        i_x = 2;
-        for j=1:N      
-          [xi, ~] =  ocl.collocation.variablesUnpack(I(:,j), nx, nz, d);
-          x_traj(:,i_x:i_x+d-1) = xi;
-          x_times(i_x:i_x+d-1) = T0(j) + ocl.collocation.times(tau_root, H(j));
-          i_x = i_x + d;
-        end
-        
-        z_times = zeros(1, d*N);
-        z_traj = zeros(nz, d*N);
-        i_z = 1;
-        for j=1:N
-          [~, zi] =  ocl.collocation.variablesUnpack(I(:,j), nx, nz, d);
-          z_traj(:,i_z:i_z+d-1) = zi;
-          z_times(i_z:i_z+d-1) = T0(j) + ocl.collocation.times(tau_root, H(j));
-          i_z = i_z + d;
-        end
-        
-        u_traj = U;
-        u_times = T0;
-        
-        % store solution into trajectory structures
-        sol_struct = ocl.types.Structure();
-        times_struct = ocl.types.Structure();
-        
-        sol_struct.add('states', x_struct);
-        times_struct.add('states', [1,1]);
-        for j=1:N
-          for j_d=1:d
-            sol_struct.add('states', x_struct);
-            times_struct.add('states', [1,1]);
-          end
-        end
-        
-        for j=1:N
-          for j_d=1:d
-            sol_struct.add('algvars', z_struct);
-            times_struct.add('algvars', [1,1]);
-          end
-        end
-        
-        for j=1:N
-          sol_struct.add('controls', u_struct);
-          times_struct.add('controls', [1,1]);
-        end
-        
-        sol_struct.add('parameters', p_struct);
-        
-        for j=1:N
-          sol_struct.add('h', [1 1]);
-        end
-        
-        sol_out = ocl.Variable.create(sol_struct, 0);
-        sol_out.states.set(x_traj);
-        sol_out.algvars.set(z_traj);
-        sol_out.controls.set(u_traj);
-        sol_out.parameters.set(P(:,1));
-        sol_out.h.set(H);
-        
-        times_out = ocl.Variable.create(times_struct, 0);        
-        times_out.states.set(x_times);
-        times_out.algvars.set(z_times);
-        times_out.controls.set(u_times);
+        sol_out = ocl.Variable.create(vs_list{k}, V);
+
+        [~,~,~,~,H] = ocl.simultaneous.variablesUnpack(V, N, nx, ni, nu, np);
+        colloc_times = ocl.simultaneous.times(H, colloc);
+        times_struct = ocl.simultaneous.timesStruct(N, nt);
+        times_out = ocl.Variable.create(times_struct, colloc_times);        
         
         i_stage = i_stage + nv_stage;
         
