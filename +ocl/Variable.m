@@ -228,8 +228,17 @@ classdef Variable < handle
     
     function r = slice(self,varargin)
       % r = get(dim1,dim2,dim3)
-      p = self.positions(varargin{:});
-      r = ocl.Variable.createFromVar(self.type,p,self);
+
+      pos = self.positions;
+      
+      if isa(self.type, 'ocl.types.Matrix')
+        pos = reshape(self.positions, self.type.msize);
+      end
+      
+      pos = pos(varargin{:});
+      
+      t = ocl.types.Matrix(size(pos));
+      r = ocl.Variable.createFromVar(t, pos, self);
     end
 
     function toJSON(self,path,name,varargin)

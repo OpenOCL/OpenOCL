@@ -60,15 +60,12 @@ classdef Value < handle
       end
     end % set
     
-    function vout = value(self,~,positions,varargin)
+    function vout = value(self,type,positions,varargin)
       % v = value(type,positions)
-      p = squeeze(positions);      
-      vout = cell(1,size(p,3));
-      for k=1:size(p,3)
-        vout{k} = reshape(self.val(p(:,:,k)),size(p(:,:,k)));
-      end
-      if length(vout)==1
-        vout = vout{1};
+      p = positions;
+      vout = reshape(self.val(p),size(p));
+      if isa(type, 'ocl.types.Matrix')
+        vout = reshape(vout, type.msize);
       end
     end
   end
