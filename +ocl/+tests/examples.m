@@ -67,15 +67,15 @@ o4.simulationTest = toc(simTic);
 
 % test cart pole
 [sol,~,solver] = ocl.examples.cartpole;
-res = sol.states.theta(:,:,1:30:end).value;
-truth = [3.14159265358979;3.86044803075832;2.52342234356076;0.885691999280203;0];
+res = sol.controls.F(:,:,1:7:end).value;
+truth = [12;-11.9999;-12;6.43066;12;-12];
 ocl.utils.assertAlmostEqual(res, truth, 'Cart pole test failed.');
 o5 = solver.timeMeasures;
 
 % test bouncing ball
 [sol,~,solver] = ocl.examples.bouncingball;
-stage_1 = sol{1}.states.s.value;
-ocl.utils.assertAlmostEqual(stage_1, [1;0.987654320987654;0.888888888888889;0.802469135802469;0.555555555555555;0.395061728395062;0], 'Bouncing ball test failed.');
-stage_2 = sol{2}.states.s.value;
-ocl.utils.assertAlmostEqual(stage_2, [0;0.149660685505038;0.452518978545424;0.6006473173636;0.870025304727232;0.986205684555515;1.16127214163633;1.21508895017169;1.23501265236362;1.19605027730302;1], 'Bouncing ball test failed.');
+stage_1 = sol{1}.states(:,[1,end]).value;
+ocl.utils.assertAlmostEqual(stage_1, [1 0;0 -4.47214], 'Bouncing ball test failed.');
+stage_2 = sol{2}.controls.F.value;
+ocl.utils.assertAlmostEqual(stage_2, [1.02653;0.79841;0.570293;0.342176;0.114059], 'Bouncing ball test failed.');
 o6 = solver.timeMeasures;

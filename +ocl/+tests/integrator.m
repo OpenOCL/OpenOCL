@@ -11,7 +11,7 @@ function integrator
           x_order] = ocl.model.vars(@linearVars);
 
 d = 2;
-collocation = ocl.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, ...
+collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, ...
                               @linearEq, @(varargin)0, d);
 
 N = 60;
