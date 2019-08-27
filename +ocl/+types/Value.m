@@ -32,6 +32,14 @@ classdef Value < handle
     function set(self,type,pos,value)
       % set(type,positions,value)
       
+      if isa(type, 'ocl.types.Matrix') && all(type.msize == size(value))
+        for k=1:size(pos,2)
+          p = reshape(pos(:,k), type.msize);
+          self.val(p) = value; 
+        end
+        return;
+      end
+      
       if isa(type, 'ocl.types.Matrix') && size(pos,2)==1
         pos = reshape(pos, type.msize);
       end

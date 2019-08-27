@@ -64,26 +64,25 @@ v.x.w.set([0;1;0.1]);
 
 assertEqual( v.x.p(1,4:6).value, [100,100,100]);
 assertEqual( v.x.R(1,4:6).value, [1,1,1]);
-assertEqual( v.x.R(:,3).value, [1,0,0,0,1,0,0,0,1]);
-
+assertEqual( v.x.R(:,3).value, [1,0,0,0,1,0,0,0,1]');
 
 v.get('x').get('R').set(eye(3));
-assert( isequal(v.x.get('R').value,   shiftdim(num2cell(repmat(eye(3),1,1,6), 1:2), 1)    ));
-assert(isequal(v.x(:,:,1).R.value,eye(3)))
+assertEqual( v.x.get('R').value,   repmat(reshape(eye(3),9,1),1,6) );
+% assertEqual( v.x{1}.R.value, eye(3) );
 
 v.get('x').get('R').set(ones(3,3));
-assert( isequal(v.x.R.value,   shiftdim(num2cell(repmat(ones(3),1,1,6), 1:2), 1)    ));
+assertEqual( v.x.R.value,   repmat(reshape(ones(3),9,1),1,6) );
 
 % slice on selection
-assert(isequal(v.x(:,:,1).p.value,[100;0;50]))
+% assertEqual( v.x{1}.p.value, [100;0;50] );
 
 % :, end
 assert(isequal(v(':').value,v.value))
-v.x(:,:,end).set((2:19));
+v.x(:,:,end).set((2:19)');
 
-assert(isequal(v.x(:,:,end).slice(2).value,3))
+assert(isequal(v.x(:,end).slice(2).value,3))
 
-xend = v.x(:,:,end);
+xend = v.x(:,end);
 assert(isequal(xend(end).value,19))
 assert(isequal(xend(2).value,3))
 assert(isequal(xend(end).value,19))
@@ -95,7 +94,7 @@ v.x.R.str();
 
 % automatic slice testing
 A = randi(10,v.x.R.size);
-v.x.R.set(num2cell(A,[1,2]));
+v.x.R.set(A);
 
 assertEqual(v.x.R(1).value, A(1));
 assertEqual(v.x.R(1,1).value, A(1,1));
