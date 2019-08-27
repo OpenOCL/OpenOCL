@@ -16,14 +16,14 @@ x = ocl.Variable.create(xStruct,4);
 
 %%% set
 x(:) = (1:10).';
-assert(isequal(x.value,(1:10)'))
+assertEqual(x.value,(1:10)');
 
 %%% get by id
-assert(isequal(x.get('x1').value,[1,9;2,10]));
-assert(isequal(x.x1.value,[1,9;2,10]));
+assertEqual(x.get('x1').value,[1,9;2,10]);
+assertEqual(x.x1.value,[1,9;2,10]);
 
 %%% slice
-assert(isequal(x.x1(1,1,:).value,[1;9]));
+assertEqual(x.x1(1,:).value,[1,9]);
 
 x = ocl.types.Structure();
 x.add('p',[3,1]);
@@ -42,15 +42,15 @@ state.p = [100;0;-50];
 state.v = [20;0;0];
 state.w = [0;1;0.1];
 
-assert( isequal( state.R.value,   eye(3) ) )
-assert( isequal( state.p.value,   [100;0;-50] ) )
-assert( isequal( state.v.value,   [20;0;0] ) )
-assert( isequal( state.w.value,   [0;1;0.1] ) )
+assertEqual( state.R.value,   eye(3) );
+assertEqual( state.p.value,   [100;0;-50] );
+assertEqual( state.v.value,   [20;0;0] );
+assertEqual( state.w.value,   [0;1;0.1] );
 
 state.p = [100;0;50];
 
-assert( isequal( state.get('p').value,   [100;0;50] ) )
-assert( isequal( state.size,   [18 1] ) )
+assertEqual( state.get('p').value,   [100;0;50] );
+assertEqual( state.size,   [18 1] );
 
 ocpVar = ocl.types.Structure();
 ocpVar.addRepeated({'x','u'},{x,u},5);
@@ -62,7 +62,9 @@ v.x.p.set([100;0;50]);
 v.x.v.set([20;0;0]);
 v.x.w.set([0;1;0.1]);
 
-assert( isequal( v.x(:,:,4:6).p(1,:,:).value, [100;100;100]));
+assertEqual( v.x.p(1,4:6).value, [100,100,100]);
+assertEqual( v.x.R(1,4:6).value, [1,1,1]);
+assertEqual( v.x.R(:,3).value, [1,0,0,0,1,0,0,0,1]);
 
 
 v.get('x').get('R').set(eye(3));

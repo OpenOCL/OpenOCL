@@ -227,11 +227,11 @@ classdef Variable < handle
     end
     
     function r = slice(self,varargin)
-      % r = get(dim1,dim2,dim3)
+      % r = slice(dim1,dim2)
 
       pos = self.positions;
       
-      if isa(self.type, 'ocl.types.Matrix')
+      if isa(self.type, 'ocl.types.Matrix') && size(pos,2) == 1
         pos = reshape(self.positions, self.type.msize);
       end
       
