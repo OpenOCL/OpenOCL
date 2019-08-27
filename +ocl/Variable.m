@@ -47,9 +47,9 @@ classdef Variable < handle
     end
     
     function var = createNumeric(type,value)
-        [N,M,K] = type.size();
-        v = ocl.types.Value(zeros(1,N,M,K));
-        p = reshape(1:N*M*K,N,M,K);
+        [N,M] = type.size();
+        v = ocl.types.Value(zeros(1,N,M));
+        p = reshape(1:N*M,N,M);
         var = ocl.Variable(type,p,v);
         var.set(value);
     end
