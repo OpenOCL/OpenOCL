@@ -68,13 +68,13 @@ assertEqual( v.x.R(:,3).value, [1,0,0,0,1,0,0,0,1]');
 
 v.get('x').get('R').set(eye(3));
 assertEqual( v.x.get('R').value,   repmat(reshape(eye(3),9,1),1,6) );
-% assertEqual( v.x{1}.R.value, eye(3) );
+assertEqual( v.x{1}.R.value, eye(3) );
 
 v.get('x').get('R').set(ones(3,3));
 assertEqual( v.x.R.value,   repmat(reshape(ones(3),9,1),1,6) );
 
 % slice on selection
-% assertEqual( v.x{1}.p.value, [100;0;50] );
+assertEqual( v.x{1}.p.value, [100;0;50] );
 
 % :, end
 assert(isequal(v(':').value,v.value))
@@ -100,10 +100,10 @@ assertEqual(v.x.R(1).value, A(1));
 assertEqual(v.x.R(1,1).value, A(1,1));
 assertEqual(v.x.R(3,1).value, A(3,1));
 assertEqual(v.x.R(2,3).value, A(2,3));
-% assertEqual(v.x{1}.R(1,1).value, A(1,1,1));
+assertEqual(v.x{1}.R(1,1).value, A(1,1,1));
 
-% Ap = reshape(A(:,4), 3, 3);
-% assertEqual(v.x{4}.R(2,3).value, Ap(2,3));
+Ap = reshape(A(:,4), 3, 3);
+assertEqual(v.x{4}.R(2,3).value, Ap(2,3));
 
 assertEqual(v.x.R(:).value, A(:));
 assertEqual(v.x.R(:,:).value, A(:,:));
@@ -119,9 +119,9 @@ assertEqual(v.x.R(end-2,end-3).value, A(end-2,end-3));
 assertEqual(v.x.R(:,2).value, A(:,2));
 
 % set tests
-if ~ocl.utils.isOctave()
+% if ~ocl.utils.isOctave()
 %   v.x.R{end} = eye(3);
 %   assertEqual( v.x.R(:,end).value, [1,0,0,0,1,0,0,0,1]; );
-end
+% end
 
 

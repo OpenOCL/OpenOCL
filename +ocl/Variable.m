@@ -41,7 +41,7 @@ classdef Variable < handle
     end
 
     function obj = Matrix(value)
-      % obj = createMatrixLike(input,value)
+      % obj = createMatrix(value)
       t = ocl.types.Matrix(size(value));
       obj = ocl.Variable.create(t,value);
     end
@@ -155,6 +155,11 @@ classdef Variable < handle
         % v(1).something().a
         v = self.slice(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
+      elseif numel(s) == 1 && strcmp(s.type,'{}')
+        [varargout{1}] = self.cut(s.subs{:});
+      elseif numel(s) > 1 && strcmp(s(1).type,'{}')
+        v = self.cut(s(1).subs{:});
+        [varargout{1:nargout}] = subsref(v,s(2:end));
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
@@ -239,6 +244,12 @@ classdef Variable < handle
       
       t = ocl.types.Matrix(size(pos));
       r = ocl.Variable.createFromVar(t, pos, self);
+    end
+    
+    function r = cut(self, indizes)
+      pos = self.positions;
+      pos = pos(:,indizes);
+      r = ocl.Variable.createFromVar(self.type, pos, self);
     end
 
     function toJSON(self,path,name,varargin)
