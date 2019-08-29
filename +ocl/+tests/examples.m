@@ -50,7 +50,7 @@ o2 = solver.timeMeasures;
 
 % test race car problem
 [sol,~,solver] = ocl.examples.racecar;
-ocl.utils.assertAlmostEqual(sol.controls.dFx(1,:,1:5:end).value,...
+ocl.utils.assertAlmostEqual(sol.controls.dFx(1:5:end).value,...
       [-0.0101362795430379;-0.999999558480492;0.319856962019424;-0.764994370307151;0.7697294885374;-0.126456278919074;0.580563346802815;-0.661025508901183;0.999998743528033;-0.9999996584554],...
       'Solve RaceCar Test failed.',1e-2);
 
@@ -67,7 +67,7 @@ o4.simulationTest = toc(simTic);
 
 % test cart pole
 [sol,~,solver] = ocl.examples.cartpole;
-res = sol.controls.F(:,:,1:7:end).value;
+res = sol.controls.F(1:7:end).value;
 truth = [12;-11.9999;-12;6.43066;12;-12];
 ocl.utils.assertAlmostEqual(res, truth, 'Cart pole test failed.');
 o5 = solver.timeMeasures;

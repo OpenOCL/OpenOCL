@@ -14,8 +14,8 @@ function p_vec = pendulum_sim
                       @(h,x,p) ocl.examples.pendulum.icfun(h,x,conf));
 
   x0 = simulator.getStates();
-  x0.p.set([0,conf.l]);
-  x0.v.set([-0.5,-1]);
+  x0.p.set([0;conf.l]);
+  x0.v.set([-0.5;-1]);
 
   times = 0:0.1:4;
  
