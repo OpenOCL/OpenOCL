@@ -49,7 +49,7 @@ classdef Variable < handle
     function var = createNumeric(type,value)
         [N,M] = type.size();
         v = ocl.types.Value(zeros(1,N,M));
-        p = reshape(1:N*M,N,M);
+        p = reshape(1:N*M,N*M,1);
         var = ocl.Variable(type,p,v);
         var.set(value);
     end
@@ -213,7 +213,14 @@ classdef Variable < handle
     %%%    
     
     function s = size(self)
-      s = size(self.positions);      
+      pos = self.positions;
+      tt = self.type;
+      
+      if isa(tt, 'ocl.types.Matrix') && size(pos,2) == 1
+        s = tt.msize;
+      else
+        s = size(pos);      
+      end
     end
 
     function ind = end(self,k,n)
