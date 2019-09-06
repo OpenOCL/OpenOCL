@@ -21,18 +21,6 @@ gridcost = gridcost + terminalcostfun(X(:,N+1), P(:,N+1));
 Hscaled = H_norm.*H;
 [xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, Hscaled, P(:,1:end-1));
 
-% timestep constraints
-% h_eq = double.empty(0,N-1);
-% h_eq_lb = double.empty(0,N-1);
-% h_eq_ub = double.empty(0,N-1);
-% if isempty(T)
-%   % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
-%   H_ratio = H_norm(1:end-1)./H_norm(2:end);
-%   h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
-%   h_eq_lb = zeros(1, N-1);
-%   h_eq_ub = zeros(1, N-1);
-% end
-
 % Parameter constraints
 % p0=p1=p2=p3 ...
 p_eq = P(:,2:end)-P(:,1:end-1);
