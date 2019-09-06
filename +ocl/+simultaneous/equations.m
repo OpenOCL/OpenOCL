@@ -18,25 +18,30 @@ end
 
 gridcost = gridcost + terminalcostfun(X(:,N+1), P(:,N+1));
 
-[xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, H, P(:,1:end-1));
+Hscaled = H_norm.*H;
+[xend_arr, cost_arr, int_eq_arr] = integratormap(X(:,1:end-1), I, U, Hscaled, P(:,1:end-1));
 
 % timestep constraints
-h_eq = double.empty(0,N-1);
-h_eq_lb = double.empty(0,N-1);
-h_eq_ub = double.empty(0,N-1);
-if isempty(T)
-  % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
-  H_ratio = H_norm(1:end-1)./H_norm(2:end);
-  h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
-  h_eq_lb = zeros(1, N-1);
-  h_eq_ub = zeros(1, N-1);
-end
+% h_eq = double.empty(0,N-1);
+% h_eq_lb = double.empty(0,N-1);
+% h_eq_ub = double.empty(0,N-1);
+% if isempty(T)
+%   % h0 = h_1_hat / h_0_hat * h1 = h_2_hat / h_1_hat * h2 ...
+%   H_ratio = H_norm(1:end-1)./H_norm(2:end);
+%   h_eq = H_ratio .* H(:,2:end) - H(:,1:end-1);
+%   h_eq_lb = zeros(1, N-1);
+%   h_eq_ub = zeros(1, N-1);
+% end
 
 % Parameter constraints
 % p0=p1=p2=p3 ...
 p_eq = P(:,2:end)-P(:,1:end-1);
 p_eq_lb = zeros(np, N);
 p_eq_ub = zeros(np, N);
+
+h_eq = H(:,2:end) - H(:,1:end-1);
+h_eq_lb = zeros(1, N-1);
+h_eq_ub = zeros(1, N-1);
 
 % continuity (nx x N)
 continuity = xend_arr - X(:,2:end);
@@ -49,9 +54,9 @@ for k=1:N-1
   gc_k = gridcon{k};
   gc_lb_k = gridcon_lb{k};
   gc_ub_k = gridcon_ub{k};
-  grid_eq{k} = vertcat(gc_k(:), int_eq_arr(:,k), h_eq(:,k), p_eq(:,k), continuity(:,k));
-  grid_eq_lb{k} = vertcat(gc_lb_k(:), zeros(ni,1), h_eq_lb(:,k), p_eq_lb(:,k), zeros(nx,1));
-  grid_eq_ub{k} = vertcat(gc_ub_k(:), zeros(ni,1), h_eq_ub(:,k), p_eq_ub(:,k), zeros(nx,1));
+  grid_eq{k} = vertcat(gc_k(:), int_eq_arr(:,k), p_eq(:,k), h_eq(:,k), continuity(:,k));
+  grid_eq_lb{k} = vertcat(gc_lb_k(:), zeros(ni,1), p_eq_lb(:,k), h_eq_lb(:,k), zeros(nx,1));
+  grid_eq_ub{k} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_ub(:,k), h_eq_ub(:,k), zeros(nx,1));
 end
 
 gc_k = gridcon{N};
@@ -60,7 +65,7 @@ gc_ub_k = gridcon_ub{N};
 
 grid_eq{N} = vertcat(gc_k(:), int_eq_arr(:,N), p_eq(:,N), continuity(:,N));
 grid_eq_lb{N} = vertcat(gc_lb_k(:), zeros(ni,1), p_eq_lb(:,N), zeros(nx,1));
-grid_eq_ub{N} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_ub(:,N), zeros(nx,1));
+grid_eq_ub{N} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_lb(:,N), zeros(nx,1));
 
 gc_k = gridcon{N+1};
 gc_lb_k = gridcon_lb{N+1};

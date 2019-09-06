@@ -333,6 +333,7 @@ classdef CasadiSolver < handle
         nu = stage.nu;
         np = stage.np;
         N = stage.N;
+        H_norm = stage.H_norm;
         
         ni = colloc.num_i;
         nt = colloc.num_t;
@@ -344,7 +345,7 @@ classdef CasadiSolver < handle
         sol_out = ocl.Variable.create(vs_list{k}, V);
 
         [~,~,~,~,H] = ocl.simultaneous.variablesUnpack(V, N, nx, ni, nu, np);
-        colloc_times = ocl.simultaneous.times(H, colloc);
+        colloc_times = ocl.simultaneous.times(H(1)*H_norm, colloc);
         times_struct = ocl.simultaneous.timesStruct(N, nt);
         times_out = ocl.Variable.create(times_struct, colloc_times);        
         
