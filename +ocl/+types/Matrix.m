@@ -14,13 +14,13 @@ classdef Matrix < ocl.types.Structure
     function self = Matrix(size)
       % ocl.types.Matrix(size)
       self.msize = size;
+      self.len = prod(size);
     end
-    function [N,M,K] = size(self)
+    function [N,M] = size(self)
       s = self.msize;
       if nargout>1
         N = s(1);
         M = s(2);
-        K = 1;
       else
         N = s;
       end

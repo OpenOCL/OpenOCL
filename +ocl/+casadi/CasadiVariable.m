@@ -13,8 +13,8 @@ classdef CasadiVariable < ocl.Variable
   
     function var = createFromValue(type,value)
       oclValue = ocl.types.Value(value);
-      [N,M,K] = size(type);
-      p = reshape(1:N*M*K,N,M,K);
+      [N,M] = size(type);
+      p = reshape(1:N*M,N,M);
       var = ocl.casadi.CasadiVariable(type,p,isa(value,'casadi.MX'),oclValue);
     end
     
@@ -22,9 +22,8 @@ classdef CasadiVariable < ocl.Variable
       
       id = class(type);
       
-      [N,M,K] = size(type);
-      assert(K==1,'Not supported.');
-      if N*M*K==0
+      [N,M] = size(type);
+      if N*M==0
         vv = [];
       elseif mx == true
         vv = casadi.MX.sym(id,N,M);
@@ -32,7 +31,7 @@ classdef CasadiVariable < ocl.Variable
         vv = casadi.SX.sym(id,N,M);
       end
       val = ocl.types.Value(vv);
-      p = reshape(1:N*M*K,N,M,K);
+      p = reshape(1:N*M,N,M);
       var = ocl.casadi.CasadiVariable(type,p,mx,val);
     end
     
@@ -53,7 +52,7 @@ classdef CasadiVariable < ocl.Variable
       self.mx = mx;      
     end
     
-    function r = disp(self)
+    function disp(self)
       disp(self.str(self.value.str()));
     end
   end

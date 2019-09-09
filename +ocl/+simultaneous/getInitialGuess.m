@@ -38,7 +38,7 @@ end
 
 % timesteps
 if isempty(T)
-  ig_stage(H_indizes) = H_norm;
+  ig_stage(H_indizes) = 1;
 else
-  ig_stage(H_indizes) = H_norm * T;
+  ig_stage(H_indizes) = T;
 end

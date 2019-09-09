@@ -43,14 +43,14 @@ o1 = solver.timeMeasures;
 % test ball and beam example problem
 [sol,~,solver] = ocl.examples.ballandbeam;
 ocl.utils.assertAlmostEqual(sol.controls.tau(1:5:end).value, ...
-                  [-20;-9.67180946278377;-6.83499933773107;-3.3277726553036;-0.594240414712151;1.26802912244169;0.938453275453379;-0.199369534081799;-0.838286223053903;-0.292251460119773], ...
+                  [-20 -11.799175061432 -7.07950809738102 -7.34241665451232 -2.73218112537589 -0.994219272444794 0.837003335955445 1.759782405326 1.15625958638477 -0.1240626768517]', ...
                   'Ball and beam problem Test failed.', 1e-3);
 
 o2 = solver.timeMeasures;
 
 % test race car problem
 [sol,~,solver] = ocl.examples.racecar;
-ocl.utils.assertAlmostEqual(sol.controls.dFx(1,:,1:5:end).value,...
+ocl.utils.assertAlmostEqual(sol.controls.dFx(1:5:end).value,...
       [-0.0101362795430379;-0.999999558480492;0.319856962019424;-0.764994370307151;0.7697294885374;-0.126456278919074;0.580563346802815;-0.661025508901183;0.999998743528033;-0.9999996584554],...
       'Solve RaceCar Test failed.',1e-2);
 
@@ -67,7 +67,7 @@ o4.simulationTest = toc(simTic);
 
 % test cart pole
 [sol,~,solver] = ocl.examples.cartpole;
-res = sol.controls.F(:,:,1:7:end).value;
+res = sol.controls.F(1:7:end).value;
 truth = [12;-11.9999;-12;6.43066;12;-12];
 ocl.utils.assertAlmostEqual(res, truth, 'Cart pole test failed.');
 o5 = solver.timeMeasures;

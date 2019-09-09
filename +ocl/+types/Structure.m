@@ -3,7 +3,7 @@
 % ensure the above copyright notice is visible in any derived work.
 %
 classdef Structure < handle
-  % OCLTREE Basic datatype represent variables in a tree like structure.
+  % OCLSTRUCTURE Basic datatype represent variables in a tree like structure.
   %
   properties
     children
@@ -31,27 +31,24 @@ classdef Structure < handle
         % add(id)
         N = 1;
         M = 1;
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2) && length(in2) == 1
         % args:(id,length)
         N = in2;
         M = 1;
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       elseif isnumeric(in2)
         % args:(id,size)
         N = in2(1);
         M = in2(2);
-        K = 1;
         obj = ocl.types.Matrix([N,M]);
       else
         % args:(id,obj)
-        [N,M,K] = in2.size;
+        [N,M] = in2.size;
         obj = in2;
       end
-      pos = self.len+1:self.len+N*M*K;
-      pos = reshape(pos,N,M,K);
+      pos = self.len+1:self.len+N*M;
+      pos = reshape(pos,N*M,1);
       self.addObject(id,obj,pos);
     end
     
@@ -70,14 +67,14 @@ classdef Structure < handle
       % addVar(id, obj)
       %   Adds a structure object
       
-      [N,M,K] = size(pos);
-      self.len = self.len+N*M*K;
+      N = length(pos);
+      self.len = self.len+N;
       
       if ~isfield(self.children, id)
         self.children.(id).type = obj;
         self.children.(id).positions = pos;
       else
-        self.children.(id).positions(:,:,end+1:end+K) = pos;
+        self.children.(id).positions(:,end+1) = pos;
       end
     end
     
@@ -95,29 +92,28 @@ classdef Structure < handle
       r = self.len;
     end
     
-    function [N,M,K] = size(self)
+    function [N,M] = size(self)
       if nargout>1
         N = self.len;
         M = 1;
-        K = 1;
       else
         N = [self.len,1];
       end
     end
 
-    function pout = merge(self,p1,p2)
+    function pout = merge(~,p1,p2)
       % merge(p1,p2)
-      % Combine arrays of positions on the third dimension
+      % Combine arrays of positions on the second dimension
       % p2 are relative to p1
       % Returns: absolute p2
-      [~,~,K1] = size(p1);
-      [N2,M2,K2] = size(p2);
+      [~,K1] = size(p1);
+      [N2,K2] = size(p2);
       
-      pout = zeros(N2,M2,K1*K2);
+      pout = zeros(N2,K1*K2);
       for k=1:K1
-       ap1 =  p1(:,:,k);
+       ap1 = p1(:,k);
        for l=1:K2
-         pout(:,:,l+(k-1)*K2) = ap1(p2(:,:,l));
+         pout(:,l+(k-1)*K2) = ap1(p2(:,l));
        end
       end
     end % merge
