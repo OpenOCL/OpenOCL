@@ -2,7 +2,7 @@ classdef Problem < handle
   
   properties
     solver
-    stageList
+    stage
   end
   
   
@@ -32,10 +32,9 @@ classdef Problem < handle
       
       r = p.parse(varargin{:});
       
-      stageList = {ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
+      stage = ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
         r.terminalcost, ...
-        'N', r.N, 'd', r.d)};
-      transitionList = {};
+        'N', r.N, 'd', r.d);
       
       nlp_casadi_mx = r.nlp_casadi_mx;
       controls_regularization = r.controls_regularization;
@@ -45,39 +44,31 @@ classdef Problem < handle
       verbose = r.verbose;
       
 
-      solver = ocl.casadi.CasadiSolver(stageList, transitionList, ...
+      solver = ocl.casadi.CasadiSolver({stage}, {}, ...
                                        nlp_casadi_mx, controls_regularization, ...
                                        controls_regularization_value, casadi_options, ...
                                        verbose);
       
       % set instance variables
-      self.stageList = stageList;
+      self.stage = stage;
       self.solver = solver;
     end
     
-    function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
+    function [sol_ass,times_ass] = solve(self, ig)
       % [sol, times] = solve()
       % [sol, times] = solve(ig)
 
       s = self.solver;
-      st_list = self.stageList;
 
       if nargin==1
         % ig InitialGuess
         ig = self.solver.getInitialGuessWithUserData();
       end
-      
-      ig_list = cell(length(st_list),1);
-      for k=1:length(st_list)
-        ig_list{k} = ig{k}.value;
-      end
 
-      [sol,times,objective,constraints] = s.solve(ig_list);
+      [sol,times,~,~] = s.solve({ig{1}.value});
 
-      sol_ass = ocl.Assignment(sol);
-      times_ass = ocl.Assignment(times);
-      objective_ass = ocl.Assignment(objective);
-      constraints_ass = ocl.Assignment(constraints);
+      sol_ass = sol{1};
+      times_ass = times{1};
 
       ocl.utils.warningNotice()
     end
@@ -100,72 +91,47 @@ classdef Problem < handle
       if nargin==5
         gridpoints = gridpoints / T;
       end
-      
-      if length(self.stageList) == 1
-        self.stageList{1}.initialize(id, gridpoints, values);
-      else
-        ocl.utils.error('For multi-stage problems, set the guess to the stages directly.')
-      end
+
+      self.stage.initialize(id, gridpoints, values);
     end
 
     function setParameter(self,id,varargin)
-      if length(self.stageList) == 1
-        self.stageList{1}.setParameterBounds(id, varargin{:});
-      else
-        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
-      end
+      self.stage.setParameterBounds(id, varargin{:});
     end
 
     function setBounds(self,id,varargin)
       % setBounds(id,value)
-      % setBounds(id,lower,upper)
-      if length(self.stageList) == 1
-
-        % check if id is a state, control, algvar or parameter
-        if ocl.utils.fieldnamesContain(self.stageList{1}.x_struct.getNames(), id)
-          self.stageList{1}.setStateBounds(id, varargin{:});
-        elseif ocl.utils.fieldnamesContain(self.stageList{1}.z_struct.getNames(), id)
-          self.stageList{1}.setAlgvarBounds(id, varargin{:});
-        elseif ocl.utils.fieldnamesContain(self.stageList{1}.u_struct.getNames(), id)
-          self.stageList{1}.setControlBounds(id, varargin{:});
-        elseif ocl.utils.fieldnamesContain(self.stageList{1}.p_struct.getNames(), id)
-          self.stageList{1}.setParameterBounds(id, varargin{:});
-        else
-          ocl.utils.error(['You specified a bound for a variable that does not exist: ', id]);
-        end
-
+      % setBounds(id,lower,upper)3
+      
+      % check if id is a state, control, algvar or parameter
+      if ocl.utils.fieldnamesContain(self.stageList{1}.x_struct.getNames(), id)
+        self.stage.setStateBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.stageList{1}.z_struct.getNames(), id)
+        self.stage.setAlgvarBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.stageList{1}.u_struct.getNames(), id)
+        self.stage.setControlBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.stageList{1}.p_struct.getNames(), id)
+        self.stage.setParameterBounds(id, varargin{:});
       else
-        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
+        ocl.utils.error(['You specified a bound for a variable that does not exist: ', id]);
       end
     end
     
     function setInitialState(self,id,value)
       % setInitialState(id,value)
-      if length(self.stageList) == 1
-        self.stageList{1}.setInitialStateBounds(id, value);
-      else
-        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
-      end
+      self.stage.setInitialStateBounds(id, value);
     end
 
     function setInitialBounds(self,id,varargin)
       % setInitialBounds(id,value)
       % setInitialBounds(id,lower,upper)
-      if length(self.stageList) == 1
-        self.stageList{1}.setInitialStateBounds(id, varargin{:});
-      else
-        ocl.utils.error('For multi-stage problems, set the bounds to the stages directly.')
-      end
+      self.stage.setInitialStateBounds(id, varargin{:});
     end
 
     function setEndBounds(self,id,varargin)
       % setEndBounds(id,value)
       % setEndBounds(id,lower,upper)
-      if length(self.stageList) == 1
-        self.stageList{1}.setEndStateBounds(id, varargin{:});
-      else
-        ocl.utils.error('For multi-stage problems, set the bounds to the stages directlly.')
-      end
+      self.stage.setEndStateBounds(id, varargin{:});
     end
     
   end
