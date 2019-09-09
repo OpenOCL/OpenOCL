@@ -5,7 +5,6 @@ classdef Problem < handle
     stage
   end
   
-  
   methods
     
     function self = Problem(varargin)
@@ -29,6 +28,7 @@ classdef Problem < handle
       p.addParameter('d', 3, @isnumeric);
       
       p.addParameter('verbose', true, @islogical);
+      p.addParameter('print_level', 3, @isnumeric);
       
       r = p.parse(varargin{:});
       
@@ -104,13 +104,13 @@ classdef Problem < handle
       % setBounds(id,lower,upper)3
       
       % check if id is a state, control, algvar or parameter
-      if ocl.utils.fieldnamesContain(self.stageList{1}.x_struct.getNames(), id)
+      if ocl.utils.fieldnamesContain(self.stage.x_struct.getNames(), id)
         self.stage.setStateBounds(id, varargin{:});
-      elseif ocl.utils.fieldnamesContain(self.stageList{1}.z_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.stage.z_struct.getNames(), id)
         self.stage.setAlgvarBounds(id, varargin{:});
-      elseif ocl.utils.fieldnamesContain(self.stageList{1}.u_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.stage.u_struct.getNames(), id)
         self.stage.setControlBounds(id, varargin{:});
-      elseif ocl.utils.fieldnamesContain(self.stageList{1}.p_struct.getNames(), id)
+      elseif ocl.utils.fieldnamesContain(self.stage.p_struct.getNames(), id)
         self.stage.setParameterBounds(id, varargin{:});
       else
         ocl.utils.error(['You specified a bound for a variable that does not exist: ', id]);

@@ -48,7 +48,7 @@ classdef Solver < handle
       p.addParameter('d', 3, @isnumeric);
       
       p.addParameter('verbose', true, @islogical);
-      p.addParameter('print_level', 1, @isnumeric);
+      p.addParameter('print_level', 3, @isnumeric);
       
       r = p.parse(varargin{:});
       
@@ -265,7 +265,7 @@ classdef Solver < handle
       init_u = u_traj.value;
       ocp.set('init_u', init_u);
       
-      if print_level > 2
+      if print_level >= 5
         ocl.utils.debug('Acados debug constr_x0: ');
         ocl.utils.debug(x0_lb);
         
