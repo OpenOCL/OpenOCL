@@ -48,7 +48,7 @@ classdef Solver < handle
       p.addParameter('d', 3, @isnumeric);
       
       p.addParameter('verbose', true, @islogical);
-      p.addParameter('print_level', 1, @isnumeric);
+      p.addParameter('print_level', 3, @isnumeric);
       
       r = p.parse(varargin{:});
       
@@ -208,7 +208,7 @@ classdef Solver < handle
       end
     end
     
-    function [sol_out,times_out] = solve(self)
+    function [sol_out,times_out,solver_info] = solve(self)
       
       ocp = self.acados_ocp_p;
       x_struct = self.x_struct_p;
@@ -265,7 +265,7 @@ classdef Solver < handle
       init_u = u_traj.value;
       ocp.set('init_u', init_u);
       
-      if print_level > 2
+      if print_level >= 5
         ocl.utils.debug('Acados debug constr_x0: ');
         ocl.utils.debug(x0_lb);
         
@@ -298,6 +298,10 @@ classdef Solver < handle
       if verbose
         disp(self.stats())
       end
+      
+      if nargout >= 3
+        solver_info = self.info();
+      end
 
     end
     
@@ -305,6 +309,15 @@ classdef Solver < handle
       self.acados_ocp_p.opts_struct.nlp_solver_max_iter = N;
     end
 
+    function r = info(self)
+      
+      acados_ocp = self.acados_ocp_p;
+      
+      r = struct;
+      r.stats = self.stats();
+      r.success = ~acados_ocp.get('status');
+    end
+    
     function r = stats(self)
       
       r = '';

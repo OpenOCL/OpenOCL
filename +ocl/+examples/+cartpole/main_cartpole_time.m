@@ -2,28 +2,28 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [sol,times,solver] = main_cartpole_time
+function [sol,times,ocp] = main_cartpole_time
 
-  solver = ocl.Solver([], 'vars', @varsfun, 'dae', @daefun, ...
+  ocp = ocl.Problem([], 'vars', @varsfun, 'dae', @daefun, ...
     'terminalcost', @terminalcost, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
 
-  solver.setInitialBounds('p', p0);
-  solver.setInitialBounds('v', v0);
-  solver.setInitialBounds('theta', theta0);
-  solver.setInitialBounds('omega', omega0);
+  ocp.setInitialBounds('p', p0);
+  ocp.setInitialBounds('v', v0);
+  ocp.setInitialBounds('theta', theta0);
+  ocp.setInitialBounds('omega', omega0);
   
-  solver.setInitialBounds('time', 0);
+  ocp.setInitialBounds('time', 0);
 
-  solver.setEndBounds('p', 0);
-  solver.setEndBounds('v', 0);
-  solver.setEndBounds('theta', 0);
-  solver.setEndBounds('omega', 0);
+  ocp.setEndBounds('p', 0);
+  ocp.setEndBounds('v', 0);
+  ocp.setEndBounds('theta', 0);
+  ocp.setEndBounds('omega', 0);
 
   % Run solver to obtain solution
-  [sol,times] = solver.solve(solver.ig());
+  [sol,times] = ocp.solve(ocp.ig());
 
   % visualize solution
   figure; hold on; grid on;

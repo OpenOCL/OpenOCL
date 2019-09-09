@@ -25,7 +25,7 @@ classdef InitialGuess < handle
       states.set(ydata);
       
       self.data.(id).x = xdata;
-      self.data.(id).y = ocl.types.variable.toNdMatrix(states);
+      self.data.(id).y = states.value;
     end
 
   end

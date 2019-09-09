@@ -149,7 +149,7 @@ ocp.set('init_x', x_traj_init);
 ocp.set('init_u', u_traj_init);
 
 
-if print_level > 2 
+if print_level >= 5 
   ocl.utils.debug('Acados debug ocp model: ');
   names = fieldnames(ocp_model.model_struct);
   for k=1:length(names)

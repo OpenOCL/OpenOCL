@@ -26,10 +26,10 @@ for k=1:length(names)
   
   % state trajectories
   ytarget = interp1(xdata, ydata, x_times,'linear','extrap');
-  ocl.types.variable.setFromNdMatrix(ig_stage.states.get(id), ytarget);
+  ig_stage.states.get(id).set(ytarget');
   
   % integrator states
   ytarget = interp1(xdata, ydata, colloc_times,'linear','extrap');
-  ocl.types.variable.setFromNdMatrix(ig_stage.integrator.states.get(id), ytarget);
+  ig_stage.integrator.states.get(id).set(ytarget')
   
 end
