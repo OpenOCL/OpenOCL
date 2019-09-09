@@ -54,7 +54,7 @@ classdef Problem < handle
       self.solver = solver;
     end
     
-    function [sol_ass,times_ass] = solve(self, ig)
+    function [sol_r,times_r,info] = solve(self, ig)
       % [sol, times] = solve()
       % [sol, times] = solve(ig)
 
@@ -65,10 +65,14 @@ classdef Problem < handle
         ig = self.solver.getInitialGuessWithUserData();
       end
 
-      [sol,times] = s.solve({ig{1}.value});
+      [sol,times,solver_info] = s.solve({ig{1}.value});
 
-      sol_ass = sol{1};
-      times_ass = times{1};
+      sol_r = sol{1};
+      times_r = times{1};
+      
+      if nargout >=3
+        info = solver_info;
+      end
 
       ocl.utils.warningNotice()
     end

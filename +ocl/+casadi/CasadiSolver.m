@@ -5,6 +5,7 @@ classdef CasadiSolver < handle
     stageList
     collocationList
     nlpData
+    stats
     
     varsStructList
   end
@@ -240,7 +241,7 @@ classdef CasadiSolver < handle
       
     end
     
-    function [sol,times] = solve(self,v0)
+    function [sol,times,info] = solve(self,v0)
       % solve(initialGuess)
       
       solveTotalTic = tic;
@@ -357,6 +358,17 @@ classdef CasadiSolver < handle
       self.timeMeasures.solveTotal      = toc(solveTotalTic);
       self.timeMeasures.solveCasadi     = solveCasadiTime;
       self.timeMeasures.nlpFunEval      = nlpFunEvalTime;
+      
+      self.stats = self.nlpData.solver.stats();
+      
+      info = self.info();
+    end
+    
+    function r = info(self)
+      r = struct;
+      r.timeMeasures = self.timeMeasures;
+      r.success = self.stats.success;
+      r.ipopt_stats = self.stats;
     end
   end
   
