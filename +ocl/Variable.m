@@ -41,15 +41,15 @@ classdef Variable < handle
     end
 
     function obj = Matrix(value)
-      % obj = createMatrixLike(input,value)
+      % obj = createMatrix(value)
       t = ocl.types.Matrix(size(value));
       obj = ocl.Variable.create(t,value);
     end
     
     function var = createNumeric(type,value)
-        [N,M,K] = type.size();
-        v = ocl.types.Value(zeros(1,N,M,K));
-        p = reshape(1:N*M*K,N,M,K);
+        [N,M] = type.size();
+        v = ocl.types.Value(zeros(1,N,M));
+        p = reshape(1:N*M,N*M,1);
         var = ocl.Variable(type,p,v);
         var.set(value);
     end
@@ -155,6 +155,11 @@ classdef Variable < handle
         % v(1).something().a
         v = self.slice(s(1).subs{:});
         [varargout{1:nargout}] = subsref(v,s(2:end));
+      elseif numel(s) == 1 && strcmp(s.type,'{}')
+        [varargout{1}] = self.cut(s.subs{:});
+      elseif numel(s) > 1 && strcmp(s(1).type,'{}')
+        v = self.cut(s(1).subs{:});
+        [varargout{1:nargout}] = subsref(v,s(2:end));
       elseif numel(s) > 0 && strcmp(s(1).type,'.')
         % v.something or v.something()
         id = s(1).subs;
@@ -208,7 +213,14 @@ classdef Variable < handle
     %%%    
     
     function s = size(self)
-      s = size(self.positions);      
+      pos = self.positions;
+      tt = self.type;
+      
+      if isa(tt, 'ocl.types.Matrix') && size(pos,2) == 1
+        s = tt.msize;
+      else
+        s = size(pos);      
+      end
     end
 
     function ind = end(self,k,n)
@@ -227,9 +239,24 @@ classdef Variable < handle
     end
     
     function r = slice(self,varargin)
-      % r = get(dim1,dim2,dim3)
-      p = self.positions(varargin{:});
-      r = ocl.Variable.createFromVar(self.type,p,self);
+      % r = slice(dim1,dim2)
+
+      pos = self.positions;
+      
+      if isa(self.type, 'ocl.types.Matrix') && size(pos,2) == 1
+        pos = reshape(self.positions, self.type.msize);
+      end
+      
+      pos = pos(varargin{:});
+      
+      t = ocl.types.Matrix(size(pos));
+      r = ocl.Variable.createFromVar(t, pos, self);
+    end
+    
+    function r = cut(self, indizes)
+      pos = self.positions;
+      pos = pos(:,indizes);
+      r = ocl.Variable.createFromVar(self.type, pos, self);
     end
 
     function toJSON(self,path,name,varargin)

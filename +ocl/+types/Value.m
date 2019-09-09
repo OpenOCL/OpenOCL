@@ -31,44 +31,40 @@ classdef Value < handle
     
     function set(self,type,pos,value)
       % set(type,positions,value)
-      if ~iscell(value)
-        % value is numeric or casadi
-        pos = ocl.types.Value.squeeze(pos);
-        value = ocl.types.Value.squeeze(value);
-        [Np,Mp,Kp] = size(pos);
-        [Nv,Mv] = size(value);
-        if isempty(value) || Nv*Mv==0
-          return
+      
+      if isa(type, 'ocl.types.Matrix') && all(type.msize == size(value))
+        for k=1:size(pos,2)
+          p = reshape(pos(:,k), type.msize);
+          self.val(p) = value; 
         end
-
-        if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0
-          ocl.utils.error('Can not set values to variable. Dimensions do not match.')
-        end
-        
-        for k=1:Kp
-          p = pos(:,:,k);
-          self.val(p) = repmat(value,Np/Nv,Mp/Mv);
-        end   
-      else
-        % value is cell array
-        Kp = size(pos,3);
-        assert(length(value)==Kp);
-        for k=1:Kp
-          p = pos(:,:,k);
-          self.val(p) = value{k};
-        end
+        return;
       end
+      
+      if isa(type, 'ocl.types.Matrix') && size(pos,2)==1
+        pos = reshape(pos, type.msize);
+      end
+
+      % value is numeric or casadi
+      [Np,Mp] = size(pos);
+      [Nv,Mv] = size(value);
+      if isempty(value) || Nv*Mv==0
+        return
+      end
+
+      if mod(Np,Nv)~=0 || mod(Mp,Mv)~=0
+        ocl.utils.error('Can not set values to variable. Dimensions do not match.')
+      end
+      
+      self.val(pos) = repmat(value,Np/Nv,Mp/Mv);
+      
     end % set
     
-    function vout = value(self,~,positions,varargin)
+    function vout = value(self,type,positions,varargin)
       % v = value(type,positions)
-      p = squeeze(positions);      
-      vout = cell(1,size(p,3));
-      for k=1:size(p,3)
-        vout{k} = reshape(self.val(p(:,:,k)),size(p(:,:,k)));
-      end
-      if length(vout)==1
-        vout = vout{1};
+      p = positions;
+      vout = reshape(self.val(p),size(p));
+      if isa(type, 'ocl.types.Matrix') && size(p,2)==1
+        vout = reshape(vout, type.msize);
       end
     end
   end

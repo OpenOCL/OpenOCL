@@ -13,4 +13,5 @@ U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', (0:N-1)*nci+nx
 
 p_start = [(0:N-1)*nci+nx+ni+nu+1, (N)*nci+nx+1];
 P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
+
 H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
