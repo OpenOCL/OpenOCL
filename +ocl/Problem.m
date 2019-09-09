@@ -65,7 +65,7 @@ classdef Problem < handle
         ig = self.solver.getInitialGuessWithUserData();
       end
 
-      [sol,times,~,~] = s.solve({ig{1}.value});
+      [sol,times] = s.solve({ig{1}.value});
 
       sol_ass = sol{1};
       times_ass = times{1};

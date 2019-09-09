@@ -70,7 +70,7 @@ classdef MultiStageProblem < handle
         ig_list{k} = ig{k}.value;
       end
 
-      [sol,times,~,~] = s.solve(ig_list);
+      [sol,times] = s.solve(ig_list);
 
       ocl.utils.warningNotice()
     end
