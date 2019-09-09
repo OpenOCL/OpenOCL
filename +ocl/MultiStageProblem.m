@@ -53,7 +53,7 @@ classdef MultiStageProblem < handle
       self.solver = solver;
     end
 
-    function [sol_ass,times_ass,objective_ass,constraints_ass] = solve(self, ig)
+    function [sol,times] = solve(self, ig)
       % [sol, times] = solve()
       % [sol, times] = solve(ig)
 
@@ -70,12 +70,7 @@ classdef MultiStageProblem < handle
         ig_list{k} = ig{k}.value;
       end
 
-      [sol,times,objective,constraints] = s.solve(ig_list);
-
-      sol_ass = ocl.Assignment(sol);
-      times_ass = ocl.Assignment(times);
-      objective_ass = ocl.Assignment(objective);
-      constraints_ass = ocl.Assignment(constraints);
+      [sol,times,~,~] = s.solve(ig_list);
 
       ocl.utils.warningNotice()
     end
