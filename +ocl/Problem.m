@@ -81,9 +81,9 @@ classdef Problem < handle
       ig = self.getInitialGuess();
     end
 
-    function igAssignment = getInitialGuess(self)
+    function ig = getInitialGuess(self)
       igList = self.solver.getInitialGuess();
-      igAssignment = ocl.Assignment(igList);
+      ig = igList{1};
     end
     
     function initialize(self, id, gridpoints, values, T)
