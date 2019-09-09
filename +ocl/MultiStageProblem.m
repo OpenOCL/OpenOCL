@@ -88,9 +88,8 @@ classdef MultiStageProblem < handle
       ig = self.getInitialGuess();
     end
 
-    function igAssignment = getInitialGuess(self)
+    function igList = getInitialGuess(self)
       igList = self.solver.getInitialGuess();
-      igAssignment = ocl.Assignment(igList);
     end
   end
 end
