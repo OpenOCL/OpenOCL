@@ -1,4 +1,4 @@
-function [sol,times,solver] = bouncingball  
+function [sol,times,ocp] = bouncingball  
   
   before_contact = ocl.Stage([], @before_contact_vars, @before_contact_ode, 'N', 3, 'd', 2);
   after_contact = ocl.Stage(1, @after_contact_vars, @after_contact_ode, ...
@@ -10,9 +10,9 @@ function [sol,times,solver] = bouncingball
   
   after_contact.setEndStateBounds('s', 1);
 
-  solver = ocl.Solver({before_contact, after_contact}, {@stage_transition});
+  ocp = ocl.MultiStageProblem({before_contact, after_contact}, {@stage_transition});
 
-  [sol,times] = solver.solve(solver.getInitialGuess());
+  [sol,times] = ocp.solve(ocp.getInitialGuess());
 
   % stage 1
   figure; 

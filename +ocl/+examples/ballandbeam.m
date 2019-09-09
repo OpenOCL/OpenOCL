@@ -3,7 +3,7 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [vars,times,solver] = ballandbeam
+function [vars,times,ocp] = ballandbeam
   % Title: Ball and beam problem
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
@@ -27,26 +27,26 @@ function [vars,times,solver] = ballandbeam
   daefun     = @(sh,x,~,u,p) bbeqfun(sh,x,u,conf);
   pathcosts  = @(ch,x,~,u,~) bbpathcosts(ch,x,u,conf);
 
-  solver = ocl.Solver([], varsfun, daefun, pathcosts, 'N', 50);
+  ocp = ocl.Problem([], varsfun, daefun, pathcosts, 'N', 50);
 
    % bound on time: 0 <= time <= 5
-  solver.setBounds('time', 0, 5);
+  ocp.setBounds('time', 0, 5);
 
   % set bounds for initial and endtime
-  solver.setInitialBounds('r'      , -0.8);
-  solver.setInitialBounds('dr'     , 0.3);
-  solver.setInitialBounds('theta'  , deg2rad(5));
-  solver.setInitialBounds('dtheta' , 0.0);
-  solver.setInitialBounds('time' , 0);
+  ocp.setInitialBounds('r'      , -0.8);
+  ocp.setInitialBounds('dr'     , 0.3);
+  ocp.setInitialBounds('theta'  , deg2rad(5));
+  ocp.setInitialBounds('dtheta' , 0.0);
+  ocp.setInitialBounds('time' , 0);
 
-  solver.setEndBounds('r'      , 0);
-  solver.setEndBounds('dr'     , 0);
-  solver.setEndBounds('theta'  , 0);
-  solver.setEndBounds('dtheta' , 0);
+  ocp.setEndBounds('r'      , 0);
+  ocp.setEndBounds('dr'     , 0);
+  ocp.setEndBounds('theta'  , 0);
+  ocp.setEndBounds('dtheta' , 0);
 
   % Solve OCP
-  vars = solver.getInitialGuess();
-  [vars,times] = solver.solve(vars);
+  vars = ocp.getInitialGuess();
+  [vars,times] = ocp.solve(vars);
 
   % Plot solution
   figure;

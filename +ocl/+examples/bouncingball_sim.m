@@ -1,4 +1,4 @@
-function [sol,times,solver] = bouncingball_sim
+function [sol,times,ocp] = bouncingball_sim
 
   num_stages = 5;
   N = 10;
@@ -12,10 +12,10 @@ function [sol,times,solver] = bouncingball_sim
   stage0.setEndStateBounds('s', 0);
   stage.setEndStateBounds('s', 0);
 
-  solver = ocl.Solver(num2cell([stage0,repmat(stage,1,num_stages-1)]), ...
+  ocp = ocl.MultiStageProblem(num2cell([stage0,repmat(stage,1,num_stages-1)]), ...
                       repmat({@transition},1,num_stages-1));
 
-  [sol,times] = solver.solve(solver.getInitialGuess());
+  [sol,times] = ocp.solve(ocp.getInitialGuess());
 
 
   vw = VideoWriter(fullfile(getenv('OPENOCL_WORK'),'bouncingball.avi'));

@@ -3,13 +3,13 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [solution,times,solver] = racecar
+function [solution,times,ocp] = racecar
   % Title: Race Car Problem Example
   %  Authors: Jonas Koenneman & Giovanni Licitra
 
   MAX_TIME = 20;
 
-  solver = ocl.Solver([], @varsfun, @daefun, ...
+  ocp = ocl.Problem([], @varsfun, @daefun, ...
                       'gridcosts', @gridcosts, 'gridconstraints', @gridconstraints, 'N', 50);
 
   % parameters
@@ -21,27 +21,27 @@ function [solution,times,solver] = racecar
   Fmax   = 1;       % [N]
   road_bound = 0.4; % [m]
 
-  solver.setParameter('m'   , m);
-  solver.setParameter('A'   , A);
-  solver.setParameter('cd'  , cd);
-  solver.setParameter('rho' , rho);
-  solver.setParameter('Vmax', Vmax);
-  solver.setParameter('Fmax', Fmax);
-  solver.setParameter('road_bound', road_bound);
+  ocp.setParameter('m'   , m);
+  ocp.setParameter('A'   , A);
+  ocp.setParameter('cd'  , cd);
+  ocp.setParameter('rho' , rho);
+  ocp.setParameter('Vmax', Vmax);
+  ocp.setParameter('Fmax', Fmax);
+  ocp.setParameter('road_bound', road_bound);
   
-  solver.setBounds('time', 0, MAX_TIME);
+  ocp.setBounds('time', 0, MAX_TIME);
 
-  solver.setInitialBounds( 'x',   0.0);
-  solver.setInitialBounds('vx',   0.0);
-  solver.setInitialBounds( 'y',   0.0);
-  solver.setInitialBounds('vy',   0.0);
+  ocp.setInitialBounds( 'x',   0.0);
+  ocp.setInitialBounds('vx',   0.0);
+  ocp.setInitialBounds( 'y',   0.0);
+  ocp.setInitialBounds('vy',   0.0);
 
-  solver.setEndBounds( 'x',  2*pi);
-  solver.setEndBounds('vx',  0.0 );
-  solver.setEndBounds( 'y',  0.0 );
-  solver.setEndBounds('vy',  0.0 );
+  ocp.setEndBounds( 'x',  2*pi);
+  ocp.setEndBounds('vx',  0.0 );
+  ocp.setEndBounds( 'y',  0.0 );
+  ocp.setEndBounds('vy',  0.0 );
 
-  initialGuess    = solver.getInitialGuess();
+  initialGuess    = ocp.getInitialGuess();
 
   % Initialize the middle lane
   N        = length(initialGuess.states.x.value);
@@ -51,7 +51,7 @@ function [solution,times,solver] = racecar
   initialGuess.states.y.set(y_center);
 
   % Solve OCP
-  [solution,times] = solver.solve(initialGuess);
+  [solution,times] = ocp.solve(initialGuess);
 
   % Plot solution
   figure('units','normalized')

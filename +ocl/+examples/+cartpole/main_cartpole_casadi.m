@@ -1,4 +1,4 @@
-solver = ocl.Solver( ...
+ocp = ocl.Problem( ...
   3, ...
   'vars', @ocl.examples.cartpole.vars, ...
   'dae', @ocl.examples.cartpole.dae, ...
@@ -6,14 +6,14 @@ solver = ocl.Solver( ...
   'terminalcost', @ocl.examples.cartpole.terminalcost, ...
   'N', 100, 'd', 3);
 
-solver.setInitialState('p', 0);
-solver.setInitialState('v', 0);
-solver.setInitialState('theta', pi);
-solver.setInitialState('omega', 0);
+ocp.setInitialState('p', 0);
+ocp.setInitialState('v', 0);
+ocp.setInitialState('theta', pi);
+ocp.setInitialState('omega', 0);
 
-solver.initialize('theta', [0 1], [pi 0]);
+ocp.initialize('theta', [0 1], [pi 0]);
 
-[sol,times] = solver.solve();
+[sol,times] = ocp.solve();
 
 figure; hold on; grid on;
 ocl.stairs(times.controls, sol.controls.F/10.)
