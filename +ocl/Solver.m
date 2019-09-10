@@ -51,7 +51,7 @@ classdef Solver < handle
     end
 
     function setParameter(self,id,varargin)
-      self.problem.setParameterBounds(id, varargin{:});
+      self.problem.setParameter(id, varargin{:});
     end
 
     function setBounds(self,id,varargin)
