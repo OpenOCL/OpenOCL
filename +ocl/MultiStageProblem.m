@@ -53,7 +53,7 @@ classdef MultiStageProblem < handle
       self.solver = solver;
     end
 
-    function [sol,times] = solve(self, ig)
+    function [sol,times,info] = solve(self, ig)
       % [sol, times] = solve()
       % [sol, times] = solve(ig)
 
@@ -70,7 +70,11 @@ classdef MultiStageProblem < handle
         ig_list{k} = ig{k}.value;
       end
 
-      [sol,times] = s.solve(ig_list);
+      [sol,times,solver_info] = s.solve(ig_list);
+
+      if nargout >=3
+        info = solver_info;
+      end
 
       ocl.utils.warningNotice()
     end
