@@ -40,7 +40,7 @@ for j=1:d
   
   [ode,alg] = colloc.daefun(x_j, z_j, u, params);
   
-  qj = colloc.pathcostfun(x_j, z_j,u,params);
+  qj = colloc.pathcostfun(x_j, z_j, u, params);
   
   equations{j} = [h*ode-x_der; alg];
   J = J + B(j+1)*qj*h;

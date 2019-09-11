@@ -105,7 +105,7 @@ classdef Problem < handle
 
     function setBounds(self,id,varargin)
       % setBounds(id,value)
-      % setBounds(id,lower,upper)3
+      % setBounds(id,lower,upper)
       
       % check if id is a state, control, algvar or parameter
       if ocl.utils.fieldnamesContain(self.stage.x_struct.getNames(), id)
