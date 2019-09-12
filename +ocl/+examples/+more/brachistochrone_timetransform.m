@@ -1,15 +1,13 @@
 % Problem formulation from
 %   http://www.gpops2.com/Examples/Brachistochrone.html
 %
-% TBV
-%
 function brachistochrone_timetransform
 
   problem = ocl.Problem(1, ...
     @vars, ...
     @dynamics, ...
     'terminalcost', @terminalcost, ...
-    'N', 200, 'd', 3);
+    'N', 200, 'd', 2);
   
   problem.setInitialState('x', 0);
   problem.setInitialState('y', 0);
@@ -43,7 +41,7 @@ function vars(vh)
   vh.addState('y');
   vh.addState('v', 'lb', 0);
   
-  vh.addState('T');
+  vh.addState('T', 'lb', 0);
   
   vh.addControl('u', 'lb', -pi/2, 'ub', pi/2);
 

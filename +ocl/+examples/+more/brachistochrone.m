@@ -2,7 +2,7 @@
 %   http://www.gpops2.com/Examples/Brachistochrone.html
 %
 % Slightly changed so that ball rolls down, limits on slope angle control
-% to be +-90 degree. 0 degree means no slope.
+% to be +-90 degree. 0 degree means no slope. Positive velocity constraint.
 %
 function brachistochrone
 
