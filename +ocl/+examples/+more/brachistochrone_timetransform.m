@@ -1,18 +1,15 @@
 % Problem formulation from
 %   http://www.gpops2.com/Examples/Brachistochrone.html
 %
-% Slightly changed so that ball rolls down, limits on slope angle control
-% to be +-90 degree. 0 degree means no slope.
+% TBV
 %
-function brachistochrone
+function brachistochrone_timetransform
 
-  problem = ocl.Problem([], ...
+  problem = ocl.Problem(1, ...
     @vars, ...
     @dynamics, ...
     'terminalcost', @terminalcost, ...
     'N', 200, 'd', 3);
-  
-  problem.setInitialState('time', 0);
   
   problem.setInitialState('x', 0);
   problem.setInitialState('y', 0);
@@ -23,6 +20,7 @@ function brachistochrone
   
   ig = problem.ig();
   ig.controls.set(1);
+  ig.states.T.set(1);
   
   [sol, times] = problem.solve(ig);
   
@@ -38,13 +36,14 @@ function brachistochrone
 
 end
 
+
 function vars(vh)
 
   vh.addState('x');
   vh.addState('y');
   vh.addState('v', 'lb', 0);
   
-  vh.addState('time');
+  vh.addState('T');
   
   vh.addControl('u', 'lb', -pi/2, 'ub', pi/2);
 
@@ -54,16 +53,17 @@ function dynamics(dh, x, z, u, p)
 
   g = 9.81;
 
-  dh.setODE('x', x.v * cos(u));
-  dh.setODE('y', x.v * sin(u));
-  dh.setODE('v', -g * sin(u));
+  dh.setODE('x', x.T * x.v * cos(u));
+  dh.setODE('y', x.T * x.v * sin(u));
+  dh.setODE('v', -x.T * g * sin(u));
 
-  dh.setODE('time', 1);
+  dh.setODE('T', 0);
   
 end
 
 function terminalcost(ch, x, p)
 
-  ch.add(x.time);
+  ch.add(x.T);
 
 end
+
