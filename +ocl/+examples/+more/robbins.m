@@ -1,6 +1,6 @@
 % Problem formulation from
 %   BOCOP - A collection of examples
-%   Frederic Bonnans, Pierre MartinonD. Giorgi, V. Grelard, B. Heymann, J. Liu, S. Maindrault, O. Tissot
+%   Frederic Bonnans, Pierre Martinon, D. Giorgi, V. Grelard, B. Heymann, J. Liu, S. Maindrault, O. Tissot
 %   https://files.inria.fr/bocop/Examples-BOCOP.pdf
 %
 % TBV
