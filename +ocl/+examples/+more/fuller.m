@@ -1,8 +1,6 @@
 % Problem formulation from
 %   https://mintoc.de/index.php/Fuller%27s_problem
 %
-% TBV
-%
 function fuller
 
   problem = ocl.Problem(1, ...
