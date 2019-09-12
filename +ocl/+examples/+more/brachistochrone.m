@@ -21,10 +21,7 @@ function brachistochrone
   problem.setEndBounds('x', 2);
   problem.setEndBounds('y', -2);
   
-  ig = problem.ig();
-  ig.controls.set(1);
-  
-  [sol, times] = problem.solve(ig);
+  [sol, times] = problem.solve();
   
   figure;
   subplot(2,1,1);

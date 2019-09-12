@@ -1,7 +1,7 @@
 % Problem formulation from
 %   http://www.gpops2.com/Examples/Brachistochrone.html
 %
-function brachistochrone_timetransform
+function brachistochrone_timetransformed
 
   problem = ocl.Problem(1, ...
     @vars, ...
@@ -16,11 +16,7 @@ function brachistochrone_timetransform
   problem.setEndBounds('x', 2);
   problem.setEndBounds('y', -2);
   
-  ig = problem.ig();
-  ig.controls.set(1);
-  ig.states.T.set(1);
-  
-  [sol, times] = problem.solve(ig);
+  [sol, times] = problem.solve();
   
   figure;
   subplot(2,1,1);

@@ -3,6 +3,9 @@
 %   Frederic Bonnans, Pierre MartinonD. Giorgi, V. Grelard, B. Heymann, J. Liu, S. Maindrault, O. Tissot
 %   https://files.inria.fr/bocop/Examples-BOCOP.pdf
 %
+%   https://mintoc.de/index.php/Goddart%27s_rocket_problem
+%   https://mintoc.de/index.php/Goddart%27s_rocket_problem_(TACO)
+%
 function goddard
 
   conf = struct;
@@ -12,28 +15,28 @@ function goddard
   conf.k = 500;
   conf.r0 = 1;
 
-  ocp = ocl.Problem([], ...
+  problem = ocl.Problem([], ...
     @vars, ...
     @(h,x,z,u,p) dynamics(h,x,z,u,p,conf), ...
     'gridconstraints', @(h,k,K,x,p) gridconstraints(h,k,K,x,p,conf), ...
     'terminalcost', @terminalcost, ...
     'N', 200, 'd', 3);
   
-  ocp.setBounds('u', 0, 1);
+  problem.setBounds('u', 0, 1);
   
-  ocp.setInitialState('r', 1);
-  ocp.setInitialState('v', 0);
-  ocp.setInitialState('m', 1);
+  problem.setInitialState('r', 1);
+  problem.setInitialState('v', 0);
+  problem.setInitialState('m', 1);
   
-  ocp.setEndBounds('r', 1.01);
+  problem.setEndBounds('r', 1.01);
   
   figure;
   C_list = {0.8, 0.65, 0.5};
   for k=1:length(C_list)
     C = C_list{k};
-    ocp.setParameter('C', C);
+    problem.setParameter('C', C);
     
-    [sol, times] = ocp.solve(ocp.ig());
+    [sol, times] = problem.solve(problem.ig());
 
     v = sol.states.v.value;
     r = sol.states.r.value;

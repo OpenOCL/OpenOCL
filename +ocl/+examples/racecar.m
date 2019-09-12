@@ -1,11 +1,11 @@
 % Copyright 2019 Jonas Koenemann, Moritz Diehl, University of Freiburg
-% Copyright 2015-2018 Jonas Koennemanm, Giovanni Licitra
+% Copyright 2015-2018 Jonas Koenemann, Giovanni Licitra
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
 function [solution,times,ocp] = racecar
   % Title: Race Car Problem Example
-  %  Authors: Jonas Koenneman & Giovanni Licitra
+  %  Authors: Jonas Koenemann & Giovanni Licitra
 
   MAX_TIME = 20;
 
