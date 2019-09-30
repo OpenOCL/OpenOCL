@@ -53,7 +53,7 @@ gc_ub_k = gridcon_ub{N};
 
 grid_eq{N} = vertcat(gc_k(:), int_eq_arr(:,N), p_eq(:,N), continuity(:,N));
 grid_eq_lb{N} = vertcat(gc_lb_k(:), zeros(ni,1), p_eq_lb(:,N), zeros(nx,1));
-grid_eq_ub{N} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_lb(:,N), zeros(nx,1));
+grid_eq_ub{N} = vertcat(gc_ub_k(:), zeros(ni,1), p_eq_ub(:,N), zeros(nx,1));
 
 gc_k = gridcon{N+1};
 gc_lb_k = gridcon_lb{N+1};
