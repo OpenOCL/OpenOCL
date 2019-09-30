@@ -21,6 +21,8 @@ function [sol,times,ocp] = cartpole
   ocp.setEndBounds('v', 0);
   ocp.setEndBounds('theta', 0);
   ocp.setEndBounds('omega', 0);
+  
+  ocp.setEndBounds('time',     1.25, 2);
 
   % Run solver to obtain solution
   [sol,times] = ocp.solve(ocp.ig());

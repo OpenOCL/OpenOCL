@@ -1,4 +1,4 @@
-function [X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = indizes(N, nx, ni, nu, np)
+function [X_indizes, I_indizes, U_indizes, P_indizes, T_indizes] = indizes(N, nx, ni, nu, np)
 
 % number of variables in one control interval
 % + 1 for the timestep
@@ -14,4 +14,4 @@ U_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+nu-1)', (0:N-1)*nci+nx
 p_start = [(0:N-1)*nci+nx+ni+nu+1, (N)*nci+nx+1];
 P_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i+np-1)', p_start, 'UniformOutput', false));
 
-H_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));
+T_indizes = cell2mat(arrayfun(@(start_i) (start_i:start_i)', (0:N-1)*nci+nx+ni+nu+np+1, 'UniformOutput', false));

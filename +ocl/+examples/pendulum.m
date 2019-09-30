@@ -25,7 +25,7 @@ ocp.setInitialBounds('time', 0);
 ocp.setInitialBounds('p', [0; -conf.l]);
 ocp.setInitialBounds('v', [0.5;0]);
 
-ocp.setEndBounds('p',     [0,0], [0,inf]);
+ocp.setEndBounds('p',     [0;0], [0;inf]);
 ocp.setEndBounds('v',     [-1;-1], [1;1]);
 
 ig = ocp.getInitialGuess();
