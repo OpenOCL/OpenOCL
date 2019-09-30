@@ -1,3 +1,3 @@
 function pathcosts(ch,~,~,controls,~)
 F  = controls.F;
-ch.add( F^2 );
+ch.add( 1e-3*F^2 );

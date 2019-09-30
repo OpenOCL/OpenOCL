@@ -1,6 +1,6 @@
-function gridcosts(ch,k,K,x,~)
+function gridcosts(ch,k,K,x,p)
 if k==K
-  ch.add(1e-6*x.time);
+  ch.add(p.T);
 end
 
 
