@@ -8,7 +8,7 @@ nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
 lb_stage = -inf * ones(nv_stage,1);
 ub_stage = inf * ones(nv_stage,1);
 
-[X_indizes, I_indizes, U_indizes, P_indizes, H_indizes] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
+[X_indizes, I_indizes, U_indizes, P_indizes, T_indizes] = ocl.simultaneous.indizes(N, nx, ni, nu, np);
 
 % states
 for m=1:size(X_indizes,2)
@@ -40,8 +40,8 @@ ub_stage(P_indizes(:,1)) = p_ub;
 
 % timesteps
 if isempty(T)
-  lb_stage(H_indizes(:,1)) = 0.001;
+  lb_stage(T_indizes(:,1)) = 0.001;
 else
-  lb_stage(H_indizes(:,1)) = T;
-  ub_stage(H_indizes(:,1)) = T;
+  lb_stage(T_indizes(:,1)) = T;
+  ub_stage(T_indizes(:,1)) = T;
 end
