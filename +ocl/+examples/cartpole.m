@@ -4,25 +4,23 @@
 %
 function [sol,times,ocp] = cartpole
 
-  ocp = ocl.Problem(1, 'vars', @varsfun, 'dae', @daefun, ...
+  ocp = ocl.Problem([], 'vars', @varsfun, 'dae', @daefun, ...
     'terminalcost', @terminalcost, 'N', 40, 'd', 3);
 
   p0 = 0; v0 = 0;
   theta0 = 180*pi/180; omega0 = 0;
-  
-  ocp.setBounds('T', 1, 10);
 
   ocp.setInitialBounds('p', p0);
   ocp.setInitialBounds('v', v0);
   ocp.setInitialBounds('theta', theta0);
   ocp.setInitialBounds('omega', omega0);
+  
+  ocp.setInitialBounds('time', 0);
 
   ocp.setEndBounds('p', 0);
   ocp.setEndBounds('v', 0);
   ocp.setEndBounds('theta', 0);
   ocp.setEndBounds('omega', 0);
-  
-  ocp.setEndBounds('time',     1.25, 2);
 
   % Run solver to obtain solution
   [sol,times] = ocp.solve(ocp.ig());
@@ -49,13 +47,13 @@ function varsfun(sh)
   sh.addState('theta', 'lb', -2*pi, 'ub', 2*pi);
   sh.addState('v');
   sh.addState('omega');
+  
+  sh.addState('time', 'lb', 0, 'ub', 10);
 
   sh.addControl('F', 'lb', -12, 'ub', 12);
-  
-  sh.addParameter('T');
 end
 
-function daefun(sh,x,~,u,p)
+function daefun(sh,x,~,u,~)
 
   g = 9.8;
   cm = 1.0;
@@ -74,17 +72,17 @@ function daefun(sh,x,~,u,p)
 
   a = (u.F + pml*(x.omega^2*stheta-domega*ctheta)) / m;
 
-  sh.setODE('p', p.T * x.v);
-  sh.setODE('theta', p.T * x.omega);
-  sh.setODE('v', p.T * a);
-  sh.setODE('omega', p.T * domega);
+  sh.setODE('p',x.v);
+  sh.setODE('theta',x.omega);
+  sh.setODE('v',a);
+  sh.setODE('omega',domega);
   
-%   sh.setODE('time', 1);
+  sh.setODE('time', 1);
   
 end
 
-function terminalcost(ocl,x,p)
-  ocl.add( p.T );
+function terminalcost(ocl,x,~)
+  ocl.add( x.time );
 end
 
 function handles = animate(sol,times)

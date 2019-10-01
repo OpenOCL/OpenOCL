@@ -20,7 +20,7 @@ function p_vec = pendulum_sim
   times = 0:0.1:4;
  
   figure
-  simulator.reset(x0);
+  simulator.reset(x0, 1);
   
   p_vec = zeros(2,length(times));
   p_vec(:,1) = x0.p.value; 
