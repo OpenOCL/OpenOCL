@@ -10,11 +10,13 @@ function [solution,times,ocp] = racecar_interpolant
   % In this example we show how to use casadi.interpolant to approximate
   % a state dependent function and use it in the gridconstraints.
   
+  
   % generate center line function (luckup table) from data points
   xdata = linspace(0, 2*pi, 30);
   ydata = sin(xdata);
   center_line_lut = casadi.interpolant('LUT', 'bspline', {xdata}, ydata);
 
+  
   MAX_TIME = 20;
   
   ocp = ocl.Problem([], @varsfun, @daefun, ...
