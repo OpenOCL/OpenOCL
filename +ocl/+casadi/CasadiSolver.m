@@ -32,9 +32,9 @@ classdef CasadiSolver < handle
       
       % create variables as casadi symbolics
       if nlp_casadi_mx
-        expr = @casadi.MX.sym;
+        casadi_sym = @casadi.MX.sym;
       else
-        expr = @casadi.SX.sym;
+        casadi_sym = @casadi.SX.sym;
       end
       
       vars = cell(length(stageList), 1);
@@ -70,16 +70,31 @@ classdef CasadiSolver < handle
         T = stage.T;
         N = stage.N;
         
-        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefh, pathcostsfh, d);
+        if length(stageList) > 1
+          name_suffix = ['_s',mat2str(k)];
+        else
+          name_suffix = '';
+        end
+        
+        % create casadi primitives for model functions
+        x = ocl.casadi.structToSym(x_struct, casadi_sym, name_suffix);
+        z = ocl.casadi.structToSym(z_struct, casadi_sym, name_suffix);
+        u = ocl.casadi.structToSym(u_struct, casadi_sym, name_suffix);
+        p = ocl.casadi.structToSym(p_struct, casadi_sym, name_suffix);
+        
+        [casadi_ode_sym, casadi_alg_sym] = ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
+        casadi_dae_fun = casadi.Function('odefun', {x,z,u,p}, {casadi_ode_sym, casadi_alg_sym});
+        
+        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, casadi_dae_fun, pathcostsfh, d);
         
         ni = collocation.num_i;
         collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
         
-        x = expr(['x','_s',mat2str(k)], nx);
-        vi = expr(['vi','_s',mat2str(k)], ni);
-        u = expr(['u','_s',mat2str(k)], nu);
-        h = expr(['h','_s',mat2str(k)]);
-        p = expr(['p','_s',mat2str(k)], np);
+        x = casadi_sym(['x','_s',mat2str(k)], nx);
+        vi = casadi_sym(['vi','_s',mat2str(k)], ni);
+        u = casadi_sym(['u','_s',mat2str(k)], nu);
+        h = casadi_sym(['h','_s',mat2str(k)]);
+        p = casadi_sym(['p','_s',mat2str(k)], np);
         
         [xF, cost_integr, equations] = collocationfun(x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {xF, cost_integr, equations});
@@ -88,7 +103,7 @@ classdef CasadiSolver < handle
         
         nv_stage = ocl.simultaneous.nvars(N, nx, ni, nu, np);
         v_last_stage = v_stage;
-        v_stage = expr(['v','_s',mat2str(k)], nv_stage);
+        v_stage = casadi_sym(['v','_s',mat2str(k)], nv_stage);
         
         gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
         gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
