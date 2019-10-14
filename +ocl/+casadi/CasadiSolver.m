@@ -87,10 +87,13 @@ classdef CasadiSolver < handle
         casadi_dae_fun = casadi.Function('odefun', {x,z,u,p}, {casadi_ode_sym, casadi_alg_sym});
         daefun = @(x,z,u,p) ocl.casadi.daefun(casadi_dae_fun,x,z,u,p);
         
-        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefun, pathcostsfh, d);
+        % casadi pathcost function
+        pathcosts_sym = ocl.model.pathcosts(pathcostsfh,x_struct, z_struct, u_struct, p_struct, x, z, u, p);
+        casadi_pathcost_fun = casadi.Function('pathcosts', {x,z,u,p}, {pathcosts_sym});
+        pathcostfun = @(x,z,u,p) ocl.casadi.pathcostfun(casadi_pathcost_fun,x,z,u,p);
         
+        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefun, pathcostfun, d);
         ni = collocation.num_i;
-        collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
         
         x = casadi_sym(['x','_s',mat2str(k)], nx);
         vi = casadi_sym(['vi','_s',mat2str(k)], ni);
@@ -98,7 +101,7 @@ classdef CasadiSolver < handle
         h = casadi_sym(['h','_s',mat2str(k)]);
         p = casadi_sym(['p','_s',mat2str(k)], np);
         
-        [xF, cost_integr, equations] = collocationfun(x, vi, u, h, p);
+        [xF, cost_integr, equations] = ocl.collocation.equations(collocation, x, vi, u, h, p);
         integrator_fun = casadi.Function('sys', {x,vi,u,h,p}, {xF, cost_integr, equations});
         
         integratormap = integrator_fun.map(N, 'serial');

@@ -37,7 +37,7 @@ classdef Collocation < handle
 
   methods
 
-    function self = Collocation(states, algvars, controls, parameters, statesOrder, daefun, pathcostsfh, d)
+    function self = Collocation(states, algvars, controls, parameters, statesOrder, daefun, pathcostfun, d)
 
       nx = length(states);
       nz = length(algvars);
@@ -53,7 +53,7 @@ classdef Collocation < handle
       coeff = ocl.collocation.coefficients(tau);
       
       self.daefun = daefun;
-      self.pathcostfun = @(x,z,u,p) ocl.model.pathcosts(pathcostsfh, states, algvars, controls, parameters, x, z, u, p);
+      self.pathcostfun = pathcostfun;
       
       self.coefficients = coeff;
       self.coeff_eval = ocl.collocation.evalCoefficients(coeff, d, 1.0);
