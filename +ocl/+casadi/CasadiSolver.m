@@ -82,10 +82,12 @@ classdef CasadiSolver < handle
         u = ocl.casadi.structToSym(u_struct, casadi_sym, name_suffix);
         p = ocl.casadi.structToSym(p_struct, casadi_sym, name_suffix);
         
+        % casadi dae function
         [casadi_ode_sym, casadi_alg_sym] = ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
         casadi_dae_fun = casadi.Function('odefun', {x,z,u,p}, {casadi_ode_sym, casadi_alg_sym});
+        daefun = @(x,z,u,p) ocl.casadi.daefun(casadi_dae_fun,x,z,u,p);
         
-        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, casadi_dae_fun, pathcostsfh, d);
+        collocation = ocl.collocation.Collocation(x_struct, z_struct, u_struct, p_struct, x_order, daefun, pathcostsfh, d);
         
         ni = collocation.num_i;
         collocationfun = @(x0,vars,u,h,p) ocl.collocation.equations(collocation, x0, vars, u, h, p);
