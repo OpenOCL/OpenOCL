@@ -1,11 +1,14 @@
 num_masses = 4;
 
-varsfh = @(h) ocl.examples.mass_spring.vars(h,num_masses);
-daefh = @(h,x,z,u,p) ocl.examples.mass_spring.dae(h,x,u);
-pathcostsfh = @(h,x,z,u,p) ocl.examples.mass_spring.pathcosts(h,x,u);
-gridcostsfh = @(h,k,K,x,p) ocl.examples.mass_spring.gridcosts(h,k,K,x);
+data = struct;
+data.num_masses = num_masses;
 
-ocp = ocl.Problem(10, varsfh, daefh, pathcostsfh, gridcostsfh, 'N', 20, 'd', 2);
+ocp = ocl.Problem(10, ...
+  @ocl.examples.mass_spring.vars, ...
+  @ocl.examples.mass_spring.dae, ...
+  @ocl.examples.mass_spring.pathcosts, ...
+  @ocl.examples.mass_spring.gridcosts, ...
+  'N', 20, 'userdata', data);
 
 x0 = zeros(2*num_masses, 1);
 x0(1) = 2.5;

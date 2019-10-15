@@ -10,7 +10,9 @@ function [solution,times,ocp] = racecar
   MAX_TIME = 20;
 
   ocp = ocl.Problem([], @varsfun, @daefun, ...
-                      'gridcosts', @gridcosts, 'gridconstraints', @gridconstraints, 'N', 50);
+    'gridcosts', @gridcosts, ...
+    'gridconstraints', @gridconstraints, ...
+    'N', 50);
 
   % parameters
   m    = 1;         % mass [kg]

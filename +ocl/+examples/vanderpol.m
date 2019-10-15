@@ -3,22 +3,20 @@
 % Redistribution is permitted under the 3-Clause BSD License terms. Please
 % ensure the above copyright notice is visible in any derived work.
 %
-function [solution,times,ocp] = vanderpol
+function [solution,times,problem] = vanderpol
 
-  END_TIME = 10;              % horizon length (seconds)
-
-  ocp = ocl.Problem(END_TIME, @varsfun, @daefun, @pathcosts, 'N', 30);
+  problem = ocl.Problem(10, @varsfun, @daefun, @pathcosts, 'N', 30);
 
   % intial state bounds
-  ocp.setInitialBounds('x',     0);
-  ocp.setInitialBounds('y',     1);
+  problem.setInitialBounds('x',     0);
+  problem.setInitialBounds('y',     1);
 
   % Get and set initial guess
-  initialGuess = ocp.getInitialGuess();
+  initialGuess = problem.getInitialGuess();
   initialGuess.states.x.set(-0.2);
 
   % Run solver to obtain solution
-  [solution,times] = ocp.solve(initialGuess);
+  [solution,times] = problem.solve(initialGuess);
 
   % plot solution
   figure

@@ -1,4 +1,7 @@
-function icfun(ic,x,conf)
+function icfun(ic,x,p)
+
+  conf = ic.userdata;
+
   % initial condition function
   l = conf.l;
   p = x.p;
