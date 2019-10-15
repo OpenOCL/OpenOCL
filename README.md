@@ -16,10 +16,10 @@ open ocl.examples.cartpole
 
 If you would like to participate in the project, you are very welcome! [Contribution guidelines](https://openocl.org/contribute/)
 
-## Models
+## Some Models
 
-* airborne wind energy: https://openawe.github.io/
 * robotics: https://github.com/jkoendev/openocl_models (very experimental)
+* airborne wind energy: https://openawe.github.io/ (outdated, very experimental)
 
 ## Citing and publications
 
