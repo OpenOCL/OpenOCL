@@ -8,10 +8,10 @@ pathcostfun = @(x,z,u,p) ocl.model.pathcosts(stage.pathcostsfh, ...
                                              stage.z_struct, ...
                                              stage.u_struct, ...
                                              stage.p_struct, ...
-                                             x, z, u, p);
+                                             x, z, u, p, []);
                                            
-gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.x_struct, stage.p_struct, k, K, x, p);
-gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.x_struct, stage.p_struct, k, K, x, p);
+gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.x_struct, stage.p_struct, k, K, x, p, []);
+gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.x_struct, stage.p_struct, k, K, x, p, []);
       
                                            
 ocl.utils.assertEqual(pathcostfun([],[],[],[]),0);
@@ -32,10 +32,10 @@ pathcostfun = @(x,z,u,p) ocl.model.pathcosts(stage.pathcostsfh, ...
                                              stage.z_struct, ...
                                              stage.u_struct, ...
                                              stage.p_struct, ...
-                                             x, z, u, p);
+                                             x, z, u, p, []);
                                            
-gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.x_struct, stage.p_struct, k, K, x, p);
-gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.x_struct, stage.p_struct, k, K, x, p);
+gridcostfun = @(k,K,x,p) ocl.model.gridcosts(stage.gridcostsfh, stage.x_struct, stage.p_struct, k, K, x, p, []);
+gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(stage.gridconstraintsfh, stage.x_struct, stage.p_struct, k, K, x, p, []);
 
 c = pathcostfun(ones(stage.nx,1),ones(stage.nz,1),ones(stage.nu,1),ones(stage.np,1));
 ocl.utils.assertEqual(c,26+1e-3*12);

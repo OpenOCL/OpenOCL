@@ -30,13 +30,13 @@ classdef Problem < handle
       p.addParameter('verbose', true, @islogical);
       p.addParameter('print_level', 3, @isnumeric);
       
-      p.addParameter('userdata', [], @true);
+      p.addParameter('userdata', [], @(in)true);
       
       r = p.parse(varargin{:});
       
       stage = ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
         r.terminalcost, ...
-        'N', r.N, 'd', r.d);
+        'N', r.N, 'd', r.d, 'userdata', r.userdata);
       
       nlp_casadi_mx = r.nlp_casadi_mx;
       controls_regularization = r.controls_regularization;

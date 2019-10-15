@@ -58,7 +58,7 @@ classdef Stage < handle
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
       
-      p.addParameter('userdata', [], @true);
+      p.addParameter('userdata', [], @(in)true);
       
       r = p.parse(varargin{:});
       

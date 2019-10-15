@@ -23,11 +23,8 @@ function [vars,times,ocp] = ballandbeam
   conf.costQ = eye(4);         % least squares path costs states weighting matrix
   conf.costR = 1;              % least squares path costs controls weighting matrix
 
-  varsfun    = @(sh) bbvarsfun(sh, conf);
-  daefun     = @(sh,x,~,u,p) bbeqfun(sh,x,u,conf);
-  pathcosts  = @(ch,x,~,u,~) bbpathcosts(ch,x,u,conf);
-
-  ocp = ocl.Problem([], varsfun, daefun, pathcosts, 'N', 50);
+  ocp = ocl.Problem([], @varsfun, @dynamics, @pathcosts, ...
+    'N', 50, 'userdata', conf);
 
    % bound on time: 0 <= time <= 5
   ocp.setBounds('time', 0, 5);
@@ -77,7 +74,10 @@ function [vars,times,ocp] = ballandbeam
   bbanimate(times.states.value,vars.states.r.value,vars.states.theta.value,conf);
 
 end
-function bbvarsfun(sh, c)
+function varsfun(sh)
+  
+  c = sh.userdata;
+
   sh.addState('r',      'lb', -c.r_b,      'ub', c.r_b      );
   sh.addState('dr');
   sh.addState('theta',  'lb', -c.theta_b,  'ub', c.theta_b  );
@@ -88,16 +88,22 @@ function bbvarsfun(sh, c)
   sh.addControl('tau',  'lb', -c.tau_b,    'ub', c.tau_b    );
 end
 
-function bbeqfun(sh,x,u,c)
-  sh.setODE('theta' ,x.dtheta);
-  sh.setODE('dtheta',(u.tau - c.m*c.g*x.r*cos(x.theta) - 2*c.m*x.r*x.dr*x.dtheta)/(c.I + c.m*x.r^2));
-  sh.setODE('r'     ,x.dr);
-  sh.setODE('dr'    ,(-c.m*c.g*sin(x.theta) + c.m*x.r*x.dtheta^2)/(c.m + c.J/c.R^2));
+function dynamics(dh,x,z,u,p)
 
-  sh.setODE('time'    , 1);
+  c = dh.userdata;
+
+  dh.setODE('theta' ,x.dtheta);
+  dh.setODE('dtheta',(u.tau - c.m*c.g*x.r*cos(x.theta) - 2*c.m*x.r*x.dr*x.dtheta)/(c.I + c.m*x.r^2));
+  dh.setODE('r'     ,x.dr);
+  dh.setODE('dr'    ,(-c.m*c.g*sin(x.theta) + c.m*x.r*x.dtheta^2)/(c.m + c.J/c.R^2));
+
+  dh.setODE('time'    , 1);
 end
 
-function bbpathcosts(ch,x,u,c)
+function pathcosts(ch,x,z,u,p)
+
+  c = ch.userdata;
+
   ch.add( x(1:end-1).'*c.costQ*x(1:end-1) );
   ch.add( u.'*c.costR*u );
 end

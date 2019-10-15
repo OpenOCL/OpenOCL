@@ -29,6 +29,8 @@ classdef MultiStageProblem < handle
       p.addParameter('casadi_options', ocl.casadi.CasadiOptions(), @(el) isstruct(el));
 
       p.addParameter('verbose', true, @islogical);
+      
+      p.addParameter('userdata', [], @(in)true);
 
       r = p.parse(varargin{:});
 
@@ -41,11 +43,13 @@ classdef MultiStageProblem < handle
 
       casadi_options = r.casadi_options;
       verbose = r.verbose;
+      
+      userdata = r.userdata;
 
       solver = ocl.casadi.CasadiSolver(stageList, transitionList, ...
                                        nlp_casadi_mx, controls_regularization, ...
                                        controls_regularization_value, casadi_options, ...
-                                       verbose);
+                                       verbose, userdata);
 
                                      
       % set instance variables
