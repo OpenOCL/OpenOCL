@@ -1,4 +1,4 @@
-function gridcosts(h, k, K, x)
+function gridcosts(h, k, K, x, p)
 
 if k==K
   s = size(x);

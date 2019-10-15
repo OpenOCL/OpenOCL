@@ -1,12 +1,12 @@
-function dae(h, x, u)
+function dae(dh, x, z, u, p)
+
+num_masses = dh.userdata.num_masses;
 
 s = size(x);
 nx = s(1);
 
 s = size(u);
 nu = s(1);
-
-num_masses = nx/2;
 
 A = zeros(nx, nx);
 for k=1:num_masses
@@ -23,4 +23,4 @@ for k=1:nu
 	B(num_masses+k, k) = 1.0;
 end
 
-h.setODE('x', A*x+B*u);
+dh.setODE('x', A*x+B*u);
