@@ -58,6 +58,8 @@ classdef Stage < handle
       p.addParameter('N', 20, @isnumeric);
       p.addParameter('d', 3, @isnumeric);
       
+      p.addParameter('userdata', [], @true);
+      
       r = p.parse(varargin{:});
       
       varsfh = r.vars;
@@ -68,6 +70,7 @@ classdef Stage < handle
       terminalcostfh = r.terminalcost;
       H_norm_in = r.N;
       d_in = r.d;
+      userdata = r.userdata;
 
       % arguments consistency checks
       ocl.utils.assert( (isscalar(T) || isempty(T)) && isreal(T), ... 
@@ -89,7 +92,7 @@ classdef Stage < handle
       
       [x_struct, z_struct, u_struct, p_struct, ...
           x_bounds_v, z_bounds_v, u_bounds_v, p_bounds_v, ...
-          x_order] = ocl.model.vars(varsfh);
+          x_order] = ocl.model.vars(varsfh, userdata);
       
       self.T = T;
       self.H_norm = H_norm_in;

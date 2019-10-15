@@ -12,11 +12,13 @@ classdef VarHandler < handle
     p_bounds
     
     x_order
+    
+    userdata_p
   end
   
   methods
     
-    function self = VarHandler()
+    function self = VarHandler(userdata)
       
       self.x_struct = ocl.types.Structure();
       self.z_struct = ocl.types.Structure();
@@ -29,6 +31,12 @@ classdef VarHandler < handle
       self.p_bounds = ocl.types.Bounds();
       
       self.x_order = {};
+      
+      self.userdata_p = userdata;
+    end
+    
+    function r = userdata(self)
+      r = self.userdata_p;
     end
     
     function addState(self,id,varargin)

@@ -30,6 +30,8 @@ classdef Problem < handle
       p.addParameter('verbose', true, @islogical);
       p.addParameter('print_level', 3, @isnumeric);
       
+      p.addParameter('userdata', [], @true);
+      
       r = p.parse(varargin{:});
       
       stage = ocl.Stage(r.T, r.vars, r.dae, r.pathcosts, r.gridcosts, r.gridconstraints, ...
@@ -42,12 +44,13 @@ classdef Problem < handle
       
       casadi_options = r.casadi_options;
       verbose = r.verbose;
+      userdata = r.userdata;
       
 
       solver = ocl.casadi.CasadiSolver({stage}, {}, ...
                                        nlp_casadi_mx, controls_regularization, ...
                                        controls_regularization_value, casadi_options, ...
-                                       verbose);
+                                       verbose, userdata);
       
       % set instance variables
       self.stage = stage;

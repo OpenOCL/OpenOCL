@@ -3,13 +3,20 @@ classdef DaeHandler < handle
   properties
     ode
     alg
+    
+    userdata_p
   end
   
   methods
     
-    function self = DaeHandler()
+    function self = DaeHandler(userdata)
       self.ode = struct;
       self.alg = [];
+      self.userdata_p = userdata;
+    end
+    
+    function r = userdata(self)
+      r = self.userdata_p;
     end
   
      function setODE(self,id,eq)

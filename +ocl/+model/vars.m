@@ -1,8 +1,8 @@
 function [x_struct, z_struct, u_struct, p_struct, ...
           x_bounds, z_bounds, u_bounds, p_bounds, ...
-          x_order] = vars(varsfh)
+          x_order] = vars(varsfh, userdata)
         
-vh = ocl.VarHandler;
+vh = ocl.VarHandler(userdata);
 varsfh(vh);
 
 x_struct = vh.x_struct;

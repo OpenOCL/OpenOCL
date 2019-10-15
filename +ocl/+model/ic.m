@@ -1,6 +1,6 @@
-function ic = ic(icfh, x_struct,p_struct,x,p)
+function ic = ic(icfh, x_struct,p_struct,x,p, userdata)
 % initial condition function
-icHandler = ocl.Constraint();
+icHandler = ocl.Constraint(userdata);
 x = ocl.Variable.create(x_struct,x);
 p = ocl.Variable.create(p_struct,p);
 icfh(icHandler,x,p)

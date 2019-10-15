@@ -10,14 +10,21 @@ classdef Constraint < handle
     values
     lowerBounds
     upperBounds
+    userdata_p
   end
   
   methods
     
-    function self = Constraint()
+    function self = Constraint(userdata)
       self.values = [];
       self.lowerBounds = [];
       self.upperBounds = [];
+      
+      self.userdata_p = userdata;
+    end
+    
+    function r = userdata(self)
+      r = self.userdata_p;
     end
     
     function setInitialCondition(self,varargin)

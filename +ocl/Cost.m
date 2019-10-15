@@ -5,12 +5,18 @@
 classdef Cost < handle
   properties
     value
+    userdata_p
   end
   
   methods
     
-    function self = Cost()
+    function self = Cost(userdata)
       self.value = 0;
+      self.userdata_p = userdata;
+    end
+    
+    function r = userdata(self)
+      r = self.userdata_p;
     end
     
     function add(self,val)

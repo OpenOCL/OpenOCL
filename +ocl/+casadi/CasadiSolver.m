@@ -20,7 +20,7 @@ classdef CasadiSolver < handle
     function self = CasadiSolver(stageList, transitionList, ...
                                  nlp_casadi_mx, ...
                                  controls_regularization, controls_regularization_value, ...
-                                 casadi_options, verbose)
+                                 casadi_options, verbose, userdata)
       
       ocl.utils.assert(length(stageList)==length(transitionList)+1, ...
                 'You need to specify Ns-1 transitions for Ns stages.');
@@ -83,12 +83,16 @@ classdef CasadiSolver < handle
         p = ocl.casadi.structToSym(p_struct, casadi_sym, name_suffix);
         
         % casadi dae function
-        [casadi_ode_sym, casadi_alg_sym] = ocl.model.dae(daefh, x_struct, z_struct, u_struct, p_struct, x_order, x, z, u, p);
+        [casadi_ode_sym, casadi_alg_sym] = ocl.model.dae( ...
+          daefh, x_struct, z_struct, u_struct, p_struct, x_order, ...
+          x, z, u, p, userdata);
         casadi_dae_fun = casadi.Function('odefun', {x,z,u,p}, {casadi_ode_sym, casadi_alg_sym});
         daefun = @(x,z,u,p) ocl.casadi.daefun(casadi_dae_fun,x,z,u,p);
         
         % casadi pathcost function
-        pathcosts_sym = ocl.model.pathcosts(pathcostsfh,x_struct, z_struct, u_struct, p_struct, x, z, u, p);
+        pathcosts_sym = ocl.model.pathcosts(...
+          pathcostsfh,x_struct, z_struct, u_struct, p_struct, ...
+          x, z, u, p, userdata);
         casadi_pathcost_fun = casadi.Function('pathcosts', {x,z,u,p}, {pathcosts_sym});
         pathcostfun = @(x,z,u,p) ocl.casadi.pathcostfun(casadi_pathcost_fun,x,z,u,p);
         
@@ -110,9 +114,9 @@ classdef CasadiSolver < handle
         v_last_stage = v_stage;
         v_stage = casadi_sym(['v','_s',mat2str(k)], nv_stage);
         
-        gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p);
-        gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p);
-        terminalcostfun = @(x,p) ocl.model.terminalcost(terminalcostfh, x_struct, p_struct, x, p);
+        gridcostfun = @(k,K,x,p) ocl.model.gridcosts(gridcostsfh, x_struct, p_struct, k, K, x, p, userdata);
+        gridconstraintfun = @(k,K,x,p) ocl.model.gridconstraints(gridconstraintsfh, x_struct, p_struct, k, K, x, p, userdata);
+        terminalcostfun = @(x,p) ocl.model.terminalcost(terminalcostfh, x_struct, p_struct, x, p, userdata);
         
         [costs_stage, constraints_stage, ...
          constraints_LB_stage, constraints_UB_stage] = ...
