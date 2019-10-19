@@ -2,7 +2,7 @@ function setup()
 
 ocl.utils.checkStartup;
 
-latest_acados_version = 'n3_7a83d3';
+latest_acados_version = 'n4_16b20b';
 
 % check if MinGW compiler is setup
 c_compiler = mex.getCompilerConfigurations('C','Selected').ShortName;
