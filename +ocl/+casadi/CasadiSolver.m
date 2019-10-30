@@ -20,7 +20,7 @@ classdef CasadiSolver < handle
     function self = CasadiSolver(stageList, transitionList, ...
                                  nlp_casadi_mx, ...
                                  controls_regularization, controls_regularization_value, ...
-                                 casadi_options, verbose, userdata)
+                                 casadi_options, verbose, problem_userdata)
       
       ocl.utils.assert(length(stageList)==length(transitionList)+1, ...
                 'You need to specify Ns-1 transitions for Ns stages.');
@@ -61,6 +61,8 @@ classdef CasadiSolver < handle
         gridcostsfh = stage.gridcostsfh;
         gridconstraintsfh = stage.gridconstraintsfh;
         terminalcostfh = stage.terminalcostfh;
+        
+        userdata = stage.userdata;
         
         nx = stage.nx;
         nu = stage.nu;
@@ -136,7 +138,7 @@ classdef CasadiSolver < handle
           xfs = ocl.simultaneous.getLastState(stageList{k-1}, collocationList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
           
-          tansition_handler = ocl.Constraint(userdata);
+          tansition_handler = ocl.Constraint(problem_userdata);
           
           x0 = ocl.Variable.create(stageList{k}.x_struct, x0s);
           xf = ocl.Variable.create(stageList{k-1}.x_struct, xfs);

@@ -38,6 +38,8 @@ classdef Stage < handle
     u_guess
     p_guess
     
+    userdata
+    
   end
   
   methods
@@ -127,6 +129,8 @@ classdef Stage < handle
       self.z_guess = ocl.types.InitialGuess(z_struct);
       self.u_guess = ocl.types.InitialGuess(u_struct);
       self.p_guess = ocl.types.InitialGuess(p_struct);
+      
+      self.userdata = userdata;
     end
     
     %%% Initial guess
@@ -172,6 +176,28 @@ classdef Stage < handle
     end
     
     %%% Bounds
+    function setBounds(self, id, varargin)
+      if ocl.utils.fieldnamesContain(self.x_struct.getNames(), id)
+        self.setStateBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.z_struct.getNames(), id)
+        self.setAlgvarBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.u_struct.getNames(), id)
+        self.setControlBounds(id, varargin{:});
+      elseif ocl.utils.fieldnamesContain(self.p_struct.getNames(), id)
+        self.setParameterBounds(id, varargin{:});
+      else
+        ocl.utils.warning(['You specified a guess for a variable that does not exist: ', id]);
+      end
+    end
+    
+    function setInitialBounds(self, id, varargin)
+      self.setInitialStateBounds(id, varargin{:});
+    end
+    
+    function setEndBounds(self, id, varargin)
+      self.setEndStateBounds(id, varargin{:});
+    end
+    
     function setStateBounds(self, id, varargin)
       self.x_bounds.set(id, varargin{:});
     end
