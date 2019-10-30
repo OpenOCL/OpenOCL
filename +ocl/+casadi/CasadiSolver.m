@@ -20,7 +20,7 @@ classdef CasadiSolver < handle
     function self = CasadiSolver(stageList, transitionList, ...
                                  nlp_casadi_mx, ...
                                  controls_regularization, controls_regularization_value, ...
-                                 casadi_options, verbose, problem_userdata)
+                                 casadi_options, verbose, problem_userdata, transition_type)
       
       ocl.utils.assert(length(stageList)==length(transitionList)+1, ...
                 'You need to specify Ns-1 transitions for Ns stages.');
@@ -134,16 +134,25 @@ classdef CasadiSolver < handle
         transition_lb = [];
         transition_ub = [];
         if k >= 2
-          x0s = ocl.simultaneous.getFirstState(stageList{k}, collocationList{k}, v_stage);
-          xfs = ocl.simultaneous.getLastState(stageList{k-1}, collocationList{k-1}, v_last_stage);
+          [x0_cur, p_cur] = ocl.simultaneous.getFirstState(stageList{k}, collocationList{k}, v_stage);
+          [xF_prev, p_prev] = ocl.simultaneous.getLastState(stageList{k-1}, collocationList{k-1}, v_last_stage);
           transition_fun = transitionList{k-1};
           
           tansition_handler = ocl.Constraint(problem_userdata);
           
-          x0 = ocl.Variable.create(stageList{k}.x_struct, x0s);
-          xf = ocl.Variable.create(stageList{k-1}.x_struct, xfs);
+          x0_cur = ocl.Variable.create(stageList{k}.x_struct, x0_cur);
+          xF_prev = ocl.Variable.create(stageList{k-1}.x_struct, xF_prev);
           
-          transition_fun(tansition_handler,x0,xf);
+          p_cur = ocl.Variable.create(stageList{k}.p_struct, p_cur);
+          p_prev = ocl.Variable.create(stageList{k-1}.p_struct, p_prev);
+          
+          if transition_type == 1
+            transition_fun(tansition_handler,x0_cur,xF_prev);
+          elseif transition_type == 2
+            transition_fun(tansition_handler,x0_cur,xF_prev,p_cur,p_prev);
+          else
+            ocl.error('Transition type invalid.');
+          end
           
           transition_eq = tansition_handler.values;
           transition_lb = tansition_handler.lowerBounds;
