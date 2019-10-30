@@ -45,6 +45,7 @@ function [nFails] = core(testExamples,saveLog,suffix)
   
   if testExamples
     tests{end+1}.name = 'Examples';      tests{end}.file = 'ocl.tests.examples';
+    tests{end+1}.name = 'Features';      tests{end}.file = 'ocl.tests.features';
   end
   
   NTests = length(tests);
