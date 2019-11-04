@@ -15,7 +15,7 @@ function [sol,times,ocp] = bouncingball_sim
   ocp = ocl.MultiStageProblem(num2cell([stage0,repmat(stage,1,num_stages-1)]), ...
                       repmat({@transition},1,num_stages-1));
 
-  [sol,times] = ocp.solve(ocp.getInitialGuess());
+  [sol,times] = ocp.solve();
 
 
   vw = VideoWriter(fullfile(getenv('OPENOCL_WORK'),'bouncingball.avi'));

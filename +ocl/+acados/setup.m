@@ -4,9 +4,9 @@ ocl.utils.checkStartup;
 
 latest_acados_version = 'n3_7a83d3';
 
-% check if MinGW compiler is setup
-c_compiler = mex.getCompilerConfigurations('C','Selected').ShortName;
-ocl.utils.assert(strcmp(c_compiler, 'mingw64') || strcmp(c_compiler, 'gcc'), ...
+cc_conf = mex.getCompilerConfigurations('C','Selected');
+ocl.utils.assert(~isempty(cc_conf) && ...
+  (strcmp(cc_conf.ShortName, 'mingw64') || strcmp(cc_conf.ShortName, 'gcc')), ...
   'Please setup gcc (Linux) or MinGW (Windows) as your c compiler using `mex -setup C`.');
 
 acados_dir = getenv('ACADOS_INSTALL_DIR');
