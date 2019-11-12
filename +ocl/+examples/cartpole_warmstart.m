@@ -36,6 +36,8 @@ function cartpole_warmstart
   
   casadi_options = ocl.casadi.CasadiOptions();
   casadi_options.ipopt.warm_start_init_point = 'yes';
+  casadi_options.ipopt.mu_target = 0;
+  casadi_options.ipopt.mu_init = 0.01;
   
   [sol,times] = ocp.solve(sol, 'casadi_options', casadi_options);
 
