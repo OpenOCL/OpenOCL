@@ -66,9 +66,10 @@ classdef Problem < handle
       if nargin==1
         % ig InitialGuess
         ig = self.solver.getInitialGuessWithUserData();
+        ig = ig{1};
       end
 
-      [sol,times,solver_info] = s.solve({ig{1}.value});
+      [sol,times,solver_info] = s.solve({ig});
 
       sol_r = sol{1};
       times_r = times{1};

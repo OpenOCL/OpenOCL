@@ -61,19 +61,13 @@ classdef MultiStageProblem < handle
       % [sol, times] = solve(ig)
 
       s = self.solver;
-      st_list = self.stageList;
 
       if nargin==1
         % ig InitialGuess
         ig = self.solver.getInitialGuessWithUserData();
       end
-      
-      ig_list = cell(length(st_list),1);
-      for k=1:length(st_list)
-        ig_list{k} = ig{k}.value;
-      end
 
-      [sol,times,solver_info] = s.solve(ig_list);
+      [sol,times,solver_info] = s.solve(ig);
 
       if nargout >=3
         info = solver_info;

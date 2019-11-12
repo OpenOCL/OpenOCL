@@ -6,8 +6,6 @@ classdef CasadiSolver < handle
     collocationList
     nlpData
     stats
-    
-    varsStructList
   end
   
   properties (Access = private)
@@ -222,7 +220,6 @@ classdef CasadiSolver < handle
     
     function igList = getInitialGuess(self)
       stage_list = self.stageList;
-      vs_list = self.varsStructList;
 
       igList = cell(length(stage_list),1);
       for k=1:length(stage_list)
@@ -268,11 +265,7 @@ classdef CasadiSolver < handle
                                     vi_struct);
                                   
         igList{k} = ocl.Variable.create(varsStruct, ig);
-        
-        vs_list{k} = varsStruct;
       end
-      
-      self.varsStructList = vs_list;
       
     end
     
@@ -283,7 +276,12 @@ classdef CasadiSolver < handle
       
       stage_list = self.stageList;
       collocation_list = self.collocationList;
-      vs_list = self.varsStructList;
+      
+      ig_list = v0;
+      
+      for k=1:length(v0)
+        v0{k} = v0{k}.value;
+      end
       
       lbv = cell(length(stage_list),1);
       ubv = cell(length(stage_list),1);
@@ -376,7 +374,7 @@ classdef CasadiSolver < handle
         
         % unpack solution of this stage to state/controls trajectories
         V = sol_values(i_stage:i_stage+nv_stage-1);
-        sol_out = ocl.Variable.create(vs_list{k}, V);
+        sol_out = ocl.Variable.create(ig_list{k}.type, V);
 
         [~,~,~,~,H] = ocl.simultaneous.variablesUnpack(V, N, nx, ni, nu, np);
         colloc_times = ocl.simultaneous.times(H(1)*H_norm, colloc);
