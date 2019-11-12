@@ -57,19 +57,32 @@ classdef Problem < handle
       self.solver = solver;
     end
     
-    function [sol_r,times_r,info] = solve(self, ig)
+    function [sol_r,times_r,info] = solve(self, varargin)
       % [sol, times] = solve()
       % [sol, times] = solve(ig)
+      
+      p = ocl.utils.ArgumentParser;
+      p.addKeyword('ig', [], @(el)isa(el, 'ocl.Variable') || isempty(el));
+      p.addParameter('casadi_options', ocl.casadi.CasadiOptions(), @(el) isstruct(el));
+      p.addParameter('verbose', true, @islogical);
+      p.addParameter('print_level', 3, @isnumeric);
+      
+      r = p.parse(varargin{:});
+      
+      ig = r.ig;
+      casadi_options = r.casadi_options;
+      verbose = r.verbose;
+      print_level = r.print_level;
 
       s = self.solver;
 
-      if nargin==1
+      if isempty(ig)
         % ig InitialGuess
         ig = self.solver.getInitialGuessWithUserData();
         ig = ig{1};
       end
 
-      [sol,times,solver_info] = s.solve({ig});
+      [sol,times,solver_info] = s.solve({ig}, casadi_options, verbose, print_level);
 
       sol_r = sol{1};
       times_r = times{1};

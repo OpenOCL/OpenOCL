@@ -6,6 +6,9 @@ classdef CasadiSolver < handle
     collocationList
     nlpData
     stats
+    
+    casadi_options
+    verbose
   end
   
   properties (Access = private)
@@ -22,6 +25,10 @@ classdef CasadiSolver < handle
       
       ocl.utils.assert(length(stageList)==length(transitionList)+1, ...
                 'You need to specify Ns-1 transitions for Ns stages.');
+              
+              
+      self.casadi_options = casadi_options;
+      self.verbose = verbose;
               
       self.controls_regularization = controls_regularization;
       self.controls_regularization_value = controls_regularization_value;
@@ -174,27 +181,16 @@ classdef CasadiSolver < handle
       % get struct with nlp for casadi
       casadiNLP = struct;
       casadiNLP.x = v;
-      casadiNLP.f = costs;
-      casadiNLP.g = constraints;
+      casadiNLP.f = casadi.Function('f', {v}, {costs});
+      casadiNLP.g = casadi.Function('g', {v}, {constraints});;
       casadiNLP.p = [];
-      
-      if ~verbose
-        casadi_options.ipopt.print_level = 0;
-        casadi_options.print_time = 0;
-      end
-      
-      constructSolverTic = tic;
-      casadiSolver = casadi.nlpsol('my_solver', 'ipopt', casadiNLP, casadi_options);
-      constructSolverTime = toc(constructSolverTic);
 
       nlpData = struct;
       nlpData.casadiNLP = casadiNLP;
       nlpData.constraints_LB = constraints_LB;
       nlpData.constraints_UB = constraints_UB;
-      nlpData.solver = casadiSolver;
       
       timeMeasures.constructTotal = toc(constructTotalTic);
-      timeMeasures.constructSolver = constructSolverTime;
       
       self.stageList = stageList;
       self.nlpData = nlpData;
@@ -269,10 +265,32 @@ classdef CasadiSolver < handle
       
     end
     
-    function [sol,times,info] = solve(self,v0)
+    function [sol,times,info] = solve(self, v0, casadi_options, verbose, print_level)
       % solve(initialGuess)
       
       solveTotalTic = tic;
+      
+      if nargin < 3
+        casadi_options = self.casadi_options;
+      end
+      
+      if nargin < 4
+        verbose = self.verbose;
+      end
+      
+      if ~verbose
+        casadi_options.ipopt.print_level = 0;
+        casadi_options.print_time = 0;
+      end
+      
+      casadiNLP = self.nlpData.casadiNLP;
+      casadiNLP.f = casadiNLP.f(casadiNLP.x);
+      casadiNLP.g = casadiNLP.g(casadiNLP.x);
+      
+      constructSolverTic = tic;
+      self.nlpData.solver = casadi.nlpsol('my_solver', 'ipopt', casadiNLP, casadi_options);
+      constructSolverTime = toc(constructSolverTic);
+      self.timeMeasures.constructSolver = constructSolverTime;
       
       stage_list = self.stageList;
       collocation_list = self.collocationList;
