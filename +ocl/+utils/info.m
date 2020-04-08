@@ -21,3 +21,4 @@ for k=1:d
   offset = new_offset;
 end
 fprintf('%s %s %s', new_msg, msg( d*N-offset+1 : end), ocl.utils.newline);
+
