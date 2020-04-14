@@ -21,9 +21,9 @@ function [solution,times,problem] = vanderpol
   % plot solution
   figure
   hold on
-  plot(times.states.value,solution.states.x.value,'-.','LineWidth',2)
-  plot(times.states.value,solution.states.y.value,'--k','LineWidth',2)
-  stairs(times.controls.value,solution.controls.F.value,'r','LineWidth',2)
+  ocl.plot(times.states,solution.states.x,'-.','LineWidth',2)
+  ocl.plot(times.states,solution.states.y,'--k','LineWidth',2)
+  ocl.stairs(times.controls,solution.controls.F,'r','LineWidth',2)
   xlabel('time')
   legend({'x','y','u'})
 
