@@ -36,7 +36,7 @@ end
 
 u_guess = stage.u_guess.data;
 
-u_times = [0, cumsum(H_norm)]';
+u_times = cumsum(H_norm)';
 
 % incoorperate user input ig data for control trajectories
 names = fieldnames(u_guess);

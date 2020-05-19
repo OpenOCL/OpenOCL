@@ -23,9 +23,12 @@ function [sol,times,ocp] = cartpole
   ocp.setEndBounds('omega', 0);
   
   ocp.setEndBounds('time',     1.25, 2);
+  
+  ocp.initialize('theta', [0 1], [pi 0]);
+  ocp.initialize('F', [0 1], [1 1]);
 
   % Run solver to obtain solution
-  [sol,times] = ocp.solve(ocp.ig());
+  [sol,times] = ocp.solve();
 
   % visualize solution
   figure; hold on; grid on;
