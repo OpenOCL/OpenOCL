@@ -33,3 +33,21 @@ for k=1:length(names)
   ig_stage.integrator.states.get(id).set(ytarget')
   
 end
+
+u_guess = stage.u_guess.data;
+
+u_times = cumsum(H_norm)';
+
+% incoorperate user input ig data for control trajectories
+names = fieldnames(u_guess);
+for k=1:length(names)
+  id = names{k};
+  
+  xdata = u_guess.(id).x;
+  ydata = u_guess.(id).y;
+  
+  % control trajectories
+  ytarget = interp1(xdata, ydata, u_times,'linear','extrap');
+  ig_stage.controls.get(id).set(ytarget');
+  
+end
