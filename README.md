@@ -2,7 +2,7 @@
 <img src="https://openocl.github.io/imgs/cartpole.gif" width="30%"> <img src="https://openocl.github.io/imgs/car.png" width="30%"> <img src="https://openocl.github.io/imgs/circ.png" width="30%">  
 <img src="https://openocl.github.io/assets/img/p560_two_waypoint.gif" width="30%"> <img src="https://openocl.github.io/assets/img/dpc_swingup_2s.gif" width="30%"> <img src="https://openocl.github.io/imgs/lemn.png" width="30%">    
 
-Visit the main website [openocl.github.io](https://openocl.github.io) to [download](https://openocl.github.io/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.github.io/api-docs/) and the [examples](https://github.com/OpenOCL/OpenOCL/tree/master/%2Bocl/%2Bexamples).
+Visit the website [openocl.github.io](https://openocl.github.io) to [download](https://openocl.github.io/get-started/) the toolbox, and have a look at the [API Docs](https://openocl.github.io/api-docs/) and the [examples](https://github.com/OpenOCL/OpenOCL/tree/master/%2Bocl/%2Bexamples).
 
 ## Get started
 
